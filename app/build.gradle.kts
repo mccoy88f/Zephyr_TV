@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "link.mccoy88f.zephyr"
-        minSdk = 26
+        minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         targetSdk = 36
         versionCode = 66
