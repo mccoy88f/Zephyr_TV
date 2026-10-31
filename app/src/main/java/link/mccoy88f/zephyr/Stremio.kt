@@ -423,13 +423,15 @@ internal object Stremio {
             (0 until d.length()).mapNotNull { d.optString(it).trim().takeIf { s -> s.isNotEmpty() } }
         } ?: text(m, "director")?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }.orEmpty()
         val list = m.optJSONArray("videos") ?: JSONArray()
-        val episodes = if (type != "series") emptyList() else (0 until list.length()).mapNotNull { list.optJSONObject(it) }.mapNotNull { v ->
-            val id = v.optString("id").takeIf { it.isNotEmpty() } ?: return@mapNotNull null
-            val season = v.optInt("season", -1).takeIf { it >= 0 } ?: return@mapNotNull null
-            val episode = v.optInt("episode", v.optInt("number", 0))
+        val parsedEpisodes = (0 until list.length()).mapNotNull { list.optJSONObject(it) }.mapIndexedNotNull { index, v ->
+            val id = v.optString("id").takeIf { it.isNotEmpty() } ?: return@mapIndexedNotNull null
+            val season = v.optInt("season", if (type == "series") -1 else 1).takeIf { it >= 0 } ?: return@mapIndexedNotNull null
+            val episode = v.optInt("episode", v.optInt("number", index + 1))
             Episode(id, season, episode, (text(v, "name") ?: text(v, "title")).orEmpty(), text(v, "released"), logo(text(v, "thumbnail")),
                 text(v, "overview") ?: text(v, "description"))
         }.distinctBy { it.id }.sortedWith(compareBy({ if (it.season == 0) Int.MAX_VALUE else it.season }, { it.episode }))
+        val episodes = if (type == "movie" || type == "movies") emptyList()
+            else parsedEpisodes.filter { !it.name.equals("Channel Options", ignoreCase = true) }.ifEmpty { parsedEpisodes }
         return TitleMeta(title, text(m, "description"), genres, text(m, "imdbRating"), text(m, "runtime"), episodes, cast, director)
     }
 
@@ -438,7 +440,8 @@ internal object Stremio {
      * them: direct web addresses only (no torrents), each named by its quality line and its file ("1080p · Film.mkv").
      */
     fun titleStreams(base: String, name: String, type: String, id: String): List<Stream> =
-        streams(get("$base/stream/${enc(type)}/${enc(id)}.json", Http.STREAMS_TIMEOUT_MS), vod = true, external = base.startsWith(EXT)).map {
+        streams(get("$base/stream/${enc(type)}/${enc(id)}.json", Http.STREAMS_TIMEOUT_MS), vod = true,
+            external = base.startsWith(EXT) || type.equals("YouTube", ignoreCase = true) || id.startsWith("yt_id:")).map {
             Stream(it.url, it.title, it.headers, it.group, name, clearkey = it.clearkey, app = it.app)
         }
 
@@ -475,7 +478,8 @@ internal object Stremio {
 
     /** The ways to play channel [id], in the add-on's order (best first); those without a web address are left out. */
     fun streams(base: String, type: String, id: String): List<Stream> =
-        streams(get("$base/stream/${enc(type)}/${enc(id)}.json", Http.STREAMS_TIMEOUT_MS), external = base.startsWith(EXT))
+        streams(get("$base/stream/${enc(type)}/${enc(id)}.json", Http.STREAMS_TIMEOUT_MS),
+            external = base.startsWith(EXT) || type.equals("YouTube", ignoreCase = true) || id.startsWith("yt_id:"))
 
     /**
      * The streams in an add-on's answer that have a web address (torrents, YouTube ids and outside links are left
@@ -495,7 +499,8 @@ internal object Stremio {
             // Another app's: a link it opens (externalUrl), a YouTube video (ytId): its watch link, as YouTube for
             // Android TV takes a vnd.youtube: link as a plain launch (it opens on its home screen, see titleLinks).
             val yt = if (external && text(s, "externalUrl") == null) text(s, "ytId") else null
-            val external = if (!external) null else text(s, "externalUrl") ?: yt?.let { "https://www.youtube.com/watch?v=$it" }
+            val extUrl = text(s, "externalUrl")?.takeIf { !it.startsWith("stremio://") }
+            val external = if (!external) null else extUrl ?: yt?.let { "https://www.youtube.com/watch?v=$it" }
             // A web address, or the playlist itself written in it (data:, as some Nuvio plugins hand an HLS one).
             val url = text(s, "url")?.takeIf { it.startsWith("http://") || it.startsWith("https://") || it.startsWith("data:") ||
                 OTHER_SCHEMES.any { p -> it.startsWith(p, ignoreCase = true) } }
@@ -509,8 +514,9 @@ internal object Stremio {
             val title = if (!vod) (text(s, "title") ?: text(s, "name") ?: "").lines().first().trim()
                 else listOfNotNull(text(s, "name")?.lines()?.map { it.trim() }?.filter { it.isNotEmpty() }?.joinToString(" "),
                     described?.lines()?.firstOrNull { it.isNotBlank() }?.trim()).distinct().joinToString(" · ")
+            val isYt = yt != null || text(s, "ytId") != null || url.contains("youtube.com") || url.contains("youtu.be")
             Stream(url, title, headers, hints?.let { text(it, "bingeGroup") }, clearkey = keys,
-                app = if (url == external) hints?.let { text(it, "androidPackage") } ?: (if (yt != null) YOUTUBE_TV else "") else null)
+                app = if (url == external) hints?.let { text(it, "androidPackage") } ?: (if (isYt) YOUTUBE_TV else "") else null)
         }
     }
 

@@ -21,7 +21,7 @@ private var detailArt: FrameLayout? = null
 private var detailKey: String? = null
 private var detailHeld = false
 private var detailLogo: Pair<String, android.graphics.Bitmap>? = null // the page's logo, by its key: drawn again, at once
-private var detailLeftScroll: View? = null
+internal var detailLeftScroll: android.widget.ScrollView? = null
 internal var detailDescView: View? = null
 internal var detailLastLeftFocusables: List<View> = emptyList()
 
@@ -81,6 +81,7 @@ internal fun MainActivity.detailPage(
     val logoView = ImageView(this).apply {
         scaleType = ImageView.ScaleType.FIT_START
         adjustViewBounds = true
+        isFocusable = false
         visibility = View.GONE
     }
     fun showLogo(bmp: android.graphics.Bitmap) {
@@ -109,6 +110,8 @@ internal fun MainActivity.detailPage(
         titleView.visibility = View.GONE
 
         val leftTitle = label(title, 26f).apply {
+            tag = "leftTitle"
+            isFocusable = true
             setPadding(0, dp(4), 0, dp(4))
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             isSingleLine = false

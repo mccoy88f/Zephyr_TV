@@ -119,4 +119,34 @@ class StremioVodTest {
         val c = Stremio.addon(Stremio.CINEMETA, cinemeta)
         assertEquals("vod:com.linvo.cinemeta:movie:top", shelfKey(c, c.vod[0]))
     }
+
+    @Test fun readsYouTubeChannelVideosAndFiltersChannelOptions() {
+        val meta = Stremio.titleMeta(JSONObject("""{"meta":{"id":"yt_id:UC123","type":"YouTube","name":"Test Channel",
+            "videos":[
+              {"id":"yt_id:UC123:1:1","title":"Channel Options","season":1,"episode":1},
+              {"id":"yt_id:video1","title":"Video 1","season":1,"episode":2,"thumbnail":"https://img/1.jpg"},
+              {"id":"yt_id:video2","title":"Video 2","episode":3}
+            ]}}"""), "YouTube")!!
+        assertEquals("Test Channel", meta.title.name)
+        assertEquals(listOf("yt_id:video1", "yt_id:video2"), meta.episodes.map { it.id })
+        assertEquals("Video 1", meta.episodes[0].name)
+        assertEquals("Video 2", meta.episodes[1].name)
+    }
+
+    @Test fun youTubeStreamsTargetYouTubeTvApp() {
+        val s = Stremio.streams(JSONObject("""{"streams":[
+            {"name":"Stremio Player","ytId":"3ScO1QgfysY"},
+            {"name":"External Player","externalUrl":"https://www.youtube.com/watch?v=3ScO1QgfysY"},
+            {"name":"YT-DLP Channel","externalUrl":"stremio:///discover/https%3A%2F%2Fexample.com"}
+        ]}"""), external = true)
+        assertEquals(listOf("https://www.youtube.com/watch?v=3ScO1QgfysY", "https://www.youtube.com/watch?v=3ScO1QgfysY"), s.map { it.url })
+        assertEquals(listOf("com.google.android.youtube.tv", "com.google.android.youtube.tv"), s.map { it.app })
+    }
+
+    @Test fun collectorOfMapsYouTubeToVideos() {
+        assertEquals("videos", collectorOf("YouTube"))
+        assertEquals("videos", collectorOf("youtube"))
+        assertEquals("videos", collectorOf("channel"))
+        assertEquals("movies", collectorOf("movie"))
+    }
 }

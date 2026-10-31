@@ -14,6 +14,17 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
+## 3.6.5
+
+- YouTube channels show their video list directly on the channel detail page.
+- YouTube external streams open correctly with YouTube for Android TV or external player apps.
+- YouTube videos and channels are correctly categorized under Videos rather than Films.
+- Catalog sources can now be toggled on and off directly in Content catalog settings.
+- Added QR code support to add custom catalog addresses from a phone.
+- Manual stream choice keeps the full-screen title page visible underneath.
+- Remote navigation between left and right columns on title pages works reliably in all directions.
+- Selection of the description uses the Spotlight halo visual effect.
+
 ## 3.6.4
 
 - Adding add-ons and plugins from a phone now accepts long and encrypted addresses.
