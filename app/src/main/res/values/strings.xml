@@ -485,6 +485,10 @@
     <string name="toast_addon_failed">Couldn\'t read the add-on. Check the address.</string>
     <string name="toast_addon_no_tv">This add-on has no TV channels, films or series.</string>
     <string name="toast_addon_updated">Add-on updated: %1$d channels</string>
+    <string name="toast_addon_updated_vod">Add-on updated: films and series</string>
+    <string name="toast_addon_updated_both">Add-on updated: %1$d channels, films and series</string>
+    <string name="toast_addon_updated_simple">Add-on updated</string>
+    <string name="nuvio_updated">%1$s updated: %2$d plugins</string>
     <string name="toast_addon_removed">Add-on removed</string>
     <string name="addon_update">Update now</string>
     <string name="addon_on">On</string>

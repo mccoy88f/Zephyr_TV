@@ -486,6 +486,10 @@
     <string name="toast_addon_failed">No se pudo leer el complemento. Revisa la dirección.</string>
     <string name="toast_addon_no_tv">Este complemento no tiene canales de TV, películas ni series.</string>
     <string name="toast_addon_updated">Complemento actualizado: %1$d canales</string>
+    <string name="toast_addon_updated_vod">Complemento actualizado: películas y series</string>
+    <string name="toast_addon_updated_both">Complemento actualizado: %1$d canales, películas y series</string>
+    <string name="toast_addon_updated_simple">Complemento actualizado</string>
+    <string name="nuvio_updated">%1$s actualizado: %2$d plugins</string>
     <string name="toast_addon_removed">Complemento eliminado</string>
     <string name="addon_update">Actualizar ahora</string>
     <string name="addon_on">Activo</string>

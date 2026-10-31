@@ -14,6 +14,15 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
+## 3.6.2
+
+- Moving right from the left column on a title's page goes to the first button at the top.
+- Moving left from the right buttons goes to the title at the top of the left column.
+- Upward navigation on the left column returns smoothly to the description and title.
+- The description and title highlight with a soft animated halo matching Spotlight.
+- Updating a films and series add-on reports content type accurately instead of zero TV channels.
+- Updating a Nuvio plugin repository correctly confirms the updated plugin count.
+
 ## 3.6.1
 
 - On a title's page, director and cast avatars show on one horizontal row with separate headings.

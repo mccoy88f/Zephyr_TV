@@ -22,6 +22,7 @@ private var detailKey: String? = null
 private var detailHeld = false
 private var detailLogo: Pair<String, android.graphics.Bitmap>? = null // the page's logo, by its key: drawn again, at once
 private var detailLeftScroll: View? = null
+internal var detailTitleView: View? = null
 
 /** How the panel was before the page took it over, given back when the page goes. */
 private class PanelWas(val width: Int, val gravity: Int, val padding: IntArray, val background: Drawable?, val titleSize: Float, val titleVisibility: Int)
@@ -107,17 +108,47 @@ internal fun MainActivity.detailPage(
         titleView.visibility = View.GONE
 
         val leftTitle = label(title, 26f).apply {
-            setPadding(dp(14), 0, dp(14), dp(8))
+            setPadding(0, dp(4), 0, dp(4))
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             isSingleLine = false
             maxLines = 3
         }
+        val titleBox = LinearLayout(this).apply {
+            id = View.generateViewId()
+            orientation = LinearLayout.VERTICAL
+            isFocusable = true
+            isClickable = true
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                bottomMargin = dp(4)
+            }
+            setPadding(dp(14), dp(8), dp(14), dp(8))
+            val focusBg = (fg and 0xFFFFFF) or 0x2E000000
+            val bg = GradientDrawable().apply {
+                cornerRadius = dp(10).toFloat()
+                setColor(android.graphics.Color.TRANSPARENT)
+            }
+            background = bg
+            setOnFocusChangeListener { _, focused ->
+                val from = if (focused) android.graphics.Color.TRANSPARENT else focusBg
+                val to = if (focused) focusBg else android.graphics.Color.TRANSPARENT
+                android.animation.ValueAnimator.ofArgb(from, to).setDuration(180).apply {
+                    addUpdateListener { bg.setColor(it.animatedValue as Int) }
+                }.start()
+                alpha = if (focused) 1f else 0.9f
+                if (focused) {
+                    (parent?.parent as? android.widget.ScrollView)?.smoothScrollTo(0, 0)
+                }
+            }
+            setOnClickListener { }
+            addView(logoView, LinearLayout.LayoutParams(WRAP_CONTENT, dp(96)).apply { bottomMargin = dp(4) })
+            addView(leftTitle)
+        }
+        detailTitleView = titleBox
         val leftCol = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             setPadding(0, 0, dp(8), 0)
-            addView(logoView, LinearLayout.LayoutParams(WRAP_CONTENT, dp(96)).apply { marginStart = dp(14); bottomMargin = dp(8) })
-            addView(leftTitle)
+            addView(titleBox)
             (infoView.parent as? android.view.ViewGroup)?.removeView(infoView)
             infoView.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             addView(infoView)
@@ -171,6 +202,7 @@ internal fun MainActivity.detailPage(
         own?.invoke()
         detailLeftScroll?.let { scrim.removeView(it) }
         detailLeftScroll = null
+        detailTitleView = null
         panel.removeView(logoView)
         titleView.visibility = was.titleVisibility
         titleView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, was.titleSize)

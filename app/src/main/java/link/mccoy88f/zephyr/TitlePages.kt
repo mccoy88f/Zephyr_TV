@@ -487,15 +487,17 @@ private fun MainActivity.titleTop(info: String, name: String?, about: String?, s
         about?.let { d ->
             val v = label(d, 13.5f).apply {
                 id = View.generateViewId()
-                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                    topMargin = dp(4)
+                    bottomMargin = dp(4)
+                }
                 maxLines = 10
                 isSingleLine = false
                 ellipsize = TextUtils.TruncateAt.END
                 setLineSpacing(0f, 1.2f)
-                setPadding(0, dp(8), 0, dp(8)) // no box: in line with the lines above it
+                setPadding(dp(14), dp(8), dp(14), dp(8))
                 isFocusable = true
                 isClickable = true
-                nextFocusUpId = id
                 background = null
                 setOnClickListener {
                     maxLines = if (maxLines == 10) 50 else 10
@@ -622,15 +624,39 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
             scroll?.scrollTo(0, 0)
         }
     }
+    val focusBg = (fg and 0xFFFFFF) or 0x2E000000
+    val descBg = GradientDrawable().apply {
+        cornerRadius = dp(10).toFloat()
+        setColor(Color.TRANSPARENT)
+    }
+    descView?.background = descBg
     descView?.setOnFocusChangeListener { _, focused ->
+        val from = if (focused) Color.TRANSPARENT else focusBg
+        val to = if (focused) focusBg else Color.TRANSPARENT
+        android.animation.ValueAnimator.ofArgb(from, to).setDuration(180).apply {
+            addUpdateListener { descBg.setColor(it.animatedValue as Int) }
+        }.start()
         descView.alpha = if (focused) 1f else 0.85f
         if (focused) {
-            val scroll = (descView.parent?.parent as? android.widget.ScrollView) ?: (settingsList.parent as? android.widget.ScrollView)
-            scroll?.post { scroll.smoothScrollTo(0, 0) }
+            var p = descView.parent
+            while (p != null && p !is android.widget.ScrollView) {
+                p = p.parent
+            }
+            val scroll = (p as? android.widget.ScrollView) ?: (settingsList.parent as? android.widget.ScrollView)
+            scroll?.post {
+                val rect = android.graphics.Rect()
+                descView.getDrawingRect(rect)
+                scroll.offsetDescendantRectToMyCoords(descView, rect)
+                val targetY = (rect.top - dp(16)).coerceAtLeast(0)
+                scroll.smoothScrollTo(0, targetY)
+            }
         }
     }
     // Back up on the first row, the page scrolls back up: nothing above it takes focus to pull it there (unless top has focusables).
-    settingsList.getChildAt(firstIndex)?.let { first ->
+    val firstRow = settingsList.getChildAt(firstIndex)
+    if (firstRow != null && firstRow.id == View.NO_ID) firstRow.id = View.generateViewId()
+    val firstRowId = firstRow?.id
+    firstRow?.let { first ->
         val own = first.onFocusChangeListener
         first.setOnFocusChangeListener { v, focused ->
             own?.onFocusChange(v, focused)
@@ -642,26 +668,42 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
     val targetRow = settingsList.getChildAt(firstIndex + focus.coerceIn(0, (rows.size - 1).coerceAtLeast(0)))
     if (targetRow != null && targetRow.id == View.NO_ID) targetRow.id = View.generateViewId()
 
-    // Remote navigation: left from buttons goes to description or first avatar; right from left column goes back to buttons.
+    // Remote navigation: left from buttons goes to top element on the left (the title);
+    // right from left column goes to the first item at the top of the right column.
     if (wide) {
-        val leftTargetId = descView?.id ?: firstPersonCard?.id
-        if (leftTargetId != null) {
+        val titleBox = detailTitleView
+        val leftTopId = titleBox?.id ?: descView?.id ?: firstPersonCard?.id
+
+        if (leftTopId != null) {
             for (i in 0 until rows.size) {
                 val row = settingsList.getChildAt(firstIndex + i) ?: continue
-                row.nextFocusLeftId = leftTargetId
+                row.nextFocusLeftId = leftTopId
             }
         }
         val allPersonCards = top.directorCards + top.castCards
+
+        if (titleBox != null) {
+            if (firstRowId != null) titleBox.nextFocusRightId = firstRowId
+            titleBox.nextFocusUpId = titleBox.id
+            titleBox.nextFocusLeftId = titleBox.id
+            titleBox.nextFocusDownId = descView?.id ?: allPersonCards.firstOrNull()?.id ?: titleBox.id
+        }
+
         if (descView != null) {
-            if (targetRow != null) descView.nextFocusRightId = targetRow.id
+            if (firstRowId != null) descView.nextFocusRightId = firstRowId
+            descView.nextFocusLeftId = descView.id
+            descView.nextFocusUpId = titleBox?.id ?: descView.id
             if (allPersonCards.isNotEmpty()) descView.nextFocusDownId = allPersonCards[0].id
         }
+
         for (i in 0 until allPersonCards.size) {
             val card = allPersonCards[i]
-            if (descView != null) card.nextFocusUpId = descView.id
+            card.nextFocusUpId = descView?.id ?: titleBox?.id ?: card.id
+            card.nextFocusDownId = card.id
             if (i > 0) card.nextFocusLeftId = allPersonCards[i - 1].id
+            else card.nextFocusLeftId = card.id
             if (i < allPersonCards.size - 1) card.nextFocusRightId = allPersonCards[i + 1].id
-            else if (targetRow != null) card.nextFocusRightId = targetRow.id
+            else if (firstRowId != null) card.nextFocusRightId = firstRowId
         }
     }
     // What holding OK on a row does (see MainActivity.onHold).
@@ -675,7 +717,7 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
         val last = settingsList.getChildAt(settingsList.childCount - 2)?.takeIf { rows.isNotEmpty() } ?: return@let
         if (last.id == View.NO_ID) last.id = View.generateViewId()
         last.nextFocusDownId = buttons.getChildAt(0).id
-        val leftId = descView?.id ?: firstPersonCard?.id
+        val leftId = detailTitleView?.id ?: descView?.id ?: firstPersonCard?.id
         for (c in 0 until buttons.childCount) buttons.getChildAt(c).let {
             it.nextFocusUpId = last.id
             it.nextFocusDownId = it.id

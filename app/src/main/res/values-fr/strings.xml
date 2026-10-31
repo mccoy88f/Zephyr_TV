@@ -486,6 +486,10 @@
     <string name="toast_addon_failed">Impossible de lire l\'extension. Vérifiez l\'adresse.</string>
     <string name="toast_addon_no_tv">Cette extension n\'a pas de chaînes TV, de films ni de séries.</string>
     <string name="toast_addon_updated">Extension mise à jour : %1$d chaînes</string>
+    <string name="toast_addon_updated_vod">Extension mise à jour : films et séries</string>
+    <string name="toast_addon_updated_both">Extension mise à jour : %1$d chaînes, films et séries</string>
+    <string name="toast_addon_updated_simple">Extension mise à jour</string>
+    <string name="nuvio_updated">%1$s mis à jour : %2$d plugins</string>
     <string name="toast_addon_removed">Extension supprimée</string>
     <string name="addon_update">Mettre à jour</string>
     <string name="addon_on">Actif</string>

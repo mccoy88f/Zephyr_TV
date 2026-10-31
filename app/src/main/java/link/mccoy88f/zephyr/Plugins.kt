@@ -326,7 +326,7 @@ private fun MainActivity.repoPage(url: String, focus: Int = 0) {
                 val again = Nuvio.update(filesDir, url)
                 ui.post {
                     Toast.makeText(this, if (again == null) getString(R.string.toast_addon_failed)
-                        else getString(R.string.nuvio_added, again.name, again.scrapers.size), Toast.LENGTH_LONG).show()
+                        else getString(R.string.nuvio_updated, again.name, again.scrapers.size), Toast.LENGTH_LONG).show()
                     if (pageShowing(again?.name ?: "")) repoPage(url, plugins + 2 + moves.size)
                 }
             }

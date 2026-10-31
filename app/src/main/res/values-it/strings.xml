@@ -486,6 +486,10 @@
     <string name="toast_addon_failed">Impossibile leggere l\'addon. Controlla l\'indirizzo.</string>
     <string name="toast_addon_no_tv">Questo addon non ha canali TV, film o serie.</string>
     <string name="toast_addon_updated">Addon aggiornato: %1$d canali</string>
+    <string name="toast_addon_updated_vod">Addon aggiornato: film e serie</string>
+    <string name="toast_addon_updated_both">Addon aggiornato: %1$d canali, film e serie</string>
+    <string name="toast_addon_updated_simple">Addon aggiornato</string>
+    <string name="nuvio_updated">%1$s aggiornato: %2$d plugin</string>
     <string name="toast_addon_removed">Addon rimosso</string>
     <string name="addon_update">Aggiorna ora</string>
     <string name="addon_on">Attivo</string>
