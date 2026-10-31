@@ -21,11 +21,13 @@ internal object MatchPoster {
     fun create(data: File, args: JSONObject, loadBadge: (String) -> Bitmap? = ::badge): String {
         val home = args.optString("home").trim().take(100)
         val away = args.optString("away").trim().take(100)
-        require(home.isNotEmpty() && away.isNotEmpty()) { "both team names required" }
+        val event=args.optString("event").trim().take(160)
+        require(event.isNotEmpty() || (home.isNotEmpty() && away.isNotEmpty())) { "both team names required" }
         val time = args.optString("time").trim().take(32)
         val homeBadge = args.optString("homeBadge")
         val awayBadge = args.optString("awayBadge")
-        val key = JSONObject().put("v",3).put("home",home).put("away",away).put("time",time)
+        val channel=args.optString("channel").trim().take(80)
+        val key = JSONObject().put("v",5).put("event",event).put("channel",channel).put("home",home).put("away",away).put("time",time)
             .put("homeBadge",homeBadge).put("awayBadge",awayBadge).toString()
         val cache = caches.computeIfAbsent(File(data,"match-posters").path) { BackdropCache(File(it),120,BackdropCache::artName) }
         val file = cache.get(key) {
@@ -79,7 +81,20 @@ internal object MatchPoster {
                     val text=lines().take(2)
                     text.forEachIndexed { i,line -> canvas.drawText(line,cx,if(text.size==1)432f else 407f+i*70f,paint) }
                 }
-                team(home,homeBadge,250f);team(away,awayBadge,710f)
+                if(event.isBlank()) {team(home,homeBadge,250f);team(away,awayBadge,710f)} else {
+                    val badge=runCatching { loadBadge(homeBadge) }.getOrNull()
+                    badge?.let { canvas.drawBitmap(it,null,RectF(350f,125f,610f,275f),paint) }
+                    paint.color=Color.WHITE;paint.textSize=58f
+                    val words=event.split(' ');val lines=ArrayList<String>();var line=""
+                    for(word in words) {val next=if(line.isBlank())word else "$line $word";if(paint.measureText(next)>850f && line.isNotBlank()){lines+=line;line=word}else line=next}
+                    if(line.isNotBlank())lines+=line
+                    lines.take(3).forEachIndexed { i,text -> canvas.drawText(text,480f,345f+i*65f,paint) }
+                }
+                if(channel.isNotBlank()) {
+                    paint.color=Color.rgb(255,210,88);paint.textSize=38f
+                    while(paint.measureText(channel)>890f && paint.textSize>24f)paint.textSize-=2f
+                    canvas.drawText(channel,480f,526f,paint)
+                }
                 val bytes=ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.PNG,100,it) }.toByteArray()
                 ByteArrayInputStream(bytes)
             } finally { bitmap.recycle() }

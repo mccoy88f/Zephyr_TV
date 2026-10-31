@@ -94,7 +94,7 @@ internal fun MainActivity.openSearch(text: String = "", focus: Int? = null, voic
     val rows = listOf(
         // Search: with words, or with the filters alone (all of Cinemeta's popular ones, without either).
         page(getString(R.string.search_go)) { go(typed(), always = true) },
-        if (needsFireTvVoiceHelp()) page(getString(R.string.firetv_voice_action)) { openFireTvVoiceHelp(typed()) }
+        if (needsFireTvVoiceHelp()) page(getString(R.string.firetv_voice_action)) { closeLauncherSettings(); assistant() }
         else page(getString(R.string.search_dictate)) { listen(input, ::go) },
         page(getString(R.string.search_filters), if (searchFiltersExpanded) "▲ $summary" else "▼ $summary") {
             searchFiltersExpanded = !searchFiltersExpanded

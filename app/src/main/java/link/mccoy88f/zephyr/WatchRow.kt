@@ -85,11 +85,11 @@ internal fun MainActivity.queryWatchNext(): List<Prog> {
                 watchNext + channels
             } else emptyList()
         },
-        local = { externalResumeCards(hidden) })
+        local = { titleProgressCards(hidden) + externalResumeCards(hidden) })
     publishingPkgs = all.mapNotNull { it.second.pkg }.toSet()
     val off = prefs.getStringSet(K.CW_OFF, emptySet())!!
-    return newestPerApp(all.filter { it.second.pkg !in off && ExternalResume.allowed(it.second.pkg) && it.second.progress in 1..94 }
-        .distinctBy { "${it.second.pkg}/${it.second.title}/${it.second.sub}" }, 12) { it.pkg }
+    return newestPerApp(all.filter { it.second.pkg !in off && (it.second.vod != null || ExternalResume.allowed(it.second.pkg)) && (it.second.vod != null || it.second.progress in 1..94) }
+        .distinctBy { "${it.second.pkg}/${it.second.vod?.video ?: it.second.title.lowercase()}" }, 12) { it.pkg }
         .take(20)
 }
 
@@ -184,6 +184,25 @@ internal fun MainActivity.rowsAgain(pkg: String?) {
 }
 
 internal fun MainActivity.queryAppChannels(pkg: String?) {
+    if(android.os.Build.VERSION.SDK_INT<26 && ExternalResume.allowed(pkg)) {
+        io.execute {
+            val hidden=prefs.getStringSet(K.HIDDEN_WATCH,emptySet())!!
+            val cards=(if(pkg?.startsWith("com.nuvio")==true) titleProgressCards(hidden).map { it.second } else emptyList()) +
+                externalResumeCards(hidden).map { it.second }.filter { it.pkg==pkg }
+            val sections=ArrayList<Section>()
+            if(cards.isNotEmpty())sections+=Section("local-history",getString(R.string.continue_watching),getString(R.string.continue_watching),cards.distinctBy { it.title.lowercase() })
+            if(pkg?.startsWith("org.smarttube")==true) {
+                val links=listOf(getString(R.string.firetv_smarttube_subscriptions) to "FEsubscriptions",getString(R.string.firetv_smarttube_history) to "FEmy_youtube")
+                sections+=Section("smarttube-links","SmartTube","SmartTube",links.map { (title,path) ->
+                    val i=Intent(Intent.ACTION_VIEW,Uri.parse("https://www.youtube.com/tv#/zylon-surface?c=$path")).setClassName(pkg,"com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity")
+                    Prog(title,getString(R.string.firetv_smarttube_open),0,null,i.toUri(Intent.URI_INTENT_SCHEME),pkg)
+                })
+            }
+            ui.post { if(tmdbLastFocusApp==pkg) {watchApp=pkg;if(sections.isEmpty())hideWatchRow() else showSections(sections)} }
+        }
+        return
+    }
+
     // An add-on's tile, or the TV app with the add-ons' channels in it, has rows without the TV listings too.
     if (pkg == null || (!readsListings() && !pkg.startsWith(STREMIO) && addonsUnder(pkg).isEmpty())) {
         ui.post { watchTitle.text = getString(R.string.continue_watching) }
@@ -770,6 +789,7 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
     else if (p.badge != null) channelArt(frame, w, cardHeight, p.badge, p.title) {
         listOfNotNull(p.image, p.channelId?.let { id -> logo(id) }, ChannelLogos.match(channelLogoTable(), p.title)).distinct()
     }
+    else if(p.vod==null) fillArt(frame,w,cardHeight,p.image,null,null,p.title)
     if (p.vod != null) fillArt(frame, w, cardHeight, p.image, p.logo, p.poster, p.title, p.vod.fallback)
     if(!fixture && p.addon!=null && p.sub.isNotBlank()) frame.addView(TextView(this).apply {
         text=p.sub;textSize=13f;setTextColor(Color.WHITE);maxLines=2
@@ -803,9 +823,9 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
         visibility = if (p.progress > 0) View.VISIBLE else View.INVISIBLE
     }
     col.addView(bar, LinearLayout.LayoutParams(w, dp(3)).apply { topMargin = dp(6) })
-    col.addView(title)
+    if(!fixture) col.addView(title)
     val icon = sourceIcon(p.icon ?: p.pkg)
-    if (p.sub.isNotEmpty() || icon != null || p.addon != null) {
+    if (!fixture && (p.sub.isNotEmpty() || icon != null || p.addon != null)) {
         col.addView(label(p.sub, 12f).apply {
             details = this
             alpha = 0.8f

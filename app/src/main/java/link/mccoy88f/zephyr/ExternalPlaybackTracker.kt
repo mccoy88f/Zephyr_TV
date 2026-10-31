@@ -74,6 +74,7 @@ internal class ExternalPlaybackTracker(private val context: Context) {
             var image=listOf(MediaMetadata.METADATA_KEY_ART_URI,MediaMetadata.METADATA_KEY_ALBUM_ART_URI,MediaMetadata.METADATA_KEY_DISPLAY_ICON_URI)
                 .firstNotNullOfOrNull { m.getString(it)?.takeIf { s -> s.startsWith("https://") } }
             val video=mediaId?.takeIf { Regex("[A-Za-z0-9_-]{11}").matches(it) } ?: SmartTubeResultPolicy.videoId(image)
+            if(image==null && video!=null) image="https://i.ytimg.com/vi/$video/hqdefault.jpg"
             val videoUri=video?.let { "https://www.youtube.com/watch?v=$it" }
             val title=m.getString(MediaMetadata.METADATA_KEY_TITLE)?.takeIf { it.isNotBlank() }
                 ?: m.getString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE)?.takeIf { it.isNotBlank() }

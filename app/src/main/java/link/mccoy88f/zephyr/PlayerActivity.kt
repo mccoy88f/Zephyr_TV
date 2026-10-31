@@ -1015,7 +1015,7 @@ class PlayerActivity : Activity() {
         }
         // Up/Down never zap (CH+/CH- do): they bring the banner up, as OK does.
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-            okPressed()
+            if (!vod && banner.visibility != View.VISIBLE && event.repeatCount == 0) zap(if(keyCode == KeyEvent.KEYCODE_DPAD_UP) +1 else -1) else if(vod || banner.visibility == View.VISIBLE) okPressed()
             return true
         }
         when (keyCode) {

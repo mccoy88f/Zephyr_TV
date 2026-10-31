@@ -308,3 +308,17 @@ Android 7 e il filtro della cronologia Nuvio/SmartTube. Le schede delle partite
 usano al massimo due colonne, immagine senza riquadro interno, orario da 64 px,
 nomi da 62 px su due righe e stemmi maggiorati. La decodifica mantiene la
 risoluzione dei poster per evitare di ingrandire testi giÃ  ridotti.
+
+## Player, cronologia e schermate Fire OS 6
+
+Guarda mantiene il percorso interno originale: stream dagli addon/plugin configurati, player Zephyr, salvataggio VodProgress e scrobbling Trakt se collegato. Nuvio ? anche il formato dei plugin: non richiede di aprire l?app Nuvio. Il collegamento di Trakt deve essere autorizzato dal proprietario. Nell?app Nuvio deve essere abilitato Trakt anche come sorgente del progresso per utilizzare le riprese condivise; non ? una scrittura nella sua memoria privata.
+
+Android 7 non ha Watch Next/Preview Programs di Android 8. Sotto Nuvio e SmartTube mostriamo i progressi realmente raccolti da Zephyr; le iscrizioni complete non vengono inventate o lette da file privati. Sono disponibili collegamenti diretti alle iscrizioni e alla cronologia dentro SmartTube. Le miniature della cronologia esterna sono caricate anche senza un oggetto VOD interno.
+
+Il tasto vocale apre l?assistente Amazon con ACTION_ASSIST. Il microfono fisico e la trascrizione restano gestiti da Alexa; il bridge riceve soltanto il comando inoltrato alla destinazione YouTube. Non aggiunge automaticamente parole alla trascrizione di Alexa. Con il bridge selezionato resta valido ?cerca Inception su YouTube?.
+
+L?ingranaggio Fire TV apre le sezioni realmente accessibili (rete, app, Bluetooth, La mia Fire TV), evitando l?azione generica SETTINGS che sul dispositivo pu? risolvere a schermate di compatibilit? senza UI.
+
+Le schede sportive composte sono tre per riga, senza didascalie ripetute; nome del canale dentro l?immagine. La guida XMLTV dell?estensione pu? fornire programma e orario mediante zephyr.epg.now, limitato alle sue guide gi? salvate. Nelle dirette Su/Gi? cambiano canale quando i controlli sono nascosti; a controlli aperti e nei film conservano la navigazione.
+
+Gli indirizzi dei cataloghi e la selezione personale delle righe restano nelle preferenze del dispositivo. Il workflow di aggiornamento ? normale compilazione Gradle: non usa modelli IA n? decompilazione automatica.

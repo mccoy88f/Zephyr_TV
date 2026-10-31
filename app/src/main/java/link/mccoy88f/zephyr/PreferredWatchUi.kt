@@ -26,6 +26,9 @@ internal fun MainActivity.externalResumeCards(hidden: Set<String>): List<Pair<Lo
             else -> packageManager.getLeanbackLaunchIntentForPackage(e.pkg) ?: packageManager.getLaunchIntentForPackage(e.pkg)
         } ?: return@mapNotNull null
         val line=listOf(e.sub,getString(R.string.time_left_min,((e.duration-e.position)/60_000).coerceAtLeast(1).toInt())).filter { it.isNotBlank() }.joinToString(" · ")
-        e.at to MainActivity.Prog(e.title,line,e.percent,e.image,intent.toUri(Intent.URI_INTENT_SCHEME),e.pkg)
+        val image=e.image ?: e.uri?.takeIf { e.pkg.startsWith("org.smarttube") }?.let { u ->
+            Uri.parse(u).getQueryParameter("v")?.takeIf { Regex("[A-Za-z0-9_-]{11}").matches(it) }?.let { "https://i.ytimg.com/vi/$it/hqdefault.jpg" }
+        }
+        e.at to MainActivity.Prog(e.title,line,e.percent,image,intent.toUri(Intent.URI_INTENT_SCHEME),e.pkg)
     }
 }

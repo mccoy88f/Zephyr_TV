@@ -266,7 +266,7 @@ class MainActivity : Activity() {
             R.id.wifi to { openSettings(Settings.ACTION_WIFI_SETTINGS) },
             R.id.allAppsButton to { openAllApps() },
             R.id.tvInputsButton to { openInputsMenu(findViewById(R.id.tvInputsButton)) },
-            R.id.systemSettings to { openSettings(Settings.ACTION_SETTINGS) },
+            R.id.systemSettings to { openSystemSettings() },
             R.id.launcherSettings to { unlock { openLauncherSettings() } },
         )) findViewById<ImageView>(id).apply {
             setColorFilter(fg)
@@ -896,7 +896,7 @@ class MainActivity : Activity() {
      * Started directly rather than looked up first: Android 11+ hides other apps' activities from lookups.
      */
     internal fun assistant() {
-        if (needsFireTvVoiceHelp()) { openFireTvVoiceHelp(); return }
+
         for (intent in listOf(
             Intent("android.intent.action.VOICE_ASSIST"),
             Intent(Intent.ACTION_ASSIST),

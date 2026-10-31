@@ -78,8 +78,15 @@ internal fun MainActivity.vodApps(): List<MainActivity.App> {
 }
 
 /** The add-ons with film or series catalogs that get a tile of their own (films and series "apps"). */
+/** Optional private home collection. Its URLs live only in the device's preferences. */
+internal fun MainActivity.homeCatalogs(): List<Pair<String,Set<String>>> = runCatching {
+    val a=org.json.JSONArray(prefs.getString("home_catalogs", "[]"))
+    (0 until a.length()).map { i -> val o=a.getJSONObject(i);val ids=o.optJSONArray("catalogs")
+        o.getString("url") to (if(ids==null)emptySet() else (0 until ids.length()).map { ids.getString(it) }.toSet()) }
+}.getOrDefault(emptyList())
+
 internal fun MainActivity.vodTileAddons(): List<Stremio.Addon> =
-    vodAddons().filter { a -> a.vod.any { it.listed && addonsVod(vodKind(it.type)) == VodPlace.APPS } && !apart(a.url) }
+    vodAddons().filter { homeCatalogs().isEmpty() || it.url==homeCatalogs().first().first }.filter { a -> a.vod.any { it.listed && addonsVod(vodKind(it.type)) == VodPlace.APPS } && !apart(a.url) }
 
 /**
  * The rows of films or series under the tile [pkg]: under Films or Series, every add-on's catalogs of that type
@@ -92,7 +99,10 @@ internal fun MainActivity.titleSections(pkg: String, hidden: Set<String>): List<
     val collector = COLLECTOR_PKGS[pkg] // Radio, Videos, Courses…: the extensions' rows of that kind
     val ownUrl = ownAppUrl(pkg)
     val adult = pkg == ADULT_PKG || (ownUrl != null && isAdultAddon(ownUrl))
+    val personal=homeCatalogs()
+    val collection=personal.isNotEmpty() && vodAddons().firstOrNull { it.url==personal.first().first }?.let { STREMIO+it.id }==pkg
     val addons = when {
+        collection -> personal.mapNotNull { (url,_) -> vodAddons().firstOrNull { it.url==url } }
         collector != null -> vodAddons().filter { a -> a.vod.any { extensionRoutes(a.url, it.type) && collectorOf(it.type) == collector } }
         ownUrl != null -> vodAddons().filter { it.url == ownUrl } // an add-on's own app: its films and series
         adult -> if (adultApp()) vodAddons().filter { isAdultAddon(it.url) } else return emptyList()
@@ -107,6 +117,7 @@ internal fun MainActivity.titleSections(pkg: String, hidden: Set<String>): List<
         ownUrl != null -> !extensionRoutes(url, shelfType)
         ExtensionCalls.idOf(url) != null && type != null -> !apart(url) || extensionRoutes(url, shelfType)
         // An add-on's own tile: its films, its series, those set to show in their add-on's tile.
+        collection -> true
         type == null && !adult -> addonsVod(vodKind(shelfType)) == VodPlace.APPS
         else -> true
     }
@@ -122,6 +133,7 @@ internal fun MainActivity.titleSections(pkg: String, hidden: Set<String>): List<
         if (Stremio.vodDue(filesDir, addon.url) && addon.vod.any { it.listed }) refreshShelves(addon, pkg)
         // Under Films, the add-ons' own types too ("Porn", "Anime"): they play as films.
         Stremio.shelves(filesDir, addon).filter { type == null || (it.catalog.type == "series") == (type == "series") }
+            .filter { !collection || personal.firstOrNull { p -> p.first==addon.url }?.second?.let { ids -> ids.isEmpty() || "${it.catalog.type}/${it.catalog.id}" in ids }==true }
             .filter { shows(addon.url, it.catalog.type) && shelfKey(addon, it.catalog) !in shelvesOff }.mapNotNull { shelf ->
             val kind = kindName(shelf.catalog.type)
             val name = if (type != null || adult) "${addon.name} · ${shelf.catalog.name}" else "$kind · ${shelf.catalog.name}"
@@ -138,7 +150,7 @@ internal fun MainActivity.titleSections(pkg: String, hidden: Set<String>): List<
         }
     }.plus(
         // Last, the films and series watched: under Films and Series, or Cinemeta's own tile.
-        if (!adult && collector == null && ownUrl == null && (mode == VodPlace.TILES || addons.any { it.url == cinemetaUrl() }))
+        if (!collection && !adult && collector == null && ownUrl == null && (mode == VodPlace.TILES || addons.any { it.url == cinemetaUrl() }))
             watchedSections(type, pkg, hidden, missing) else emptyList()
     ).also {
         if (missing.isNotEmpty()) localizeLater(missing.distinct(), pkg)

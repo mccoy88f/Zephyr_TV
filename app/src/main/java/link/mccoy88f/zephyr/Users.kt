@@ -198,7 +198,7 @@ private fun MainActivity.userName(u: User?) {
  * Connect [u] to Trakt from a phone: a QR code of the sign-in (Trakt's own page, through mccoy88f.link), and the TV
  * asking every few seconds whether it's done, while the page is open (ten minutes at most).
  */
-private fun MainActivity.traktSignIn(u: User) {
+internal fun MainActivity.traktSignIn(u: User) {
     val state = Trakt.newState()
     val url = Trakt.signInUrl(state)
     val status = label(getString(R.string.trakt_waiting), 14f)
