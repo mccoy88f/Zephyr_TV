@@ -427,10 +427,10 @@ private fun MainActivity.typeRepo(initial: String = "", adult: Boolean = false) 
 private fun MainActivity.nuvioFromPhone() {
     val status = label(getString(R.string.addon_phone_waiting), 14f)
     val page = PhonePages.addon(phoneTexts(R.string.nuvio_phone_title, R.string.nuvio_add_intro), getString(R.string.nuvio_hint), getString(R.string.addon_adult))
-    showPhoneLink(getString(R.string.nuvio_add), PhoneTask(page, 4096) { file ->
+    showPhoneLink(getString(R.string.nuvio_add), PhoneTask(page, 1024L * 1024) { file ->
         val lines = file.readText().lines()
         val url = Nuvio.manifestUrl(lines.firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_epg_bad)
-        val adult = lines.getOrNull(1)?.trim() == "adult"
+        val adult = lines.drop(1).any { it.trim() == "adult" }
         ui.post {
             status.text = getString(R.string.addon_checking)
             addRepo(url, adult)

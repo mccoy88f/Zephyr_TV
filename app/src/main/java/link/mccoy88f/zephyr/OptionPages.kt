@@ -76,7 +76,7 @@ private fun MainActivity.fieldFromPhone(f: Nuvio.Field, save: (String) -> Unit, 
     val status = label(getString(R.string.nuvio_option_waiting), 14f)
     val texts = PhoneTexts(f.label, f.description.ifBlank { getString(R.string.nuvio_option_phone_intro) }, getString(R.string.phone_send),
         getString(R.string.phone_sending), getString(R.string.phone_unreachable), phoneFooter())
-    showPhoneLink(f.label, PhoneTask(PhonePages.text(texts, f.placeholder.ifBlank { f.label }), 16384) { file ->
+    showPhoneLink(f.label, PhoneTask(PhonePages.text(texts, f.placeholder.ifBlank { f.label }), 256L * 1024) { file ->
         val text = file.readText().trim()
         if (text.isEmpty()) return@PhoneTask 400 to getString(R.string.nuvio_option_empty)
         ui.post {
@@ -148,7 +148,7 @@ private fun MainActivity.itemFromPhone(f: Nuvio.Field, got: (JSONObject) -> Unit
         getString(R.string.phone_sending), getString(R.string.phone_unreachable), phoneFooter())
     val inputs = f.item.filter { it.type == "text" }.map { Triple(it.key, it.label, it.placeholder to it.secret) }
     var received: JSONObject? = null
-    showPhoneLink(f.label, PhoneTask(PhonePages.form(texts, inputs), 32768) { file ->
+    showPhoneLink(f.label, PhoneTask(PhonePages.form(texts, inputs), 256L * 1024) { file ->
         val o = runCatching { JSONObject(file.readText()) }.getOrNull()?.takeIf { it.length() > 0 }
             ?: return@PhoneTask 400 to getString(R.string.nuvio_option_empty)
         ui.post {
