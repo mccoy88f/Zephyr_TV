@@ -17,7 +17,8 @@
     "FireTvSettings.kt",
     "PanelNavigation.kt",
     "NotificationFeed.kt",
-    "NotificationFeedPolicy.kt"
+    "NotificationFeedPolicy.kt",
+    "NotificationArtwork.kt"
   ],
   "requiredTests": [
     "HomePolicyTest",

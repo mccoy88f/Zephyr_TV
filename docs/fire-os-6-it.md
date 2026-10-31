@@ -339,3 +339,12 @@ La configurazione sport privata conserva le partite future e quelle iniziate da 
 Verifica locale dopo integrazione upstream 3.6.3: 151 test JVM, 150 passati e un test di rete saltato; compilazione APK, APK dei test e lint completati. Diciassette test dell’estensione privata passati. Android 8 non provato fisicamente in questa revisione: le schermate fornite dal proprietario provengono dall’altra TV Android 8.
 
 La revisione finale Nello.11 integra ufficialmente Zephyr 3.6.3, incluse le nuove correzioni DPAD e delle schede titolo. Verificata nuovamente la navigazione verso Dexter S1E2 e la riproduzione interna; avanzamento reale di circa due minuti salvato. Pubblicazione automatica e installazione dello stesso APK firmato completate, senza perdita della configurazione privata.
+
+
+### Copertine SmartTube — Nello.12
+
+Le recommendation Android possono contenere Bitmap, Icon oppure nessuna immagine. Il recupero legge prima l'immagine fornita dalla notifica. Se manca, interroga il provider di ricerca esportato dalla stessa app SmartTube, con timeout: accetta solo un titolo esattamente uguale e un solo ID video YouTube. Titoli ambigui restano senza copertina. I risultati positivi sono conservati nello spazio privato di Zephyr. Due test strumentali su Fire OS 6 verificano l'Icon e la selezione non ambigua della copertina. Nessuna riflessione su API private viene usata.
+
+La riga legacy viene chiamata Consigliati; i collegamenti alle iscrizioni e alla cronologia SmartTube sono prima di questa riga. Questi collegamenti aprono SmartTube: non sono un'esportazione completa delle iscrizioni. Per mostrare contemporaneamente tutti i video delle iscrizioni e tutti i consigliati su Android 7 serve che SmartTube esporti entrambi i feed; il suo provider attuale esporta solo la ricerca e un feed recommendation selezionato. Questa limitazione resta esplicita.
+
+Immagine di sfondo, stemmi aggiuntivi e filtri dei cataloghi personali sono configurazioni private del proprietario e non fanno parte dell'APK pubblico.

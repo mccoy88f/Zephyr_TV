@@ -194,7 +194,6 @@ internal fun MainActivity.queryAppChannels(pkg: String?) {
             val sections=ArrayList<Section>()
             if(cards.isNotEmpty())sections+=Section("local-history",getString(R.string.continue_watching),getString(R.string.continue_watching),cards.distinctBy { it.title.lowercase() })
             val feed=NotificationFeed.cards(pkg).filter { hideKey(pkg,it.title) !in hidden }
-            if(feed.isNotEmpty())sections+=Section("legacy-tv-feed","TV",appLabel(pkg)+" · TV",feed)
             if(pkg?.startsWith("org.smarttube")==true) {
                 val links=listOf(getString(R.string.firetv_smarttube_subscriptions) to "FEsubscriptions",getString(R.string.firetv_smarttube_history) to "FEmy_youtube")
                 sections+=Section("smarttube-links","SmartTube","SmartTube",links.map { (title,path) ->
@@ -202,6 +201,7 @@ internal fun MainActivity.queryAppChannels(pkg: String?) {
                     Prog(title,getString(R.string.firetv_smarttube_open),0,null,i.toUri(Intent.URI_INTENT_SCHEME),pkg)
                 })
             }
+            if(feed.isNotEmpty())sections+=Section("legacy-tv-feed","TV",appLabel(pkg)+" - Consigliati",feed)
             ui.post { if(tmdbLastFocusApp==pkg) {watchApp=pkg;if(sections.isEmpty())hideWatchRow() else showSections(sections)} }
         }
         return

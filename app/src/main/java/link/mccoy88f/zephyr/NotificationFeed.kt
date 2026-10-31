@@ -16,6 +16,7 @@ internal object NotificationFeed {
  private data class Entry(val key:String,val pkg:String,val title:String,val sub:String,val image:String?,val intent:PendingIntent,val at:Long)
  private val entries=ConcurrentHashMap<String,Entry>()
  private val worker=Executors.newSingleThreadExecutor()
+ private val artWorker=Executors.newSingleThreadExecutor()
  private var activity=WeakReference<MainActivity>(null)
  private val changed=Runnable {activity.get()?.let { a -> a.refreshWatchNext();a.watchApp?.takeIf { ExternalResume.allowed(it) }?.let { a.queryAppChannels(it) } }}
  private fun key(s:StatusBarNotification)=MessageDigest.getInstance("SHA-256").digest(s.key.toByteArray()).joinToString(""){"%02x".format(it)}.take(24)
@@ -29,7 +30,7 @@ internal object NotificationFeed {
   val title=n.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()?.takeIf { it.isNotBlank() } ?: return
   val sub=n.extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
   val id=key(s)
-  val bitmap=(n.extras.get(Notification.EXTRA_PICTURE) as? Bitmap) ?: (n.extras.get(Notification.EXTRA_LARGE_ICON) as? Bitmap)
+  val bitmap=NotificationArtwork.bitmap(context,n)
   worker.execute {
    var image:String?=null
    if(bitmap!=null) runCatching {
@@ -38,6 +39,11 @@ internal object NotificationFeed {
     dir.listFiles()?.sortedByDescending { it.lastModified() }?.drop(80)?.forEach { it.delete() }
    }
    entries[id]=Entry(id,s.packageName,title,sub,image,intent,s.postTime);notifyChanged()
+   if(image==null&&s.packageName.startsWith("org.smarttube"))artWorker.execute {
+    val cache=File(context.filesDir,"notification_feed_art").apply{mkdirs()};val saved=File(cache,"$id.url")
+    val thumb=runCatching{saved.takeIf{it.exists()}?.readText()}.getOrNull() ?: NotificationArtwork.lookup(context,s.packageName,title)
+    if(thumb!=null){runCatching{saved.writeText(thumb)};entries.computeIfPresent(id){_,old ->if(old.title==title)old.copy(image=thumb)else old};notifyChanged()}
+   }
   }
  }
  fun remove(s:StatusBarNotification){worker.execute {entries.remove(key(s));notifyChanged()}}
@@ -53,5 +59,5 @@ internal object NotificationFeed {
 
 internal fun MainActivity.homeFeedSections(hidden:Set<String>):List<Section> = apps.filter { ExternalResume.allowed(it.pkg) }.flatMap { app ->
  if(android.os.Build.VERSION.SDK_INT>=26)runCatching { appSections(app.pkg,hidden) }.getOrDefault(emptyList())
- else NotificationFeed.cards(app.pkg).filter { hideKey(app.pkg,it.title) !in hidden }.takeIf { it.isNotEmpty() }?.let { listOf(Section("legacy-tv-feed","TV",app.label+" · TV",it)) }.orEmpty()
+ else NotificationFeed.cards(app.pkg).filter { hideKey(app.pkg,it.title) !in hidden }.takeIf { it.isNotEmpty() }?.let { listOf(Section("legacy-tv-feed","TV",app.label+" - Consigliati",it)) }.orEmpty()
 }
