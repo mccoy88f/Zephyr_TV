@@ -14,6 +14,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
+## 3.6.7
+
+- Recommendation sections for apps and add-ons stay visible and scroll smoothly on handheld devices.
+- Cards in all recommendation rows build correctly on mobile phones and tablets.
+
 ## 3.6.6
 
 - Input fields on the device now support long and encrypted addresses up to 1 MB.

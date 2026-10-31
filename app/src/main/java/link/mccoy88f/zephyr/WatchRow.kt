@@ -629,7 +629,7 @@ internal fun MainActivity.showSections(sections: List<Section>) {
         if (at >= 0 && i in at - 1..at + ROWS_AHEAD) {
             val cards = row.getTag(R.id.watchScroll) as RowCards
             do moreCards(row, now = true) while (i == at && cards.built <= focusedAt && cards.built < cards.items.size)
-        } else if (i < ROWS_AHEAD + 1) moreCards(row)
+        } else if (i < if (handheld()) 12 else ROWS_AHEAD + 1) moreCards(row)
     }
     if (at >= 0) {
         val row = cardRows()[at]
@@ -637,6 +637,8 @@ internal fun MainActivity.showSections(sections: List<Section>) {
             ?: appRow.getChildAt(0))?.requestFocus()
         // Where the row was scrolled to, so the cards stay where they were under the focus.
         (row.parent as? HorizontalScrollView)?.let { sv -> sv.post { sv.scrollTo(scrolled, 0) } }
+    } else if (handheld()) {
+        findViewById<View>(R.id.content).post { cardsOnScreen() }
     }
 }
 
