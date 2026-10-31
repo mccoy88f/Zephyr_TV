@@ -134,7 +134,7 @@ internal object Stremio {
      * without /manifest.json gets it. Null when it isn't a web address.
      */
     fun manifestUrl(input: String): String? {
-        var url = input.trim()
+        var url = input.lines().firstOrNull { it.isNotBlank() }?.trim().orEmpty()
         if (url.startsWith("stremio://")) url = "https://" + url.removePrefix("stremio://")
         if (!url.startsWith("http://") && !url.startsWith("https://")) return null
         if (url.substringAfter("://").substringBefore('/').isEmpty()) return null

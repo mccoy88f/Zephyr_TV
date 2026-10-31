@@ -82,6 +82,7 @@ private fun MainActivity.fieldsHere(
     val inputs = fields.mapIndexed { i, (_, label, more2) ->
         urlField(values.getOrNull(i).orEmpty(), more2.first.ifBlank { label }).apply {
             if (more2.second) inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            filters = arrayOf(android.text.InputFilter.LengthFilter(1024 * 1024))
         }
     }
     val box = LinearLayout(this).apply {

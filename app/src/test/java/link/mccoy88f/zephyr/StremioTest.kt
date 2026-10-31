@@ -10,6 +10,8 @@ class StremioTest {
         assertEquals("https://addon.example/c/abc/manifest.json", Stremio.manifestUrl(" https://addon.example/c/abc/manifest.json "))
         assertEquals("https://addon.example/c/abc/manifest.json", Stremio.manifestUrl("stremio://addon.example/c/abc/manifest.json"))
         assertEquals("https://addon.example/c/abc/manifest.json", Stremio.manifestUrl("https://addon.example/c/abc/"))
+        val longUrl = "https://addon.example/" + "a".repeat(16384) + "/manifest.json"
+        assertEquals(longUrl, Stremio.manifestUrl("  \n" + longUrl + "\n  "))
         assertNull(Stremio.manifestUrl("addon.example/c/abc"))
         assertNull(Stremio.manifestUrl("https://"))
     }

@@ -14,6 +14,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
+## 3.6.6
+
+- Input fields on the device now support long and encrypted addresses up to 1 MB.
+- Pasting multiline text into address fields extracts the address cleanly.
+
 ## 3.6.5
 
 - YouTube channels show their video list directly on the channel detail page.

@@ -66,7 +66,7 @@ internal object Extensions {
      * a web address.
      */
     fun publishedUrl(input: String): String? {
-        val url = input.trim()
+        val url = input.lines().firstOrNull { it.isNotBlank() }?.trim().orEmpty()
         if (!url.startsWith("https://") && !url.startsWith("http://")) return null
         if (url.substringAfter("://").substringBefore('/').isEmpty()) return null
         val path = url.substringBefore('?').substringBefore('#')

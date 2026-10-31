@@ -79,7 +79,7 @@ internal object Nuvio {
 
     /** A repository's manifest address from what was typed or sent: an address ending in .json, else its folder's manifest.json. */
     fun manifestUrl(input: String): String? {
-        val url = input.trim().removeSuffix("/")
+        val url = input.lines().firstOrNull { it.isNotBlank() }?.trim().orEmpty().removeSuffix("/")
         if (!url.startsWith("https://") && !url.startsWith("http://")) return null
         if (url.substringAfter("://").substringBefore('/').isEmpty()) return null
         return if (url.substringBefore('?').endsWith(".json")) url else "$url/manifest.json"
