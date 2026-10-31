@@ -312,6 +312,45 @@ object TmdbClient {
     /** Known photo URL already cached in memory for [personName], without network. */
     fun cachedPersonPhoto(personName: String): String? = personPhotoCache[personName.trim().lowercase()]
 
+    /**
+     * Titles associated with [personName] (as director or cast member) in [language]. Network: call off the UI thread.
+     */
+    fun personCredits(apiKey: String, personName: String, language: String, isDirector: Boolean): List<TmdbItem> {
+        val norm = personName.trim()
+        if (norm.isEmpty()) return emptyList()
+        return try {
+            val searchJson = JSONObject(get(apiKey, "/search/person?query=${Uri.encode(norm)}&include_adult=false&language=$language"))
+            val personId = searchJson.optJSONArray("results")?.optJSONObject(0)?.optLong("id") ?: return emptyList()
+            val creditsJson = JSONObject(get(apiKey, "/person/$personId/combined_credits?language=$language"))
+            parsePersonCredits(creditsJson, genres(apiKey, language), isDirector)
+        } catch (e: Exception) {
+            warn("TMDB person credits failed (${redact(e)})")
+            emptyList()
+        }
+    }
+
+    internal fun parsePersonCredits(json: JSONObject, genres: Map<Int, String>, isDirector: Boolean): List<TmdbItem> {
+        val targetArray = if (isDirector) {
+            val crew = json.optJSONArray("crew") ?: return emptyList()
+            val filtered = org.json.JSONArray()
+            for (i in 0 until crew.length()) {
+                val o = crew.optJSONObject(i) ?: continue
+                val job = o.optString("job")
+                val dept = o.optString("department")
+                if (job.equals("Director", ignoreCase = true) || dept.equals("Directing", ignoreCase = true)) {
+                    filtered.put(o)
+                }
+            }
+            filtered
+        } else {
+            json.optJSONArray("cast") ?: return emptyList()
+        }
+        return items(targetArray, genres, "movie")
+            .filter { it.mediaType == "movie" || it.mediaType == "tv" }
+            .distinctBy { it.id }
+            .sortedByDescending { it.releaseDate ?: "" }
+    }
+
     // Nuvio's builds: GitHub ("full") and Play Store. Both take nuvio://tmdb/<type>/<id> and have no search link
     // (their stremio:// handler only installs addons).
     private val NUVIO = setOf("com.nuvio.tv", "com.nuvio.app")

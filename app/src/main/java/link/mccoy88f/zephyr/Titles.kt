@@ -256,17 +256,21 @@ internal fun MainActivity.titleTile(type: String, source: String?): String? = if
 // ---------- Continue Playing ----------
 
 /** The films and episodes begun, as Continue Playing cards (with the time they were left, for its order). Off the UI thread. */
-internal fun MainActivity.titleProgressCards(hidden: Set<String>): List<Pair<Long, Prog>> =
+internal fun MainActivity.titleProgressCards(hidden: Set<String>): List<Pair<Long, Prog>> {
+    Local.use(filesDir, tmdbLang())
     // One card a series: its newest episode, begun or waiting next.
-    VodProgress.all(vodDir()).filter { hideKey(VOD_PKG, it.name) !in hidden }.distinctBy { it.metaId }.take(10).map { e ->
+    return VodProgress.all(vodDir()).filter { hideKey(VOD_PKG, it.name) !in hidden }.distinctBy { it.metaId }.take(10).map { e ->
         val left = ((e.duration - e.position) / 60_000).coerceAtLeast(1)
         val tile = if (addonsVod(vodKind(e.type)) == VodPlace.TILES) (if (e.type == "series") SERIES_PKG else MOVIES_PKG) else null
         val state = if (e.upNext) getString(R.string.title_up_next) else getString(R.string.time_left_min, left.toInt())
-        // Wide art with its logo, as the Films and Series rows have: for an IMDb title its background, whatever was kept
-        // (a poster, before), else what was kept.
-        val wide = if (e.metaId.startsWith("tt")) Stremio.art(e.metaId, "background/medium") else e.poster
-        val logo = if (e.metaId.startsWith("tt")) Stremio.art(e.metaId, "logo/medium") else null
+        val l = Local.get(e.metaId)
+        val sameName = l == null || l.title.equals(e.name.substringBefore(" · "), ignoreCase = true)
+        // Wide art with its logo, as the Films and Series rows have: TMDB backdrop when known, else Metahub background.
+        val wide = l?.backdrop ?: if (e.metaId.startsWith("tt")) Stremio.art(e.metaId, "background/medium") else e.poster
+        val poster = l?.poster ?: e.poster
+        val logo = if (e.metaId.startsWith("tt") && sameName) Stremio.art(e.metaId, "logo/medium") else null
         e.at to Prog(e.name, listOf(e.sub, state).filter { it.isNotBlank() }.joinToString(" · "),
-            e.percent, wide, null, VOD_PKG, logo = logo, poster = e.poster, icon = tile,
-            vod = TitleRef(e.type, e.metaId, e.name.substringBefore(" · "), null, wide, video = e.id, logo = logo))
+            e.percent, wide, null, VOD_PKG, logo = logo, poster = poster, icon = tile,
+            vod = TitleRef(e.type, e.metaId, e.name.substringBefore(" · "), poster, wide, video = e.id, logo = logo))
     }
+}

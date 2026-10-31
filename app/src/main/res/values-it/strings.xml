@@ -669,6 +669,8 @@
     <string name="search_type_all">Tutti</string>
     <string name="search_filter_year">Anno</string>
     <string name="search_filter_genre">Genere</string>
+    <string name="search_filter_director">Regista</string>
+    <string name="search_filter_actor">Cast</string>
     <string name="search_filter_any">Qualsiasi</string>
     <string name="genre_action">Azione</string>
     <string name="genre_adventure">Avventura</string>

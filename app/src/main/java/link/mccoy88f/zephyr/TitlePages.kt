@@ -367,7 +367,7 @@ internal class TitleTopResult(
     val castCards: List<View> = emptyList()
 )
 
-private fun MainActivity.personCard(name: String, onImage: (ImageView) -> Unit): View {
+private fun MainActivity.personCard(name: String, isDirector: Boolean, onImage: (ImageView) -> Unit): View {
     val card = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         gravity = Gravity.CENTER_HORIZONTAL
@@ -447,7 +447,8 @@ private fun MainActivity.personCard(name: String, onImage: (ImageView) -> Unit):
 
     card.setOnClickListener {
         closeLauncherSettings()
-        searchTmdb(name)
+        searchFilter = if (isDirector) SearchFilter(director = name) else SearchFilter(actor = name)
+        searchTmdb("")
     }
 
     onImage(img)
@@ -503,20 +504,56 @@ private fun MainActivity.titleTop(info: String, name: String?, about: String?, s
             descView = v
             addView(v)
         }
-        if (director.isNotEmpty()) {
-            addView(label(getString(R.string.title_director_label), 12f).apply {
-                alpha = 0.65f
-                setPadding(0, dp(10), 0, dp(4))
-                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-            })
-            val dirRow = LinearLayout(this@titleTop).apply {
+        if (director.isNotEmpty() || cast.isNotEmpty()) {
+            val combinedRow = LinearLayout(this@titleTop).apply {
                 orientation = LinearLayout.HORIZONTAL
                 layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
             }
-            for (d in director) {
-                val card = personCard(d) { img -> pendingPhotos.add(d to img) }
-                directorCards.add(card)
-                dirRow.addView(card)
+            if (director.isNotEmpty()) {
+                val dirSection = LinearLayout(this@titleTop).apply {
+                    orientation = LinearLayout.VERTICAL
+                    layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                        if (cast.isNotEmpty()) marginEnd = dp(20)
+                    }
+                    addView(label(getString(R.string.title_director_label), 12f).apply {
+                        alpha = 0.65f
+                        setPadding(0, dp(10), 0, dp(4))
+                        layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                    })
+                    val dirRow = LinearLayout(this@titleTop).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                    }
+                    for (d in director) {
+                        val card = personCard(d, isDirector = true) { img -> pendingPhotos.add(d to img) }
+                        directorCards.add(card)
+                        dirRow.addView(card)
+                    }
+                    addView(dirRow)
+                }
+                combinedRow.addView(dirSection)
+            }
+            if (cast.isNotEmpty()) {
+                val castSection = LinearLayout(this@titleTop).apply {
+                    orientation = LinearLayout.VERTICAL
+                    layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                    addView(label(getString(R.string.title_cast_label), 12f).apply {
+                        alpha = 0.65f
+                        setPadding(0, dp(10), 0, dp(4))
+                        layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                    })
+                    val castRow = LinearLayout(this@titleTop).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                    }
+                    for (c in cast.take(15)) {
+                        val card = personCard(c, isDirector = false) { img -> pendingPhotos.add(c to img) }
+                        castCards.add(card)
+                        castRow.addView(card)
+                    }
+                    addView(castRow)
+                }
+                combinedRow.addView(castSection)
             }
             addView(android.widget.HorizontalScrollView(this@titleTop).apply {
                 isHorizontalScrollBarEnabled = false
@@ -524,31 +561,7 @@ private fun MainActivity.titleTop(info: String, name: String?, about: String?, s
                 clipChildren = false
                 clipToPadding = false
                 layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-                addView(dirRow)
-            })
-        }
-        if (cast.isNotEmpty()) {
-            addView(label(getString(R.string.title_cast_label), 12f).apply {
-                alpha = 0.65f
-                setPadding(0, dp(10), 0, dp(4))
-                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-            })
-            val castRow = LinearLayout(this@titleTop).apply {
-                orientation = LinearLayout.HORIZONTAL
-                layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-            }
-            for (c in cast.take(15)) {
-                val card = personCard(c) { img -> pendingPhotos.add(c to img) }
-                castCards.add(card)
-                castRow.addView(card)
-            }
-            addView(android.widget.HorizontalScrollView(this@titleTop).apply {
-                isHorizontalScrollBarEnabled = false
-                overScrollMode = View.OVER_SCROLL_NEVER
-                clipChildren = false
-                clipToPadding = false
-                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-                addView(castRow)
+                addView(combinedRow)
             })
         }
     }
@@ -638,31 +651,16 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
                 row.nextFocusLeftId = leftTargetId
             }
         }
+        val allPersonCards = top.directorCards + top.castCards
         if (descView != null) {
             if (targetRow != null) descView.nextFocusRightId = targetRow.id
-            if (firstPersonCard != null) descView.nextFocusDownId = firstPersonCard.id
+            if (allPersonCards.isNotEmpty()) descView.nextFocusDownId = allPersonCards[0].id
         }
-        for (i in 0 until top.directorCards.size) {
-            val card = top.directorCards[i]
+        for (i in 0 until allPersonCards.size) {
+            val card = allPersonCards[i]
             if (descView != null) card.nextFocusUpId = descView.id
-            if (i > 0) card.nextFocusLeftId = top.directorCards[i - 1].id
-            if (i < top.directorCards.size - 1) card.nextFocusRightId = top.directorCards[i + 1].id
-            else if (targetRow != null) card.nextFocusRightId = targetRow.id
-            if (top.castCards.isNotEmpty()) {
-                val targetCast = top.castCards[i.coerceAtMost(top.castCards.size - 1)]
-                card.nextFocusDownId = targetCast.id
-            }
-        }
-        for (i in 0 until top.castCards.size) {
-            val card = top.castCards[i]
-            if (top.directorCards.isNotEmpty()) {
-                val targetDir = top.directorCards[i.coerceAtMost(top.directorCards.size - 1)]
-                card.nextFocusUpId = targetDir.id
-            } else if (descView != null) {
-                card.nextFocusUpId = descView.id
-            }
-            if (i > 0) card.nextFocusLeftId = top.castCards[i - 1].id
-            if (i < top.castCards.size - 1) card.nextFocusRightId = top.castCards[i + 1].id
+            if (i > 0) card.nextFocusLeftId = allPersonCards[i - 1].id
+            if (i < allPersonCards.size - 1) card.nextFocusRightId = allPersonCards[i + 1].id
             else if (targetRow != null) card.nextFocusRightId = targetRow.id
         }
     }
@@ -887,7 +885,7 @@ internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, epi
             .putStringArrayListExtra(PlayerActivity.DESCS, strings { it.third?.overview ?: meta?.description })
             .putExtra(PlayerActivity.META_TYPE, type)
             .putExtra(PlayerActivity.META_ID, t?.id ?: ref.id)
-            .putExtra(PlayerActivity.POSTER, backdrop) // its Continue Playing card's: the wide picture (the poster without one)
+            .putExtra(PlayerActivity.POSTER, locandina)
             .putExtra(PlayerActivity.USER_DIR, vodDir().path))
     } catch (e: Exception) {
         warn("player didn't open ($e)")

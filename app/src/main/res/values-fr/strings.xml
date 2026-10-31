@@ -669,6 +669,8 @@
     <string name="search_type_all">Tous</string>
     <string name="search_filter_year">Année</string>
     <string name="search_filter_genre">Genre</string>
+    <string name="search_filter_director">Réalisation</string>
+    <string name="search_filter_actor">Distribution</string>
     <string name="search_filter_any">Tous</string>
     <string name="genre_action">Action</string>
     <string name="genre_adventure">Aventure</string>

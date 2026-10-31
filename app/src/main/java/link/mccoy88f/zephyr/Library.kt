@@ -35,7 +35,7 @@ internal fun MainActivity.searchLibrary(query: String): List<Pair<Stremio.Title,
  * doesn't have, from an add-on other than the main catalog, with the main catalog's art (asked for, a few seconds at
  * most). Off the UI thread.
  */
-private fun MainActivity.localizeAll(all: List<Pair<Stremio.Title, String>>): List<Pair<Stremio.Title, String>> {
+internal fun MainActivity.localizeAll(all: List<Pair<Stremio.Title, String>>): List<Pair<Stremio.Title, String>> {
     val key = tmdbKey()
     if (key != null) {
         Local.use(filesDir, tmdbLang())
@@ -50,12 +50,34 @@ private fun MainActivity.localizeAll(all: List<Pair<Stremio.Title, String>>): Li
 }
 
 /**
- * Search filters: films, series or both ([type] "movie", "series", "all"), a [year] and a [genre] (Cinemeta's
- * names, English: "Sci-Fi"), each null for any.
+ * Films and series associated with [personName] (as director if [isDirector] else cast/actor), via TMDB
+ * combined credits (with IMDb ids resolved) and Cinemeta/addon searches. In the TV's language. Off the UI thread.
+ */
+internal fun MainActivity.searchPersonTitles(personName: String, isDirector: Boolean, filter: SearchFilter): List<Pair<Stremio.Title, String>> {
+    val key = tmdbKey()
+    val viaTmdb = if (key == null) emptyList() else {
+        val items = TmdbClient.personCredits(key, personName, tmdbLang(), isDirector)
+        parallel(items.take(40), 6, 15) { item ->
+            val imdb = TmdbClient.imdbIdOf(key, item) ?: return@parallel null
+            Stremio.Title(if (item.mediaType == "tv") "series" else "movie", imdb, item.title,
+                item.posterPath?.let { "https://image.tmdb.org/t/p/w500$it" }, TmdbClient.cardUrl(item.backdropPath), null,
+                item.releaseDate?.take(4)?.takeIf { it.isNotBlank() }, item.genres,
+                item.voteAverage.takeIf { it > 0 }?.let { "%.1f".format(java.util.Locale.ROOT, it) }, item.overview, item.id) to cinemetaUrl()
+        }
+    }
+    val viaAddons = findTitles(personName)
+    val combined = (viaTmdb + viaAddons).filter { (t, _) -> filter.accepts(t) { g -> genreName(g) } }
+        .distinctBy { it.first.type + it.first.id }
+    return localizeAll(combined)
+}
+
+/**
+ * Search filters: films, series or both ([type] "movie", "series", "all"), a [year], a [genre] (Cinemeta's
+ * names, English: "Sci-Fi"), [director] and [actor] names, each null for any.
  */
 internal class SearchFilter(val type: String = "all", val year: String? = null, val genre: String? = null,
-                            val adult: String = ADULT_SHOW) {
-    val any get() = type != "all" || year != null || genre != null || adult != ADULT_SHOW
+                            val adult: String = ADULT_SHOW, val director: String? = null, val actor: String? = null) {
+    val any get() = type != "all" || year != null || genre != null || adult != ADULT_SHOW || director != null || actor != null
 
     companion object {
         // Adult content in the results (offered only while 18+ shows: see adultSearch): with the rest, left out, or alone.

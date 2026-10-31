@@ -14,6 +14,13 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
+## 3.6.1
+
+- On a title's page, director and cast avatars show on one horizontal row with separate headings.
+- Search filters include Director and Cast. Enter a name to find titles for that person.
+- Select a director or cast avatar on a title's page to activate the filter and show all their titles.
+- Continue Playing and Search now show the same localized artwork as the Films and Series rows.
+
 ## 3.6.0
 
 - The page of a film, series, season, episode or TV channel is now a page over the whole screen.

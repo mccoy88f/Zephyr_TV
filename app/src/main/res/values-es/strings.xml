@@ -669,6 +669,8 @@
     <string name="search_type_all">Todos</string>
     <string name="search_filter_year">Año</string>
     <string name="search_filter_genre">Género</string>
+    <string name="search_filter_director">Dirección</string>
+    <string name="search_filter_actor">Reparto</string>
     <string name="search_filter_any">Cualquiera</string>
     <string name="genre_action">Acción</string>
     <string name="genre_adventure">Aventura</string>

@@ -88,4 +88,26 @@ class TmdbLocalizedTest {
         assertEquals(27205L, items[1].id)
         assertEquals("Inception", items[1].title)
     }
+
+    @Test fun parsesPersonCreditsForDirectorAndCast() {
+        val json = JSONObject("""{
+            "id": 525,
+            "cast": [
+                {"id": 99901, "title": "Cameo Movie", "media_type": "movie", "overview": "Cameo role.", "release_date": "2010-01-01"}
+            ],
+            "crew": [
+                {"id": 157336, "title": "Interstellar", "media_type": "movie", "overview": "Space.", "job": "Director", "department": "Directing", "release_date": "2014-11-05"},
+                {"id": 88801, "title": "Produced Film", "media_type": "movie", "overview": "Producer.", "job": "Producer", "department": "Production", "release_date": "2015-01-01"}
+            ]
+        }""")
+        val directed = TmdbClient.parsePersonCredits(json, emptyMap(), isDirector = true)
+        assertEquals(1, directed.size)
+        assertEquals(157336L, directed[0].id)
+        assertEquals("Interstellar", directed[0].title)
+
+        val acted = TmdbClient.parsePersonCredits(json, emptyMap(), isDirector = false)
+        assertEquals(1, acted.size)
+        assertEquals(99901L, acted[0].id)
+        assertEquals("Cameo Movie", acted[0].title)
+    }
 }

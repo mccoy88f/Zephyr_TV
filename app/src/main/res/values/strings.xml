@@ -666,6 +666,8 @@
     <string name="search_type_all">All</string>
     <string name="search_filter_year">Year</string>
     <string name="search_filter_genre">Genre</string>
+    <string name="search_filter_director">Director</string>
+    <string name="search_filter_actor">Cast</string>
     <string name="search_filter_any">Any</string>
     <string name="genre_action">Action</string>
     <string name="genre_adventure">Adventure</string>
