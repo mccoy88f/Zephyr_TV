@@ -14,6 +14,13 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
+## 3.6.4
+
+- Adding add-ons and plugins from a phone now accepts long and encrypted addresses.
+- Search without words shows popular titles from your active catalogs.
+- Search tile heading displays the active catalog name when Cinemeta is not active.
+- Add-ons and catalogs with turned off rows do not appear in search results.
+
 ## 3.6.3
 
 - D-Pad navigation between the left column and right panel on title pages works reliably in all directions.

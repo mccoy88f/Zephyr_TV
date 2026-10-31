@@ -114,4 +114,9 @@ class StremioVodTest {
         assertEquals(listOf("https://www.youtube.com/watch?v=aqz-KE-bpKQ", "https://example.com/watch"), s.map { it.url })
         assertEquals(listOf("com.google.android.youtube.tv", "com.example.app"), s.map { it.app })
     }
+
+    @Test fun shelfKeyMatchesExpectedFormat() {
+        val c = Stremio.addon(Stremio.CINEMETA, cinemeta)
+        assertEquals("vod:com.linvo.cinemeta:movie:top", shelfKey(c, c.vod[0]))
+    }
 }
