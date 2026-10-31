@@ -83,7 +83,7 @@ internal fun MainActivity.localize(t: Stremio.Title): Stremio.Title? {
     val same = l.title.equals(t.name, ignoreCase = true)
     return t.copy(name = l.title, poster = l.poster ?: t.poster, background = l.backdrop ?: t.background, logo = t.logo.takeIf { same },
         year = t.year ?: l.year, genres = l.genres.ifEmpty { t.genres }, rating = t.rating ?: l.rating(),
-        description = l.overview.ifBlank { t.description.orEmpty() }.ifBlank { null })
+        description = l.overview.ifBlank { t.description.orEmpty() }.ifBlank { null }, tmdbId = l.tmdbId)
 }
 
 /** Asks TMDB for [todo] (marked as being asked) in [lang], a few at a time, and keeps what it says. Network: off the UI thread. */

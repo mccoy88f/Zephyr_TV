@@ -14,6 +14,15 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
+## 3.6.0
+
+- The page of a film, series, season, episode or TV channel is now a page over the whole screen.
+- On a title's page, action buttons are on the right. Details, description, directors and cast are on the left.
+- Directors and actors show round avatar pictures from TMDB. Select a director or actor to search their titles.
+- In **Updates**, when you turn off **Receive betas**, Zephyr TV offers the newest non-beta release available.
+- Zephyr TV installs on Android 7.0 and 7.1, for example on older boxes and on Fire TV.
+- On Android 7.0, add-ons and extensions with Let's Encrypt certificates connect reliably.
+
 ## 3.6.0-beta.3
 
 - On a title's page, action buttons are on the right. Details, expanded description, director and cast are on the left.

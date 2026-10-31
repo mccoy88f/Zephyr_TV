@@ -97,7 +97,9 @@ internal fun MainActivity.detailPage(
 
     if (wide && infoView != null) {
         // Wide screen: two columns. Action buttons on the right, info (logo, description, director, actors) on the left.
-        lp.width = dp(380)
+        val rightPanelWidth = dp(380)
+        val rightGap = dp(24)
+        lp.width = rightPanelWidth
         lp.gravity = Gravity.END
         panel.layoutParams = lp
         panel.setPadding(dp(16), dp(40), dp(40), dp(24))
@@ -106,18 +108,26 @@ internal fun MainActivity.detailPage(
 
         val leftTitle = label(title, 26f).apply {
             setPadding(dp(14), 0, dp(14), dp(8))
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+            isSingleLine = false
+            maxLines = 3
         }
         val leftCol = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(0, 0, dp(16), 0)
+            layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+            setPadding(0, 0, dp(8), 0)
             addView(logoView, LinearLayout.LayoutParams(WRAP_CONTENT, dp(96)).apply { marginStart = dp(14); bottomMargin = dp(8) })
             addView(leftTitle)
             (infoView.parent as? android.view.ViewGroup)?.removeView(infoView)
+            infoView.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             addView(infoView)
         }
         val leftScroll = android.widget.ScrollView(this).apply {
             isVerticalScrollBarEnabled = false
             overScrollMode = View.OVER_SCROLL_NEVER
+            isFillViewport = true
+            clipChildren = true
+            clipToPadding = true
             addView(leftCol)
         }
         if (had != null) leftTitle.visibility = View.GONE
@@ -127,9 +137,9 @@ internal fun MainActivity.detailPage(
                 true
             }
         }
-        val infoWidth = (w - dp(380) - dp(80)).coerceIn(dp(440), dp(720))
-        val leftLp = FrameLayout.LayoutParams(infoWidth, MATCH_PARENT, Gravity.START).apply {
+        val leftLp = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, Gravity.START).apply {
             marginStart = dp(56)
+            marginEnd = rightPanelWidth + rightGap
             topMargin = dp(40)
             bottomMargin = dp(24)
         }

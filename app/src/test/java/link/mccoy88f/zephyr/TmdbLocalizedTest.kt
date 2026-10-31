@@ -38,4 +38,54 @@ class TmdbLocalizedTest {
         assertEquals("https://image.tmdb.org/t/p/w300/s1.jpg", eps[1]!!.still)
         assertNull(eps[2]!!.still)
     }
+
+    @Test fun parsesCreditsWithDirectorAndCast() {
+        val json = JSONObject("""{
+            "id": 157336,
+            "cast": [
+                {"id": 10297, "name": "Matthew McConaughey", "character": "Cooper", "profile_path": "/e.jpg"},
+                {"id": 1813, "name": "Anne Hathaway", "character": "Brand", "profile_path": null}
+            ],
+            "crew": [
+                {"id": 525, "name": "Christopher Nolan", "job": "Director", "profile_path": "/nolan.jpg"},
+                {"id": 999, "name": "Emma Thomas", "job": "Producer", "profile_path": "/thomas.jpg"}
+            ]
+        }""")
+        val (directors, cast) = TmdbClient.credits(json)
+        assertEquals(1, directors.size)
+        assertEquals("Christopher Nolan", directors[0].first)
+        assertEquals("https://image.tmdb.org/t/p/w185/nolan.jpg", directors[0].second)
+
+        assertEquals(2, cast.size)
+        assertEquals("Matthew McConaughey", cast[0].first)
+        assertEquals("https://image.tmdb.org/t/p/w185/e.jpg", cast[0].second)
+        assertEquals("Anne Hathaway", cast[1].first)
+        assertNull(cast[1].second)
+    }
+
+    @Test fun searchIncludesKnownForWhenPersonFound() {
+        val results = org.json.JSONArray("""[
+            {
+                "id": 525,
+                "name": "Christopher Nolan",
+                "media_type": "person",
+                "known_for": [
+                    {"id": 157336, "title": "Interstellar", "media_type": "movie", "overview": "Space travel.", "genre_ids": [18, 878]}
+                ]
+            },
+            {
+                "id": 27205,
+                "title": "Inception",
+                "media_type": "movie",
+                "overview": "Dreams within dreams.",
+                "genre_ids": [28, 878]
+            }
+        ]""")
+        val items = TmdbClient.parseSearchResults(results, mapOf(18 to "Drama", 28 to "Action", 878 to "Sci-Fi"))
+        assertEquals(2, items.size)
+        assertEquals(157336L, items[0].id)
+        assertEquals("Interstellar", items[0].title)
+        assertEquals(27205L, items[1].id)
+        assertEquals("Inception", items[1].title)
+    }
 }

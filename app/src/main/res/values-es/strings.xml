@@ -612,7 +612,9 @@
     <string name="episode_no_description">Todavía no hay descripción de este episodio.</string>
     <string name="title_no_page">Ningún complemento tiene la ficha de este título</string>
     <string name="title_director">Dirección: %1$s</string>
+    <string name="title_director_label">Dirección</string>
     <string name="title_cast">Reparto: %1$s</string>
+    <string name="title_cast_label">Reparto</string>
     <string name="player_episode">%1$s · T%2$d E%3$d</string>
     <string name="toast_addon_added_vod">%1$s añadido: películas y series</string>
     <string name="toast_addon_added_both">%1$s añadido: %2$d canales, películas y series</string>

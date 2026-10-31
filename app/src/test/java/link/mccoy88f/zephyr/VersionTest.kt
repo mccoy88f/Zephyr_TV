@@ -32,4 +32,15 @@ class VersionTest {
         assertEquals("4.0", Updater.newest(listOf("4.0.0-beta.2", "4.0")))
         assertNull(Updater.newest(emptyList()))
     }
+
+    @Test fun offersLatestReleaseWhenExitingBeta() {
+        // Normal upgrade
+        assertTrue(isUpdateAvailable("3.6.0", "3.5.6", receiveBetas = false))
+        assertTrue(isUpdateAvailable("3.6.0", "3.6.0-beta.3", receiveBetas = false))
+
+        // Exiting beta: user is on a beta, receiveBetas is false, offers latest non-beta stable release
+        assertTrue(isUpdateAvailable("3.5.6", "3.6.0-beta.3", receiveBetas = false))
+        assertFalse(isUpdateAvailable("3.6.0-beta.4", "3.6.0-beta.3", receiveBetas = false))
+        assertFalse(isUpdateAvailable("3.5.6", "3.5.6", receiveBetas = false))
+    }
 }

@@ -612,7 +612,9 @@
     <string name="episode_no_description">Nessuna descrizione per questo episodio.</string>
     <string name="title_no_page">Nessun addon ha la scheda di questo titolo</string>
     <string name="title_director">Regia: %1$s</string>
+    <string name="title_director_label">Regia</string>
     <string name="title_cast">Cast: %1$s</string>
+    <string name="title_cast_label">Cast</string>
     <string name="player_episode">%1$s · S%2$d E%3$d</string>
     <string name="toast_addon_added_vod">%1$s aggiunto: film e serie</string>
     <string name="toast_addon_added_both">%1$s aggiunto: %2$d canali, film e serie</string>
