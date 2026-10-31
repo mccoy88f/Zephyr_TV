@@ -336,4 +336,6 @@ I cataloghi possono esporre una scheda canali raggruppata con behaviorHints.chan
 
 La configurazione sport privata conserva le partite future e quelle iniziate da meno di 100 minuti; a 100 minuti le esclude al successivo caricamento del catalogo. Configurazione, playlist e test contenenti dati personali restano fuori dal repository e dall'APK.
 
-Verifica locale: 146 test JVM, 145 passati e un test di rete saltato; compilazione APK, APK dei test e lint completati. Diciassette test dell’estensione privata passati. Android 8 non provato fisicamente in questa revisione: le schermate fornite dal proprietario provengono dall’altra TV Android 8.
+Verifica locale dopo integrazione upstream 3.6.3: 151 test JVM, 150 passati e un test di rete saltato; compilazione APK, APK dei test e lint completati. Diciassette test dell’estensione privata passati. Android 8 non provato fisicamente in questa revisione: le schermate fornite dal proprietario provengono dall’altra TV Android 8.
+
+La revisione finale Nello.11 integra ufficialmente Zephyr 3.6.3, incluse le nuove correzioni DPAD e delle schede titolo. Verificata nuovamente la navigazione verso Dexter S1E2 e la riproduzione interna; avanzamento reale di circa due minuti salvato. Pubblicazione automatica e installazione dello stesso APK firmato completate, senza perdita della configurazione privata.
