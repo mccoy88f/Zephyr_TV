@@ -1424,19 +1424,40 @@ class MainActivity : Activity() {
             }
             false
         } ?: false
-        if (settingsScrim.visibility == View.VISIBLE && currentFocus !== pinBox && currentFocus !is EditText &&
-            (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)
-        ) {
-            if (inHorizontal) {
+        if (settingsScrim.visibility == View.VISIBLE && currentFocus !== pinBox && currentFocus !is EditText) {
+            if (e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN || e.keyCode == KeyEvent.KEYCODE_DPAD_UP) {
                 if (e.action == KeyEvent.ACTION_DOWN) {
-                    val dir = if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) View.FOCUS_LEFT else View.FOCUS_RIGHT
-                    val next = currentFocus?.focusSearch(dir)
-                    if (next != null && next !== currentFocus) next.requestFocus()
+                    val targetId = if (e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN) currentFocus?.nextFocusDownId else currentFocus?.nextFocusUpId
+                    if (targetId != null && targetId != View.NO_ID && targetId != currentFocus?.id) {
+                        val target = findViewById<View>(targetId)
+                        if (target != null && target.requestFocus()) return true
+                    }
+                    if (e.keyCode == KeyEvent.KEYCODE_DPAD_UP && currentFocus != null && currentFocus === detailDescView) {
+                        var p = currentFocus?.parent
+                        while (p != null && p !is android.widget.ScrollView) p = p.parent
+                        (p as? android.widget.ScrollView)?.smoothScrollTo(0, 0)
+                        return true
+                    }
+                }
+            } else if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                if (e.action == KeyEvent.ACTION_DOWN) {
+                    if (inHorizontal) {
+                        val dir = if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) View.FOCUS_LEFT else View.FOCUS_RIGHT
+                        val next = currentFocus?.focusSearch(dir)
+                        if (next != null && next !== currentFocus) {
+                            next.requestFocus()
+                            return true
+                        }
+                    }
+                    val targetId = if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) currentFocus?.nextFocusLeftId else currentFocus?.nextFocusRightId
+                    if (targetId != null && targetId != View.NO_ID && targetId != currentFocus?.id) {
+                        val target = findViewById<View>(targetId)
+                        if (target != null && target.requestFocus()) return true
+                    }
+                    if (!inHorizontal) pageSides?.invoke(if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) -1 else 1)
                 }
                 return true
             }
-            if (e.action == KeyEvent.ACTION_DOWN) pageSides?.invoke(if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) -1 else 1)
-            return true
         }
         if (editing && editKey(e, confirm)) return true
         if (e.action == KeyEvent.ACTION_DOWN && settingsScrim.visibility != View.VISIBLE && allApps.visibility != View.VISIBLE) {

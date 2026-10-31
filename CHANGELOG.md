@@ -14,6 +14,13 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
+## 3.6.3
+
+- D-Pad navigation between the left column and right panel on title pages works reliably in all directions.
+- Moving down from the bottom of the left column jumps directly to the first right-panel button.
+- Manual stream choice keeps the full-screen title backdrop and details visible underneath.
+- Upward navigation from the description scrolls smoothly to reveal the title logo.
+
 ## 3.6.2
 
 - Moving right from the left column on a title's page goes to the first button at the top.

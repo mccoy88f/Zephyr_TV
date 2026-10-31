@@ -668,11 +668,13 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
     val targetRow = settingsList.getChildAt(firstIndex + focus.coerceIn(0, (rows.size - 1).coerceAtLeast(0)))
     if (targetRow != null && targetRow.id == View.NO_ID) targetRow.id = View.generateViewId()
 
-    // Remote navigation: left from buttons goes to top element on the left (the title);
+    // Remote navigation: left from buttons goes to description or first avatar;
     // right from left column goes to the first item at the top of the right column.
     if (wide) {
-        val titleBox = detailTitleView
-        val leftTopId = titleBox?.id ?: descView?.id ?: firstPersonCard?.id
+        val allPersonCards = top.directorCards + top.castCards
+        detailDescView = descView
+        detailLastLeftFocusables = allPersonCards
+        val leftTopId = descView?.id ?: firstPersonCard?.id
 
         if (leftTopId != null) {
             for (i in 0 until rows.size) {
@@ -680,31 +682,21 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
                 row.nextFocusLeftId = leftTopId
             }
         }
-        val allPersonCards = top.directorCards + top.castCards
-
-        if (titleBox != null) {
-            if (firstRowId != null) titleBox.nextFocusRightId = firstRowId
-            titleBox.nextFocusUpId = titleBox.id
-            titleBox.nextFocusLeftId = titleBox.id
-            titleBox.nextFocusDownId = descView?.id ?: allPersonCards.firstOrNull()?.id ?: titleBox.id
-        }
 
         if (descView != null) {
-            if (firstRowId != null) descView.nextFocusRightId = firstRowId
             descView.nextFocusLeftId = descView.id
-            descView.nextFocusUpId = titleBox?.id ?: descView.id
+            descView.nextFocusUpId = descView.id
             if (allPersonCards.isNotEmpty()) descView.nextFocusDownId = allPersonCards[0].id
         }
 
         for (i in 0 until allPersonCards.size) {
             val card = allPersonCards[i]
-            card.nextFocusUpId = descView?.id ?: titleBox?.id ?: card.id
-            card.nextFocusDownId = card.id
+            card.nextFocusUpId = descView?.id ?: card.id
             if (i > 0) card.nextFocusLeftId = allPersonCards[i - 1].id
             else card.nextFocusLeftId = card.id
             if (i < allPersonCards.size - 1) card.nextFocusRightId = allPersonCards[i + 1].id
-            else if (firstRowId != null) card.nextFocusRightId = firstRowId
         }
+        if (firstRowId != null) wireLeftColumn(firstRowId)
     }
     // What holding OK on a row does (see MainActivity.onHold).
     for ((i, hold) in holds) settingsList.getChildAt(firstIndex + i)?.setTag(R.id.settingsList, hold)
@@ -717,7 +709,7 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
         val last = settingsList.getChildAt(settingsList.childCount - 2)?.takeIf { rows.isNotEmpty() } ?: return@let
         if (last.id == View.NO_ID) last.id = View.generateViewId()
         last.nextFocusDownId = buttons.getChildAt(0).id
-        val leftId = detailTitleView?.id ?: descView?.id ?: firstPersonCard?.id
+        val leftId = descView?.id ?: firstPersonCard?.id
         for (c in 0 until buttons.childCount) buttons.getChildAt(c).let {
             it.nextFocusUpId = last.id
             it.nextFocusDownId = it.id
@@ -937,6 +929,16 @@ internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, epi
 /** Whether streams are picked by hand from all the sources' (Settings → Content → Stream choice), not tried in turn. */
 internal fun MainActivity.manualStreams() = prefs.getBoolean(K.STREAM_MANUAL, false)
 
+internal fun MainActivity.wireLeftColumn(firstRowId: Int) {
+    detailDescView?.nextFocusRightId = firstRowId
+    if (detailLastLeftFocusables.isEmpty()) {
+        detailDescView?.nextFocusDownId = firstRowId
+    } else {
+        detailLastLeftFocusables.forEach { it.nextFocusDownId = firstRowId }
+        detailLastLeftFocusables.lastOrNull()?.nextFocusRightId = firstRowId
+    }
+}
+
 /**
  * Manual stream choice: every add-on's and plugin's streams for the film, or the [episode], in one list, each with
  * the source it's from, grouped by quality. The sources are asked all at once; each one's streams come in after those
@@ -951,6 +953,8 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
     val found = java.util.Collections.synchronizedList(ArrayList<Stremio.Stream>())
     var left = sources.size
     var shown = false
+    val savedPageExit = pageExit
+    val leftId = detailDescView?.id
     // Grouped by quality as in the player's panel (the highest first, those that say none last), each group under its
     // heading; each stream on two lines: what it is on top (scrolling when it's long), where it's from under it, in italics.
     fun show() {
@@ -961,7 +965,13 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
             found.isEmpty() -> listOf(page(getString(R.string.title_no_streams)) { })
             else -> emptyList()
         }
-        showPage(title, rest, back = back)
+        pageExit = null
+        showPage(title, rest, panes = glass, back = {
+            pageExit = savedPageExit
+            back()
+        })
+        pageExit = savedPageExit
+        findViewById<TextView>(R.id.settingsTitle).visibility = View.VISIBLE
         var group = -1
         var at = 0
         for (s in list) {
@@ -974,9 +984,19 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
                 pageReturn = back
                 closeLauncherSettings()
                 playTitle(ref, meta, episode, chosen = s)
-            }.apply { tag = s.url }, at++, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
+            }.apply {
+                tag = s.url
+                if (leftId != null) nextFocusLeftId = leftId
+            }, at++, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
+        }
+        if (leftId != null) {
+            for (i in 0 until settingsList.childCount) {
+                val child = settingsList.getChildAt(i) ?: continue
+                if (child.isFocusable) child.nextFocusLeftId = leftId
+            }
         }
         val rows = (0 until settingsList.childCount).map { settingsList.getChildAt(it) }.filter { it.isFocusable }
+        rows.firstOrNull()?.id?.let { wireLeftColumn(it) }
         (rows.firstOrNull { keep != null && it.tag == keep } ?: rows.firstOrNull())?.requestFocus()
         shown = true
     }
