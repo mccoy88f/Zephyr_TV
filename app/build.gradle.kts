@@ -30,12 +30,20 @@ android {
     buildFeatures {
         resValues = true
     }
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
 
     // Release key lives outside the repo; keystore.properties (git-ignored) points at it. Without that file
     // (a fresh clone) release builds fall back to the debug key, so anyone can still build and sideload.
     val keys = rootProject.file("keystore.properties").takeIf { it.exists() }
         ?.let { f -> Properties().apply { f.inputStream().use { load(it) } } }
     signingConfigs {
+        System.getenv("NELLO_KEYSTORE_PATH")?.let { path ->
+            getByName("debug") { storeFile = file(path) }
+        }
         if (keys != null) create("release") {
             storeFile = file(keys.getProperty("storeFile"))
             storePassword = keys.getProperty("storePassword")
@@ -88,7 +96,8 @@ configurations.matching { it.name.endsWith("UnitTestRuntimeClasspath") }.configu
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs_nio:2.1.5")
+    compileOnly("androidx.annotation:annotation:1.9.1")
     // The one exception to "no dependencies": Media3's ExoPlayer, for the Stremio add-ons' channels (see PlayerActivity).
     val media3 = "1.11.1"
     implementation("androidx.media3:media3-exoplayer:$media3")

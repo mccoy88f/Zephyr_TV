@@ -171,7 +171,7 @@ internal fun MainActivity.shareTitle(type: String, id: String, name: String, sea
 
 /** On a phone or tablet: Search and the Play queue held on Zephyr TV's icon. */
 internal fun MainActivity.shortcuts() {
-    if (!handheld() || android.os.Build.VERSION.SDK_INT < 25) return // shortcuts came with Android 7.1
+    if (android.os.Build.VERSION.SDK_INT < 25 || !handheld()) return
     runCatching {
         fun shortcut(id: String, label: Int, icon: Int, action: String) = ShortcutInfo.Builder(this, id)
             .setShortLabel(getString(label))

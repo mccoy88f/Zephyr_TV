@@ -1,0 +1,121 @@
+name: Nello upstream releases
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Build a new Nello revision even if upstream did not change'
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: nello-upstream
+  cancel-in-progress: false
+jobs:
+  custom-apk:
+    if: github.repository == 'Pieropapamonello/Zephyr_TV'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NELLO_BRANCH: feat/android7-firetv-home
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/android7-firetv-home
+          fetch-depth: 0
+      - name: Find published upstream stable or beta
+        id: plan
+        env:
+          FORCE: ${{ inputs.force || 'false' }}
+        run: |
+          gh api 'repos/mccoy88f/Zephyr_TV/releases?per_page=30' > "$RUNNER_TEMP/upstream.json"
+          tag=$(python -c 'import json;print(json.load(open("automation/nello-state.json",encoding="utf-8-sig"))["customTag"])')
+          published=false
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' 2>/dev/null | grep -Fxq 'ZephyrTV-Nello-Android7.apk'; then published=true; fi
+          python scripts/nello_sync.py plan --releases "$RUNNER_TEMP/upstream.json" --published "$published" --force "$FORCE" --next "$RUNNER_TEMP/nello-next.json" | tee -a "$GITHUB_OUTPUT"
+      - name: Integrate upstream without dropping customizations
+        if: steps.plan.outputs.needed == 'true'
+        env:
+          UPSTREAM: ${{ steps.plan.outputs.upstreamTag }}
+          CUSTOM: ${{ steps.plan.outputs.customTag }}
+          RECOVER: ${{ steps.plan.outputs.recover }}
+        run: |
+          git config user.name 'Nello release automation'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if [ "$RECOVER" = true ]; then
+            git checkout --detach "$CUSTOM"
+          else
+            git remote add nello-upstream https://github.com/mccoy88f/Zephyr_TV.git
+            git fetch nello-upstream "refs/tags/$UPSTREAM:refs/tags/$UPSTREAM"
+            git merge --no-commit --no-ff "$UPSTREAM" || { echo '::error::Merge conflict: publication stopped; the existing personalized APK is preserved.'; exit 1; }
+            python scripts/nello_sync.py prepare --next "$RUNNER_TEMP/nello-next.json"
+          fi
+      - uses: actions/setup-java@v4
+        if: steps.plan.outputs.needed == 'true'
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.plan.outputs.needed == 'true'
+      - name: Restore the fixed Nello signing identity
+        if: steps.plan.outputs.needed == 'true'
+        env:
+          NELLO_KEYSTORE: ${{ secrets.NELLO_DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          python - <<'PY'
+          import os,base64,pathlib
+          raw=os.environ.get('NELLO_KEYSTORE','')
+          if not raw: raise RuntimeError('Nello signing key is missing: never generate a different key')
+          p=pathlib.Path.home()/'.android/debug.keystore'
+          p.parent.mkdir(parents=True,exist_ok=True)
+          p.write_bytes(base64.b64decode(raw,validate=True));p.chmod(0o600)
+          with open(os.environ["GITHUB_ENV"],"a") as env: env.write("NELLO_KEYSTORE_PATH="+str(p)+"\n")
+          PY
+      - name: Test, compile, lint and audit Nello features
+        if: steps.plan.outputs.needed == 'true'
+        run: |
+          python scripts/nello_sync_test.py
+          node --test scripts/extension-m3u-bridge.test.cjs
+          ./gradlew --no-daemon testDebugUnitTest assembleDebug lintDebug
+          python scripts/nello_sync.py audit
+          signer=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n1)
+          certs=$("$signer" verify --print-certs app/build/outputs/apk/debug/app-debug.apk)
+          printf '%s\n' "$certs"
+          actual=$(printf '%s\n' "$certs" | sed -n 's/.*certificate SHA-256 digest: //p' | sort -u)
+          expected=$(python -c 'import json;print(json.load(open("automation/nello-contract.json",encoding="utf-8-sig"))["certificateSha256"])')
+          echo "APK certificate SHA-256: $actual"
+          test "$actual" = "$expected" || { echo '::error::Signing identity differs; publishing stopped'; exit 1; }
+          cp app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/ZephyrTV-Nello-Android7.apk"
+      - name: Save verified sources and publish the personalized APK
+        if: steps.plan.outputs.needed == 'true'
+        env:
+          CUSTOM: ${{ steps.plan.outputs.customTag }}
+          UPSTREAM: ${{ steps.plan.outputs.upstreamTag }}
+          PRERELEASE: ${{ steps.plan.outputs.prerelease }}
+          RECOVER: ${{ steps.plan.outputs.recover }}
+        run: |
+          if [ "$RECOVER" != true ]; then
+            git add -u
+            git add automation/nello-state.json
+            git commit -m "Nello: integrate $UPSTREAM with verified customizations"
+            git push origin "HEAD:$NELLO_BRANCH"
+            git tag "$CUSTOM"
+            git push origin "$CUSTOM"
+          fi
+          printf 'Personalized Nello build based on %s. Android 7/Fire OS 6, fixed .debug package/signature and Nello features preserved. Unit tests, lint and customization contract passed. No personal playlists included. Source: this GPL-3.0 tag.\n' "$UPSTREAM" > "$RUNNER_TEMP/nello-notes.md"
+          if gh release view "$CUSTOM" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$CUSTOM" "$RUNNER_TEMP/ZephyrTV-Nello-Android7.apk" --clobber
+          else
+            flags=(); if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
+            gh release create "$CUSTOM" "$RUNNER_TEMP/ZephyrTV-Nello-Android7.apk" --verify-tag --title "Zephyr TV $CUSTOM Covo di Nello" --notes-file "$RUNNER_TEMP/nello-notes.md" "${flags[@]}"
+          fi
+          curl --fail --max-time 30 --silent --output /dev/null https://ilcovodinello.onrender.com/api/health || true
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: nello-failed-checks
+          path: app/build/reports/
+          if-no-files-found: ignore

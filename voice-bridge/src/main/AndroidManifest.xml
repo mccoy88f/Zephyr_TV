@@ -1,0 +1,46 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <queries>
+        <package android:name="link.mccoy88f.zephyr.debug" />
+        <package android:name="link.mccoy88f.zephyr" />
+        <package android:name="org.smarttube.stable" />
+        <package android:name="org.smarttube.beta" />
+        <package android:name="app.smarttube.fdroid" />
+    </queries>
+    <application android:label="@string/bridge_title" android:allowBackup="false"
+        android:icon="@drawable/bridge_banner" android:banner="@drawable/bridge_banner"
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+        <activity android:name=".SettingsActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".BridgeActivity" android:exported="true" android:noHistory="true" />
+        <!-- Preserve the component name resolved by the existing Amazon bridge. -->
+        <activity-alias android:name="com.liskovsoft.amazonsmartyoutubetv.LauncherBridgeActivity"
+            android:targetActivity=".BridgeActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="youtube.com" />
+                <data android:host="www.youtube.com" />
+                <data android:host="m.youtube.com" />
+                <data android:host="youtu.be" />
+                <data android:pathPattern=".*" />
+                <data android:scheme="youtube" android:host="search" />
+                <data android:scheme="youtube" android:host="play" />
+            </intent-filter>
+        </activity-alias>
+    </application>
+</manifest>

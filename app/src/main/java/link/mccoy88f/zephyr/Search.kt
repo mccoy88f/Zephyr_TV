@@ -36,7 +36,7 @@ private var searchFiltersExpanded = false
  * with them alone too, without words), dictation into that box, the TV's own assistant, and a QR code to type on a
  * phone instead. [text]: what's in the box (the page built again after a filter changed); [focus]: the row to focus.
  */
-internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
+internal fun MainActivity.openSearch(text: String = "", focus: Int? = null, voice: Boolean = false) {
     if (focus == null && text.isEmpty()) searchFiltersExpanded = searchFilter.any
     if (settingsScrim.visibility != View.VISIBLE) showPanel()
     // The keyboard's Search wants words or a filter; the Search row goes without (Cinemeta's popular ones).
@@ -98,12 +98,13 @@ internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
     val rows = listOf(
         // Search: with words, or with the filters alone (all of Cinemeta's popular ones, without either).
         page(getString(R.string.search_go)) { go(typed(), always = true) },
-        page(getString(R.string.search_dictate)) { listen(input, ::go) },
+        if (needsFireTvVoiceHelp()) page(getString(R.string.firetv_voice_action)) { closeLauncherSettings(); assistant() }
+        else page(getString(R.string.search_dictate)) { listen(input, ::go) },
         page(getString(R.string.search_filters), if (searchFiltersExpanded) "▲ $summary" else "▼ $summary") {
             searchFiltersExpanded = !searchFiltersExpanded
             openSearch(typed(), 2)
         },
-    ) + filterRows + listOf(
+    ) + filterRows + if (needsFireTvVoiceHelp()) emptyList() else listOf(
         page(getString(R.string.search_assistant)) { closeLauncherSettings(); assistant() },
     )
     showPage(getString(R.string.search_title), rows, focus ?: 0, top = top) { closeLauncherSettings() }
@@ -115,6 +116,11 @@ internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
     }
     if (focus == null) input.requestFocus()
     pageExit = { stopListening() }
+    if (voice) ui.post {
+        if (needsFireTvVoiceHelp()) openFireTvVoiceHelp(typed())
+        else if (SpeechRecognizer.isRecognitionAvailable(this)) listen(input, ::go)
+        else Toast.makeText(this, getString(R.string.firetv_voice_unavailable), Toast.LENGTH_LONG).show()
+    }
     // Under the rows, the phone: the same search typed on its own keyboard. The link works while the page is open.
     if (handheld()) return // a phone or tablet: its own keyboard is the one in the box
     val ip = lanAddress() ?: return
@@ -175,6 +181,7 @@ internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
  * starts once it's said. (The TV's own dictation screen hears it but, on some TVs, never hands the words back.)
  */
 internal fun MainActivity.listen(input: EditText, go: (String) -> Unit) {
+    if (needsFireTvVoiceHelp()) { openFireTvVoiceHelp(input.text.toString()); return }
     if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
         afterMicAccess = { listen(input, go) }
         return requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), MIC_REQUEST)
@@ -205,7 +212,7 @@ internal fun MainActivity.listen(input: EditText, go: (String) -> Unit) {
             // What was heard, in the box, a moment before the search starts: some TVs give no words until the end.
             input.setText(said)
             input.setSelection(said.length)
-            ui.postDelayed({ if (input.isAttachedToWindow) go(said) }, HEARD_MS)
+            ui.postDelayed({ if (input.isAttachedToWindow) acceptVoiceWords(said, go) }, HEARD_MS)
         }
 
         override fun onError(error: Int) {
@@ -248,6 +255,7 @@ internal fun MainActivity.searchTmdb(query: String) {
     searchQuery = label
     searchChannels = emptyList()
     searchTitles = emptyList()
+    startYouTubeSearch(query, n)
     watchApp = null
     renderApps()
     (0 until appRow.childCount).map { appRow.getChildAt(it) }.firstOrNull { it.tag == SEARCH_PKG }?.requestFocus()
@@ -300,7 +308,7 @@ internal fun MainActivity.searchTmdb(query: String) {
         ui.post {
             if (searchLoading != n) return@post // closed, or another search started meanwhile
             searchLoading = 0
-            if (shownChannels.isEmpty() && shownTitles.isEmpty()) {
+            if (shownChannels.isEmpty() && shownTitles.isEmpty() && youtubeQuery == null) {
                 endSearch()
                 return@post Toast.makeText(this, getString(R.string.toast_no_results, label), Toast.LENGTH_SHORT).show()
             }
@@ -381,6 +389,7 @@ internal fun MainActivity.showSearchResults() {
     showSections(listOfNotNull(
         filmsSection,
         seriesSection,
+        youTubeSearchSection(),
     ) + collectorSections + listOfNotNull(
         adultSection,
         tvChannels,
@@ -531,6 +540,11 @@ internal fun MainActivity.endSearch(): Boolean {
     searchLoading = 0
     searchChannels = emptyList()
     searchTitles = emptyList()
+    youtubeCancellation?.cancel()
+    youtubeQuery = null
+    youtubePackage = null
+    youtubeVideos = emptyList()
+    youtubeLoading = false
     if (watchApp == SEARCH_PKG) watchApp = null
     renderApps()
     if (onIt) appRow.getChildAt(0)?.requestFocus()
@@ -579,8 +593,7 @@ private fun MainActivity.pickType(text: String) {
 }
 
 private fun MainActivity.isRadioChannel(d: ChannelDetail): Boolean =
-    d.addon?.let { c -> c.item.type == "radio" || extensionRoutes(c.addon, "radio") } == true ||
-        COLLECTOR_PKGS[d.pkg] == "radio"
+    SearchChannelKind.isRadio(d.addon?.item?.type, COLLECTOR_PKGS[d.pkg])
 
 private fun MainActivity.browseCollectors(filter: SearchFilter): List<Pair<Stremio.Title, String>> {
     val collectors = if (filter.type == "all") listOf("videos", "podcasts", "courses", "audiobooks", "events")

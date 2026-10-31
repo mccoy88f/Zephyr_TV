@@ -1,0 +1,27 @@
+<resources>
+    <string name="youtube_search_heading">YouTube · %1$s</string>
+    <string name="youtube_search_more">All results in SmartTube</string>
+    <string name="youtube_search_loading">Loading YouTube videos…</string>
+    <string name="youtube_search_unavailable">Videos unavailable here. Continue searching in SmartTube.</string>
+    <string name="youtube_search_empty">The provider returned no videos. Search directly in SmartTube.</string>
+    <string name="youtube_search_open">Open the full search in SmartTube.</string>
+    <string name="firetv_voice_action">Voice with the Fire TV remote</string>
+    <string name="firetv_voice_title">Voice search on Fire TV</string>
+    <string name="firetv_voice_help_bridge">Hold the remote microphone, say “search Inception on YouTube”, then release it. To open Stremio say “search Stremio on YouTube”. Select Zephyr as the destination in the bridge. This Fire TV has no Android dictation service for the search field.</string>
+    <string name="firetv_voice_help_no_bridge">This Fire TV has no Android dictation service. Search Zephyr with the keyboard or scan the QR to type on your phone. Forwarding Alexa searches to Zephyr requires the compatible bridge, a separate APK.</string>
+    <string name="firetv_voice_bridge_settings">Manage voice bridge</string>
+    <string name="firetv_voice_back">Back to search</string>
+    <string name="firetv_home_title">Zephyr TV Home manager</string>
+    <string name="firetv_home_subtitle">Fire OS 6 compatibility</string>
+    <string name="firetv_home_unsupported">This redirect is for Android 7.0/7.1 only. Use the existing Home setup on newer versions.</string>
+    <string name="firetv_home_active">Enabled</string>
+    <string name="firetv_home_paused">Paused</string>
+    <string name="firetv_home_info">Status: %1$s\nAmazon stays installed and enabled. App usage events are processed only on this device.</string>
+    <string name="firetv_home_enable">Use Zephyr as Home</string>
+    <string name="firetv_home_pause">Pause and open Amazon Home</string>
+    <string name="firetv_home_settings">Open Fire TV settings</string>
+    <string name="firetv_home_notification">Home redirect is enabled. Open to pause.</string>
+    <string name="firetv_home_access_needed">First enable usage access over ADB: appops set %1$s GET_USAGE_STATS allow</string>
+    <string name="firetv_voice_unavailable">No Android speech recognition service is available. Use the keyboard or your phone.</string>
+    <string name="firetv_debug_updates">Test build: install a compatible test APK instead of an official release.</string>
+</resources>

@@ -7,13 +7,25 @@ import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
 import android.provider.Settings
 import android.service.notification.NotificationListenerService
+import android.service.notification.StatusBarNotification
 import link.mccoy88f.zephyr.MainActivity.Prog
 
 /**
  * Present only so Android lets Zephyr TV see the media sessions (what's playing in Spotify, YouTube…): reading them
- * needs an enabled notification listener. It reads no notifications.
+ * needs an enabled notification listener. Also reads TV recommendation cards from SmartTube/Nuvio only.
  */
-class PlayingListener : NotificationListenerService()
+class PlayingListener : NotificationListenerService() {
+    override fun onNotificationPosted(sbn:StatusBarNotification){NotificationFeed.capture(this,sbn)}
+    override fun onNotificationRemoved(sbn:StatusBarNotification){NotificationFeed.remove(sbn)}
+    private var tracker: ExternalPlaybackTracker? = null
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+        activeNotifications.orEmpty().forEach { NotificationFeed.capture(this,it) }
+        tracker?.stop();tracker=ExternalPlaybackTracker(this).also { it.start() }
+    }
+    override fun onListenerDisconnected() { tracker?.stop();tracker=null;super.onListenerDisconnected() }
+    override fun onDestroy() { tracker?.stop();tracker=null;super.onDestroy() }
+}
 
 // What's playing now, from Android's media sessions: the first cards of the Continue Watching row.
 // Functions of MainActivity, kept here by topic; their state lives in MainActivity.
@@ -78,6 +90,7 @@ internal fun MainActivity.nowPlaying(): List<Prog> {
     val closed = prefs.getStringSet(K.HIDDEN_PLAYING, emptySet())!!
     val playingAgain = HashSet<String>()
     val list = mediaSessions()
+        .filter { c -> ExternalResume.eligible(c.packageName,c.playbackState?.position ?: 0,c.metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0) }
         .filter { it.playbackState?.state in setOf(PlaybackState.STATE_PLAYING, PlaybackState.STATE_PAUSED, PlaybackState.STATE_BUFFERING) }
         .filterNot { pausedLong(it) }
         .sortedByDescending { it.playbackState?.state == PlaybackState.STATE_PLAYING }

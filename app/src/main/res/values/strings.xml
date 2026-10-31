@@ -726,4 +726,11 @@
     <string name="phone_user_title">A user\'s name</string>
     <string name="phone_user_intro">Type the name. Its first character shows on the users icon on the device: a letter, or an emoji.</string>
     <string name="phone_user_saved">Saved on the device: %1$s</string>
+    <string name="firetv_settings_network">Network and Wi-Fi</string>
+    <string name="firetv_settings_apps">Applications</string>
+    <string name="firetv_settings_bluetooth">Remotes and Bluetooth</string>
+    <string name="firetv_settings_device">My Fire TV</string>
+    <string name="firetv_smarttube_subscriptions">Subscriptions</string>
+    <string name="firetv_smarttube_history">SmartTube history</string>
+    <string name="firetv_smarttube_open">Open in SmartTube</string>
 </resources>

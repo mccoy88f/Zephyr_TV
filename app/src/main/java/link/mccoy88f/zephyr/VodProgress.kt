@@ -89,7 +89,7 @@ internal object VodProgress {
                 .put("poster", e.poster.orEmpty()).put("position", e.position).put("duration", e.duration).put("at", e.at)
                 .put("stream", e.stream.orEmpty())
         }).toString())
-        part.renameTo(f)
+        java.nio.file.Files.move(part.toPath(), f.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING, java.nio.file.StandardCopyOption.ATOMIC_MOVE)
         cache = null
     }
 }
@@ -191,7 +191,7 @@ internal object VodWatched {
         part.writeText(JSONArray(marks.sortedByDescending { it.at }.take(KEEP).map {
             JSONObject().put("id", it.id).put("metaId", it.metaId).put("at", it.at).put("name", it.name)
         }).toString())
-        part.renameTo(f)
+        java.nio.file.Files.move(part.toPath(), f.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING, java.nio.file.StandardCopyOption.ATOMIC_MOVE)
         cache = null
     }
 

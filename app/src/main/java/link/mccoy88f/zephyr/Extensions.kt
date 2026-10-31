@@ -18,7 +18,7 @@ internal object Extensions {
     const val STANDARD = 1
 
     /** The features added to the standard after 1.0 that this Zephyr TV has (see "requires" and zephyr.has()). */
-    val FEATURES: Set<String> = emptySet()
+    val FEATURES: Set<String> = setOf("match-posters")
 
     /** The name of the file an extension is published with. */
     const val PUBLISHED = "manifest-zephyrtv.json"

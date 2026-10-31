@@ -1,0 +1,27 @@
+<resources>
+    <string name="youtube_search_heading">YouTube · %1$s</string>
+    <string name="youtube_search_more">Todos los resultados en SmartTube</string>
+    <string name="youtube_search_loading">Cargando vídeos de YouTube…</string>
+    <string name="youtube_search_unavailable">Vídeos no disponibles aquí. Continúa la búsqueda en SmartTube.</string>
+    <string name="youtube_search_empty">El servicio no devolvió vídeos. Busca directamente en SmartTube.</string>
+    <string name="youtube_search_open">Abrir la búsqueda completa en SmartTube.</string>
+    <string name="firetv_voice_action">Voz con el mando Fire TV</string>
+    <string name="firetv_voice_title">Búsqueda por voz en Fire TV</string>
+    <string name="firetv_voice_help_bridge">Mantén pulsado el micrófono del mando, di « busca Inception en YouTube » y suéltalo. Para abrir Stremio, di « busca Stremio en YouTube ». Elige Zephyr como destino en el puente. Esta Fire TV no ofrece dictado Android en el campo de búsqueda.</string>
+    <string name="firetv_voice_help_no_bridge">Esta Fire TV no ofrece dictado Android. Usa el teclado o escanea el QR para escribir desde el teléfono. Enviar las búsquedas de Alexa a Zephyr requiere el puente compatible, un APK independiente.</string>
+    <string name="firetv_voice_bridge_settings">Gestionar puente de voz</string>
+    <string name="firetv_voice_back">Volver a la búsqueda</string>
+    <string name="firetv_home_title">Gestor de inicio de Zephyr TV</string>
+    <string name="firetv_home_subtitle">Compatibilidad con Fire OS 6</string>
+    <string name="firetv_home_unsupported">Este gestor es solo para Android 7.0/7.1. En versiones posteriores, utiliza la configuración de inicio existente.</string>
+    <string name="firetv_home_active">Activo</string>
+    <string name="firetv_home_paused">En pausa</string>
+    <string name="firetv_home_info">Estado: %1$s\nAmazon permanece instalado y activo. Los eventos de uso se procesan solo en este dispositivo.</string>
+    <string name="firetv_home_enable">Usar Zephyr como inicio</string>
+    <string name="firetv_home_pause">Pausar y abrir el inicio de Amazon</string>
+    <string name="firetv_home_settings">Abrir ajustes de Fire TV</string>
+    <string name="firetv_home_notification">Redirección de inicio activa. Abre para pausarla.</string>
+    <string name="firetv_home_access_needed">Primero activa las estadísticas mediante ADB: appops set %1$s GET_USAGE_STATS allow</string>
+    <string name="firetv_voice_unavailable">No hay un servicio Android de reconocimiento de voz disponible. Usa el teclado o tu teléfono.</string>
+    <string name="firetv_debug_updates">Versión de prueba: instala un APK de prueba compatible en lugar de una versión oficial.</string>
+</resources>

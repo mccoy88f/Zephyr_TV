@@ -79,6 +79,7 @@ class PlayerActivity : Activity() {
     private var addon = ""
     private var channels: List<Channel> = emptyList()
     private var at = 0 // the channel playing (or being tuned)
+    private var quietZap = false
     private var shown = 0 // the channel the banner shows: ahead of [at] while zapping
     private var previous = -1 // for Last channel
     private var streams: List<Stremio.Stream> = emptyList()
@@ -478,6 +479,7 @@ class PlayerActivity : Activity() {
      * short, or all of what's on once OK [expanded] it.
      */
     private fun showBanner(i: Int, stay: Boolean = false) {
+        if(!LivePlaybackPolicy.showControls(vod,quietZap))return
         val c = channels[i]
         title.text = c.name
         position.text = if (vod && channels.size < 2) "" else getString(R.string.player_channel_n, i + 1, channels.size)
@@ -1013,9 +1015,11 @@ class PlayerActivity : Activity() {
             focusButton(if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 0 else buttons.childCount - 1)
             return true
         }
-        // Up/Down never zap (CH+/CH- do): they bring the banner up, as OK does.
+        // Live Up/Down zap quietly unless a control already owns navigation; VOD keeps its controls.
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-            okPressed()
+            if (!vod) {
+                if(event.repeatCount==0) {quietZap=true;hideBanner.run();zap(if(keyCode==KeyEvent.KEYCODE_DPAD_UP)+1 else -1)}
+            } else okPressed()
             return true
         }
         when (keyCode) {
@@ -1070,6 +1074,7 @@ class PlayerActivity : Activity() {
      * clear where OK goes next: all of it), else on the first button. Once in use, the banner's views take OK.
      */
     private fun okPressed() {
+        quietZap=false
         seeking = false
         showBanner(shown)
         if (shown == at) focusDesc()
@@ -1145,6 +1150,7 @@ class PlayerActivity : Activity() {
      * live stream paused past what it keeps catches up with the broadcast when it plays again (see onPlayerError).
      */
     private fun setPlaying(play: Boolean) {
+        quietZap=false
         val p = player ?: return
         if (p.playWhenReady == play) return
         p.playWhenReady = play
@@ -1287,6 +1293,7 @@ class PlayerActivity : Activity() {
 
     /** Hold OK, or Menu (both lists), or a button (the audio tracks, or Off and the subtitles); focus on what's playing. */
     private fun openTracks(type: Int? = null) {
+        quietZap=false
         if (player == null) return showBanner(shown)
         val audio = tracks(C.TRACK_TYPE_AUDIO)
         val subs = tracks(C.TRACK_TYPE_TEXT)
@@ -1392,10 +1399,12 @@ class PlayerActivity : Activity() {
      * one. Kept for the next time too only with Subtitles always on; otherwise each time starts with them off.
      */
     private var textLang: String? = null
+    private var manualAudioPlayer: ExoPlayer? = null
 
     /** Plays track [t], and keeps its language for the channels after this one (see textLang). */
     private fun pick(t: Track, type: Int) {
         val p = player ?: return
+        if (type == C.TRACK_TYPE_AUDIO) manualAudioPlayer = p
         val lang = t.group.getTrackFormat(t.index).language
         p.trackSelectionParameters = p.trackSelectionParameters.buildUpon()
             .setTrackTypeDisabled(type, false)
@@ -1444,6 +1453,43 @@ class PlayerActivity : Activity() {
     }
 
     private fun subtitlesOn() = prefs.getBoolean(K.SUBTITLES_ON, false)
+
+    /** Supported Full HD renditions first; real Italian before an IPTV provider's "ak" label. */
+    private fun applyLivePreferences(p: ExoPlayer, allowAudio: Boolean) {
+        if (vod) return
+        val params = p.trackSelectionParameters
+        val next = params.buildUpon()
+        var changed = false
+        val preferredLanguage = (prefs.getString(K.TMDB_LANG, null) ?: TmdbClient.defaultLanguage()).substringBefore('-')
+        if (allowAudio && manualAudioPlayer !== p && preferredLanguage == "it") {
+            val audio = tracks(C.TRACK_TYPE_AUDIO).maxByOrNull {
+                val f = it.group.getTrackFormat(it.index)
+                LivePlaybackPolicy.audioRank(f.language, f.label)
+            }
+            if (audio != null) {
+                val f = audio.group.getTrackFormat(audio.index)
+                if (LivePlaybackPolicy.audioRank(f.language, f.label) > 0 && !audio.selected) {
+                    next.setOverrideForType(TrackSelectionOverride(audio.group.mediaTrackGroup, audio.index))
+                    changed = true
+                }
+            }
+        }
+        // Keep all supported 1080p bitrates in the same adaptive group. No match: normal automatic selection.
+        val fullHd = p.currentTracks.groups.filter { it.type == C.TRACK_TYPE_VIDEO }.mapNotNull { g ->
+            val indices = (0 until g.length).filter { i ->
+                val f = g.getTrackFormat(i)
+                g.isTrackSupported(i) && LivePlaybackPolicy.isFullHd(f.width, f.height)
+            }
+            indices.takeIf { it.isNotEmpty() }?.let { g to it }
+        }.firstOrNull()
+        fullHd?.let { (g, indices) ->
+            if (params.overrides[g.mediaTrackGroup]?.trackIndices != indices) {
+                next.setOverrideForType(TrackSelectionOverride(g.mediaTrackGroup, indices))
+                changed = true
+            }
+        }
+        if (changed) p.trackSelectionParameters = next.build()
+    }
 
     /**
      * The subtitles on screen: text ones in a caption at the bottom, picture ones (DVB, common on IPTV) where the
@@ -1543,7 +1589,7 @@ class PlayerActivity : Activity() {
                 val list = if (ready) found else checked(found)
                 ui.post {
                     if (isFinishing || tuning != tune) return@post
-                    streams = list
+                    streams = if (vod) list else list.sortedBy { LivePlaybackPolicy.streamRank(streamQuality(it.title)) }
                     prefetch(i)
                     // None in the TV's language yet, and sources still looking: theirs are waited for before another
                     // language's (or one that says none) plays.
@@ -1883,6 +1929,7 @@ class PlayerActivity : Activity() {
             }
 
             override fun onTracksChanged(tracks: Tracks) {
+                applyLivePreferences(p, allowAudio = !noAudio)
                 if (banner.visibility == View.VISIBLE && shown == at) { fillTrackLine(at); fillButtons(at) }
             }
 

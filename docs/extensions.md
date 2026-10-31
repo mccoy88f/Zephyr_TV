@@ -346,6 +346,7 @@ script's memory. Zephyr TV downloads it, reads it and keeps it on the TV; the co
 ```js
 // Reads the playlist (again when older than maxAge seconds): its groups and how many channels.
 const list = await zephyr.m3u.load("main", { url, headers, maxAge: 86400 });
+// maxAge: 0 explicitly refreshes now (the default only applies when maxAge is absent).
 // → { channels: 18234, groups: ["News", "Sport", …], guides: ["https://…/epg.xml.gz"] }
 
 // A page of its channels, by group or by words in the name.
@@ -548,3 +549,22 @@ the standard, with its name for `requires`, once Zephyr TV has it.
 | `widevine` | DASH protected by Widevine | `drm: { "widevine": { "license": "<url>", "headers"?: {…} } }` |
 
 Not planned: torrent (`infoHash`) streams, WebSocket, signed packages.
+
+### Optional local fixture artwork (Nello builds)
+
+Check `zephyr.has("match-posters")` before using:
+
+```js
+const poster = await zephyr.matchPoster({
+  home: "Home club", away: "Away club", time: "20:30",
+  homeBadge: "https://example.org/home.png", awayBadge: "https://example.org/away.png"
+});
+```
+
+The returned app-private `file://` URI can be used as the catalog item's `poster`
+and `logo`. The native renderer composes both badges, names and kickoff time on
+a 960×540 PNG, cached per extension with a 120-image limit. It never uploads the
+fixture to an image service. Badge downloads require HTTPS; absent badges use
+initials. The extension is responsible for identifying the clubs and providing
+the correct local time. Include `match-posters` in `requires` only if no fallback
+is possible on other Zephyr builds.

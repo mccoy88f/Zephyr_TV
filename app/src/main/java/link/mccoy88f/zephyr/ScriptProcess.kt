@@ -100,6 +100,17 @@ internal class ExtensionService : ScriptService() {
         val data = Extensions.dataDir(root.parentFile!!.parentFile!!, root.name)
         fun headers(o: org.json.JSONObject?) = o?.keys()?.asSequence()?.associateWith { o.optString(it) }.orEmpty()
         return mapOf(
+            "epg.now" to { args ->
+                val urls=runCatching { org.json.JSONArray(File(data,"guides.json").readText()) }.getOrNull()
+                var found: Epg.Show?=null
+                if(urls!=null) for(i in 0 until urls.length()) {
+                    val guide=Epg.saved(root.parentFile!!.parentFile!!,urls.optString(i),own=false) ?: continue
+                    found=Epg.nowAndNext(guide,args.optString("name"),id=args.optString("id").ifBlank { null })?.first
+                    if(found!=null)break
+                }
+                found?.let { org.json.JSONObject().put("title",it.title).put("start",it.start).put("stop",it.stop) }
+            },
+            "match.poster" to { args -> MatchPoster.create(data,args) },
             // zephyr.asset(path): a file of the extension's package, as text.
             "asset" to { args -> Extensions.safe(root, args.optString("path"))?.takeIf { it.isFile }?.readText() ?: throw IOException("no file ${args.optString("path")}") },
             // zephyr.m3u: playlists read here, kept in its data folder (see M3u).

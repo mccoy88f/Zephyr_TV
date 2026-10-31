@@ -43,10 +43,6 @@ import link.mccoy88f.zephyr.MainActivity.Prog
 // ---------- continue watching (Android TV Watch Next) ----------
 
 internal fun MainActivity.refreshWatchNext() {
-    if (checkSelfPermission(TV_LISTINGS) != PackageManager.PERMISSION_GRANTED) {
-        showWatchNext(emptyList())
-        return
-    }
     ui.post { if (tmdbLastFocusApp == null) watchTitle.text = getString(R.string.continue_watching) }
     io.execute {
         val list = try {
@@ -54,13 +50,14 @@ internal fun MainActivity.refreshWatchNext() {
         } catch (e: Exception) {
             emptyList()
         }
-        val playing = nowPlaying()
+        val feeds=homeFeedSections(prefs.getStringSet(K.HIDDEN_WATCH,emptySet())!!)
+        val playing = emptyList<Prog>() // persisted unfinished Nuvio/SmartTube sessions are in queryWatchNext
         ui.post {
             if (tmdbLastFocusApp != null) return@post // focus moved on to an app meanwhile: its rows, not these
             watchTitle.text = getString(R.string.continue_watching)
             watchApp = CW_PKG
             sectionCounts[CW_PKG] = if (playing.isEmpty() && list.isEmpty()) 0 else 1
-            showWatchNext(list, playing)
+            showWatchNext(list, playing, feeds)
         }
     }
 }
@@ -76,17 +73,24 @@ internal fun MainActivity.refreshWatchNext() {
  */
 internal fun MainActivity.queryWatchNext(): List<Prog> {
     val hidden = prefs.getStringSet(K.HIDDEN_WATCH, emptySet())!!
-    // Watch Next and the apps' channels came with Android 8: on 7, only Zephyr TV's own cards.
-    val tv = android.os.Build.VERSION.SDK_INT >= 26
-    val watchNext = if (tv) readPrograms(TvContract.WatchNextPrograms.CONTENT_URI, hidden) else emptyList()
-    val channels = if (!tv) emptyList() else continueChannels().flatMap { id ->
-        readPrograms(TvContract.buildPreviewProgramsUriForChannel(id), hidden).map { (_, p) -> prefs.getLong("t_${p.pkg}", 0) to p }
-    }
-    // And the Stremio add-on channel last played, and the films and episodes begun.
-    val all = watchNext + channels + listOfNotNull(lastChannelCard(hidden)) + titleProgressCards(hidden)
+    val all = watchHistorySources(android.os.Build.VERSION.SDK_INT,
+        checkSelfPermission(TV_LISTINGS) == PackageManager.PERMISSION_GRANTED,
+        system = {
+            // Do not touch these Android 8 provider URIs on Android 7 / Fire OS 6.
+            if (HomePolicy.supportsTvChannels(android.os.Build.VERSION.SDK_INT)) {
+                val watchNext = readPrograms(TvContract.WatchNextPrograms.CONTENT_URI, hidden)
+                val channels = continueChannels().flatMap { id ->
+                    readPrograms(TvContract.buildPreviewProgramsUriForChannel(id), hidden)
+                        .map { (_, p) -> prefs.getLong("t_${p.pkg}", 0) to p }
+                }
+                watchNext + channels
+            } else emptyList()
+        },
+        local = { titleProgressCards(hidden) + externalResumeCards(hidden) })
     publishingPkgs = all.mapNotNull { it.second.pkg }.toSet()
     val off = prefs.getStringSet(K.CW_OFF, emptySet())!!
-    return newestPerApp(all.filter { it.second.pkg !in off }.distinctBy { it.second.intent ?: it.second.title }, PER_APP) { it.pkg }
+    return newestPerApp(all.filter { it.second.pkg !in off && (it.second.vod != null || ExternalResume.allowed(it.second.pkg)) && (it.second.vod != null || it.second.progress in 1..94) }
+        .distinctBy { "${it.second.pkg}/${it.second.vod?.video ?: it.second.title.lowercase()}" }, 12) { it.pkg }
         .take(20)
 }
 
@@ -181,6 +185,28 @@ internal fun MainActivity.rowsAgain(pkg: String?) {
 }
 
 internal fun MainActivity.queryAppChannels(pkg: String?) {
+    if(android.os.Build.VERSION.SDK_INT<26 && ExternalResume.allowed(pkg)) {
+        io.execute {
+            val hidden=prefs.getStringSet(K.HIDDEN_WATCH,emptySet())!!
+            val cards=(if(pkg?.startsWith("com.nuvio")==true) titleProgressCards(hidden).map { it.second } else emptyList()) +
+                externalResumeCards(hidden).map { it.second }.filter { it.pkg==pkg } +
+                externalHistoryCards(pkg!!) + if(pkg.startsWith("com.nuvio"))nativeHistoryCards() else emptyList()
+            val sections=ArrayList<Section>()
+            if(cards.isNotEmpty())sections+=Section("local-history",getString(R.string.continue_watching),getString(R.string.continue_watching),cards.distinctBy { it.title.lowercase() })
+            val feed=NotificationFeed.cards(pkg).filter { hideKey(pkg,it.title) !in hidden }
+            if(feed.isNotEmpty())sections+=Section("legacy-tv-feed","TV",appLabel(pkg)+" · TV",feed)
+            if(pkg?.startsWith("org.smarttube")==true) {
+                val links=listOf(getString(R.string.firetv_smarttube_subscriptions) to "FEsubscriptions",getString(R.string.firetv_smarttube_history) to "FEmy_youtube")
+                sections+=Section("smarttube-links","SmartTube","SmartTube",links.map { (title,path) ->
+                    val i=Intent(Intent.ACTION_VIEW,Uri.parse("https://www.youtube.com/tv#/zylon-surface?c=$path")).setClassName(pkg,"com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity")
+                    Prog(title,getString(R.string.firetv_smarttube_open),0,null,i.toUri(Intent.URI_INTENT_SCHEME),pkg)
+                })
+            }
+            ui.post { if(tmdbLastFocusApp==pkg) {watchApp=pkg;if(sections.isEmpty())hideWatchRow() else showSections(sections)} }
+        }
+        return
+    }
+
     // An add-on's tile, or the TV app with the add-ons' channels in it, has rows without the TV listings too.
     if (pkg == null || (!readsListings() && !pkg.startsWith(STREMIO) && addonsUnder(pkg).isEmpty())) {
         ui.post { watchTitle.text = getString(R.string.continue_watching) }
@@ -230,7 +256,7 @@ internal fun MainActivity.appLabel(pkg: String) = apps.firstOrNull { it.pkg == p
  * own order, empty ones left out. Runs on the io thread.
  */
 internal fun MainActivity.appSections(pkg: String, hidden: Set<String>): List<Section> {
-    if (android.os.Build.VERSION.SDK_INT < 26) return emptyList() // apps' rows came with Android 8
+    if (!HomePolicy.supportsTvChannels(android.os.Build.VERSION.SDK_INT)) return emptyList()
     val rows = ArrayList<Pair<Long, String>>() // (channel id, its name)
     contentResolver.query(TvContract.Channels.CONTENT_URI, arrayOf("_id", "display_name", "package_name"), null, null, null)?.use { c ->
         while (c.moveToNext()) if (c.getString(2) == pkg) rows += c.getLong(0) to (c.getString(1) ?: "")
@@ -590,9 +616,9 @@ internal fun MainActivity.timeLeft(ms: Long): String {
 }
 
 /** The Play queue tile's row: what's playing now (see nowPlaying) first, then Continue Watching, in one row. */
-internal fun MainActivity.showWatchNext(list: List<Prog>, playing: List<Prog> = emptyList()) = showSections(listOfNotNull(
+internal fun MainActivity.showWatchNext(list: List<Prog>, playing: List<Prog> = emptyList(), feeds:List<Section> = emptyList()) = showSections(listOfNotNull(
     (playing + list).takeIf { it.isNotEmpty() }?.let { getString(R.string.continue_watching).let { t -> Section("", t, t, it) } },
-))
+) + feeds)
 
 /**
  * The rows under the apps, one per section. The first is the row in the layout; any more are built under it (see
@@ -713,7 +739,8 @@ internal fun MainActivity.nearestCard(row: ViewGroup, from: View): View? {
  */
 internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
     val gap = dp(GRID_GAP)
-    val n = cardsAcross()
+    val fixture=MatchCardLayout.isFixture(p.image)
+    val n = MatchCardLayout.columns(p.image,cardsAcross())
     val w = (resources.displayMetrics.widthPixels - dp(96) - gap * (n - 1)) / n
     // Standard 16:9 aspect ratio prevents cutting off channel numbers and provider badges
     val cardHeight = w * 9 / 16
@@ -729,7 +756,7 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
         setBackgroundColor(if (dark) 0xFF18181A.toInt() else 0xFFDDE1E5.toInt())
     }
     // Long titles scroll while their poster is focused instead of staying cut off.
-    val title = label(p.title, 14f).apply {
+    val title = label(p.title, if(fixture)20f else 14f).apply {
         setPadding(0, dp(6), 0, 0)
         isSingleLine = true
         ellipsize = TextUtils.TruncateAt.MARQUEE
@@ -762,10 +789,17 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
     // middle on a blur of itself (its name and number are under the card); with no logo, or until it's in, the
     // number and name instead.
     // The logos to try in turn: the card's own (an add-on's), the TV's, then Zephyr TV's own by name.
-    if (p.badge != null) channelArt(frame, w, cardHeight, p.badge, p.title) {
+    if(fixture) fillArt(frame,w,cardHeight,p.image,null,null,p.title)
+    else if (p.badge != null) channelArt(frame, w, cardHeight, p.badge, p.title) {
         listOfNotNull(p.image, p.channelId?.let { id -> logo(id) }, ChannelLogos.match(channelLogoTable(), p.title)).distinct()
     }
+    else if(p.vod==null) fillArt(frame,w,cardHeight,p.image,null,null,p.title)
     if (p.vod != null) fillArt(frame, w, cardHeight, p.image, p.logo, p.poster, p.title, p.vod.fallback)
+    if(!fixture && p.addon!=null && p.sub.isNotBlank()) frame.addView(TextView(this).apply {
+        text=p.sub;textSize=13f;setTextColor(Color.WHITE);maxLines=2
+        ellipsize=TextUtils.TruncateAt.END;setPadding(dp(10),dp(6),dp(10),dp(6))
+        setBackgroundColor(0xDD0B1424.toInt())
+    },FrameLayout.LayoutParams(MATCH_PARENT,FrameLayout.LayoutParams.WRAP_CONTENT,Gravity.BOTTOM))
     // A film still only in cinemas (see Releases): a small rounded tag in the bottom right corner.
     if (p.cinema) frame.addView(TextView(this).apply {
         text = getString(R.string.badge_cinema)
@@ -793,9 +827,9 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
         visibility = if (p.progress > 0) View.VISIBLE else View.INVISIBLE
     }
     col.addView(bar, LinearLayout.LayoutParams(w, dp(3)).apply { topMargin = dp(6) })
-    col.addView(title)
+    if(!fixture) col.addView(title)
     val icon = sourceIcon(p.icon ?: p.pkg)
-    if (p.sub.isNotEmpty() || icon != null || p.addon != null) {
+    if (!fixture && (p.sub.isNotEmpty() || icon != null || p.addon != null)) {
         col.addView(label(p.sub, 12f).apply {
             details = this
             alpha = 0.8f
@@ -843,15 +877,26 @@ internal fun MainActivity.channelArt(frame: FrameLayout, w: Int, h: Int, number:
     posterIo.execute {
         // Looked up here, off the UI thread, and tried in turn: the first that loads is the one.
         // Kept on disk (see Images) and in memory: a logo is downloaded once, not each time its card is.
-        val bmp = logo().firstNotNullOfOrNull { uri ->
-            posters.get(uri) ?: try {
+        val (uri, bmp) = logo().firstNotNullOfOrNull { uri ->
+            (posters.get(uri) ?: try {
                 val file = Images.file(uri, Images.Kind.LOGO)
                 decode(android.net.Uri.fromFile(file).toString(), alpha = true)?.also { posters.put(uri, it) }
             } catch (e: Exception) {
                 warn("channel logo failed: $uri ($e)")
                 null
-            }
+            })?.let { uri to it }
         } ?: return@execute
+        // A composed fixture is already a complete 16:9 card, not an individual channel crest.
+        if (uri.startsWith("file:///") && "/match-posters/" in uri) {
+            ui.post {
+                text.visibility = View.GONE
+                frame.addView(ImageView(this).apply {
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    setImageBitmap(bmp)
+                }, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+            }
+            return@execute
+        }
         val blur = softBlur(bmp)
         ui.post {
             text.visibility = View.GONE
@@ -985,8 +1030,20 @@ internal fun MainActivity.progressBarDrawable(): Drawable {
 }
 
 internal fun MainActivity.open(p: Prog) {
+    if(NotificationFeed.open(p))return
     prefs.edit().putLong("t_${p.pkg}", System.currentTimeMillis()).apply()
     try {
+        if(ExternalResume.allowed(p.pkg) && p.progress>0) {
+            val session=mediaSessions().firstOrNull { it.packageName==p.pkg &&
+                it.metadata?.getString(android.media.MediaMetadata.METADATA_KEY_TITLE)==p.title }
+            val saved=ExternalResume.all(filesDir).firstOrNull { it.pkg==p.pkg && it.title==p.title }
+            if(saved?.uri==null && session?.sessionActivity!=null) { session.sessionActivity!!.send();return }
+        }
+        if(p.pkg?.startsWith("org.smarttube")==true) {
+            val uri=runCatching { Intent.parseUri(p.intent.orEmpty(),Intent.URI_INTENT_SCHEME).data }.getOrNull()
+            if(uri?.host=="www.youtube.com" && uri.path=="/watch" && Regex("[A-Za-z0-9_-]{11}").matches(uri.getQueryParameter("v").orEmpty()))
+                ExternalResume.rememberLink(filesDir,p.title,uri.toString())
+        }
         startActivity(programIntent(p) ?: throw IllegalArgumentException("unsafe or missing intent"))
     } catch (e: Exception) {
         p.pkg?.let { packageManager.getLeanbackLaunchIntentForPackage(it) }?.let { startActivity(it) }
@@ -1103,7 +1160,8 @@ internal fun MainActivity.decode(uri: String, alpha: Boolean = false): Bitmap? {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
     var sample = 1
-    while (bounds.outWidth / (sample * 2) >= dp(220)) sample *= 2
+    val readableWidth=if(MatchCardLayout.isFixture(uri))960 else dp(220)
+    while (bounds.outWidth / (sample * 2) >= readableWidth) sample *= 2
     val opts = BitmapFactory.Options().apply {
         inSampleSize = sample
         inPreferredConfig = if (alpha) Bitmap.Config.ARGB_8888 else Bitmap.Config.RGB_565

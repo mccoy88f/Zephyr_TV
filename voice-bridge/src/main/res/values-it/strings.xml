@@ -1,0 +1,10 @@
+<resources>
+    <string name="bridge_title">Bridge vocale Zephyr / SmartTube (prova)</string>
+    <string name="bridge_info">Con Alexa dì “cerca Inception su YouTube”. Scegli sotto dove inviare le ricerche. I link ai video aprono ancora SmartTube. Inizia la ricerca con “Zephyr” o “SmartTube” per scegliere al volo. Questo non registra il comando “su Zephyr” in Alexa.</string>
+    <string name="current_target">Destinazione ricerche: %1$s</string>
+    <string name="use_zephyr">Usa Zephyr per le ricerche</string>
+    <string name="use_smarttube">Usa SmartTube per le ricerche</string>
+    <string name="zephyr_missing">Installa prima la build Zephyr con supporto ACTION_SEARCH.</string>
+    <string name="smarttube_missing">SmartTube non è installato.</string>
+    <string name="routing_failed">Impossibile aprire la destinazione.</string>
+</resources>

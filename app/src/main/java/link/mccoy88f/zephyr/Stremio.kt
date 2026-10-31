@@ -108,7 +108,7 @@ internal object Stremio {
 
     /** A channel in a catalog: what to ask the streams for, its name and logo, what's on (if the add-on says), its categories. */
     internal class Item(val type: String, val id: String, val name: String, val logo: String?, val now: String?, val genres: List<String> = emptyList(),
-                        val epgId: String? = null) // its id in the TV guide, when its add-on (an extension) says it
+                        val epgId: String? = null, val channels: List<Item> = emptyList()) // its id in the TV guide, when its add-on (an extension) says it
 
     /** One row: a catalog, whole ([genre] null) or one of its categories. */
     internal class Row(val catalog: Catalog, val genre: String?, val items: List<Item>)
@@ -193,8 +193,7 @@ internal object Stremio {
             if (failures > 0 && failures == addon.catalogs.size) throw java.io.IOException("every TV catalog failed")
             val items = rows.flatMap { it.items }.distinctBy { it.id }
             val saved = JSONObject().put("manifest", manifest)
-                .put("items", JSONArray(items.map { JSONObject().put("type", it.type).put("id", it.id).put("name", it.name)
-                    .put("logo", it.logo ?: JSONObject.NULL).put("now", it.now ?: JSONObject.NULL) }))
+                .put("items", JSONArray(items.map { channelJson(it) }))
                 .put("rows", JSONArray(rows.map { row ->
                     JSONObject().put("catalog", row.catalog.id).put("genre", row.genre ?: JSONObject.NULL).put("ids", JSONArray(row.items.map { it.id }))
                 }))
@@ -287,7 +286,7 @@ internal object Stremio {
         for (page in 0 until MAX_PAGES) {
             val extra = listOfNotNull(genre?.let { "genre=${enc(it)}" }, if (out.isEmpty()) null else "skip=${out.size}").joinToString("&")
             val path = "${addon.base}/catalog/${enc(c.type)}/${enc(c.id)}" + (if (extra.isEmpty()) "" else "/$extra") + ".json"
-            val metas = items(get(path))
+            val metas = items(get(path), ExtensionCalls.idOf(addon.url))
             val before = out.size
             for (it in metas) out.putIfAbsent(it.id, it)
             // A short page is the last; one with nothing new means the add-on ignores "skip".
@@ -296,8 +295,20 @@ internal object Stremio {
         return out.values.toList()
     }
 
+    internal fun channelJson(item:Item):JSONObject = JSONObject().put("type",item.type).put("id",item.id).put("name",item.name)
+        .put("logo",item.logo ?: JSONObject.NULL).put("now",item.now ?: JSONObject.NULL).put("epgId",item.epgId ?: JSONObject.NULL)
+        .put("genres",JSONArray(item.genres)).put("channels",JSONArray(item.channels.map { channelJson(it) }))
+    internal fun cachedItem(o:JSONObject):Item = readCachedItem(o,true)
+    private fun readCachedItem(o:JSONObject,groups:Boolean):Item {
+        val members=o.optJSONArray("channels")
+        val kids=if(groups && members!=null)(0 until minOf(100,members.length())).mapNotNull { members.optJSONObject(it)?.let { child -> readCachedItem(child,false) } }else emptyList()
+        val genres=o.optJSONArray("genres")
+        return Item(o.optString("type"),o.optString("id"),o.optString("name"),text(o,"logo"),text(o,"now"),
+            if(genres==null)emptyList() else (0 until genres.length()).map { genres.optString(it) },text(o,"epgId"),kids)
+    }
+
     /** The channels in a catalog page. */
-    internal fun items(page: JSONObject): List<Item> {
+    internal fun items(page: JSONObject, extensionId: String? = null, allowGroups: Boolean = true): List<Item> {
         val metas = page.optJSONArray("metas") ?: return emptyList()
         return (0 until metas.length()).mapNotNull { metas.optJSONObject(it) }.mapNotNull { m ->
             val id = m.optString("id").takeIf { it.isNotEmpty() } ?: return@mapNotNull null
@@ -305,7 +316,9 @@ internal object Stremio {
             // "LIVE" is what some add-ons say when they have no guide for the channel: nothing to show.
             val now = text(m, "releaseInfo")?.takeIf { !it.equals("LIVE", ignoreCase = true) }
             val genres = (m.optJSONArray("genre") ?: m.optJSONArray("genres"))?.let { g -> (0 until g.length()).map { g.optString(it) } }.orEmpty()
-            Item(m.optString("type").ifBlank { "tv" }, id, name, logo(text(m, "logo") ?: text(m, "poster")), now, genres, text(m, "epgId"))
+            val group=m.optJSONObject("behaviorHints")?.optJSONArray("channelGroup")
+            val channels=if(allowGroups && group!=null) items(JSONObject().put("metas",JSONArray((0 until minOf(group.length(),100)).map { group.get(it) })),extensionId,false) else emptyList()
+            Item(m.optString("type").ifBlank { "tv" }, id, name, logo(text(m, "logo") ?: text(m, "poster"), extensionId), now, genres, text(m, "epgId"),channels)
         }
     }
 
@@ -313,7 +326,10 @@ internal object Stremio {
      * The add-on's logo for a channel, its own placeholder too (it chose it): null only when it isn't a web address
      * or it's cut short ("…/images?q"). Zephyr TV's own (see ChannelLogos) is the fallback, for none or one that won't load.
      */
-    internal fun logo(url: String?): String? {
+    internal fun logo(url: String?, extensionId: String? = null): String? {
+        // Only the producing native extension may publish its generated local fixture artwork.
+        if (url != null && extensionId != null && Regex("^file:///data/(?:user/[0-9]+|data)/[^/]+/files/extension-data/" +
+                Regex.escape(extensionId) + "/match-posters/a[0-9a-f]{24}$").matches(url)) return url
         if (url == null || !(url.startsWith("http://") || url.startsWith("https://"))) return null
         val query = url.substringAfter('?', "")
         if (url.contains('?') && (query.isEmpty() || !query.contains('='))) return null
@@ -623,7 +639,7 @@ internal object Stremio {
         val addon = addon(url, saved.getJSONObject("manifest"))
         val list = saved.optJSONArray("items") ?: JSONArray()
         val items = (0 until list.length()).mapNotNull { list.optJSONObject(it) }.associate {
-            it.optString("id") to Item(it.optString("type"), it.optString("id"), it.optString("name"), text(it, "logo"), text(it, "now"))
+            it.optString("id") to cachedItem(it)
         }
         val rows = saved.optJSONArray("rows") ?: JSONArray()
         return Listing(addon, (0 until rows.length()).mapNotNull { rows.optJSONObject(it) }.mapNotNull { r ->

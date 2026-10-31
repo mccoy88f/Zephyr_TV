@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Fire OS 6: explicitly enabled via app-op; no root or signature grant. -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" android:maxSdkVersion="25" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" android:maxSdkVersion="25" />
+    <uses-permission android:name="android.permission.REORDER_TASKS" android:maxSdkVersion="25" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- In-app updates from GitHub releases. -->
@@ -27,6 +31,10 @@
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
     <queries>
+        <package android:name="com.amazon.firetv.youtube" />
+        <package android:name="org.smarttube.stable" />
+        <package android:name="org.smarttube.beta" />
+        <package android:name="app.smarttube.fdroid" />
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
@@ -61,6 +69,21 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="false"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+
+        <service android:name=".HomeKeeper" android:exported="false" />
+        <receiver android:name=".HomeKeeperBoot" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+        <activity android:name=".HomeControlActivity" android:label="@string/firetv_home_title" android:exported="true"
+            android:taskAffinity="${applicationId}.homecontrol" android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".MainActivity"

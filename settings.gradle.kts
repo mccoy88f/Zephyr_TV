@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "zephyr"
 include(":app")
+include(":voice-bridge")

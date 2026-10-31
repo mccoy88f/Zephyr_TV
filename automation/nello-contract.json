@@ -1,0 +1,37 @@
+{
+  "upstream": "mccoy88f/Zephyr_TV",
+  "branch": "feat/android7-firetv-home",
+  "asset": "ZephyrTV-Nello-Android7.apk",
+  "certificateSha256": "b073ce2493e357cd090546966c44c3e5dd275d00e88ff317ed7b1d6f3d887ffc",
+  "requiredSources": [
+    "HomeKeeper.java",
+    "VoiceSearch.kt",
+    "VoiceCommand.java",
+    "SmartTubeSearch.kt",
+    "LivePlaybackPolicy.kt",
+    "ExternalResume.kt",
+    "ExternalPlaybackTracker.kt",
+    "PreferredWatchUi.kt",
+    "MatchPoster.kt",
+    "MatchCardLayout.kt",
+    "FireTvSettings.kt",
+    "PanelNavigation.kt",
+    "NotificationFeed.kt",
+    "NotificationFeedPolicy.kt"
+  ],
+  "requiredTests": [
+    "HomePolicyTest",
+    "VoiceCommandTest",
+    "VoiceUiPolicyTest",
+    "SmartTubeResultPolicyTest",
+    "LivePlaybackPolicyTest",
+    "ExternalResumeTest",
+    "MatchPosterCatalogTest",
+    "MatchCardLayoutTest",
+    "WatchSourcesCompatibilityTest",
+    "PlaybackRoutingRegressionTest",
+    "ChannelGroupTest",
+    "PanelNavigationTest",
+    "NotificationFeedPolicyTest"
+  ]
+}

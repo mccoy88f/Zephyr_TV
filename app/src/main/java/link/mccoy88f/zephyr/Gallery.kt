@@ -204,7 +204,7 @@ private class GalleryShow(private val context: Context) : SurfaceHolder.Callback
             }
             val holder = view.holder
             val canvas = try {
-                if (android.os.Build.VERSION.SDK_INT >= 26) holder.lockHardwareCanvas() else holder.lockCanvas() // Android 7: in software
+                if (android.os.Build.VERSION.SDK_INT >= 26) holder.lockHardwareCanvas() else holder.lockCanvas()
             } catch (e: Exception) {
                 null
             } ?: return

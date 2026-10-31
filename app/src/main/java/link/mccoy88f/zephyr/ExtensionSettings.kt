@@ -483,6 +483,18 @@ private fun MainActivity.extensionZipFromPhone() {
 internal fun MainActivity.extensionAddonUrls(): List<String> =
     extensions(prefs, filesDir).filter { extensionOn(prefs, it.id) }.map { ExtensionCalls.url(it.id) }
 
+/** Only extensions explicitly requesting it: refresh catalogs once per launcher Activity creation. */
+internal fun MainActivity.refreshStartupCatalogs() {
+    extensions(prefs, filesDir).filter {
+        LivePlaybackPolicy.refreshAtStartup(extensionOn(prefs, it.id),
+            it.manifest.optJSONObject("behaviorHints")?.optBoolean("refreshOnStartup") == true)
+    }.forEach { e ->
+        updateAddon(ExtensionCalls.url(e.id), null) { listing ->
+            if (listing != null) rowsAgain(tmdbLastFocusApp)
+        }
+    }
+}
+
 /** After an extension was installed, updated, removed or switched: what Zephyr TV kept of it as an add-on, read anew. */
 internal fun MainActivity.extensionChanged(id: String) {
     Stremio.forget(filesDir, ExtensionCalls.url(id))

@@ -193,12 +193,12 @@ internal fun MainActivity.addonSections(pkg: String, hidden: Set<String>): List<
     }
     urls.forEach { if (Stremio.due(filesDir, it)) updateAddon(it, pkg) }
     val listings = urls.mapNotNull { url -> Stremio.saved(filesDir, url)?.let { url to it } }
+    val extGuides = listings.associate { (url, _) -> url to extensionGuides(url, pkg) }
     // The same add-ons, guide and hidden channels as last time, in the same few minutes: the same rows (the same
     // cards, so showSections keeps them on screen as they are).
     val from = listOf(pkg, addonsTv(), listings.joinToString { (u, l) -> "$u@${l.at}" }, System.identityHashCode(guide),
-        hidden.hashCode(), System.currentTimeMillis() / GUIDE_MS).joinToString("|")
+        extGuides.values.flatten().map { System.identityHashCode(it) }, hidden.hashCode(), System.currentTimeMillis() / GUIDE_MS).joinToString("|")
     built[pkg]?.takeIf { it.from == from }?.let { return it.sections }
-    val extGuides = listings.associate { (url, _) -> url to extensionGuides(url, pkg) }
     // Which of an add-on's rows show here, by their catalog's type: in the Radio collector its radio stations given to
     // it; in an extension's own app those not given to a collector; elsewhere TV channels (an extension's given to them).
     val radio = COLLECTOR_PKGS[pkg] == "radio"
@@ -300,9 +300,12 @@ internal fun MainActivity.addonsChanged() {
  * whole catalog it's in, else [c] alone.
  */
 internal fun MainActivity.zapList(c: AddonChannel, row: List<AddonChannel>?): List<AddonChannel> {
-    row?.takeIf { list -> list.any { it.item.id == c.item.id } }?.let { return it }
     val rows = Stremio.saved(filesDir, c.addon)?.rows.orEmpty().filter { it.genre == null }
-    return rows.firstOrNull { r -> r.items.any { it.id == c.item.id } }?.items?.map { AddonChannel(c.addon, it) } ?: listOf(c)
+    val selected=row?.takeIf { list -> list.any { it.item.id==c.item.id } }
+        ?: rows.firstOrNull { r -> r.items.any { it.id==c.item.id } }?.items?.map { AddonChannel(c.addon,it) } ?: listOf(c)
+    return selected.flatMap { entry -> entry.item.channels.ifEmpty { listOf(entry.item) }.map { AddonChannel(entry.addon,it) } }
+        .distinctBy { it.addon+"|"+it.item.id }
+
 }
 
 /**
@@ -320,7 +323,7 @@ internal fun MainActivity.playAddonChannel(p: Prog, row: List<AddonChannel>? = n
             .putExtra(PlayerActivity.ADDON, c.addon)
             .putExtra(PlayerActivity.BASE, base)
             .putExtra(PlayerActivity.ADULT, isAdultAddon(c.addon))
-            .putExtra(PlayerActivity.INDEX, list.indexOfFirst { it.item.id == c.item.id }.coerceAtLeast(0))
+            .putExtra(PlayerActivity.INDEX, list.indexOfFirst { it.item.id == (c.item.channels.firstOrNull()?.id ?: c.item.id) }.coerceAtLeast(0))
             .putStringArrayListExtra(PlayerActivity.TYPES, strings { it.item.type })
             .putStringArrayListExtra(PlayerActivity.IDS, strings { it.item.id })
             .putStringArrayListExtra(PlayerActivity.NAMES, strings { it.item.name })
@@ -338,8 +341,9 @@ internal fun MainActivity.playAddonChannel(p: Prog, row: List<AddonChannel>? = n
  */
 internal fun MainActivity.warmChannel(c: AddonChannel) {
     val base = Stremio.saved(filesDir, c.addon)?.addon?.base ?: c.addon.removeSuffix("/manifest.json")
-    val type = c.item.type
-    val id = c.item.id
+    val target=c.item.channels.firstOrNull() ?: c.item
+    val type = target.type
+    val id = target.id
     val adult = adultUnlocked()
     StreamCache.later {
         val names = (listOf(base to "") + pluginSources(prefs, filesDir, type, id, adult)).toMap()
@@ -355,7 +359,9 @@ internal const val WARM_MS = 600L
 /** The channel last played (written by PlayerActivity, in its own process: a file, not the preferences). */
 internal fun MainActivity.lastAddonChannel(): Pair<Long, AddonChannel>? = runCatching {
     val o = org.json.JSONObject(java.io.File(filesDir, PlayerActivity.LAST_FILE).readText())
-    val addon = o.getString("addon").takeIf { it in addonUrls() && !isAdultAddon(it) } ?: return null
+    val addon = o.getString("addon").takeIf {
+        hasHistorySource(it, addonUrls(), extensionAddonUrls()) && addonOn(it) && !isAdultAddon(it)
+    } ?: return null
     o.getLong("at") to AddonChannel(addon, Stremio.Item(o.getString("type"), o.getString("id"), o.getString("name"), o.optString("logo").ifEmpty { null }, null))
 }.getOrNull()
 

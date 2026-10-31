@@ -9,6 +9,7 @@ import android.os.Build
 
 /** The action MainActivity gets an install's outcome under (from InstallResult). */
 internal const val UPDATE_STATUS = "link.mccoy88f.zephyr.UPDATE_STATUS"
+internal fun officialUpdatesAllowed(pkg: String) = pkg == "link.mccoy88f.zephyr"
 
 /**
  * "1.10" > "1.9" > "1.2.1" > "1.2": compared number by number, missing parts count as 0. A beta comes before its
@@ -56,6 +57,7 @@ internal object Updater {
 
     /** Downloads release [ver] and hands it to Android, which reports to InstallResult. Throws if the download fails. */
     fun install(context: Context, repo: String, ver: String) {
+        require(officialUpdatesAllowed(context.packageName)) { "A test build cannot install an APK for a different package" }
         val installer = context.packageManager.packageInstaller
         val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
         params.setAppPackageName(context.packageName)
