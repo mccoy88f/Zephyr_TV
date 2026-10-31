@@ -59,6 +59,15 @@ internal fun MainActivity.vodAddons(): List<Stremio.Addon> = libraryUrls().mapNo
     Stremio.saved(filesDir, url)?.addon ?: null.also { if (Stremio.due(filesDir, url)) updateAddon(url, null) }
 }
 
+/** The add-ons with film or series catalogs that are active (enabled, not switched off, and with visible shelves). */
+internal fun MainActivity.activeVodAddons(): List<Stremio.Addon> {
+    val shelvesOff = prefs.getStringSet(K.SHELVES_OFF, emptySet())!!
+    return vodAddons().filter { addon ->
+        addonOn(addon.url) && (!isAdultAddon(addon.url) || adultUnlocked()) &&
+            (addon.vod.isEmpty() || addon.vod.filter { it.listed }.any { shelfKey(addon, it) !in shelvesOff })
+    }
+}
+
 /** The add-ons that give streams for a film or episode of [type] with this [id] (address without /manifest.json, and name). */
 internal fun MainActivity.streamSources(type: String, id: String): List<Pair<String, String>> {
     refreshPlugins()

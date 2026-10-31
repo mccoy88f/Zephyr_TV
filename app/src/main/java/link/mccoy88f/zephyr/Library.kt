@@ -5,7 +5,7 @@ package link.mccoy88f.zephyr
 
 /** The films and series the add-ons' searchable catalogs find for [query] (Cinemeta first), each once. Off the UI thread. */
 internal fun MainActivity.findTitles(query: String): List<Pair<Stremio.Title, String>> {
-    val asked = vodAddons().flatMap { a -> a.vod.filter { it.search }.map { c -> a to c } }
+    val asked = activeVodAddons().flatMap { a -> a.vod.filter { it.search }.map { c -> a to c } }
     if (asked.isEmpty()) return emptyList()
     return parallel(asked, 4, 15) { (a, c) -> Stremio.search(a, c, query).map { it to a.url } }.flatten().distinctBy { it.first.type + it.first.id }
 }
@@ -109,10 +109,14 @@ internal class SearchFilter(val type: String = "all", val year: String? = null, 
  * out of a year's titles here. In the TV's language. Off the UI thread.
  */
 internal fun MainActivity.browseLibrary(filter: SearchFilter): List<Pair<Stremio.Title, String>> {
-    val kinds = if (filter.type == "all") listOf("movie", "series") else listOf(filter.type)
-    val asks = catalogSources().mapNotNull { Stremio.saved(filesDir, it)?.addon }.flatMap { addon ->
-        kinds.mapNotNull { kind ->
-            val catalogs = addon.vod.filter { it.type == kind }
+    val shelvesOff = prefs.getStringSet(K.SHELVES_OFF, emptySet())!!
+    val addons = activeVodAddons()
+    val asks = addons.flatMap { addon ->
+        val activeKinds = if (filter.type == "all") {
+            (listOf("movie", "series") + addon.vod.map { it.type }.filter { Stremio.isVodType(it) }).distinct()
+        } else listOf(filter.type)
+        activeKinds.mapNotNull { kind ->
+            val catalogs = addon.vod.filter { it.type == kind && shelfKey(addon, it) !in shelvesOff }
             fun offering(v: String) = catalogs.firstNotNullOfOrNull { c -> c.genres.firstOrNull { it.equals(v, ignoreCase = true) }?.let { c to it } }
             when {
                 filter.year != null -> offering(filter.year)
@@ -135,6 +139,10 @@ internal fun MainActivity.browseLibrary(filter: SearchFilter): List<Pair<Stremio
             read += got.size
             out += got.map { it to addon.url }
         }
+        if (out.isEmpty() && option == null) {
+            val cached = Stremio.shelves(filesDir, addon).firstOrNull { it.catalog.type == c.type && it.catalog.id == c.id }
+            cached?.titles?.let { list -> out += list.map { it to addon.url } }
+        }
         out
     }.flatten()
     // The genre by its name in English (Cinemeta's) or in the TV's language (Nuvio's titles have it so).
@@ -142,10 +150,11 @@ internal fun MainActivity.browseLibrary(filter: SearchFilter): List<Pair<Stremio
 }
 
 /** The main catalog's genres, for the search filter (its films' and series' catalogs' options), as its manifest lists them. */
-internal fun MainActivity.libraryGenres(): List<String> =
-    // Its catalogs that filter by genre (one of them a genre known here): not those by year, nor Nuvio's by language.
-    Stremio.saved(filesDir, cinemetaUrl())?.addon?.vod.orEmpty().filter { c -> c.genres.any { it in GENRES } }.flatMap { it.genres }
+internal fun MainActivity.libraryGenres(): List<String> {
+    val primaryUrl = activeVodAddons().firstOrNull()?.url ?: cinemetaUrl()
+    return Stremio.saved(filesDir, primaryUrl)?.addon?.vod.orEmpty().filter { c -> c.genres.any { it in GENRES } }.flatMap { it.genres }
         .distinct().ifEmpty { GENRES.keys.toList() }
+}
 
 // ---------- Spotlight ----------
 

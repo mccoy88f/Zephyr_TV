@@ -133,7 +133,7 @@ internal fun MainActivity.tmdbKeyFromPhone() {
 internal fun MainActivity.epgFromPhone() {
     val status = label(getString(R.string.epg_phone_waiting), 14f)
     val page = PhonePages.text(phoneTexts(R.string.phone_epg_title, R.string.phone_epg_intro), getString(R.string.epg_hint))
-    showPhoneLink(getString(R.string.setting_epg), PhoneTask(page, 4096) { file ->
+    showPhoneLink(getString(R.string.setting_epg), PhoneTask(page, 1024L * 1024) { file ->
         val url = file.readText().trim()
         if (!url.startsWith("http://") && !url.startsWith("https://")) return@PhoneTask 400 to getString(R.string.phone_epg_bad)
         ui.post {

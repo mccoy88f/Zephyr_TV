@@ -38,6 +38,23 @@ class PhoneLinkTest {
             link.stop()
         }
     }
+
+    @Test fun acceptsLargePayloadsLikeEncryptedAddonUrls() {
+        var received = ""
+        val link = PhoneLink(Files.createTempDirectory("phone").toFile(), PhoneTask("<p>addon</p>", 1024L * 1024) { f ->
+            received = f.readText()
+            200 to "saved"
+        })
+        try {
+            val base = "http://127.0.0.1:${link.port}"
+            val longUrl = "https://example.com/" + "a".repeat(16384) + "/manifest.json\nadult"
+            val res = call("$base/${link.token}", longUrl)
+            assertEquals(200 to "saved", res)
+            assertEquals(longUrl, received)
+        } finally {
+            link.stop()
+        }
+    }
 }
 
 class PhonePagesTest {

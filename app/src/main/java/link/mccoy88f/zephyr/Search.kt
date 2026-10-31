@@ -586,7 +586,7 @@ private fun MainActivity.browseCollectors(filter: SearchFilter): List<Pair<Strem
     val collectors = if (filter.type == "all") listOf("videos", "podcasts", "courses", "audiobooks", "events")
     else listOf(collectorOf(filter.type)).filter { it in listOf("videos", "podcasts", "courses", "audiobooks", "events") }
     if (collectors.isEmpty()) return emptyList()
-    val addons = vodAddons().filter { !isAdultAddon(it.url) }
+    val addons = activeVodAddons().filter { !isAdultAddon(it.url) }
     return addons.flatMap { addon ->
         Stremio.shelves(filesDir, addon).filter { s ->
             extensionRoutes(addon.url, s.catalog.type) && collectorOf(s.catalog.type) in collectors
@@ -595,22 +595,36 @@ private fun MainActivity.browseCollectors(filter: SearchFilter): List<Pair<Strem
 }
 
 private fun MainActivity.searchShelves(query: String, filter: SearchFilter): List<Pair<Stremio.Title, String>> {
-    return vodAddons().flatMap { a ->
+    return activeVodAddons().flatMap { a ->
         Stremio.shelves(filesDir, a).flatMap { s -> s.titles.map { it to a.url } }
     }.filter { (t, _) -> t.name.contains(query, ignoreCase = true) && filter.accepts(t) { g -> genreName(g) } }
         .distinctBy { it.first.type + it.first.id }
 }
 
-/** What a search with [f] and no words is for: "Films · 2020 · Drama", or Cinemeta's popular titles. */
-private fun MainActivity.filterLabel(f: SearchFilter) = listOfNotNull(f.type.takeIf { it != "all" }?.let { typeName(it) }, f.year, f.genre?.let { genreName(it) },
-    f.director?.let { "${getString(R.string.search_filter_director)}: $it" },
-    f.actor?.let { "${getString(R.string.search_filter_actor)}: $it" },
-    f.adult.takeIf { it != SearchFilter.ADULT_SHOW && adultSearchOffered() }?.let { adultFilterName(it) })
-    .joinToString(" · ").ifEmpty { getString(R.string.tmdb_source_cinemeta) }
+/** What a search with [f] and no words is for: "Films · 2020 · Drama", or the active catalog's popular titles. */
+private fun MainActivity.filterLabel(f: SearchFilter): String {
+    val filterText = listOfNotNull(
+        f.type.takeIf { it != "all" }?.let { typeName(it) },
+        f.year,
+        f.genre?.let { genreName(it) },
+        f.director?.let { "${getString(R.string.search_filter_director)}: $it" },
+        f.actor?.let { "${getString(R.string.search_filter_actor)}: $it" },
+        f.adult.takeIf { it != SearchFilter.ADULT_SHOW && adultSearchOffered() }?.let { adultFilterName(it) }
+    ).joinToString(" · ")
+    if (filterText.isNotEmpty()) return filterText
+
+    val active = activeVodAddons()
+    val primary = active.firstOrNull()
+    return when {
+        primary == null -> getString(R.string.tmdb_source_popular)
+        primary.url == Stremio.CINEMETA -> getString(R.string.tmdb_source_cinemeta)
+        else -> "${primary.name}: ${getString(R.string.tmdb_source_popular)}"
+    }
+}
 
 /** Adult content alone, without words: the adult add-ons' rows as last read, those [filter] lets through. Off the UI thread. */
 private fun MainActivity.browseAdult(filter: SearchFilter): List<Pair<Stremio.Title, String>> =
-    vodAddons().filter { isAdultAddon(it.url) }.flatMap { a ->
+    activeVodAddons().filter { isAdultAddon(it.url) }.flatMap { a ->
         if (Stremio.shelves(filesDir, a).isEmpty() && a.vod.any { it.listed }) {
             runCatching { Stremio.updateShelves(filesDir, a) }
         }

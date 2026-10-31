@@ -650,10 +650,10 @@ internal fun MainActivity.configureAddon(initialUrl: String = "", initialAdult: 
 internal fun MainActivity.addonFromPhone() {
     val status = label(getString(R.string.addon_phone_waiting), 14f)
     val page = PhonePages.addon(phoneTexts(R.string.phone_addon_title, R.string.phone_addon_intro), getString(R.string.addon_hint), getString(R.string.addon_adult))
-    showPhoneLink(getString(R.string.setting_addon_add), PhoneTask(page, 4096) { file ->
+    showPhoneLink(getString(R.string.setting_addon_add), PhoneTask(page, 1024L * 1024) { file ->
         val lines = file.readText().lines()
         val url = Stremio.manifestUrl(lines.firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_epg_bad)
-        val adult = lines.getOrNull(1)?.trim() == "adult"
+        val adult = lines.drop(1).any { it.trim() == "adult" }
         ui.post {
             status.text = getString(R.string.addon_checking)
             addAddon(url, adult)

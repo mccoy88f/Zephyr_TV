@@ -456,7 +456,7 @@ private fun MainActivity.typeExtension() {
 private fun MainActivity.extensionFromPhone() {
     val status = label(getString(R.string.addon_phone_waiting), 14f)
     val page = PhonePages.text(phoneTexts(R.string.ext_phone_title, R.string.ext_add_intro), getString(R.string.ext_hint))
-    showPhoneLink(getString(R.string.ext_add), PhoneTask(page, 4096) { file ->
+    showPhoneLink(getString(R.string.ext_add), PhoneTask(page, 1024L * 1024) { file ->
         val url = Extensions.publishedUrl(file.readText().trim()) ?: return@PhoneTask 400 to getString(R.string.ext_err_not)
         ui.post { extensionFromAddress(url) }
         200 to getString(R.string.ext_received)
