@@ -11,7 +11,7 @@ import link.mccoy88f.zephyr.MainActivity.Prog
 /** App.pkg of the Films and Series tiles (see addonsVod), and of the Continue Playing cards of films and episodes. */
 internal const val MOVIES_PKG = STREMIO + "movies"
 internal const val SERIES_PKG = STREMIO + "series"
-private const val VOD_PKG = STREMIO + "vod"
+internal const val VOD_PKG = STREMIO + "vod"
 
 /**
  * A film or series a card stands for: what to ask its page for ([type], [id]), its name and art (as the card shows

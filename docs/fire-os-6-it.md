@@ -322,3 +322,5 @@ L?ingranaggio Fire TV apre le sezioni realmente accessibili (rete, app, Bluetoot
 Le schede sportive composte sono tre per riga, senza didascalie ripetute; nome del canale dentro l?immagine. La guida XMLTV dell?estensione pu? fornire programma e orario mediante zephyr.epg.now, limitato alle sue guide gi? salvate. Nelle dirette Su/Gi? cambiano canale quando i controlli sono nascosti; a controlli aperti e nei film conservano la navigazione.
 
 Gli indirizzi dei cataloghi e la selezione personale delle righe restano nelle preferenze del dispositivo. Il workflow di aggiornamento ? normale compilazione Gradle: non usa modelli IA n? decompilazione automatica.
+
+La cronologia locale per app conserva anche i video completati osservati dalle sessioni multimediali; questi restano fuori da Continua a guardare. I titoli segnati come visti o sincronizzati tramite Trakt sono disponibili sotto Nuvio insieme ai progressi del player interno.

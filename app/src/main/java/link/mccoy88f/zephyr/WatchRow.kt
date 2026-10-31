@@ -188,7 +188,8 @@ internal fun MainActivity.queryAppChannels(pkg: String?) {
         io.execute {
             val hidden=prefs.getStringSet(K.HIDDEN_WATCH,emptySet())!!
             val cards=(if(pkg?.startsWith("com.nuvio")==true) titleProgressCards(hidden).map { it.second } else emptyList()) +
-                externalResumeCards(hidden).map { it.second }.filter { it.pkg==pkg }
+                externalResumeCards(hidden).map { it.second }.filter { it.pkg==pkg } +
+                externalHistoryCards(pkg!!) + if(pkg.startsWith("com.nuvio"))nativeHistoryCards() else emptyList()
             val sections=ArrayList<Section>()
             if(cards.isNotEmpty())sections+=Section("local-history",getString(R.string.continue_watching),getString(R.string.continue_watching),cards.distinctBy { it.title.lowercase() })
             if(pkg?.startsWith("org.smarttube")==true) {

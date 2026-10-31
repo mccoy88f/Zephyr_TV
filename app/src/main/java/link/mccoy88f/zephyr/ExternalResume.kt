@@ -13,22 +13,27 @@ internal object ExternalResume {
     }
     fun allowed(pkg: String?) = pkg in setOf("com.nuvio.tv","com.nuvio.tv.debug","org.smarttube.stable","org.smarttube.beta","org.smarttube.fdroid")
     fun eligible(pkg: String?, position: Long, duration: Long) = allowed(pkg) && duration>0 && position>=10_000 && position<duration*95/100
-    @Synchronized fun all(dir: File): List<Entry> = runCatching {
-        val a=JSONArray(File(dir,"external_resume.json").readText())
+    private fun read(dir:File,file:String):List<Entry> = runCatching {
+        val a=JSONArray(File(dir,file).readText())
         (0 until a.length()).map { a.getJSONObject(it) }.map { o ->
             Entry(o.getString("pkg"),o.getString("title"),o.optString("sub"),o.getLong("position"),o.getLong("duration"),
                 o.getLong("at"),o.optString("image").ifEmpty { null },o.optString("uri").ifEmpty { null })
-        }.filter { eligible(it.pkg,it.position,it.duration) }.sortedByDescending { it.at }
+        }.filter { allowed(it.pkg) && it.duration>0 && it.position>=10_000 }.sortedByDescending { it.at }
     }.getOrDefault(emptyList())
-    @Synchronized fun put(dir: File, e: Entry) {
-        if(!allowed(e.pkg) || e.duration<=0 || e.position<10_000)return
-        val list=(if(eligible(e.pkg,e.position,e.duration))listOf(e) else emptyList())+all(dir).filter { it.key!=e.key }
+    @Synchronized fun all(dir:File)=read(dir,"external_resume.json").filter { eligible(it.pkg,it.position,it.duration) }
+    @Synchronized fun history(dir:File)=read(dir,"external_history.json")
+    private fun save(dir:File,name:String,list:List<Entry>) {
         dir.mkdirs()
         val a=JSONArray(list.take(40).map { v -> JSONObject().put("pkg",v.pkg).put("title",v.title).put("sub",v.sub)
             .put("position",v.position).put("duration",v.duration).put("at",v.at).put("image",v.image.orEmpty()).put("uri",v.uri.orEmpty()) })
-        val part=File(dir,"external_resume.json.part");part.writeText(a.toString())
-        java.nio.file.Files.move(part.toPath(),File(dir,"external_resume.json").toPath(),
-            java.nio.file.StandardCopyOption.REPLACE_EXISTING,java.nio.file.StandardCopyOption.ATOMIC_MOVE)
+        val part=File(dir,"$name.part");part.writeText(a.toString())
+        java.nio.file.Files.move(part.toPath(),File(dir,name).toPath(),java.nio.file.StandardCopyOption.REPLACE_EXISTING,java.nio.file.StandardCopyOption.ATOMIC_MOVE)
+    }
+    @Synchronized fun put(dir: File, e: Entry) {
+        if(!allowed(e.pkg) || e.duration<=0 || e.position<10_000)return
+        fun same(v:Entry)=v.key==e.key || (e.uri!=null && e.uri==v.uri && e.pkg==v.pkg)
+        save(dir,"external_history.json",listOf(e)+history(dir).filterNot(::same))
+        save(dir,"external_resume.json",(if(eligible(e.pkg,e.position,e.duration))listOf(e) else emptyList())+all(dir).filterNot(::same))
     }
     @Synchronized fun rememberLink(dir: File, title: String, uri: String) {
         val f=File(dir,"external_resume_links.json")

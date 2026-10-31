@@ -27,4 +27,10 @@ class ExternalResumeTest {
   assertEquals("video di prova",ExternalResume.knownTitle(d,"https://www.youtube.com/watch?v=abcdefghijk"))
   assertNull(ExternalResume.knownTitle(d,"https://www.youtube.com/watch?v=otherId0000"))
  }
+ @Test fun completedVideosRemainInAppHistoryWithoutReturningToContinueWatching() {
+  val dir=temp.newFolder();val e=ExternalResume.Entry("org.smarttube.stable","Finished","",98_000,100_000,10,null,"https://www.youtube.com/watch?v=abcdefghijk")
+  ExternalResume.put(dir,e)
+  assertTrue(ExternalResume.all(dir).isEmpty())
+  assertEquals("Finished",ExternalResume.history(dir).single().title)
+ }
 }

@@ -721,9 +721,9 @@
     <string name="phone_user_title">Le nom d\'un utilisateur</string>
     <string name="phone_user_intro">Écrivez le nom. Son premier caractère s\'affiche sur l\'icône des utilisateurs de l\'appareil : une lettre ou un emoji.</string>
     <string name="phone_user_saved">Enregistré sur l\'appareil : %1$s</string>
-    <string name="firetv_settings_network">R?seau et Wi-Fi</string>
+    <string name="firetv_settings_network">Réseau et Wi-Fi</string>
     <string name="firetv_settings_apps">Applications</string>
-    <string name="firetv_settings_bluetooth">T?l?commandes et Bluetooth</string>
+    <string name="firetv_settings_bluetooth">Télécommandes et Bluetooth</string>
     <string name="firetv_settings_device">Ma Fire TV</string>
     <string name="firetv_smarttube_subscriptions">Abonnements</string>
     <string name="firetv_smarttube_history">Historique SmartTube</string>
