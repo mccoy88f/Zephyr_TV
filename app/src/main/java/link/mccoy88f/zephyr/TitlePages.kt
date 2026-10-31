@@ -161,7 +161,7 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
     if (handheld()) rows += page(getString(R.string.share)) { shareTitle(t.type, t.id, t.name) }
     val focus = focusRow ?: if (descView != null) -1 else 0
     val art = if (ref.background != null) Triple(ref.background, ref.logo, ref.poster ?: t.poster) else Triple(t.background, t.logo, ref.poster ?: t.poster)
-    titlePage(t.name, art, ref.fallback, t.name, top, rows, focus, icons, holds, descView, null) { closeLauncherSettings() }
+    titlePage(t.name, art, ref.fallback, t.name, top, rows, focus, icons, holds, descView, servicesBar) { closeLauncherSettings() }
     services.later { showVodTitle(meta, ref, it, focusRow, found) }
     if (!episodic && found == null) warmTitle(t.type, t.id, sources, t.name) { counts -> showVodTitle(meta, ref, services.known, focusedRow(), counts) }
 }

@@ -50,13 +50,14 @@ internal fun MainActivity.refreshWatchNext() {
         } catch (e: Exception) {
             emptyList()
         }
+        val feeds=homeFeedSections(prefs.getStringSet(K.HIDDEN_WATCH,emptySet())!!)
         val playing = emptyList<Prog>() // persisted unfinished Nuvio/SmartTube sessions are in queryWatchNext
         ui.post {
             if (tmdbLastFocusApp != null) return@post // focus moved on to an app meanwhile: its rows, not these
             watchTitle.text = getString(R.string.continue_watching)
             watchApp = CW_PKG
             sectionCounts[CW_PKG] = if (playing.isEmpty() && list.isEmpty()) 0 else 1
-            showWatchNext(list, playing)
+            showWatchNext(list, playing, feeds)
         }
     }
 }
@@ -192,6 +193,8 @@ internal fun MainActivity.queryAppChannels(pkg: String?) {
                 externalHistoryCards(pkg!!) + if(pkg.startsWith("com.nuvio"))nativeHistoryCards() else emptyList()
             val sections=ArrayList<Section>()
             if(cards.isNotEmpty())sections+=Section("local-history",getString(R.string.continue_watching),getString(R.string.continue_watching),cards.distinctBy { it.title.lowercase() })
+            val feed=NotificationFeed.cards(pkg).filter { hideKey(pkg,it.title) !in hidden }
+            if(feed.isNotEmpty())sections+=Section("legacy-tv-feed","TV",appLabel(pkg)+" · TV",feed)
             if(pkg?.startsWith("org.smarttube")==true) {
                 val links=listOf(getString(R.string.firetv_smarttube_subscriptions) to "FEsubscriptions",getString(R.string.firetv_smarttube_history) to "FEmy_youtube")
                 sections+=Section("smarttube-links","SmartTube","SmartTube",links.map { (title,path) ->
@@ -613,9 +616,9 @@ internal fun MainActivity.timeLeft(ms: Long): String {
 }
 
 /** The Play queue tile's row: what's playing now (see nowPlaying) first, then Continue Watching, in one row. */
-internal fun MainActivity.showWatchNext(list: List<Prog>, playing: List<Prog> = emptyList()) = showSections(listOfNotNull(
+internal fun MainActivity.showWatchNext(list: List<Prog>, playing: List<Prog> = emptyList(), feeds:List<Section> = emptyList()) = showSections(listOfNotNull(
     (playing + list).takeIf { it.isNotEmpty() }?.let { getString(R.string.continue_watching).let { t -> Section("", t, t, it) } },
-))
+) + feeds)
 
 /**
  * The rows under the apps, one per section. The first is the row in the layout; any more are built under it (see
@@ -1027,6 +1030,7 @@ internal fun MainActivity.progressBarDrawable(): Drawable {
 }
 
 internal fun MainActivity.open(p: Prog) {
+    if(NotificationFeed.open(p))return
     prefs.edit().putLong("t_${p.pkg}", System.currentTimeMillis()).apply()
     try {
         if(ExternalResume.allowed(p.pkg) && p.progress>0) {

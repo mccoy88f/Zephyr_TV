@@ -265,7 +265,7 @@ di Nuvio. Non Ã¨ una promessa di avvio automatico del film senza una sorgente.
 solo filmati non completati di Nuvio TV e SmartTube con durata e posizione
 pubblicate nelle sessioni multimediali: almeno 10 secondi, meno del 95%.
 Il listener giÃ  autorizzato registra i progressi anche mentre il launcher Ã¨ in
-secondo piano, senza leggere il contenuto delle notifiche. Il permesso non viene
+secondo piano. Dalla revisione Nello.11 vengono lette anche le sole notifiche di categoria TV recommendation pubblicate da SmartTube/Nuvio, per ricavarne le schede TV; le altre notifiche sono ignorate. Il permesso non viene
 concesso dall'app. Dopo un aggiornamento Fire OS puÃ² richiedere la riconnessione
 del listener: Zephyr la richiede solo se l'utente lo ha giÃ  autorizzato.
 
@@ -324,3 +324,16 @@ Le schede sportive composte sono tre per riga, senza didascalie ripetute; nome d
 Gli indirizzi dei cataloghi e la selezione personale delle righe restano nelle preferenze del dispositivo. Il workflow di aggiornamento ? normale compilazione Gradle: non usa modelli IA n? decompilazione automatica.
 
 La cronologia locale per app conserva anche i video completati osservati dalle sessioni multimediali; questi restano fuori da Continua a guardare. I titoli segnati come visti o sincronizzati tramite Trakt sono disponibili sotto Nuvio insieme ai progressi del player interno.
+
+
+### Navigazione, feed TV e zapping — Nello.11
+
+Corretto il consumo delle frecce destra/sinistra nel pannello: i collegamenti espliciti tra descrizione, stagioni, episodi e Guarda hanno precedenza sul cambio pagina. Ripristinata la barra del titolo originale; il player e la selezione automatica dei plugin restano quelli di Zephyr. Provati con i tasti del telecomando Dexter S1E1 e Inception: player interno avviato, progresso reale Dexter salvato dopo oltre 90 secondi.
+
+Su Android 8 sono disponibili le righe pubblicate dalle app tramite Preview Programs. Su Android 7 il feed compatibile legge esclusivamente notifiche CATEGORY_RECOMMENDATION di SmartTube/Nuvio, con PendingIntent creato dalla stessa app. SmartTube pubblica un solo feed legacy selezionato nelle proprie impostazioni, non tutte e tre le righe Android 8. Le schede appaiono sotto l’app e nella coda in una sezione separata dai progressi incompleti. Provata una scheda reale: apre il suo video in SmartTube. Le immagini sono salvate nello spazio privato di Zephyr; nessuna lettura dei file privati di altre app. I dati dipendono dall'accesso notifiche già autorizzato e da ciò che l'app pubblica.
+
+I cataloghi possono esporre una scheda canali raggruppata con behaviorHints.channelGroup: i figli restano disponibili per lo zapping. La configurazione privata mostra una sola scheda DAZN e conserva i dieci canali; verificato passaggio a DAZN 2 con Su, senza menu di riproduzione. OK continua ad aprire i controlli. Film e controlli già focalizzati conservano la loro navigazione.
+
+La configurazione sport privata conserva le partite future e quelle iniziate da meno di 100 minuti; a 100 minuti le esclude al successivo caricamento del catalogo. Configurazione, playlist e test contenenti dati personali restano fuori dal repository e dall'APK.
+
+Verifica locale: 146 test JVM, 145 passati e un test di rete saltato; compilazione APK, APK dei test e lint completati. Diciassette test dell’estensione privata passati. Android 8 non provato fisicamente in questa revisione: le schermate fornite dal proprietario provengono dall’altra TV Android 8.

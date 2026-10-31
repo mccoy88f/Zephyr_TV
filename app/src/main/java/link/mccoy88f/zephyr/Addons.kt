@@ -300,9 +300,12 @@ internal fun MainActivity.addonsChanged() {
  * whole catalog it's in, else [c] alone.
  */
 internal fun MainActivity.zapList(c: AddonChannel, row: List<AddonChannel>?): List<AddonChannel> {
-    row?.takeIf { list -> list.any { it.item.id == c.item.id } }?.let { return it }
     val rows = Stremio.saved(filesDir, c.addon)?.rows.orEmpty().filter { it.genre == null }
-    return rows.firstOrNull { r -> r.items.any { it.id == c.item.id } }?.items?.map { AddonChannel(c.addon, it) } ?: listOf(c)
+    val selected=row?.takeIf { list -> list.any { it.item.id==c.item.id } }
+        ?: rows.firstOrNull { r -> r.items.any { it.id==c.item.id } }?.items?.map { AddonChannel(c.addon,it) } ?: listOf(c)
+    return selected.flatMap { entry -> entry.item.channels.ifEmpty { listOf(entry.item) }.map { AddonChannel(entry.addon,it) } }
+        .distinctBy { it.addon+"|"+it.item.id }
+
 }
 
 /**
@@ -320,7 +323,7 @@ internal fun MainActivity.playAddonChannel(p: Prog, row: List<AddonChannel>? = n
             .putExtra(PlayerActivity.ADDON, c.addon)
             .putExtra(PlayerActivity.BASE, base)
             .putExtra(PlayerActivity.ADULT, isAdultAddon(c.addon))
-            .putExtra(PlayerActivity.INDEX, list.indexOfFirst { it.item.id == c.item.id }.coerceAtLeast(0))
+            .putExtra(PlayerActivity.INDEX, list.indexOfFirst { it.item.id == (c.item.channels.firstOrNull()?.id ?: c.item.id) }.coerceAtLeast(0))
             .putStringArrayListExtra(PlayerActivity.TYPES, strings { it.item.type })
             .putStringArrayListExtra(PlayerActivity.IDS, strings { it.item.id })
             .putStringArrayListExtra(PlayerActivity.NAMES, strings { it.item.name })
@@ -338,8 +341,9 @@ internal fun MainActivity.playAddonChannel(p: Prog, row: List<AddonChannel>? = n
  */
 internal fun MainActivity.warmChannel(c: AddonChannel) {
     val base = Stremio.saved(filesDir, c.addon)?.addon?.base ?: c.addon.removeSuffix("/manifest.json")
-    val type = c.item.type
-    val id = c.item.id
+    val target=c.item.channels.firstOrNull() ?: c.item
+    val type = target.type
+    val id = target.id
     val adult = adultUnlocked()
     StreamCache.later {
         val names = (listOf(base to "") + pluginSources(prefs, filesDir, type, id, adult)).toMap()

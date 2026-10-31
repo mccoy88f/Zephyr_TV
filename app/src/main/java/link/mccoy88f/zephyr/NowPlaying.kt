@@ -7,16 +7,20 @@ import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
 import android.provider.Settings
 import android.service.notification.NotificationListenerService
+import android.service.notification.StatusBarNotification
 import link.mccoy88f.zephyr.MainActivity.Prog
 
 /**
  * Present only so Android lets Zephyr TV see the media sessions (what's playing in Spotify, YouTube…): reading them
- * needs an enabled notification listener. It reads no notifications.
+ * needs an enabled notification listener. Also reads TV recommendation cards from SmartTube/Nuvio only.
  */
 class PlayingListener : NotificationListenerService() {
+    override fun onNotificationPosted(sbn:StatusBarNotification){NotificationFeed.capture(this,sbn)}
+    override fun onNotificationRemoved(sbn:StatusBarNotification){NotificationFeed.remove(sbn)}
     private var tracker: ExternalPlaybackTracker? = null
     override fun onListenerConnected() {
         super.onListenerConnected()
+        activeNotifications.orEmpty().forEach { NotificationFeed.capture(this,it) }
         tracker?.stop();tracker=ExternalPlaybackTracker(this).also { it.start() }
     }
     override fun onListenerDisconnected() { tracker?.stop();tracker=null;super.onListenerDisconnected() }

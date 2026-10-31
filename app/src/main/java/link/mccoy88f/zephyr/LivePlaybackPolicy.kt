@@ -9,6 +9,8 @@ internal object LivePlaybackPolicy {
         return if (lang.endsWith("ak") || name.endsWith("ak")) 1 else 0
     }
 
+    fun showControls(vod:Boolean,quietZap:Boolean)=vod || !quietZap
+
     fun isFullHd(width: Int, height: Int) = width > 0 && height == 1080
     fun streamRank(height: Int) = if (height == 1080) 0 else 1
     fun refreshAtStartup(enabled: Boolean, requested: Boolean) = enabled && requested

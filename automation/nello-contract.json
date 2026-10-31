@@ -14,7 +14,10 @@
     "PreferredWatchUi.kt",
     "MatchPoster.kt",
     "MatchCardLayout.kt",
-    "FireTvSettings.kt"
+    "FireTvSettings.kt",
+    "PanelNavigation.kt",
+    "NotificationFeed.kt",
+    "NotificationFeedPolicy.kt"
   ],
   "requiredTests": [
     "HomePolicyTest",
@@ -26,6 +29,9 @@
     "MatchPosterCatalogTest",
     "MatchCardLayoutTest",
     "WatchSourcesCompatibilityTest",
-    "PlaybackRoutingRegressionTest"
+    "PlaybackRoutingRegressionTest",
+    "ChannelGroupTest",
+    "PanelNavigationTest",
+    "NotificationFeedPolicyTest"
   ]
 }

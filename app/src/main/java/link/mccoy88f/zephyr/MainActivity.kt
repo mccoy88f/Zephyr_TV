@@ -340,6 +340,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        NotificationFeed.attach(this)
         if (shownWidth == 0) shownWidth = resources.displayMetrics.widthPixels
         applyStatusBar()
         ensureHomeService()
@@ -433,6 +434,7 @@ class MainActivity : Activity() {
     }
 
     override fun onStop() {
+        NotificationFeed.detach(this)
         unlockedUntil = 0L // leaving the home screen locks it again (onPause would also fire for permission dialogs)
         if (homeTest != 0) leftDuringTest = true
         super.onStop()
@@ -1454,8 +1456,13 @@ class MainActivity : Activity() {
                 }
                 return true
             }
-            if (e.action == KeyEvent.ACTION_DOWN) pageSides?.invoke(if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) -1 else 1)
-            return true
+            val targetId=if(e.keyCode==KeyEvent.KEYCODE_DPAD_LEFT)currentFocus?.nextFocusLeftId else currentFocus?.nextFocusRightId
+            val target=targetId?.takeIf { it!=View.NO_ID }?.let { settingsScrim.findViewById<View>(it) }?.takeIf { it.isShown && it.isFocusable }
+            when(PanelNavigation.route(target!=null,pageSides!=null)) {
+                PanelNavigation.Action.FOCUS -> {if(e.action==KeyEvent.ACTION_DOWN)target?.requestFocus();return true}
+                PanelNavigation.Action.PAGE -> {if(e.action==KeyEvent.ACTION_DOWN)pageSides?.invoke(if(e.keyCode==KeyEvent.KEYCODE_DPAD_LEFT)-1 else 1);return true}
+                PanelNavigation.Action.DEFAULT -> Unit
+            }
         }
         if (editing && editKey(e, confirm)) return true
         if (e.action == KeyEvent.ACTION_DOWN && settingsScrim.visibility != View.VISIBLE && allApps.visibility != View.VISIBLE) {

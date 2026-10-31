@@ -12,3 +12,5 @@ Automazione nel fork: `.github/workflows/nello-upstream.yml`; stato e contratto 
 Il monitor GitHub del Covo usa `followAllReleases: true` solo sulla variante personalizzata, dal suo fork.
 
 - Il pulsante Guarda usa il player interno e i plugin configurati in Zephyr, mai un reindirizzamento obbligatorio all?app Nuvio. Conservare cronologia VOD nativa insieme ai progressi esterni; la sincronizzazione fra app usa Trakt con consenso del proprietario.
+
+- Preservare navigazione DPAD verso Guarda/stagioni/episodi, feed TV legacy limitato alle recommendation SmartTube/Nuvio e zapping senza apertura automatica dei controlli. Supportare gruppi di canali senza perdere i figli. La regola privata partite mantiene eventi iniziati da meno di 100 minuti.

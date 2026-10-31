@@ -79,6 +79,7 @@ class PlayerActivity : Activity() {
     private var addon = ""
     private var channels: List<Channel> = emptyList()
     private var at = 0 // the channel playing (or being tuned)
+    private var quietZap = false
     private var shown = 0 // the channel the banner shows: ahead of [at] while zapping
     private var previous = -1 // for Last channel
     private var streams: List<Stremio.Stream> = emptyList()
@@ -478,6 +479,7 @@ class PlayerActivity : Activity() {
      * short, or all of what's on once OK [expanded] it.
      */
     private fun showBanner(i: Int, stay: Boolean = false) {
+        if(!LivePlaybackPolicy.showControls(vod,quietZap))return
         val c = channels[i]
         title.text = c.name
         position.text = if (vod && channels.size < 2) "" else getString(R.string.player_channel_n, i + 1, channels.size)
@@ -1013,9 +1015,11 @@ class PlayerActivity : Activity() {
             focusButton(if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 0 else buttons.childCount - 1)
             return true
         }
-        // Up/Down never zap (CH+/CH- do): they bring the banner up, as OK does.
+        // Live Up/Down zap quietly unless a control already owns navigation; VOD keeps its controls.
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-            if (!vod && banner.visibility != View.VISIBLE && event.repeatCount == 0) zap(if(keyCode == KeyEvent.KEYCODE_DPAD_UP) +1 else -1) else if(vod || banner.visibility == View.VISIBLE) okPressed()
+            if (!vod) {
+                if(event.repeatCount==0) {quietZap=true;hideBanner.run();zap(if(keyCode==KeyEvent.KEYCODE_DPAD_UP)+1 else -1)}
+            } else okPressed()
             return true
         }
         when (keyCode) {
@@ -1070,6 +1074,7 @@ class PlayerActivity : Activity() {
      * clear where OK goes next: all of it), else on the first button. Once in use, the banner's views take OK.
      */
     private fun okPressed() {
+        quietZap=false
         seeking = false
         showBanner(shown)
         if (shown == at) focusDesc()
@@ -1145,6 +1150,7 @@ class PlayerActivity : Activity() {
      * live stream paused past what it keeps catches up with the broadcast when it plays again (see onPlayerError).
      */
     private fun setPlaying(play: Boolean) {
+        quietZap=false
         val p = player ?: return
         if (p.playWhenReady == play) return
         p.playWhenReady = play
@@ -1287,6 +1293,7 @@ class PlayerActivity : Activity() {
 
     /** Hold OK, or Menu (both lists), or a button (the audio tracks, or Off and the subtitles); focus on what's playing. */
     private fun openTracks(type: Int? = null) {
+        quietZap=false
         if (player == null) return showBanner(shown)
         val audio = tracks(C.TRACK_TYPE_AUDIO)
         val subs = tracks(C.TRACK_TYPE_TEXT)
