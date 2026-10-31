@@ -45,7 +45,7 @@ object TmdbClient {
         return items(json.optJSONArray("results") ?: return emptyList(), genres(apiKey, language), type)
     }
 
-    /** Films and series matching [query], most relevant first (people left out). Empty when none, or TMDB can't be reached. */
+    /** Films and series matching [query], most relevant first. When matching people, their works are included. Empty when none, or TMDB can't be reached. */
     fun search(apiKey: String, query: String, language: String): List<TmdbItem> {
         val json = try {
             JSONObject(get(apiKey, "/search/multi?language=$language&include_adult=false&query=${Uri.encode(query)}"))
@@ -53,8 +53,26 @@ object TmdbClient {
             warn("TMDB search failed (${redact(e)})")
             return emptyList()
         }
-        return items(json.optJSONArray("results") ?: return emptyList(), genres(apiKey, language), "movie")
-            .filter { it.mediaType == "movie" || it.mediaType == "tv" }
+        val results = json.optJSONArray("results") ?: return emptyList()
+        return parseSearchResults(results, genres(apiKey, language))
+    }
+
+    internal fun parseSearchResults(results: org.json.JSONArray, genres: Map<Int, String>): List<TmdbItem> {
+        val out = ArrayList<TmdbItem>()
+        for (i in 0 until results.length()) {
+            val obj = results.optJSONObject(i) ?: continue
+            val mediaType = obj.optString("media_type")
+            if (mediaType == "person") {
+                val knownFor = obj.optJSONArray("known_for")
+                if (knownFor != null) {
+                    out += items(knownFor, genres, "movie").filter { it.mediaType == "movie" || it.mediaType == "tv" }
+                }
+            } else if (mediaType == "movie" || mediaType == "tv") {
+                val single = org.json.JSONArray().put(obj)
+                out += items(single, genres, "movie").filter { it.mediaType == "movie" || it.mediaType == "tv" }
+            }
+        }
+        return out.distinctBy { it.id }
     }
 
     /**
@@ -212,6 +230,126 @@ object TmdbClient {
 
     /** The same image at card size. */
     fun cardUrl(path: String?): String? = if (path.isNullOrBlank()) null else if (path.startsWith("http")) path else "https://image.tmdb.org/t/p/w780$path"
+
+    /** Profile photo URL for an avatar: 185px wide from TMDB. */
+    fun profileUrl(path: String?): String? = if (path.isNullOrBlank() || path == "null") null else if (path.startsWith("http")) path else "https://image.tmdb.org/t/p/w185$path"
+
+    // "movie/123" -> (directors, cast)
+    private val creditsCache = java.util.concurrent.ConcurrentHashMap<String, Pair<List<Pair<String, String?>>, List<Pair<String, String?>>>>()
+    private val personPhotoCache = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+    /**
+     * Directors and cast for [tmdbId] ([isTv] for series, else film).
+     * Pair of (directors, cast) where each element is (Name, profilePhotoUrl or null).
+     */
+    fun credits(apiKey: String, tmdbId: Long, isTv: Boolean): Pair<List<Pair<String, String?>>, List<Pair<String, String?>>> {
+        val type = if (isTv) "tv" else "movie"
+        val key = "$type/$tmdbId"
+        creditsCache[key]?.let { return it }
+        val res = try {
+            credits(JSONObject(get(apiKey, "/$type/$tmdbId/credits")))
+        } catch (e: Exception) {
+            warn("TMDB credits failed (${redact(e)})")
+            emptyList<Pair<String, String?>>() to emptyList<Pair<String, String?>>()
+        }
+        creditsCache[key] = res
+        return res
+    }
+
+    internal fun credits(json: JSONObject): Pair<List<Pair<String, String?>>, List<Pair<String, String?>>> {
+        val crewArr = json.optJSONArray("crew")
+        val castArr = json.optJSONArray("cast")
+
+        val directors = ArrayList<Pair<String, String?>>()
+        if (crewArr != null) {
+            for (i in 0 until crewArr.length()) {
+                val o = crewArr.optJSONObject(i) ?: continue
+                val job = o.optString("job")
+                if (job.equals("Director", ignoreCase = true)) {
+                    val name = o.optString("name").trim()
+                    if (name.isNotEmpty() && directors.none { it.first.equals(name, ignoreCase = true) }) {
+                        val photo = profileUrl(path(o, "profile_path"))
+                        directors.add(name to photo)
+                        if (photo != null) personPhotoCache[name.lowercase()] = photo
+                    }
+                }
+            }
+        }
+
+        val cast = ArrayList<Pair<String, String?>>()
+        if (castArr != null) {
+            for (i in 0 until castArr.length()) {
+                val o = castArr.optJSONObject(i) ?: continue
+                val name = o.optString("name").trim()
+                if (name.isNotEmpty() && cast.none { it.first.equals(name, ignoreCase = true) }) {
+                    val photo = profileUrl(path(o, "profile_path"))
+                    cast.add(name to photo)
+                    if (photo != null) personPhotoCache[name.lowercase()] = photo
+                }
+            }
+        }
+        return directors to cast
+    }
+
+    /** Profile photo URL from TMDB for [personName], or null. Network: call off the UI thread. */
+    fun personPhoto(apiKey: String, personName: String): String? {
+        val norm = personName.trim().lowercase()
+        if (norm.isEmpty()) return null
+        personPhotoCache[norm]?.let { return it }
+        val found = try {
+            val json = JSONObject(get(apiKey, "/search/person?query=${Uri.encode(personName)}&include_adult=false"))
+            val results = json.optJSONArray("results")
+            val path = results?.optJSONObject(0)?.let { path(it, "profile_path") }
+            profileUrl(path)
+        } catch (e: Exception) {
+            warn("TMDB person search failed (${redact(e)})")
+            null
+        }
+        if (found != null) personPhotoCache[norm] = found
+        return found
+    }
+
+    /** Known photo URL already cached in memory for [personName], without network. */
+    fun cachedPersonPhoto(personName: String): String? = personPhotoCache[personName.trim().lowercase()]
+
+    /**
+     * Titles associated with [personName] (as director or cast member) in [language]. Network: call off the UI thread.
+     */
+    fun personCredits(apiKey: String, personName: String, language: String, isDirector: Boolean): List<TmdbItem> {
+        val norm = personName.trim()
+        if (norm.isEmpty()) return emptyList()
+        return try {
+            val searchJson = JSONObject(get(apiKey, "/search/person?query=${Uri.encode(norm)}&include_adult=false&language=$language"))
+            val personId = searchJson.optJSONArray("results")?.optJSONObject(0)?.optLong("id") ?: return emptyList()
+            val creditsJson = JSONObject(get(apiKey, "/person/$personId/combined_credits?language=$language"))
+            parsePersonCredits(creditsJson, genres(apiKey, language), isDirector)
+        } catch (e: Exception) {
+            warn("TMDB person credits failed (${redact(e)})")
+            emptyList()
+        }
+    }
+
+    internal fun parsePersonCredits(json: JSONObject, genres: Map<Int, String>, isDirector: Boolean): List<TmdbItem> {
+        val targetArray = if (isDirector) {
+            val crew = json.optJSONArray("crew") ?: return emptyList()
+            val filtered = org.json.JSONArray()
+            for (i in 0 until crew.length()) {
+                val o = crew.optJSONObject(i) ?: continue
+                val job = o.optString("job")
+                val dept = o.optString("department")
+                if (job.equals("Director", ignoreCase = true) || dept.equals("Directing", ignoreCase = true)) {
+                    filtered.put(o)
+                }
+            }
+            filtered
+        } else {
+            json.optJSONArray("cast") ?: return emptyList()
+        }
+        return items(targetArray, genres, "movie")
+            .filter { it.mediaType == "movie" || it.mediaType == "tv" }
+            .distinctBy { it.id }
+            .sortedByDescending { it.releaseDate ?: "" }
+    }
 
     // Nuvio's builds: GitHub ("full") and Play Store. Both take nuvio://tmdb/<type>/<id> and have no search link
     // (their stremio:// handler only installs addons).

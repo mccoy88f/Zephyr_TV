@@ -23,7 +23,15 @@ internal fun MainActivity.myVersion() = packageManager.getPackageInfo(packageNam
 internal fun MainActivity.betaUpdates() = prefs.getBoolean(K.UPD_BETA, false)
 
 /** The newer version a check found, if any (null again once it's installed). */
-internal fun MainActivity.availableUpdate() = prefs.getString(K.UPD_VER, null)?.takeIf { newerVersion(it, myVersion()) }
+internal fun MainActivity.availableUpdate() = prefs.getString(K.UPD_VER, null)?.takeIf { isUpdateAvailable(it, myVersion(), betaUpdates()) }
+
+/** Whether [remoteVer] should be offered given [currentVer] and whether [receiveBetas] is enabled. */
+internal fun isUpdateAvailable(remoteVer: String, currentVer: String, receiveBetas: Boolean): Boolean {
+    if (!receiveBetas && '-' in remoteVer) return false
+    if (newerVersion(remoteVer, currentVer)) return true
+    if (!receiveBetas && '-' in currentVer && remoteVer != currentVer) return true
+    return false
+}
 
 private fun MainActivity.isShowingUpdates(): Boolean {
     if (settingsScrim.visibility != View.VISIBLE) return false

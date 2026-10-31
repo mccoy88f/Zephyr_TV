@@ -14,6 +14,38 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
+## 3.6.3
+
+- D-Pad navigation between the left column and right panel on title pages works reliably in all directions.
+- Moving down from the bottom of the left column jumps directly to the first right-panel button.
+- Manual stream choice keeps the full-screen title backdrop and details visible underneath.
+- Upward navigation from the description scrolls smoothly to reveal the title logo.
+
+## 3.6.2
+
+- Moving right from the left column on a title's page goes to the first button at the top.
+- Moving left from the right buttons goes to the title at the top of the left column.
+- Upward navigation on the left column returns smoothly to the description and title.
+- The description and title highlight with a soft animated halo matching Spotlight.
+- Updating a films and series add-on reports content type accurately instead of zero TV channels.
+- Updating a Nuvio plugin repository correctly confirms the updated plugin count.
+
+## 3.6.1
+
+- On a title's page, director and cast avatars show on one horizontal row with separate headings.
+- Search filters include Director and Cast. Enter a name to find titles for that person.
+- Select a director or cast avatar on a title's page to activate the filter and show all their titles.
+- Continue Playing and Search now show the same localized artwork as the Films and Series rows.
+
+## 3.6.0
+
+- The page of a film, series, season, episode or TV channel is now a page over the whole screen.
+- On a title's page, action buttons are on the right. Details, description, directors and cast are on the left.
+- Directors and actors show round avatar pictures from TMDB. Select a director or actor to search their titles.
+- In **Updates**, when you turn off **Receive betas**, Zephyr TV offers the newest non-beta release available.
+- Zephyr TV installs on Android 7.0 and 7.1, for example on older boxes and on Fire TV.
+- On Android 7.0, add-ons and extensions with Let's Encrypt certificates connect reliably.
+
 ## 3.6.0-beta.3
 
 - On a title's page, action buttons are on the right. Details, expanded description, director and cast are on the left.

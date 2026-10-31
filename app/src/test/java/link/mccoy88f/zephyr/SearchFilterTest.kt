@@ -46,4 +46,10 @@ class SearchFilterTest {
         assertTrue(f.accepts(Stremio.Title("podcast", "p1", "Podcast", null, null, null, "2020", listOf("Action"))))
         assertFalse(f.accepts(Stremio.Title("video", "v1", "Video", null, null, null, "2020", listOf("Action"))))
     }
+
+    @Test fun directorAndActorFiltersActivateAny() {
+        assertFalse(SearchFilter().any)
+        assertTrue(SearchFilter(director = "Christopher Nolan").any)
+        assertTrue(SearchFilter(actor = "Leonardo DiCaprio").any)
+    }
 }

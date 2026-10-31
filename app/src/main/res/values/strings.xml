@@ -485,6 +485,10 @@
     <string name="toast_addon_failed">Couldn\'t read the add-on. Check the address.</string>
     <string name="toast_addon_no_tv">This add-on has no TV channels, films or series.</string>
     <string name="toast_addon_updated">Add-on updated: %1$d channels</string>
+    <string name="toast_addon_updated_vod">Add-on updated: films and series</string>
+    <string name="toast_addon_updated_both">Add-on updated: %1$d channels, films and series</string>
+    <string name="toast_addon_updated_simple">Add-on updated</string>
+    <string name="nuvio_updated">%1$s updated: %2$d plugins</string>
     <string name="toast_addon_removed">Add-on removed</string>
     <string name="addon_update">Update now</string>
     <string name="addon_on">On</string>
@@ -609,7 +613,9 @@
     <string name="episode_no_description">No description for this episode yet.</string>
     <string name="title_no_page">No add-on has a page for this title</string>
     <string name="title_director">Director: %1$s</string>
+    <string name="title_director_label">Director</string>
     <string name="title_cast">Cast: %1$s</string>
+    <string name="title_cast_label">Cast</string>
     <string name="player_episode">%1$s · S%2$d E%3$d</string>
     <string name="toast_addon_added_vod">%1$s added: films and series</string>
     <string name="toast_addon_added_both">%1$s added: %2$d channels, films and series</string>
@@ -664,6 +670,8 @@
     <string name="search_type_all">All</string>
     <string name="search_filter_year">Year</string>
     <string name="search_filter_genre">Genre</string>
+    <string name="search_filter_director">Director</string>
+    <string name="search_filter_actor">Cast</string>
     <string name="search_filter_any">Any</string>
     <string name="genre_action">Action</string>
     <string name="genre_adventure">Adventure</string>

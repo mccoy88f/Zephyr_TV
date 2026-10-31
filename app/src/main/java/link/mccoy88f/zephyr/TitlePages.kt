@@ -2,12 +2,18 @@ package link.mccoy88f.zephyr
 
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Outline
 import android.graphics.drawable.GradientDrawable
+import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 
 // A film's or series' page, as a whole page (see DetailPage: its seasons, an episode's page, the trailer and services), and
@@ -22,7 +28,7 @@ internal fun MainActivity.openTitle(ref: TitleRef) {
     // The page at once, with the card's art, what it's about as the card knows it, and Loading…; then the add-on's page
     // as it answers (in the TV's language as far as it's known already); then all of it in the TV's language (a
     // series' episodes too, asked season by season), focus where it is. Each only while the page is still open.
-    val (top, _) = titleTop("", null, ref.about)
+    val top = titleTop("", null, ref.about)
     titlePage(ref.name, Triple(ref.background, ref.logo, ref.poster), ref.fallback, ref.name, top,
         listOf(page(getString(R.string.player_loading)) { }), 0, emptyMap()) { closeLauncherSettings() }
     netIo.execute {
@@ -98,8 +104,9 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
 
     val (servicesBar, services) = serviceBar(t, available)
     val genresText = meta.genres.take(3).joinToString(" · ").takeIf { it.isNotBlank() }
-    val (top, descView) = titleTop(listOfNotNull((meta.rating ?: ref.rating)?.let { "★ $it" }, kind, t.year, genresText, meta.runtime)
-        .joinToString(" · "), null, meta.description, seenLine, director = meta.director, cast = meta.cast)
+    val tmdbId = t.tmdbId ?: Local.get(t.id)?.tmdbId
+    val top = titleTop(listOfNotNull((meta.rating ?: ref.rating)?.let { "★ $it" }, kind, t.year, genresText, meta.runtime)
+        .joinToString(" · "), null, meta.description, seenLine, director = meta.director, cast = meta.cast, tmdbId = tmdbId, isTv = t.type == "series")
 
     val sources = streamSources(t.type, meta.episodes.firstOrNull()?.id ?: t.id)
     val rows = ArrayList<Triple<String, String, () -> Unit>>()
@@ -159,9 +166,9 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
 
     // A phone or tablet: the page shared, as a link that opens it in Zephyr TV (see Links).
     if (handheld()) rows += page(getString(R.string.share)) { shareTitle(t.type, t.id, t.name) }
-    val focus = focusRow ?: if (descView != null) -1 else 0
+    val focus = focusRow ?: if (top.descView != null) -1 else 0
     val art = if (ref.background != null) Triple(ref.background, ref.logo, ref.poster ?: t.poster) else Triple(t.background, t.logo, ref.poster ?: t.poster)
-    titlePage(t.name, art, ref.fallback, t.name, top, rows, focus, icons, holds, descView, servicesBar) { closeLauncherSettings() }
+    titlePage(t.name, art, ref.fallback, t.name, top, rows, focus, icons, holds, servicesBar = servicesBar) { closeLauncherSettings() }
     services.later { showVodTitle(meta, ref, it, focusRow, found) }
     if (!episodic && found == null) warmTitle(t.type, t.id, sources, t.name) { counts -> showVodTitle(meta, ref, services.known, focusedRow(), counts) }
 }
@@ -185,8 +192,9 @@ internal fun MainActivity.showVodSeason(given: Stremio.TitleMeta, ref: TitleRef,
     val seenLine = if (watchedCount == inSeason.size) "✓ " + getString(R.string.title_watched) else if (watchedCount > 0) "$watchedCount / ${inSeason.size} " + getString(R.string.title_watched) else null
 
     val (servicesBar, services) = serviceBar(t, available)
-    val (top, descView) = titleTop(listOfNotNull(t.name, seasonName(shown), resources.getQuantityString(R.plurals.title_episodes, inSeason.size, inSeason.size))
-        .joinToString(" · "), null, meta.description, seenLine, director = meta.director, cast = meta.cast)
+    val tmdbId = t.tmdbId ?: Local.get(t.id)?.tmdbId
+    val top = titleTop(listOfNotNull(t.name, seasonName(shown), resources.getQuantityString(R.plurals.title_episodes, inSeason.size, inSeason.size))
+        .joinToString(" · "), null, meta.description, seenLine, director = meta.director, cast = meta.cast, tmdbId = tmdbId, isTv = true)
 
     val rows = ArrayList<Triple<String, String, () -> Unit>>()
     val icons = HashMap<Int, android.graphics.drawable.Drawable>()
@@ -223,7 +231,7 @@ internal fun MainActivity.showVodSeason(given: Stremio.TitleMeta, ref: TitleRef,
     val pageTitle = "${t.name} · ${seasonName(shown)}"
     redrawFor = t.id
     redraw = { if (pageShowing(pageTitle)) showVodSeason(meta, ref, shown, available, episode, focusedRow() ?: focusRow) }
-    titlePage(pageTitle, art, ref.fallback, t.name, top, rows, focus, icons, holds, descView = descView, servicesBar = servicesBar) {
+    titlePage(pageTitle, art, ref.fallback, t.name, top, rows, focus, icons, holds, servicesBar = servicesBar) {
         showVodTitle(meta, ref, services.known)
     }
     pageSides = sides
@@ -252,8 +260,9 @@ internal fun MainActivity.showVodEpisode(given: Stremio.TitleMeta, ref: TitleRef
     val (servicesBar, services) = serviceBar(t, available)
     // What this episode is about; the series' description isn't its own, so none says so.
     val about = e.overview?.takeIf { it.isNotBlank() } ?: getString(R.string.episode_no_description)
-    val (top, descView) = titleTop(listOfNotNull(episodeLine(e), released).joinToString(" · "), e.name.takeIf { it.isNotBlank() }, about, seenLine,
-        director = meta.director, cast = meta.cast)
+    val tmdbId = t.tmdbId ?: Local.get(t.id)?.tmdbId
+    val top = titleTop(listOfNotNull(episodeLine(e), released).joinToString(" · "), e.name.takeIf { it.isNotBlank() }, about, seenLine,
+        director = meta.director, cast = meta.cast, tmdbId = tmdbId, isTv = true)
 
     val sources = streamSources(t.type, e.id)
     val rows = ArrayList<Triple<String, String, () -> Unit>>()
@@ -285,8 +294,8 @@ internal fun MainActivity.showVodEpisode(given: Stremio.TitleMeta, ref: TitleRef
         else -> Triple(t.background, t.logo, ref.poster ?: t.poster)
     }
     if (handheld()) rows += page(getString(R.string.share)) { shareTitle(t.type, t.id, t.name, e.season, e.episode) }
-    val targetFocus = if (focus < 0 && descView != null) -1 else if (focus < 0) 0 else focus
-    titlePage(title, art, ref.fallback, t.name, top, rows, targetFocus, icons, descView = descView, servicesBar = servicesBar) {
+    val targetFocus = if (focus < 0 && top.descView != null) -1 else if (focus < 0) 0 else focus
+    titlePage(title, art, ref.fallback, t.name, top, rows, targetFocus, icons, servicesBar = servicesBar) {
         showVodSeason(meta, ref, e.season, services.known, e.id)
     }
     services.later { showVodEpisode(meta, ref, e, it, found, focusedRow() ?: targetFocus) }
@@ -351,25 +360,144 @@ private fun MainActivity.watchLabel(sole: Stremio.Addon?, at: Long?, seen: Boole
 internal fun MainActivity.episodeLine(e: Stremio.Episode) =
     if (e.season == 0) getString(R.string.title_special_n, e.episode) else getString(R.string.title_season_episode, e.season, e.episode)
 
+internal class TitleTopResult(
+    val root: View,
+    val descView: View?,
+    val directorCards: List<View> = emptyList(),
+    val castCards: List<View> = emptyList()
+)
+
+private fun MainActivity.personCard(name: String, isDirector: Boolean, onImage: (ImageView) -> Unit): View {
+    val card = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        gravity = Gravity.CENTER_HORIZONTAL
+        isFocusable = true
+        isClickable = true
+        id = View.generateViewId()
+        setPadding(dp(4), dp(4), dp(4), dp(4))
+        layoutParams = LinearLayout.LayoutParams(dp(76), WRAP_CONTENT).apply {
+            marginEnd = dp(6)
+        }
+    }
+    val frame = FrameLayout(this).apply {
+        layoutParams = LinearLayout.LayoutParams(dp(48), dp(48)).apply {
+            gravity = Gravity.CENTER_HORIZONTAL
+        }
+    }
+    val bg = View(this).apply {
+        background = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(0x28FFFFFF)
+        }
+        layoutParams = FrameLayout.LayoutParams(dp(44), dp(44), Gravity.CENTER)
+    }
+    frame.addView(bg)
+
+    val img = ImageView(this).apply {
+        scaleType = ImageView.ScaleType.CENTER_CROP
+        outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) {
+                outline.setOval(0, 0, view.width, view.height)
+            }
+        }
+        clipToOutline = true
+        setImageResource(R.drawable.ic_profile)
+        imageAlpha = 140
+        layoutParams = FrameLayout.LayoutParams(dp(44), dp(44), Gravity.CENTER)
+    }
+    frame.addView(img)
+
+    val rim = GradientDrawable().apply {
+        shape = GradientDrawable.OVAL
+        setStroke(dp(2), Color.TRANSPARENT)
+    }
+    val rimView = View(this).apply {
+        background = rim
+        layoutParams = FrameLayout.LayoutParams(dp(48), dp(48), Gravity.CENTER)
+    }
+    frame.addView(rimView)
+
+    card.addView(frame)
+
+    val nameLabel = TextView(this).apply {
+        text = name
+        textSize = 10.5f
+        setTextColor(fg)
+        maxLines = 2
+        ellipsize = TextUtils.TruncateAt.END
+        gravity = Gravity.CENTER_HORIZONTAL
+        textAlignment = View.TEXT_ALIGNMENT_CENTER
+        alpha = 0.8f
+        setPadding(0, dp(4), 0, 0)
+        layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+    }
+    card.addView(nameLabel)
+
+    card.setOnFocusChangeListener { _, focused ->
+        rim.setStroke(dp(2), if (focused) Color.WHITE else Color.TRANSPARENT)
+        nameLabel.alpha = if (focused) 1f else 0.8f
+        card.animate().scaleX(if (focused) 1.1f else 1f).scaleY(if (focused) 1.1f else 1f).setDuration(140).start()
+        if (focused) {
+            val hScroll = card.parent?.parent as? android.widget.HorizontalScrollView
+            hScroll?.post {
+                hScroll.smoothScrollTo((card.left - dp(16)).coerceAtLeast(0), 0)
+            }
+        }
+    }
+
+    card.setOnClickListener {
+        closeLauncherSettings()
+        searchFilter = if (isDirector) SearchFilter(director = name) else SearchFilter(actor = name)
+        searchTmdb("")
+    }
+
+    onImage(img)
+    return card
+}
+
 /** Under a title's art: its [info] line, a [name] (an episode's), when the user [seen] it, what it's about, [director] and [cast]. */
 private fun MainActivity.titleTop(info: String, name: String?, about: String?, seen: String? = null,
-                                  director: List<String> = emptyList(), cast: List<String> = emptyList()): Pair<View, View?> {
+                                  director: List<String> = emptyList(), cast: List<String> = emptyList(),
+                                  tmdbId: Long? = null, isTv: Boolean = false): TitleTopResult {
     var descView: View? = null
+    val directorCards = ArrayList<View>()
+    val castCards = ArrayList<View>()
+    val pendingPhotos = ArrayList<Pair<String, ImageView>>()
+
     val root = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
+        layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
         setPadding(dp(14), 0, dp(14), dp(12)) // in line with the page title and the rows' names
-        name?.let { addView(label(it, 16f).apply { setPadding(0, 0, 0, dp(4)) }) }
-        addView(label(info, 13f).apply { alpha = 0.7f })
-        seen?.let { addView(label("✓  $it", 13f).apply { setPadding(0, dp(4), 0, 0) }) }
+        name?.let { addView(label(it, 16f).apply {
+            setPadding(0, 0, 0, dp(4))
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+            isSingleLine = false
+            maxLines = 2
+        }) }
+        addView(label(info, 13f).apply {
+            alpha = 0.7f
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+            isSingleLine = false
+            maxLines = 2
+        })
+        seen?.let { addView(label("✓  $it", 13f).apply {
+            setPadding(0, dp(4), 0, 0)
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+        }) }
         about?.let { d ->
             val v = label(d, 13.5f).apply {
                 id = View.generateViewId()
+                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                    topMargin = dp(4)
+                    bottomMargin = dp(4)
+                }
                 maxLines = 10
+                isSingleLine = false
+                ellipsize = TextUtils.TruncateAt.END
                 setLineSpacing(0f, 1.2f)
-                setPadding(0, dp(8), 0, dp(8)) // no box: in line with the lines above it
+                setPadding(dp(14), dp(8), dp(14), dp(8))
                 isFocusable = true
                 isClickable = true
-                nextFocusUpId = id
                 background = null
                 setOnClickListener {
                     maxLines = if (maxLines == 10) 50 else 10
@@ -378,23 +506,90 @@ private fun MainActivity.titleTop(info: String, name: String?, about: String?, s
             descView = v
             addView(v)
         }
-        if (director.isNotEmpty()) {
-            addView(label(getString(R.string.title_director, director.joinToString(", ")), 13f).apply {
-                alpha = 0.75f
-                setLineSpacing(0f, 1.15f)
-                setPadding(0, dp(6), 0, dp(2))
-            })
-        }
-        if (cast.isNotEmpty()) {
-            addView(label(getString(R.string.title_cast, cast.take(6).joinToString(", ")), 13f).apply {
-                alpha = 0.75f
-                maxLines = 3
-                setLineSpacing(0f, 1.15f)
-                setPadding(0, dp(2), 0, dp(4))
+        if (director.isNotEmpty() || cast.isNotEmpty()) {
+            val combinedRow = LinearLayout(this@titleTop).apply {
+                orientation = LinearLayout.HORIZONTAL
+                layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+            }
+            if (director.isNotEmpty()) {
+                val dirSection = LinearLayout(this@titleTop).apply {
+                    orientation = LinearLayout.VERTICAL
+                    layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                        if (cast.isNotEmpty()) marginEnd = dp(20)
+                    }
+                    addView(label(getString(R.string.title_director_label), 12f).apply {
+                        alpha = 0.65f
+                        setPadding(0, dp(10), 0, dp(4))
+                        layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                    })
+                    val dirRow = LinearLayout(this@titleTop).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                    }
+                    for (d in director) {
+                        val card = personCard(d, isDirector = true) { img -> pendingPhotos.add(d to img) }
+                        directorCards.add(card)
+                        dirRow.addView(card)
+                    }
+                    addView(dirRow)
+                }
+                combinedRow.addView(dirSection)
+            }
+            if (cast.isNotEmpty()) {
+                val castSection = LinearLayout(this@titleTop).apply {
+                    orientation = LinearLayout.VERTICAL
+                    layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                    addView(label(getString(R.string.title_cast_label), 12f).apply {
+                        alpha = 0.65f
+                        setPadding(0, dp(10), 0, dp(4))
+                        layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                    })
+                    val castRow = LinearLayout(this@titleTop).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                    }
+                    for (c in cast.take(15)) {
+                        val card = personCard(c, isDirector = false) { img -> pendingPhotos.add(c to img) }
+                        castCards.add(card)
+                        castRow.addView(card)
+                    }
+                    addView(castRow)
+                }
+                combinedRow.addView(castSection)
+            }
+            addView(android.widget.HorizontalScrollView(this@titleTop).apply {
+                isHorizontalScrollBarEnabled = false
+                overScrollMode = View.OVER_SCROLL_NEVER
+                clipChildren = false
+                clipToPadding = false
+                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+                addView(combinedRow)
             })
         }
     }
-    return root to descView
+
+    if (pendingPhotos.isNotEmpty()) {
+        val key = tmdbKey()
+        if (key != null) posterIo.execute {
+            if (tmdbId != null && tmdbId > 0) {
+                runCatching { TmdbClient.credits(key, tmdbId, isTv) }
+            }
+            for ((pName, img) in pendingPhotos) {
+                val photo = TmdbClient.cachedPersonPhoto(pName) ?: runCatching { TmdbClient.personPhoto(key, pName) }.getOrNull()
+                if (photo != null) {
+                    val bmp = runCatching { art(photo) }.getOrNull()
+                    if (bmp != null) ui.post {
+                        if (img.parent != null) {
+                            img.setImageBitmap(bmp)
+                            img.imageAlpha = 255
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return TitleTopResult(root, descView, directorCards, castCards)
 }
 
 /**
@@ -402,22 +597,25 @@ private fun MainActivity.titleTop(info: String, name: String?, about: String?, s
  * on wide screens, [top] (details, description, director, cast) is placed in a left column and [rows]
  * in the right panel; then [servicesBar] (trailer and external apps) at the bottom of the buttons.
  */
-private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, String?>, fallback: Triple<String?, String?, String?>?, name: String, top: View,
-                                   rows: List<Triple<String, String, () -> Unit>>, focus: Int,
+private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, String?>, fallback: Triple<String?, String?, String?>?, name: String,
+                                   top: TitleTopResult, rows: List<Triple<String, String, () -> Unit>>, focus: Int,
                                    icons: Map<Int, android.graphics.drawable.Drawable>, holds: Map<Int, () -> Unit> = emptyMap(),
-                                   descView: View? = null, servicesBar: View? = null,
+                                   servicesBar: View? = null,
                                    back: () -> Unit) {
     if (settingsScrim.visibility != View.VISIBLE) showPanel()
     val scrim = settingsScrim as FrameLayout
     val w = scrim.width.takeIf { it > 0 } ?: resources.displayMetrics.widthPixels
     val wide = w > dp(720)
-    showPage(title, rows, focus, top = if (wide) null else top, back = back, panes = glass)
+    showPage(title, rows, focus, top = if (wide) null else top.root, back = back, panes = glass)
     // A whole page: the art over the screen, its logo and details on the left, buttons on the right.
-    detailPage("$name|${art.first}|${art.third}", listOfNotNull(art.second, fallback?.second).distinct(), title = name, infoView = top) { frame, fw, fh ->
+    detailPage("$name|${art.first}|${art.third}", listOfNotNull(art.second, fallback?.second).distinct(), title = name, infoView = top.root) { frame, fw, fh ->
         fillArt(frame, fw, fh, art.first, null, art.third, name, fallback?.let { Triple(it.first, null, it.third) })
         sharpBackdrop(frame, fw, listOfNotNull(art.first, fallback?.first).distinct())
     }
     val firstIndex = if (wide) 0 else 1
+    val descView = top.descView
+    val firstPersonCard = top.directorCards.firstOrNull() ?: top.castCards.firstOrNull()
+
     // If starting on description, focus it and scroll to top
     if (focus < 0 && descView != null) {
         descView.post {
@@ -426,15 +624,39 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
             scroll?.scrollTo(0, 0)
         }
     }
+    val focusBg = (fg and 0xFFFFFF) or 0x2E000000
+    val descBg = GradientDrawable().apply {
+        cornerRadius = dp(10).toFloat()
+        setColor(Color.TRANSPARENT)
+    }
+    descView?.background = descBg
     descView?.setOnFocusChangeListener { _, focused ->
+        val from = if (focused) Color.TRANSPARENT else focusBg
+        val to = if (focused) focusBg else Color.TRANSPARENT
+        android.animation.ValueAnimator.ofArgb(from, to).setDuration(180).apply {
+            addUpdateListener { descBg.setColor(it.animatedValue as Int) }
+        }.start()
         descView.alpha = if (focused) 1f else 0.85f
         if (focused) {
-            val scroll = (descView.parent?.parent as? android.widget.ScrollView) ?: (settingsList.parent as? android.widget.ScrollView)
-            scroll?.post { scroll.smoothScrollTo(0, 0) }
+            var p = descView.parent
+            while (p != null && p !is android.widget.ScrollView) {
+                p = p.parent
+            }
+            val scroll = (p as? android.widget.ScrollView) ?: (settingsList.parent as? android.widget.ScrollView)
+            scroll?.post {
+                val rect = android.graphics.Rect()
+                descView.getDrawingRect(rect)
+                scroll.offsetDescendantRectToMyCoords(descView, rect)
+                val targetY = (rect.top - dp(16)).coerceAtLeast(0)
+                scroll.smoothScrollTo(0, targetY)
+            }
         }
     }
     // Back up on the first row, the page scrolls back up: nothing above it takes focus to pull it there (unless top has focusables).
-    settingsList.getChildAt(firstIndex)?.let { first ->
+    val firstRow = settingsList.getChildAt(firstIndex)
+    if (firstRow != null && firstRow.id == View.NO_ID) firstRow.id = View.generateViewId()
+    val firstRowId = firstRow?.id
+    firstRow?.let { first ->
         val own = first.onFocusChangeListener
         first.setOnFocusChangeListener { v, focused ->
             own?.onFocusChange(v, focused)
@@ -442,18 +664,39 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
             if (focused) scroll.post { scroll.smoothScrollTo(0, (v.bottom + dp(8) - scroll.height).coerceAtLeast(0)) }
         }
     }
-    // Remote navigation: left from buttons goes to description/info, right from description goes back to buttons.
-    if (descView != null && wide) {
-        if (descView.id == View.NO_ID) descView.id = View.generateViewId()
-        for (i in 0 until rows.size) {
-            val row = settingsList.getChildAt(firstIndex + i) ?: continue
-            row.nextFocusLeftId = descView.id
+
+    val targetRow = settingsList.getChildAt(firstIndex + focus.coerceIn(0, (rows.size - 1).coerceAtLeast(0)))
+    if (targetRow != null && targetRow.id == View.NO_ID) targetRow.id = View.generateViewId()
+
+    // Remote navigation: left from buttons goes to description or first avatar;
+    // right from left column goes to the first item at the top of the right column.
+    if (wide) {
+        val allPersonCards = top.directorCards + top.castCards
+        detailDescView = descView
+        detailLastLeftFocusables = allPersonCards
+        val leftTopId = descView?.id ?: firstPersonCard?.id
+
+        if (leftTopId != null) {
+            for (i in 0 until rows.size) {
+                val row = settingsList.getChildAt(firstIndex + i) ?: continue
+                row.nextFocusLeftId = leftTopId
+            }
         }
-        val targetRow = settingsList.getChildAt(firstIndex + focus.coerceIn(0, (rows.size - 1).coerceAtLeast(0)))
-        if (targetRow != null) {
-            if (targetRow.id == View.NO_ID) targetRow.id = View.generateViewId()
-            descView.nextFocusRightId = targetRow.id
+
+        if (descView != null) {
+            descView.nextFocusLeftId = descView.id
+            descView.nextFocusUpId = descView.id
+            if (allPersonCards.isNotEmpty()) descView.nextFocusDownId = allPersonCards[0].id
         }
+
+        for (i in 0 until allPersonCards.size) {
+            val card = allPersonCards[i]
+            card.nextFocusUpId = descView?.id ?: card.id
+            if (i > 0) card.nextFocusLeftId = allPersonCards[i - 1].id
+            else card.nextFocusLeftId = card.id
+            if (i < allPersonCards.size - 1) card.nextFocusRightId = allPersonCards[i + 1].id
+        }
+        if (firstRowId != null) wireLeftColumn(firstRowId)
     }
     // What holding OK on a row does (see MainActivity.onHold).
     for ((i, hold) in holds) settingsList.getChildAt(firstIndex + i)?.setTag(R.id.settingsList, hold)
@@ -466,10 +709,11 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
         val last = settingsList.getChildAt(settingsList.childCount - 2)?.takeIf { rows.isNotEmpty() } ?: return@let
         if (last.id == View.NO_ID) last.id = View.generateViewId()
         last.nextFocusDownId = buttons.getChildAt(0).id
+        val leftId = descView?.id ?: firstPersonCard?.id
         for (c in 0 until buttons.childCount) buttons.getChildAt(c).let {
             it.nextFocusUpId = last.id
             it.nextFocusDownId = it.id
-            if (descView != null && wide) it.nextFocusLeftId = descView.id
+            if (leftId != null && wide) it.nextFocusLeftId = leftId
         }
     }
 }
@@ -675,7 +919,7 @@ internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, epi
             .putStringArrayListExtra(PlayerActivity.DESCS, strings { it.third?.overview ?: meta?.description })
             .putExtra(PlayerActivity.META_TYPE, type)
             .putExtra(PlayerActivity.META_ID, t?.id ?: ref.id)
-            .putExtra(PlayerActivity.POSTER, backdrop) // its Continue Playing card's: the wide picture (the poster without one)
+            .putExtra(PlayerActivity.POSTER, locandina)
             .putExtra(PlayerActivity.USER_DIR, vodDir().path))
     } catch (e: Exception) {
         warn("player didn't open ($e)")
@@ -684,6 +928,16 @@ internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, epi
 
 /** Whether streams are picked by hand from all the sources' (Settings → Content → Stream choice), not tried in turn. */
 internal fun MainActivity.manualStreams() = prefs.getBoolean(K.STREAM_MANUAL, false)
+
+internal fun MainActivity.wireLeftColumn(firstRowId: Int) {
+    detailDescView?.nextFocusRightId = firstRowId
+    if (detailLastLeftFocusables.isEmpty()) {
+        detailDescView?.nextFocusDownId = firstRowId
+    } else {
+        detailLastLeftFocusables.forEach { it.nextFocusDownId = firstRowId }
+        detailLastLeftFocusables.lastOrNull()?.nextFocusRightId = firstRowId
+    }
+}
 
 /**
  * Manual stream choice: every add-on's and plugin's streams for the film, or the [episode], in one list, each with
@@ -699,6 +953,8 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
     val found = java.util.Collections.synchronizedList(ArrayList<Stremio.Stream>())
     var left = sources.size
     var shown = false
+    val savedPageExit = pageExit
+    val leftId = detailDescView?.id
     // Grouped by quality as in the player's panel (the highest first, those that say none last), each group under its
     // heading; each stream on two lines: what it is on top (scrolling when it's long), where it's from under it, in italics.
     fun show() {
@@ -709,7 +965,13 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
             found.isEmpty() -> listOf(page(getString(R.string.title_no_streams)) { })
             else -> emptyList()
         }
-        showPage(title, rest, back = back)
+        pageExit = null
+        showPage(title, rest, panes = glass, back = {
+            pageExit = savedPageExit
+            back()
+        })
+        pageExit = savedPageExit
+        findViewById<TextView>(R.id.settingsTitle).visibility = View.VISIBLE
         var group = -1
         var at = 0
         for (s in list) {
@@ -722,9 +984,19 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
                 pageReturn = back
                 closeLauncherSettings()
                 playTitle(ref, meta, episode, chosen = s)
-            }.apply { tag = s.url }, at++, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
+            }.apply {
+                tag = s.url
+                if (leftId != null) nextFocusLeftId = leftId
+            }, at++, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
+        }
+        if (leftId != null) {
+            for (i in 0 until settingsList.childCount) {
+                val child = settingsList.getChildAt(i) ?: continue
+                if (child.isFocusable) child.nextFocusLeftId = leftId
+            }
         }
         val rows = (0 until settingsList.childCount).map { settingsList.getChildAt(it) }.filter { it.isFocusable }
+        rows.firstOrNull()?.id?.let { wireLeftColumn(it) }
         (rows.firstOrNull { keep != null && it.tag == keep } ?: rows.firstOrNull())?.requestFocus()
         shown = true
     }

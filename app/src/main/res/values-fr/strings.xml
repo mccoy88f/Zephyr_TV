@@ -486,6 +486,10 @@
     <string name="toast_addon_failed">Impossible de lire l\'extension. Vérifiez l\'adresse.</string>
     <string name="toast_addon_no_tv">Cette extension n\'a pas de chaînes TV, de films ni de séries.</string>
     <string name="toast_addon_updated">Extension mise à jour : %1$d chaînes</string>
+    <string name="toast_addon_updated_vod">Extension mise à jour : films et séries</string>
+    <string name="toast_addon_updated_both">Extension mise à jour : %1$d chaînes, films et séries</string>
+    <string name="toast_addon_updated_simple">Extension mise à jour</string>
+    <string name="nuvio_updated">%1$s mis à jour : %2$d plugins</string>
     <string name="toast_addon_removed">Extension supprimée</string>
     <string name="addon_update">Mettre à jour</string>
     <string name="addon_on">Actif</string>
@@ -612,7 +616,9 @@
     <string name="episode_no_description">Pas encore de description pour cet épisode.</string>
     <string name="title_no_page">Aucune extension n\'a de fiche pour ce titre</string>
     <string name="title_director">Réalisation : %1$s</string>
+    <string name="title_director_label">Réalisation</string>
     <string name="title_cast">Distribution : %1$s</string>
+    <string name="title_cast_label">Distribution</string>
     <string name="player_episode">%1$s · S%2$d E%3$d</string>
     <string name="toast_addon_added_vod">%1$s ajoutée : films et séries</string>
     <string name="toast_addon_added_both">%1$s ajouté : %2$d chaînes, films et séries</string>
@@ -667,6 +673,8 @@
     <string name="search_type_all">Tous</string>
     <string name="search_filter_year">Année</string>
     <string name="search_filter_genre">Genre</string>
+    <string name="search_filter_director">Réalisation</string>
+    <string name="search_filter_actor">Distribution</string>
     <string name="search_filter_any">Tous</string>
     <string name="genre_action">Action</string>
     <string name="genre_adventure">Aventure</string>

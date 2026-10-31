@@ -704,9 +704,17 @@ internal fun MainActivity.addonPage(url: String, focus: Int? = null) {
         page(getString(R.string.addon_update)) {
             Toast.makeText(this, getString(R.string.addon_checking), Toast.LENGTH_SHORT).show()
             updateAddon(url, null) { listing ->
-                val channels = listing?.rows?.filter { it.genre == null }?.sumOf { it.items.size }
-                Toast.makeText(this, if (channels == null) getString(R.string.toast_addon_failed)
-                    else getString(R.string.toast_addon_updated, channels), Toast.LENGTH_LONG).show()
+                val a = listing?.addon
+                val channels = listing?.rows?.filter { it.genre == null }?.sumOf { it.items.size } ?: 0
+                val vod = a != null && (a.vod.isNotEmpty() || a.streamsVod)
+                val text = when {
+                    listing == null || a == null -> getString(R.string.toast_addon_failed)
+                    channels > 0 && vod -> getString(R.string.toast_addon_updated_both, channels)
+                    channels > 0 -> getString(R.string.toast_addon_updated, channels)
+                    vod -> getString(R.string.toast_addon_updated_vod)
+                    else -> getString(R.string.toast_addon_updated_simple)
+                }
+                Toast.makeText(this, text, Toast.LENGTH_LONG).show()
                 watchKey = null
             }
         },
