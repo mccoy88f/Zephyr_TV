@@ -14,7 +14,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
-## Unreleased
+## 3.6.8
 
 - Route unknown and undeclared content types to the Videos collector instead of Films.
 - Show video add-on catalogs and search results in the Videos collector and search rows.
