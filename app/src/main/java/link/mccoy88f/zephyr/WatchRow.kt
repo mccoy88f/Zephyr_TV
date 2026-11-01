@@ -944,15 +944,15 @@ private fun MainActivity.drawArt(frame: FrameLayout, w: Int, h: Int, backdrops: 
 }
 
 /**
- * A soft blur of [src] for a card's background, on any Android (RenderEffect needs 12): shrunk to 32 pixels across,
- * box-blurred three times each way (close to a Gaussian), and left small; drawn large, it's smoothed further.
+ * A soft blur of [src] for a card's background, on any Android (RenderEffect needs 12): shrunk to [across] pixels
+ * (32 for a card), box-blurred [times] each way with [radius], and left small; drawn large, it's smoothed further.
  */
-internal fun softBlur(src: Bitmap): Bitmap {
-    val w = 32
-    val h = (w * src.height / src.width.coerceAtLeast(1)).coerceIn(8, 64)
+internal fun softBlur(src: Bitmap, across: Int = 32, radius: Int = 3, times: Int = 3): Bitmap {
+    val w = across
+    val h = (w * src.height / src.width.coerceAtLeast(1)).coerceIn(8, 64.coerceAtLeast(across * 2 / 3))
     val small = Bitmap.createScaledBitmap(src, w, h, true).copy(Bitmap.Config.ARGB_8888, true)
     val px = IntArray(w * h).also { small.getPixels(it, 0, w, 0, 0, w, h) }
-    val r = 3
+    val r = radius
     fun pass(horizontal: Boolean) {
         val out = IntArray(px.size)
         val (lines, len) = if (horizontal) h to w else w to h
@@ -968,7 +968,7 @@ internal fun softBlur(src: Bitmap): Bitmap {
         }
         out.copyInto(px)
     }
-    repeat(3) { pass(true); pass(false) }
+    repeat(times) { pass(true); pass(false) }
     small.setPixels(px, 0, w, 0, 0, w, h)
     return small
 }

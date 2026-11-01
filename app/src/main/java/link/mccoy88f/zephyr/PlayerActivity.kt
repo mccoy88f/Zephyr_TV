@@ -14,6 +14,7 @@ import android.os.Looper
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.KeyEvent
+import android.view.PixelCopy
 import android.view.SurfaceView
 import android.view.View
 import android.view.WindowManager
@@ -134,6 +135,9 @@ class PlayerActivity : Activity() {
     private class LogoBox(val frame: FrameLayout, val bg: ImageView, val fg: ImageView, val mark: ImageView)
 
     private lateinit var surface: SurfaceView
+    private lateinit var seekBackdrop: ImageView
+    private var seekFrame: Bitmap? = null
+    private var capturingSeek = false
     private lateinit var blurBackdrop: ImageView
     private lateinit var blurBackdropShade: View
     private lateinit var status: TextView // under the channel's logo and name while it loads: which stream, or none works
@@ -284,6 +288,11 @@ class PlayerActivity : Activity() {
         val root = FrameLayout(this).apply { setBackgroundColor(Color.BLACK) }
         surface = SurfaceView(this)
         root.addView(surface, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, Gravity.CENTER))
+        seekBackdrop = ImageView(this).apply {
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            visibility = View.GONE
+        }
+        root.addView(seekBackdrop, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
         blurBackdrop = ImageView(this).apply {
             scaleType = ImageView.ScaleType.CENTER_CROP
             visibility = View.GONE
@@ -607,9 +616,47 @@ class PlayerActivity : Activity() {
         seekTo(to)
     }
 
+    /**
+     * The picture at the moment a seek starts: kept on screen, slightly blurred, while the stream jumps
+     * (the decoder goes black). One copy for a run of Left/Right, until the picture plays again.
+     */
+    private fun captureSeekFrame() {
+        if (!vod || capturingSeek || seekBackdrop.visibility == View.VISIBLE) return
+        val w = surface.width
+        val h = surface.height
+        if (w < 2 || h < 2) return
+        val dw = 480
+        val dh = (dw.toFloat() * h / w).toInt().coerceAtLeast(2)
+        val bmp = try { Bitmap.createBitmap(dw, dh, Bitmap.Config.ARGB_8888) } catch (_: OutOfMemoryError) { return }
+        capturingSeek = true
+        PixelCopy.request(surface, bmp, { result ->
+            capturingSeek = false
+            if (isFinishing || result != PixelCopy.SUCCESS) {
+                bmp.recycle()
+                return@request
+            }
+            val blur = runCatching { softBlur(bmp, across = 160, radius = 1, times = 1) }.getOrNull()
+            bmp.recycle()
+            if (blur == null) return@request
+            seekFrame?.recycle()
+            seekFrame = blur
+            seekBackdrop.setImageBitmap(blur)
+            seekBackdrop.visibility = View.VISIBLE
+        }, ui)
+    }
+
+    private fun hideSeekBackdrop() {
+        seekBackdrop.visibility = View.GONE
+        seekBackdrop.setImageDrawable(null)
+        seekFrame?.recycle()
+        seekFrame = null
+    }
+
     /** To [to] ms in: a Dolby or DTS stream starts again there (see hardSeek); the banner shows where. */
     private fun seekTo(to: Long) {
         val p = player ?: return
+        seeking = true
+        captureSeekFrame()
         if (passthrough(p)) {
             hardSeekTo = to
             ui.removeCallbacks(hardSeek)
@@ -1793,6 +1840,7 @@ class PlayerActivity : Activity() {
         // after the device's own, so a TV's still passes Dolby on to a receiver (see build.gradle).
         val renderers = androidx.media3.exoplayer.DefaultRenderersFactory(this)
             .setExtensionRendererMode(androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
+        val pairAudio = !s.audio.isNullOrEmpty() && format != "dash" && format != "hls"
         val p = ExoPlayer.Builder(this, renderers).setMediaSourceFactory(sources)
             .setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).build(), true)
             .setHandleAudioBecomingNoisy(true)
@@ -1807,6 +1855,7 @@ class PlayerActivity : Activity() {
                 when (state) {
                     Player.STATE_READY -> {
                         ui.removeCallbacks(stuck)
+                        hideSeekBackdrop()
                         // Its first start (not one started again after a stall): the banner comes up, as OK brings it.
                         val started = playing?.let { !it.played && it.restarts == 0 } == true
                         playing?.played = true
@@ -1822,8 +1871,10 @@ class PlayerActivity : Activity() {
                     Player.STATE_BUFFERING -> {
                         ui.removeCallbacks(stuck)
                         ui.postDelayed(stuck, if (vod) VOD_STUCK_MS else STUCK_MS)
-                        // Loading again once it played (after a seek, or a stall): the loading screen again, until it plays.
-                        if (playing?.played == true) say(getString(R.string.player_loading))
+                        // Loading again once it played (after a stall): the loading screen again, until it plays.
+                        // A seek keeps the frozen frame (see captureSeekFrame), not the channel's logo.
+                        if (playing?.played == true && !seeking && seekBackdrop.visibility != View.VISIBLE)
+                            say(getString(R.string.player_loading))
                     }
                     Player.STATE_ENDED -> if (vod) ended()
                 }
@@ -1908,10 +1959,11 @@ class PlayerActivity : Activity() {
         // A Blu-ray's MPEG-TS read as plain MPEG-TS, its packets' times left out (see M2ts).
         else if (format == "m2ts") p.setMediaSource(DefaultMediaSourceFactory(M2ts.Factory(DefaultDataSource.Factory(this, http))).createMediaSource(item))
         // Video-only plus a second audio address (YouTube adaptive): play them together, as ffmpeg would merge them.
-        else if (!s.audio.isNullOrEmpty() && format != "dash") {
+        else if (pairAudio) {
             val data = DefaultDataSource.Factory(this, http)
-            val files = androidx.media3.exoplayer.source.ProgressiveMediaSource.Factory(data)
+            val files = androidx.media3.exoplayer.source.ProgressiveMediaSource.Factory(data, PairAlign())
             p.setMediaSource(androidx.media3.exoplayer.source.MergingMediaSource(
+                true, true,
                 files.createMediaSource(MediaItem.fromUri(s.url)),
                 files.createMediaSource(MediaItem.fromUri(s.audio))))
         }
@@ -1941,6 +1993,7 @@ class PlayerActivity : Activity() {
         hardSeekTo = -1L
         player?.release()
         player = null
+        hideSeekBackdrop()
         soundOnly = false // the next stream (or channel) says its own
         onAir = null
         if (::subtitles.isInitialized) subtitles.removeAllViews()

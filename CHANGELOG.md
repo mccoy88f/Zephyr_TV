@@ -13,6 +13,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 3.7.14
+
+- YouYubeZ video and audio start on the same clock, so the first seconds do not stall.
+- A seek keeps the frame you left, with a light blur, while the player bar is up.
+
 ## 3.7.13
 
 - YouYubeZ **Visible sections** are keyword lists. Zephyr TV rereads them when you change the list.
