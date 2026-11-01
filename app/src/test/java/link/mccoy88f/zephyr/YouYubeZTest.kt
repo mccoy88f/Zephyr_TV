@@ -224,4 +224,16 @@ class YouYubeZTest {
         assertEquals("ytz:dQw4w9WgXcQ", out.getJSONArray("metas").getJSONObject(0).getString("id"))
         assertTrue(seen.any { it.optJSONObject("headers")?.optString("User-Agent").orEmpty().contains("com.google.android.youtube/") })
     }
+
+    @Test fun discoverFallsBackToSearchWhenBrowseIsEmpty() {
+        val searchPage = """{"contents":{"videoRenderer":{"videoId":"dQw4w9WgXcQ","title":{"simpleText":"Rick"}}}}"""
+        val fetch: (JSONObject) -> Js.Fetched = { req ->
+            val url = req.getString("url")
+            val body = if (url.contains("/search")) searchPage else "{}"
+            Js.Fetched(200, "OK", url, emptyList(), body.toByteArray(), "UTF-8")
+        }
+        val out = JSONObject(Js.run(script, """module.exports.catalog({id:"discover", extra:{}, settings:{}})""", timeoutMs = 8_000, fetch = fetch)!!)
+        assertEquals(1, out.getJSONArray("metas").length())
+        assertEquals("ytz:dQw4w9WgXcQ", out.getJSONArray("metas").getJSONObject(0).getString("id"))
+    }
 }

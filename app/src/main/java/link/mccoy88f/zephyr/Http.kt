@@ -10,6 +10,11 @@ import org.json.JSONObject
  * minutes), and a clear failure for anything but a 2xx answer. Network: call it off the UI thread.
  */
 internal object Http {
+    init {
+        // Java's HttpURLConnection drops Origin (and a few others). InnerTube needs Origin with SAPISIDHASH.
+        runCatching { System.setProperty("sun.net.http.allowRestrictedHeaders", "true") }
+    }
+
     private const val TIMEOUT_MS = 6000
 
     /**
