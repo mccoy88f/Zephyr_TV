@@ -75,6 +75,17 @@ internal object ExtensionCalls {
         return runCatching { JSONObject(p.getString(K.EXT_OPTIONS, null) ?: "{}").optJSONObject(e.id) }.getOrNull() ?: JSONObject()
     }
 
+    /**
+     * Asks [e] to check its cookies against the source and to count each catalog. Null when it has no verify() or it fails.
+     * Off the UI thread.
+     */
+    fun verify(context: Context, e: Extensions.Extension): JSONObject? {
+        val out = runCatching {
+            call(context, e, "(typeof module.exports.verify === \"function\" ? module.exports.verify(${withSettings(context, e)}) : null)", LONG_MS)
+        }.onFailure { warn("Extension verify() failed: ${e.name} ($it)") }.getOrNull()
+        return out?.let { runCatching { JSONObject(it) }.getOrNull() }?.takeIf { it.length() > 0 && !it.isNull("cookies") }
+    }
+
     /** [e]'s settings fields, as its settings() lists them; empty when it has none or it fails. Off the UI thread. */
     fun fields(context: Context, e: Extensions.Extension): List<Nuvio.Field> {
         if (!e.settings) return emptyList()

@@ -546,6 +546,29 @@ internal fun MainActivity.extensionChanged(id: String) {
     addonsChanged()
 }
 
+/** After cookies are pasted: check the session, reread every catalog, and rebuild the extension's rows. */
+internal fun MainActivity.checkExtensionCookies(e: Extensions.Extension) {
+    Toast.makeText(this, getString(R.string.ext_cookies_checking), Toast.LENGTH_SHORT).show()
+    netIo.execute {
+        val checked = runCatching { ExtensionCalls.verify(this, e) }.onFailure { warn("Extension verify failed: ${e.name} ($it)") }.getOrNull()
+        val url = ExtensionCalls.url(e.id)
+        val listing = runCatching { Stremio.update(filesDir, url) }.getOrNull()
+        listing?.addon?.takeIf { it.vod.any { c -> c.listed } }?.let { addon ->
+            runCatching { Stremio.updateShelves(filesDir, addon) }.onFailure { warn("Stremio catalogs failed: ${e.name} ($it)") }
+        }
+        ui.post {
+            Toast.makeText(this, when {
+                checked == null -> getString(R.string.ext_cookies_failed)
+                checked.optBoolean("loggedIn") -> getString(R.string.ext_cookies_ok)
+                checked.optBoolean("cookies") -> getString(R.string.ext_cookies_rejected)
+                else -> getString(R.string.ext_cookies_cleared)
+            }, Toast.LENGTH_LONG).show()
+            addonsChanged()
+            listing?.addon?.let { rowsAgain(STREMIO + it.id) }
+        }
+    }
+}
+
 // ---------- where their content shows ----------
 
 /** The collectors of the generic content (docs/extensions.md, Collectors), by their tile; Films, Series, TV are Zephyr TV's own. */
@@ -746,7 +769,11 @@ internal fun MainActivity.extensionOptions(id: String, focus: Int = 0, back: () 
 private fun MainActivity.extensionForm(e: Extensions.Extension, fields: List<Nuvio.Field>, focus: Int, back: () -> Unit) {
     if (fields.none { it.type in setOf("toggle", "select", "text", "list") }) return showPage(e.name, listOf(page(getString(R.string.nuvio_options_none)) { back() }), back = back)
     formPage(e.name, "", fields, focus, { f -> extensionValues(e.id)?.opt(f.key)?.takeIf { it != JSONObject.NULL } ?: f.default },
-        { f, v -> setExtensionValue(e.id, fields, f.key, v); extensionChanged(e.id) },
+        { f, v ->
+            setExtensionValue(e.id, fields, f.key, v)
+            extensionChanged(e.id)
+            if (f.key == "cookies") checkExtensionCookies(e)
+        },
         { i -> extensionForm(e, fields, i, back) }, back)
 }
 

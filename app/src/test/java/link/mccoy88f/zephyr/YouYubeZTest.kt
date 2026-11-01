@@ -187,6 +187,22 @@ class YouYubeZTest {
         assertTrue(playerReqs[0].optJSONObject("headers")?.optString("Cookie").isNullOrEmpty())
     }
 
+    @Test fun verifySeesAccountListsWhenCookiesWork() {
+        val netscape = "# Netscape HTTP Cookie File\n.youtube.com\tTRUE\t/\tTRUE\t0\tSID\tabc\n.youtube.com\tTRUE\t/\tTRUE\t0\tSAPISID\txyz"
+        val page = """{"contents":{"videoRenderer":{"videoId":"dQw4w9WgXcQ","title":{"simpleText":"x"}}}}"""
+        val out = run(
+            """module.exports.verify({settings:{cookies:${JSONObject.quote(netscape)}}})""",
+            mapOf(
+                "https://www.youtube.com/youtubei/v1/browse" to page,
+                "https://www.youtube.com/youtubei/v1/search" to page,
+            ),
+        )
+        assertTrue(out.getBoolean("cookies"))
+        assertTrue(out.getBoolean("loggedIn"))
+        assertTrue(out.getJSONObject("catalogs").getInt("subs") > 0)
+        assertTrue(out.getJSONObject("catalogs").getInt("discover") > 0)
+    }
+
     @Test fun catalogsWithoutCookiesStillListDiscoverAndTrending() {
         val m = run("""module.exports.manifest({settings:{}})""", emptyMap())
         val ids = (0 until m.getJSONArray("catalogs").length()).map { m.getJSONArray("catalogs").getJSONObject(it).getString("id") }

@@ -487,6 +487,11 @@
     <string name="list_add">Aggiungi</string>
     <string name="list_from_phone">Inserisci dal telefono…</string>
     <string name="ext_options">Opzioni</string>
+    <string name="ext_cookies_checking">Verifica dei cookie e aggiornamento delle liste…</string>
+    <string name="ext_cookies_ok">Cookie validi. Liste dell\'account aggiornate.</string>
+    <string name="ext_cookies_rejected">YouTube non ha accettato questi cookie. Scopri e Tendenze restano liste pubbliche.</string>
+    <string name="ext_cookies_cleared">Cookie rimossi. Liste rilette.</string>
+    <string name="ext_cookies_failed">Impossibile verificare i cookie. Vedi Problemi recenti.</string>
     <string name="setting_addons_tv">Canali TV</string>
     <string name="setting_addon_add">Aggiungi un addon</string>
     <string name="addon_adult">Contenuti V.M. - Adulti</string>

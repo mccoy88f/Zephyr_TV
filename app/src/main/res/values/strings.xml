@@ -486,6 +486,11 @@
     <string name="list_add">Add</string>
     <string name="list_from_phone">Enter from your phone…</string>
     <string name="ext_options">Options</string>
+    <string name="ext_cookies_checking">Checking cookies and refreshing lists…</string>
+    <string name="ext_cookies_ok">Cookies work. Account lists updated.</string>
+    <string name="ext_cookies_rejected">YouTube did not accept these cookies. Discover and Trending stay public lists.</string>
+    <string name="ext_cookies_cleared">Cookies cleared. Lists reread.</string>
+    <string name="ext_cookies_failed">Couldn\'t check the cookies. See Recent problems.</string>
     <string name="setting_addons_tv">TV Channels</string>
     <string name="setting_addon_add">Add an add-on</string>
     <string name="addon_adult">Adult content (18+)</string>
