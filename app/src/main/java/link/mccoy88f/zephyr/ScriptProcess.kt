@@ -52,8 +52,10 @@ internal abstract class ScriptService : Service() {
             try {
                 val script = data.getString(SCRIPT) ?: data.getString(SCRIPT_FILE)?.let { File(it).readText() } ?: ""
                 var store: String? = null
+                val dir = data.getString(DIR)
                 val result = Js.run(script, data.getString(CALL_JS).orEmpty(), data.getString(GLOBALS).orEmpty(), data.getLong(TIMEOUT),
-                    stored = if (data.getBoolean(WANTS_STORE)) { s -> store = s } else null, services = services(data.getString(DIR)))
+                    stored = if (data.getBoolean(WANTS_STORE)) { s -> store = s } else null, services = services(dir),
+                    extraModules = Extensions.extraModules(dir?.let { File(it) }))
                 putText(out, OUT, result)
                 out.putString(STORE, store)
             } catch (e: Throwable) {

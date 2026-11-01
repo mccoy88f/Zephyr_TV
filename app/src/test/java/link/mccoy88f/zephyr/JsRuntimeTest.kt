@@ -34,4 +34,10 @@ class JsRuntimeTest {
         assertEquals("QuotaExceededError", o.getString("full"))
         assertEquals("a", o.getString("keys"))
     }
+
+    @Test fun requireLoadsAnExtraCommonJsLibrary() {
+        val script = "function go() { return require(\"toy\").n; }"
+        val out = Js.run(script, "go()", timeoutMs = 5_000, extraModules = mapOf("toy" to "exports.n = 7;"))!!
+        assertEquals("7", out)
+    }
 }

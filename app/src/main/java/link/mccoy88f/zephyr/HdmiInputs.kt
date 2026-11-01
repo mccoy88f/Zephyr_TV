@@ -27,6 +27,10 @@ internal fun hdmiIcon(name: String, named: Boolean): String {
     }
 }
 
+/** Brand logos for external devices (game consoles, etc.) that have dedicated marks. */
+internal fun isPredefinedHdmiLogo(key: String): Boolean =
+    key in setOf("playstation", "xbox", "nintendoswitch", "appletv")
+
 /** Soundbars and AV receivers name themselves over CEC too, but there's nothing to switch to. */
 internal fun isAudioDevice(name: String) = name.lowercase().let { n -> AUDIO_WORDS.any { it in n } }
 
@@ -59,7 +63,11 @@ internal fun MainActivity.hdmiInputs(): List<MainActivity.App> = try {
         val port = input.parentId ?: input.id
         val named = input.parentId != null
         val label = (if (named) input.loadLabel(this) else input.loadCustomLabel(this) ?: input.loadLabel(this))?.toString()?.takeIf { it.isNotBlank() } ?: port
-        val iconRes = MainActivity.HDMI_ICONS[hdmiIcon(label, named)] ?: R.drawable.ic_hdmi
+        val parent = if (named) inputs.firstOrNull { it.id == input.parentId } else null
+        val portName = (parent?.loadCustomLabel(this) ?: parent?.loadLabel(this) ?: if (!named) input.loadCustomLabel(this) ?: input.loadLabel(this) else null)?.toString()?.takeIf { it.isNotBlank() } ?: label
+        val key = hdmiIcon(label, named)
+        val predefined = isPredefinedHdmiLogo(key)
+        val iconRes = if (predefined) MainActivity.HDMI_ICONS[key] ?: R.drawable.ic_input else R.drawable.ic_input
         val icon = getDrawable(iconRes)!!
         val isConnected = port in on || (named && !isAudioDevice(label))
         MainActivity.App(
@@ -68,6 +76,7 @@ internal fun MainActivity.hdmiInputs(): List<MainActivity.App> = try {
             Intent(Intent.ACTION_VIEW, TvContract.buildChannelUriForPassthroughInput(port)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             icon,
             offline = !isConnected,
+            sublabel = if (predefined) null else portName,
         )
     }.distinctBy { it.pkg }
 } catch (e: Exception) {

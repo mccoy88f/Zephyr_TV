@@ -84,7 +84,8 @@ HTTP. Così righe, pagine, ricerca e player le usano senza codice nuovo.
 - ☑ Errori e tempi scaduti → risposta vuota e riga in **Problemi recenti** (`Problems.kt`).
 - ☑ Le estensioni compaiono nelle liste delle sorgenti di stream (`streamSources`), con nome e icona, nell'ordine
   scelto: dopo gli add-on, prima dei plugin Nuvio.
-- ☑ `requires` e `zephyr.has(nome)`: elenco dei nomi noti a questo Zephyr TV (nella 1.0 è vuoto).
+- ☑ `requires` e `zephyr.has(nome)`: elenco dei nomi noti a questo Zephyr TV (`libraries` dopo la 1.0).
+- ☑ `libraries`: file CommonJS scaricati in `lib/` all'installazione, `require()` dal loro `name`, barra di stato e percentuale, aggiornamento indipendente dal `.zip`.
 - ☑ Indirizzo interno `zext://<id>/…` risolto da `Stremio.get` (launcher e player) verso `ExtensionCalls`, che chiama
   l'handler nel processo `:extensions` con `args` (settings inclusi), `zephyr` (`version`, `standard`, `language`,
   `region`, `has`, `asset`), `SCRAPER_SETTINGS`, `SCRAPER_ID` e il `localStorage` dell'estensione.

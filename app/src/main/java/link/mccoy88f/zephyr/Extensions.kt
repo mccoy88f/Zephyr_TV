@@ -18,7 +18,7 @@ internal object Extensions {
     const val STANDARD = 1
 
     /** The features added to the standard after 1.0 that this Zephyr TV has (see "requires" and zephyr.has()). */
-    val FEATURES: Set<String> = emptySet()
+    val FEATURES: Set<String> = setOf("libraries")
 
     /** The name of the file an extension is published with. */
     const val PUBLISHED = "manifest-zephyrtv.json"
@@ -26,7 +26,9 @@ internal object Extensions {
 
     private const val MAX_ZIP = 10L * 1024 * 1024
     private const val MAX_FILES = 20L * 1024 * 1024 // unzipped
+    private const val MAX_LIB = 20L * 1024 * 1024 // one downloaded library
     private const val MAX_ENTRIES = 2000
+    private const val LIB_READ_MS = 120_000 // a library is larger than a manifest; a TV Wi-Fi is slow
 
     /** The collectors an extension's content can go to (see "collectors"). */
     val COLLECTORS = listOf("movies", "series", "tv", "radio", "videos", "courses", "podcasts", "audiobooks", "events")
@@ -46,10 +48,13 @@ internal object Extensions {
         val iconFile: File? get() = icon?.takeIf { !it.startsWith("http") }?.let { safe(dir, it) }?.takeIf { it.exists() }
     }
 
+    /** A JavaScript library downloaded next to the package (not in the .zip): require([name]) after install. */
+    internal class Library(val name: String, val version: String, val url: String, val sha256: String)
+
     /** What a manifest-zephyrtv.json says: an extension's latest version, where its package is, and its SHA-256. */
     internal class Published(val url: String, val id: String, val version: String, val zephyr: Int, val name: String,
                              val description: String, val author: String, val icon: String?, val packageUrl: String,
-                             val sha256: String, val adult: Boolean)
+                             val sha256: String, val adult: Boolean, val libraries: List<Library> = emptyList())
 
     /** A repository-zephyrtv.json: its [name], and the addresses of its extensions' manifest-zephyrtv.json. */
     internal class Repository(val url: String, val name: String, val extensions: List<String>)
@@ -106,7 +111,7 @@ internal object Extensions {
             ?: throw Refused(Why.NOT_AN_EXTENSION, "package")
         val icon = m.optString("icon").takeIf { it.isNotBlank() }?.let { runCatching { java.net.URL(java.net.URL(url), it).toString() }.getOrNull() }
         return Published(url, id, version, zephyr, m.optString("name"), m.optString("description"), m.optString("author"), icon,
-            packageUrl, sha, m.optBoolean("adult"))
+            packageUrl, sha, m.optBoolean("adult"), librariesOf(m, url))
     }
 
     /** Reads the manifest-zephyrtv.json at [url]. Network: off the UI thread. Throws Refused. */
@@ -157,12 +162,22 @@ internal object Extensions {
             if (expected != null && (expected.id != ext.id || expected.version != ext.version)) throw Refused(Why.DIFFERENT, "${ext.id} ${ext.version}")
             val dir = File(root, ext.id)
             val old = File(root, ".old-" + UUID.randomUUID())
-            if (dir.exists() && !dir.renameTo(old)) throw Refused(Why.DAMAGED, "can't replace ${ext.id}")
+            val keptLib = File(root, ".lib-" + UUID.randomUUID())
+            val hadLib = File(dir, "lib").takeIf { it.isDirectory }?.renameTo(keptLib) == true
+            if (dir.exists() && !dir.renameTo(old)) {
+                if (hadLib) keptLib.renameTo(File(dir, "lib"))
+                throw Refused(Why.DAMAGED, "can't replace ${ext.id}")
+            }
             if (!base.renameTo(dir)) {
                 old.renameTo(dir)
+                if (hadLib) keptLib.renameTo(File(dir, "lib"))
                 throw Refused(Why.DAMAGED, "can't install ${ext.id}")
             }
             old.deleteRecursively()
+            if (hadLib) {
+                File(dir, "lib").deleteRecursively()
+                keptLib.renameTo(File(dir, "lib"))
+            }
             File(files, "extension-data/${ext.id}").mkdirs()
             cache.remove(ext.id)
             return read(dir)
@@ -171,28 +186,29 @@ internal object Extensions {
         }
     }
 
-    /** Downloads [p]'s package, checks its SHA-256 and installs it (see install). Network: off the UI thread. */
-    fun download(files: File, p: Published): Extension {
+    /**
+     * Downloads [p]'s package, checks its SHA-256, installs it, then its libraries (see [syncLibraries]).
+     * [progress]: status key (`package` or a library's name), bytes so far, total (-1 when unknown). Network: off the UI thread.
+     */
+    fun download(files: File, p: Published, progress: ((String, Long, Long) -> Unit)? = null): Extension {
         val zip = File(files, "extensions/.download-" + UUID.randomUUID()).apply { parentFile?.mkdirs() }
         try {
-            runCatching {
-                Http.open(p.packageUrl).use { input -> zip.outputStream().use { out ->
-                    val buf = ByteArray(64 * 1024)
-                    var total = 0L
-                    while (true) {
-                        val n = input.read(buf)
-                        if (n < 0) break
-                        total += n
-                        if (total > MAX_ZIP) throw Refused(Why.TOO_LARGE, "$total")
-                        out.write(buf, 0, n)
-                    }
-                } }
-            }.getOrElse { throw if (it is Refused) it else Refused(Why.UNREACHABLE, it.toString()) }
+            runCatching { pull(p.packageUrl, zip, MAX_ZIP) { got, all -> progress?.invoke("package", got, all) } }
+                .getOrElse { throw if (it is Refused) it else Refused(Why.UNREACHABLE, it.toString()) }
             if (sha256(zip) != p.sha256) throw Refused(Why.DAMAGED, "sha256")
-            return install(files, zip, p)
+            val e = install(files, zip, p)
+            val libs = p.libraries.ifEmpty { librariesOf(e.manifest, p.url) }
+            syncLibraries(e, libs, progress)
+            return read(e.dir)
         } finally {
             zip.delete()
         }
+    }
+
+    /** After a .zip install: downloads [e]'s libraries from its manifest ([base] resolves relative addresses). */
+    fun finishInstall(e: Extension, base: String? = null, progress: ((String, Long, Long) -> Unit)? = null): Extension {
+        syncLibraries(e, librariesOf(e.manifest, base), progress)
+        return read(e.dir)
     }
 
     /** The manifest.json inside the package [zip] (at its root, or in its one folder), or null. */
@@ -249,6 +265,123 @@ internal object Extensions {
         }
         return md.digest().joinToString("") { "%02x".format(it) }
     }
+
+    // ---------- libraries (downloaded next to the package) ----------
+
+    /** [m]'s `libraries` list; [base] is the published file's address, for relative urls. Throws Refused when a row is bad. */
+    fun librariesOf(m: JSONObject, base: String? = null): List<Library> {
+        val a = m.optJSONArray("libraries") ?: return emptyList()
+        return (0 until a.length()).map { i ->
+            val o = a.optJSONObject(i) ?: throw Refused(Why.NOT_AN_EXTENSION, "libraries")
+            val name = o.optString("name")
+            val version = o.optString("version")
+            val sha = o.optString("sha256").lowercase()
+            val raw = o.optString("url")
+            if (!validLibName(name) || !validVersion(version) || !Regex("[0-9a-f]{64}").matches(sha) || raw.isBlank())
+                throw Refused(Why.NOT_AN_EXTENSION, "libraries:$name")
+            val url = if (raw.startsWith("https://") || raw.startsWith("http://")) raw
+            else base?.let { runCatching { java.net.URL(java.net.URL(it), raw).toString() }.getOrNull() }
+                ?: throw Refused(Why.NOT_AN_EXTENSION, "libraries:$name")
+            if (!url.startsWith("http")) throw Refused(Why.NOT_AN_EXTENSION, "libraries:$name")
+            Library(name, version, url, sha)
+        }
+    }
+
+    /** Libraries already on disk for [e] (name to version and sha256). */
+    fun installedLibraries(e: Extension): List<Library> {
+        val a = runCatching { JSONArray(File(e.dir, "lib/index.json").readText()) }.getOrNull() ?: return emptyList()
+        return (0 until a.length()).mapNotNull { i ->
+            val o = a.optJSONObject(i) ?: return@mapNotNull null
+            val name = o.optString("name").takeIf { validLibName(it) } ?: return@mapNotNull null
+            Library(name, o.optString("version"), o.optString("url"), o.optString("sha256"))
+        }
+    }
+
+    /**
+     * Whether [want] needs a download against what [e] already has: missing, or a different sha256, or a newer version.
+     */
+    fun librariesDue(e: Extension, want: List<Library>): List<Library> {
+        val have = installedLibraries(e).associateBy { it.name }
+        return want.filter { w ->
+            val old = have[w.name] ?: return@filter true
+            old.sha256 != w.sha256 || newer(w.version, old.version)
+        }
+    }
+
+    /**
+     * Downloads each of [want] that is due into [e]'s `lib/`, checks sha256, writes `lib/index.json`.
+     * [progress]: the library's name, bytes so far, total (-1 when unknown).
+     */
+    fun syncLibraries(e: Extension, want: List<Library>, progress: ((String, Long, Long) -> Unit)? = null) {
+        if (want.isEmpty()) return
+        val lib = File(e.dir, "lib").apply { mkdirs() }
+        val have = installedLibraries(e).associateBy { it.name }.toMutableMap()
+        for (w in librariesDue(e, want)) {
+            val file = libFile(w.name)
+            val dest = File(lib, file)
+            val part = File(lib, "$file.part")
+            runCatching { pull(w.url, part, MAX_LIB) { got, all -> progress?.invoke(w.name, got, all) } }
+                .getOrElse { part.delete(); throw if (it is Refused) it else Refused(Why.UNREACHABLE, it.toString()) }
+            if (sha256(part) != w.sha256) { part.delete(); throw Refused(Why.DAMAGED, "sha256 ${w.name}") }
+            dest.delete()
+            if (!part.renameTo(dest)) { part.delete(); throw Refused(Why.DAMAGED, w.name) }
+            have[w.name] = w
+        }
+        val keep = want.map { it.name }.toSet()
+        have.keys.filter { it !in keep }.forEach { name ->
+            File(lib, libFile(name)).delete()
+            have.remove(name)
+        }
+        val index = JSONArray(want.map { w ->
+            JSONObject().put("name", w.name).put("version", w.version).put("url", w.url).put("sha256", w.sha256).put("file", libFile(w.name))
+        })
+        val idx = File(lib, "index.json")
+        val idxPart = File(lib, "index.json.part")
+        idxPart.writeText(index.toString())
+        idxPart.renameTo(idx)
+    }
+
+    /** The CommonJS sources in [dir]/lib, by require() name, for Js.run. */
+    fun extraModules(dir: File?): Map<String, String> {
+        val root = dir ?: return emptyMap()
+        val a = runCatching { JSONArray(File(root, "lib/index.json").readText()) }.getOrNull() ?: return emptyMap()
+        return (0 until a.length()).mapNotNull { i ->
+            val o = a.optJSONObject(i) ?: return@mapNotNull null
+            val name = o.optString("name")
+            val file = o.optString("file").ifBlank { libFile(name) }
+            val f = safe(File(root, "lib"), file)?.takeIf { it.isFile } ?: return@mapNotNull null
+            name to f.readText()
+        }.toMap()
+    }
+
+    /** Downloads [url] into [dest], at most [max] bytes. [onBytes]: so far, Content-Length or -1. */
+    internal fun pull(url: String, dest: File, max: Long, onBytes: (Long, Long) -> Unit = { _, _ -> }) {
+        dest.parentFile?.mkdirs()
+        val c = Http.connect(url, timeout = LIB_READ_MS)
+        try {
+            val code = c.responseCode
+            if (code !in 200..299) throw Refused(Why.UNREACHABLE, "$code")
+            val all = c.contentLengthLong
+            c.inputStream.use { input -> dest.outputStream().use { out ->
+                val buf = ByteArray(64 * 1024)
+                var got = 0L
+                while (true) {
+                    val n = input.read(buf)
+                    if (n < 0) break
+                    got += n
+                    if (got > max) throw Refused(Why.TOO_LARGE, "$got")
+                    out.write(buf, 0, n)
+                    onBytes(got, all)
+                }
+            } }
+        } finally {
+            c.disconnect()
+        }
+    }
+
+    internal fun validLibName(name: String) = Regex("[A-Za-z0-9][A-Za-z0-9._@-]{0,99}").matches(name)
+
+    internal fun libFile(name: String) = name.replace(Regex("[^A-Za-z0-9._-]"), "_") + if (name.endsWith(".js")) "" else ".js"
 
     // ---------- installed ----------
 

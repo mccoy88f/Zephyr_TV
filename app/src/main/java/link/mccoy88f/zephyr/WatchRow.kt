@@ -31,6 +31,7 @@ import link.mccoy88f.zephyr.MainActivity.App
 import link.mccoy88f.zephyr.MainActivity.Companion.CW_APPS_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.GREYSCALE
 import link.mccoy88f.zephyr.MainActivity.Companion.GRID_GAP
+import link.mccoy88f.zephyr.MainActivity.Companion.HDMI
 import link.mccoy88f.zephyr.MainActivity.Companion.LOGOS
 import link.mccoy88f.zephyr.MainActivity.Companion.PER_APP
 import link.mccoy88f.zephyr.MainActivity.Companion.TV_LISTINGS
@@ -182,7 +183,11 @@ internal fun MainActivity.rowsAgain(pkg: String?) {
 
 internal fun MainActivity.queryAppChannels(pkg: String?) {
     // An add-on's tile, or the TV app with the add-ons' channels in it, has rows without the TV listings too.
-    if (pkg == null || (!readsListings() && !pkg.startsWith(STREMIO) && addonsUnder(pkg).isEmpty())) {
+    if (pkg == null || pkg.startsWith(HDMI) || (!readsListings() && !pkg.startsWith(STREMIO) && addonsUnder(pkg).isEmpty())) {
+        if (pkg?.startsWith(HDMI) == true) {
+            ui.post { hideWatchRow() }
+            return
+        }
         ui.post { watchTitle.text = getString(R.string.continue_watching) }
         refreshWatchNext()
         return
@@ -504,8 +509,10 @@ private const val SECTION_CARDS = 20
  */
 internal fun MainActivity.hideWatchRow() {
     watchKey = null
+    watchApp = null
     moreSections.removeAllViews()
     if (watchScroll.visibility == View.GONE) return
+    watchTitle.text = ""
     watchTitle.visibility = View.INVISIBLE
     watchScroll.visibility = View.INVISIBLE
 }
@@ -515,6 +522,7 @@ internal fun MainActivity.hideWatchRow() {
  * the previous app's cards don't linger under it. An app known to have nothing hides the row at once instead.
  */
 internal fun MainActivity.showLoading(pkg: String) {
+    if (pkg.startsWith(HDMI)) return hideWatchRow()
     if (pkg == watchApp) return // its rows are already there (e.g. focus back up from them)
     watchApp = null
     val rows = (sectionCounts[pkg] ?: 1).coerceAtMost(3) // the screen shows three at most

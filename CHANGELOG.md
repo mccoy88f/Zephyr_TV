@@ -14,6 +14,12 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
+## Unreleased
+
+- An extension can name JavaScript libraries that Zephyr TV downloads at install. The screen shows the status and the percent.
+- **Update now** can refresh those libraries when their version changes, without a new extension package.
+- **YouYubeZ** is a sample extension for YouTube search and playlists. It is not affiliated with YouTube.
+
 ## 3.6.8
 
 - Route unknown and undeclared content types to the Videos collector instead of Films.

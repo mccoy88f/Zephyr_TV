@@ -150,5 +150,19 @@ class StremioVodTest {
         assertEquals("movies", collectorOf("movie"))
         assertEquals("videos", collectorOf(""))
         assertEquals("videos", collectorOf("unknown"))
+        assertEquals("courses", collectorOf("course"))
+        assertEquals("podcasts", collectorOf("podcast"))
+        assertEquals("audiobooks", collectorOf("audiobook"))
+        assertEquals("events", collectorOf("event"))
+        assertEquals("radio", collectorOf("radio"))
+    }
+
+    @Test fun collectorPrefKeyMapsAllKinds() {
+        assertEquals(K.ADDONS_VIDEOS, collectorPrefKey("videos"))
+        assertEquals(K.ADDONS_COURSES, collectorPrefKey("courses"))
+        assertEquals(K.ADDONS_PODCASTS, collectorPrefKey("podcasts"))
+        assertEquals(K.ADDONS_AUDIOBOOKS, collectorPrefKey("audiobooks"))
+        assertEquals(K.ADDONS_EVENTS, collectorPrefKey("events"))
+        assertEquals(K.RADIO_PLACE, collectorPrefKey("radio"))
     }
 }

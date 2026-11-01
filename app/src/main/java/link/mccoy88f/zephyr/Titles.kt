@@ -86,9 +86,9 @@ internal fun MainActivity.vodApps(): List<MainActivity.App> {
     )
 }
 
-/** The add-ons with film or series catalogs that get a tile of their own (films and series "apps"). */
+/** The add-ons with film, series or other content catalogs that get a tile of their own (content set to "apps"). */
 internal fun MainActivity.vodTileAddons(): List<Stremio.Addon> =
-    vodAddons().filter { a -> a.vod.any { it.listed && addonsVod(vodKind(it.type)) == VodPlace.APPS } && !apart(a.url) }
+    vodAddons().filter { a -> a.vod.any { it.listed && contentPlace(it.type) == VodPlace.APPS } && !apart(a.url) }
 
 /**
  * The rows of films or series under the tile [pkg]: under Films or Series, every add-on's catalogs of that type
@@ -102,24 +102,24 @@ internal fun MainActivity.titleSections(pkg: String, hidden: Set<String>): List<
     val ownUrl = ownAppUrl(pkg)
     val adult = pkg == ADULT_PKG || (ownUrl != null && isAdultAddon(ownUrl))
     val addons = when {
-        collector != null -> vodAddons().filter { a -> a.vod.any {
+        collector != null -> if (collectorPlace(collector) != VodPlace.TILES) emptyList() else vodAddons().filter { a -> a.vod.any {
             (if (ExtensionCalls.idOf(a.url) != null) extensionRoutes(a.url, it.type) else true) && collectorOf(it.type) == collector
         } }
         ownUrl != null -> vodAddons().filter { it.url == ownUrl } // an add-on's own app: its films and series
         adult -> if (adultApp()) vodAddons().filter { isAdultAddon(it.url) } else return emptyList()
         mode == VodPlace.TILES && type != null -> vodAddons().filter { !apart(it.url) || extensionRoutes(it.url, type) }
-        pkg.startsWith(STREMIO) && VodPlace.APPS in listOf(addonsVod("movie"), addonsVod("series")) -> vodAddons().filter { STREMIO + it.id == pkg }
+        pkg.startsWith(STREMIO) -> vodAddons().filter { STREMIO + it.id == pkg && it.vod.any { v -> contentPlace(v.type) == VodPlace.APPS } }
         else -> return emptyList()
     }
     // Which of an add-on's shelves of [shelfType] show here: in a collector, those given to it; in an extension's own
     // app, those not given away; under Films and Series, an extension's given to them (films: its own types too).
     fun shows(url: String, shelfType: String): Boolean = when {
-        collector != null -> (if (ExtensionCalls.idOf(url) != null) extensionRoutes(url, shelfType) else true) && collectorOf(shelfType) == collector
-        ownUrl != null -> if (ExtensionCalls.idOf(url) != null) !extensionRoutes(url, shelfType) else collectorOf(shelfType) !in listOf("movies", "series")
+        collector != null -> (if (ExtensionCalls.idOf(url) != null) extensionRoutes(url, shelfType) else true) && collectorOf(shelfType) == collector && collectorPlace(collector) == VodPlace.TILES
+        ownUrl != null -> if (ExtensionCalls.idOf(url) != null) (!extensionRoutes(url, shelfType) && contentPlace(shelfType) != VodPlace.OFF) else contentPlace(shelfType) == VodPlace.APPS
         ExtensionCalls.idOf(url) != null && type != null -> (!apart(url) || extensionRoutes(url, shelfType)) && collectorOf(shelfType) == (if (type == "series") "series" else "movies")
         type != null -> collectorOf(shelfType) == (if (type == "series") "series" else "movies")
-        // An add-on's own tile: its films, its series, those set to show in their add-on's tile.
-        !adult -> addonsVod(vodKind(shelfType)) == VodPlace.APPS
+        // An add-on's own tile: its content set to show in its add-on's tile.
+        !adult -> contentPlace(shelfType) == VodPlace.APPS
         else -> true
     }
     val missing = ArrayList<String>()
@@ -136,7 +136,7 @@ internal fun MainActivity.titleSections(pkg: String, hidden: Set<String>): List<
         Stremio.shelves(filesDir, addon).filter { type == null || (it.catalog.type == "series") == (type == "series") }
             .filter { shows(addon.url, it.catalog.type) && shelfKey(addon, it.catalog) !in shelvesOff }.mapNotNull { shelf ->
             val kind = kindName(shelf.catalog.type)
-            val name = if (type != null || adult) "${addon.name} · ${shelf.catalog.name}" else "$kind · ${shelf.catalog.name}"
+            val name = if (type != null || collector != null || adult) "${addon.name} · ${shelf.catalog.name}" else "$kind · ${shelf.catalog.name}"
             // In the TV's language when TMDB has the title (those it hasn't been asked about yet: once it's answered);
             // else, in another add-on's row (another catalog source's too), with the main catalog's art (see withMainArt).
             val cards = shelf.titles.map { t ->
@@ -259,8 +259,8 @@ internal fun titleCard(t: Stremio.Title, source: String?, icon: String?, watched
 /** The tile a title of [type] from the add-on at [source] is under: Films or Series, or the add-on's own (null: none). */
 internal fun MainActivity.titleTile(type: String, source: String?): String? = if (source != null && inAdultApp(source)) ADULT_PKG
     else if (source != null && extensionRoutes(source, type)) collectorOf(type).let { c -> if (c == "series") SERIES_PKG else COLLECTOR_PKGS.entries.firstOrNull { it.value == c }?.key ?: MOVIES_PKG }
-    else if (source != null && ownApp(source)) Stremio.saved(filesDir, source)?.addon?.let { STREMIO + it.id } else when (addonsVod(vodKind(type))) {
-    VodPlace.TILES -> if (type == "series") SERIES_PKG else MOVIES_PKG
+    else if (source != null && ownApp(source)) Stremio.saved(filesDir, source)?.addon?.let { STREMIO + it.id } else when (contentPlace(type)) {
+    VodPlace.TILES -> collectorOf(type).let { c -> if (c == "series") SERIES_PKG else COLLECTOR_PKGS.entries.firstOrNull { it.value == c }?.key ?: MOVIES_PKG }
     VodPlace.APPS -> source?.let { Stremio.saved(filesDir, it)?.addon }?.let { STREMIO + it.id }
     VodPlace.OFF -> null
 }
@@ -273,7 +273,7 @@ internal fun MainActivity.titleProgressCards(hidden: Set<String>): List<Pair<Lon
     // One card a series: its newest episode, begun or waiting next.
     return VodProgress.all(vodDir()).filter { hideKey(VOD_PKG, it.name) !in hidden }.distinctBy { it.metaId }.take(10).map { e ->
         val left = ((e.duration - e.position) / 60_000).coerceAtLeast(1)
-        val tile = if (addonsVod(vodKind(e.type)) == VodPlace.TILES) (if (e.type == "series") SERIES_PKG else MOVIES_PKG) else null
+        val tile = if (contentPlace(e.type) == VodPlace.TILES) (if (e.type == "series") SERIES_PKG else COLLECTOR_PKGS.entries.firstOrNull { it.value == collectorOf(e.type) }?.key ?: MOVIES_PKG) else null
         val state = if (e.upNext) getString(R.string.title_up_next) else getString(R.string.time_left_min, left.toInt())
         val l = Local.get(e.metaId)
         val sameName = l == null || l.title.equals(e.name.substringBefore(" · "), ignoreCase = true)

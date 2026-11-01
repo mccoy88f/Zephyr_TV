@@ -27,4 +27,21 @@ class HdmiInputsTest {
         assertTrue(inRow("hdmi:2", offline = true, none, setOf("hdmi:2")))
         assertFalse(inRow("hdmi:2", offline = false, setOf("hdmi:2"), setOf("hdmi:2")))
     }
+
+    @Test fun hdmiPkg() {
+        val port = "HDMI 2"
+        val pkg = MainActivity.HDMI + port
+        assertTrue(pkg.startsWith(MainActivity.HDMI))
+        assertEquals("hdmi:HDMI 2", pkg)
+    }
+
+    @Test fun predefinedLogos() {
+        assertTrue(isPredefinedHdmiLogo("playstation"))
+        assertTrue(isPredefinedHdmiLogo("xbox"))
+        assertTrue(isPredefinedHdmiLogo("nintendoswitch"))
+        assertTrue(isPredefinedHdmiLogo("appletv"))
+        assertFalse(isPredefinedHdmiLogo("hdmi"))
+        assertFalse(isPredefinedHdmiLogo("playback"))
+        assertFalse(isPredefinedHdmiLogo("settop"))
+    }
 }

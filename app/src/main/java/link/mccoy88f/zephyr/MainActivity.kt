@@ -116,7 +116,7 @@ class MainActivity : Activity() {
     // picture: the tile image for Zephyr TV's own apps (Films, Series, TV channels), centered in the card; the
     // icon stays the small mark on cards.
     internal class App(val pkg: String, val label: String, val launch: Intent, val icon: Drawable, val offline: Boolean = false,
-                       val picture: Drawable? = null)
+                       val picture: Drawable? = null, val sublabel: String? = null)
     internal class Prog(val title: String, val sub: String, val progress: Int, val image: String?, val intent: String?, val pkg: String?, val weight: Long = 0, val badge: String? = null, val logo: String? = null, val poster: String? = null, val channelPage: ChannelDetail? = null, val channelId: Long? = null, val playing: Boolean = false, val addon: AddonChannel? = null, val icon: String? = null, val vod: TitleRef? = null, val cinema: Boolean = false) // icon: the tile whose icon marks the card, when not pkg's; vod: a film or series (see Titles); cinema: a film still only in cinemas
 
     internal val prefs by lazy { getSharedPreferences(K.FILE, MODE_PRIVATE) }
@@ -1117,6 +1117,10 @@ class MainActivity : Activity() {
                         showLoading(pkg)
                         ui.removeCallbacks(appChannelDebounce)
                         ui.postDelayed(appChannelDebounce, 300)
+                    } else {
+                        tmdbLastFocusApp = pkg
+                        ui.removeCallbacks(appChannelDebounce)
+                        hideWatchRow()
                     }
                 }
                 showRowLabel(v, focused)
@@ -1167,8 +1171,11 @@ class MainActivity : Activity() {
                     } else if (!playLastChannel(a.pkg) && watchApp == a.pkg) firstCard()?.requestFocus()
                 }
             }
-            a.pkg.startsWith(HDMI) -> tile(name, a.icon, true, a.pkg,
-                tint = BRAND_COLOURS[hdmiIcon(a.label, true)]?.takeIf { colour }) { launch(a) }
+            a.pkg.startsWith(HDMI) -> {
+                val tileLabel = if (labeled) a.label else a.sublabel
+                tile(tileLabel, a.icon, true, a.pkg,
+                    tint = BRAND_COLOURS[hdmiIcon(a.label, true)]?.takeIf { colour }) { launch(a) }
+            }
             logo != null -> tile(name.takeIf { !logo.second }, getDrawable(logo.first)!!, true, a.pkg,
                 wordmarkInset = if (!logo.second) null else dp(if (labeled) 28 else 14),
                 tint = BRAND_COLOURS[a.pkg]?.takeIf { colour }) { launch(a) }
@@ -2264,9 +2271,9 @@ class MainActivity : Activity() {
             "xbox" to R.drawable.logo_xbox,
             "nintendoswitch" to R.drawable.logo_nintendoswitch,
             "appletv" to R.drawable.logo_appletv,
-            "settop" to R.drawable.ic_settop,
-            "playback" to R.drawable.ic_playback,
-            "hdmi" to R.drawable.ic_hdmi,
+            "settop" to R.drawable.ic_input,
+            "playback" to R.drawable.ic_input,
+            "hdmi" to R.drawable.ic_input,
         )
 
         /**

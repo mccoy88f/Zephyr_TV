@@ -444,8 +444,13 @@
     <string name="ext_repo_added">Repository %1$s aggiunto</string>
     <string name="ext_repo_empty">Questo repository non ha estensioni.</string>
     <string name="ext_install">Installa</string>
+    <string name="ext_installing">Installazione di %1$s</string>
+    <string name="ext_install_progress">%1$s\n%2$d%%</string>
+    <string name="ext_status_package">Download del pacchetto…</string>
+    <string name="ext_status_library">Download di %1$s…</string>
     <string name="ext_installed">%1$s %2$s installata</string>
     <string name="ext_updated">%1$s aggiornata alla %2$s</string>
+    <string name="ext_updated_libs">%1$s: librerie aggiornate</string>
     <string name="ext_up_to_date">%1$s è aggiornata</string>
     <string name="ext_check">Controlla aggiornamenti</string>
     <string name="ext_none_updated">Nessun aggiornamento</string>

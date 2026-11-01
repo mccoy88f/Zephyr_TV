@@ -86,6 +86,31 @@ class ExtensionsTest {
         assertFalse(Extensions.newer("1.0.0-beta.1", "1.0.0"))
     }
 
+    @Test fun librariesAreParsedAndKeptAcrossAZipUpdate() {
+        val files = tmp.newFolder()
+        val libManifest = manifest.replace("\"collectors\"",
+            "\"requires\":[\"libraries\"],\"libraries\":[{\"name\":\"toy\",\"version\":\"1.0.0\",\"url\":\"https://example.org/toy.js\",\"sha256\":\"${"b".repeat(64)}\"}],\"collectors\"")
+        val e = Extensions.install(files, zip("manifest.json" to libManifest, "main.js" to "module.exports = {};"))
+        val libs = Extensions.librariesOf(e.manifest)
+        assertEquals(1, libs.size)
+        assertEquals("toy", libs[0].name)
+        File(e.dir, "lib").mkdirs()
+        File(e.dir, "lib/toy.js").writeText("module.exports = { n: 1 };")
+        File(e.dir, "lib/index.json").writeText("""[{"name":"toy","version":"1.0.0","url":"https://example.org/toy.js","sha256":"${"b".repeat(64)}","file":"toy.js"}]""")
+        assertEquals("toy", Extensions.installedLibraries(e).single().name)
+        assertEquals(mapOf("toy" to "module.exports = { n: 1 };"), Extensions.extraModules(e.dir))
+
+        // only the extension version bumps; the library on disk must survive the new zip
+        val bumped = libManifest.replace("\"version\":\"1.0.0\",\"name\"", "\"version\":\"1.0.1\",\"name\"")
+        val updated = Extensions.install(files, zip("manifest.json" to bumped, "main.js" to "//"))
+        assertEquals("1.0.1", updated.version)
+        assertTrue(File(updated.dir, "lib/toy.js").isFile)
+        assertEquals("toy", Extensions.installedLibraries(updated).single().name)
+        assertTrue(Extensions.librariesDue(updated, libs).isEmpty())
+        val newerLib = Extensions.Library("toy", "1.1.0", "https://example.org/toy.js", "c".repeat(64))
+        assertEquals(listOf("toy"), Extensions.librariesDue(updated, listOf(newerLib)).map { it.name })
+    }
+
     @Test fun shaOfAFile() {
         val f = tmp.newFile().apply { writeText("abc") }
         assertEquals("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", Extensions.sha256(f))

@@ -105,7 +105,8 @@ internal object Js {
      */
     internal fun run(script: String, call: String, globals: String = "", timeoutMs: Long,
                      fetch: (JSONObject) -> Fetched = ::httpFetch, stored: ((String) -> Unit)? = null,
-                     services: Map<String, suspend (JSONObject) -> Any?> = emptyMap()): String? = runBlocking {
+                     services: Map<String, suspend (JSONObject) -> Any?> = emptyMap(),
+                     extraModules: Map<String, String> = emptyMap()): String? = runBlocking {
         withTimeoutOrNull(timeoutMs) {
             withContext(Dispatchers.IO) {
                 quickJs {
@@ -142,11 +143,21 @@ internal object Js {
                     // Each ends in undefined: what a script leaves is turned into Kotlin, a module (circular) can't be.
                     evaluate<Any?>(PRELUDE + globals + END, "prelude.js", false)
                     // The modules it require()s, those we have: each bundle defines its global, then is registered.
-                    for (name in Regex("""require\(\s*['"]([^'"]+)['"]\s*\)""").findAll(script).map { it.groupValues[1] }.toSet()) {
+                    val needed = Regex("""require\(\s*['"]([^'"]+)['"]\s*\)""").findAll(script).map { it.groupValues[1] }.toSet()
+                    for (name in needed) {
                         val (file, global) = MODULES[name] ?: continue
                         val code = modules(file) ?: continue
                         evaluate<Any?>(code + END, file, false)
                         evaluate<Any?>("__modules[${JSONObject.quote(name)}] = $global;$END", "require.js", false)
+                    }
+                    // Libraries downloaded into the extension's folder: one CommonJS file each (module.exports).
+                    for (name in needed) {
+                        if (name in MODULES) continue
+                        val code = extraModules[name] ?: continue
+                        val q = JSONObject.quote(name)
+                        evaluate<Any?>(
+                            "(function(){ var module = { exports: {} }; var exports = module.exports; $code\n__modules[$q] = module.exports; })();$END",
+                            name, false)
                     }
                     evaluate<Any?>(script + END, "plugin.js", false)
                     val out = evaluate<String?>("__ascii(JSON.stringify(await $call))", "call.js", false)

@@ -30,6 +30,7 @@ Contents:
 10. [Versions of the standard](#10-versions-of-the-standard)
 11. [A minimal extension](#11-a-minimal-extension)
 12. [Coming next](#12-coming-next)
+13. [Example: YouYubeZ](#13-example-youyubez)
 
 ## 1. The package
 
@@ -91,7 +92,8 @@ my-extension.zip
 | `behaviorHints.adult` | no | Its content is 18+: Zephyr TV shows it only while 18+ is unlocked. |
 | `behaviorHints.configurationRequired` | no | It does nothing until its settings are set: Zephyr TV opens them after installing it. |
 | `collectors` | no | The collectors its content may be shown in instead of its own app: `["movies", "series"]` (see [Collectors](#collectors)). A catalog with `"collector": false` stays in its app. |
-| `requires` | no | The features added to this standard after 1.0 that the extension can't do without: `["subtitles"]`. Zephyr TV refuses it when it lacks one (see 10). |
+| `requires` | no | The features added to this standard after 1.0 that the extension can't do without: `["libraries"]`. Zephyr TV refuses it when it lacks one (see 10). |
+| `libraries` | no | JavaScript libraries **not** in the `.zip`: Zephyr TV downloads them when it installs the extension (see [Libraries](#libraries)). |
 
 The resources are Stremio's `catalog`, `meta` and `stream`, and Zephyr TV's own `guide` and `featured` (see 3).
 A catalog's `extra` follows Stremio's rules: `genre` (with its `options`), `search`, `skip`, `isRequired`.
@@ -320,8 +322,9 @@ call. It isn't Node.js nor a browser; Zephyr TV gives it:
 - `URL`, `URLSearchParams`, `TextEncoder`, `TextDecoder`, `Buffer` (base64, hex, utf-8), `atob`, `btoa`.
 - `setTimeout`, `clearTimeout`, `console` (`log`, `warn`, `error`: to Recent problems, in debug builds).
 - `localStorage` — the extension's own, strings by key, kept between calls (see 7).
-- `require()` of `cheerio` (HTML as jQuery reads it) and `crypto-js`. Other packages: bundle them into `main.js`
-  (with esbuild, for example: `esbuild src/index.ts --bundle --platform=neutral --format=cjs --outfile=main.js`).
+- `require()` of `cheerio` (HTML as jQuery reads it) and `crypto-js`, and of the extension's downloaded
+  [libraries](#libraries). Other packages: bundle them into `main.js` (with esbuild, for example:
+  `esbuild src/index.ts --bundle --platform=neutral --format=cjs --outfile=main.js`).
 - `zephyr` — Zephyr TV's services (see 7).
 
 Limits for each call: **25 seconds** (a `stream` call; `catalog` and `guide` 60), **15 seconds** for each request,
@@ -380,7 +383,9 @@ const channel = await zephyr.m3u.channel("main", id);
   `.zip` sent from a phone (QR code). Zephyr TV shows its name, author, what it provides and that it runs code by
   someone else, and installs it once confirmed.
 - Each extension: **On**, **Options**, **Adult content (18+)**, **Move up / down** (its rows come in this order),
-  **Update now**, **Remove**. Removing it deletes its settings, its `localStorage` and its playlists.
+  **Update now**, **Remove**. Removing it deletes its settings, its `localStorage`, its playlists and its libraries.
+- While it installs or updates, Zephyr TV shows the **status** (the package, each library) and the **percent**
+  downloaded. Wait until it finishes: an extension with `libraries` is not ready before.
 - **Add an extension** also takes a **repository**'s address (its `repository-zephyrtv.json`, see below): Zephyr TV
   adds the repository and shows its extensions.
 - The extensions of the repositories that aren't installed are listed after the installed ones: OK installs one from
@@ -388,6 +393,36 @@ const channel = await zephyr.m3u.channel("main", id);
   extensions installed from it stay). Zephyr TV carries no extension; it has **its own repository** from the start
   (OMG Premium TV, Live Webcams and the others of
   [Zephyr-TV-Extensions](https://github.com/mccoy88f/Zephyr-TV-Extensions)), until the user removes it.
+
+### Libraries
+
+A library is one **JavaScript CommonJS** file (`module.exports`) too large, or updated too often, to sit in the
+`.zip`. It is not a binary, not `npm install` on the TV, and not Node.js.
+
+```json
+"libraries": [
+  {
+    "name": "youtubei.js",
+    "version": "15.0.1",
+    "url": "https://example.org/youyubez/youtubei.js",
+    "sha256": "ab12…"
+  }
+]
+```
+
+| Field | Required | Meaning |
+|---|---|---|
+| `name` | yes | What the code passes to `require("youtubei.js")`. Unique in the list. |
+| `version` | yes | The library's semver, independent of the extension's. |
+| `url` | yes | One already bundled file (esbuild `--format=cjs --platform=neutral`). An `https://` address, or relative to the `manifest-zephyrtv.json`. |
+| `sha256` | yes | The file's SHA-256, in hex: a file that doesn't match is refused. |
+
+- They are not in the `.zip`. Zephyr TV downloads them **after** the package, into the extension's folder (`lib/`),
+  and keeps them there when only the `.zip` is updated.
+- At most **20 MB** each. An extension that can't do without them lists `"requires": ["libraries"]`.
+- **Update now** (and the daily check) compares `version` and `sha256` in the `manifest-zephyrtv.json` with those on
+  the TV: [youtubei.js](https://www.npmjs.com/package/youtubei.js) can be updated without a new extension package.
+- Removing the extension deletes its libraries too.
 
 ### `manifest-zephyrtv.json`
 
@@ -405,7 +440,10 @@ or anywhere else. Its address is what users add, and what Zephyr TV reads for up
   "icon": "https://example.org/my-extension/icon.png",
   "package": "my-extension-1.1.0.zip",
   "sha256": "9f2c…",
-  "adult": false
+  "adult": false,
+  "libraries": [
+    { "name": "youtubei.js", "version": "15.0.1", "url": "youtubei.js", "sha256": "ab12…" }
+  ]
 }
 ```
 
@@ -416,6 +454,9 @@ or anywhere else. Its address is what users add, and what Zephyr TV reads for up
 | `package` | yes | The `.zip`: an address, or a path relative to this file's address. |
 | `sha256` | yes | The package's SHA-256, in hex: a package that doesn't match is refused. |
 | `adult` | no | Its content is 18+: the 18+ box is ticked when it's added. |
+| `libraries` | no | As in the package's `manifest.json`. Relative `url`s are relative to this file. **Update now** reads these
+  entries again: a library with a new `version` or `sha256` is downloaded again, even when the extension's version
+  is the same. |
 
 Only the file's own name is fixed: Zephyr TV accepts an address ending in `manifest-zephyrtv.json`, or the folder it's
 in (`https://example.org/my-extension/` reads `https://example.org/my-extension/manifest-zephyrtv.json`).
@@ -462,15 +503,18 @@ The same links take `addon?u=` (a Stremio add-on's `manifest.json`), `nuvio?u=` 
 
 Zephyr TV reads an extension's `manifest-zephyrtv.json` once a day: the address it was added from, or, for one
 installed from a `.zip`, its `updateUrl`. A newer `version` for a `zephyr` it knows is downloaded,
-checked against `sha256`, and installed in place of the old one, its settings and data kept. The `id` can't change.
-An extension with neither address updates only when a new `.zip` of it is added.
+checked against `sha256`, and installed in place of the old one, its settings, data and libraries kept. The `id`
+can't change. The published file's `libraries` are downloaded when they are missing or when `version` or `sha256`
+changed, even if the extension's version is the same. An extension with neither address updates only when a new
+`.zip` of it is added.
 
 ## 9. Security
 
 An extension is code by someone else. Zephyr TV runs it apart from everything else: the internet, its own settings
-and data, the services above, nothing more. It can't read files, other apps, other extensions, or Zephyr TV's
-settings, accounts and keys; it can't start anything. What it sends on the internet is up to it: install only
-extensions you trust.
+and data, the services above, the libraries it declared, nothing more. It can't read files, other apps, other
+extensions, or Zephyr TV's settings, accounts and keys; it can't start anything. What it sends on the internet is up
+to it: install only extensions you trust. A field for cookies (YouTube or otherwise) is access to that account: it
+stays on the TV, hidden, and the user pastes it.
 
 ## 10. Versions of the standard
 
@@ -492,6 +536,8 @@ extensions you trust.
   `manifest-zephyrtv.json`, `catalog`, `meta`, `stream`, `guide`,
   `manifest`, `settings` with `list`, `featured`, `radio`, `event`, collectors, catch-up, `requires` and `zephyr.has()`,
   `zephyr.m3u`, `localStorage`, `repository-zephyrtv.json`.
+- **After 1.0:** `libraries` — CommonJS libraries downloaded at install, `require()` by their `name`, status and
+  percent on screen, the library alone updated with **Update now**.
 
 ## 11. A minimal extension
 
@@ -548,3 +594,18 @@ the standard, with its name for `requires`, once Zephyr TV has it.
 | `widevine` | DASH protected by Widevine | `drm: { "widevine": { "license": "<url>", "headers"?: {…} } }` |
 
 Not planned: torrent (`infoHash`) streams, WebSocket, signed packages.
+
+## 13. Example: YouYubeZ
+
+**YouYubeZ** is a sample extension for YouTube search, playlists and playback. **It is not affiliated with, endorsed
+by, or connected to YouTube or Google.** YouTube is a trademark of Google LLC. It uses the independent library
+[youtubei.js](https://www.npmjs.com/package/youtubei.js) (an InnerTube client: metadata and extractor), downloaded as
+`libraries` and not shipped in the `.zip`.
+
+Skeleton: [Zephyr-TV-Extensions/youyubez](https://github.com/mccoy88f/Zephyr-TV-Extensions/tree/main/youyubez).
+
+- **Play with** (options): **YouTube app** (`ytId`), **Zephyr TV player** (a stream from the client, when the
+  library and the player allow it), or **Both** (two rows in the stream list).
+- **Cookies**: text the user pastes from their browser (`isPassword`). With no cookies: public search. With cookies:
+  by default the four localised lists — **Discover**, **Subscriptions**, **Watch later**, **History**.
+- `requires`: `["libraries"]`. `collectors`: `["videos"]`.

@@ -30,6 +30,7 @@ Indice:
 10. [Versioni dello standard](#10-versioni-dello-standard)
 11. [Un'estensione minima](#11-unestensione-minima)
 12. [In arrivo](#12-in-arrivo)
+13. [Esempio: YouYubeZ](#13-esempio-youyubez)
 
 ## 1. Il pacchetto
 
@@ -91,7 +92,8 @@ mia-estensione.zip
 | `behaviorHints.adult` | no | Contenuti V.M. 18: Zephyr TV li mostra solo con i contenuti 18+ sbloccati. |
 | `behaviorHints.configurationRequired` | no | Non fa niente finché le impostazioni non sono compilate: Zephyr TV le apre dopo l'installazione. |
 | `collectors` | no | I raccoglitori in cui i suoi contenuti possono comparire al posto della sua app: `["movies", "series"]` (vedi [I raccoglitori](#i-raccoglitori)). Un catalogo con `"collector": false` resta nella sua app. |
-| `requires` | no | Le funzioni aggiunte a questo standard dopo la 1.0 senza cui l'estensione non funziona: `["subtitles"]`. Zephyr TV la rifiuta se gliene manca una (vedi 10). |
+| `requires` | no | Le funzioni aggiunte a questo standard dopo la 1.0 senza cui l'estensione non funziona: `["libraries"]`. Zephyr TV la rifiuta se gliene manca una (vedi 10). |
+| `libraries` | no | Librerie JavaScript **non** nello `.zip`: Zephyr TV le scarica all'installazione (vedi [Librerie](#librerie)). |
 
 Le risorse sono quelle di Stremio, `catalog`, `meta` e `stream`, più `guide` e `featured`, proprie di Zephyr TV (vedi 3).
 L'`extra` di un catalogo segue le regole di Stremio: `genre` (con le sue `options`), `search`, `skip`, `isRequired`.
@@ -328,8 +330,9 @@ chiamata. Non è Node.js né un browser; Zephyr TV gli offre:
 - `URL`, `URLSearchParams`, `TextEncoder`, `TextDecoder`, `Buffer` (base64, hex, utf-8), `atob`, `btoa`.
 - `setTimeout`, `clearTimeout`, `console` (`log`, `warn`, `error`: in Problemi recenti, nelle build di debug).
 - `localStorage`: dell'estensione, stringhe per chiave, conservato tra le chiamate (vedi 7).
-- `require()` di `cheerio` (l'HTML letto come fa jQuery) e `crypto-js`. Altri pacchetti vanno inclusi in `main.js`
-  (per esempio con esbuild: `esbuild src/index.ts --bundle --platform=neutral --format=cjs --outfile=main.js`).
+- `require()` di `cheerio` (l'HTML letto come fa jQuery) e `crypto-js`, e delle [librerie](#librerie) scaricate
+  dell'estensione. Altri pacchetti vanno inclusi in `main.js` (per esempio con esbuild:
+  `esbuild src/index.ts --bundle --platform=neutral --format=cjs --outfile=main.js`).
 - `zephyr`: i servizi di Zephyr TV (vedi 7).
 
 Limiti per ogni chiamata: **25 secondi** (per `stream`; `catalog` e `guide` 60), **15 secondi** per ogni richiesta,
@@ -391,8 +394,10 @@ massimo 1 MB. Resta tra le chiamate e si cancella con l'estensione.
   telefono, oppure il suo `.zip` inviato dal telefono (codice QR). Zephyr TV ne mostra nome, autore, cosa offre e che
   esegue codice scritto da altri, e la installa dopo la conferma.
 - Ogni estensione: **Attiva**, **Opzioni**, **Contenuti V.M. - Adulti**, **Sposta su / giù** (le sue righe arrivano
-  in quest'ordine), **Aggiorna ora**, **Rimuovi**. Rimuoverla cancella le sue impostazioni, il suo `localStorage` e
-  le sue playlist.
+  in quest'ordine), **Aggiorna ora**, **Rimuovi**. Rimuoverla cancella le sue impostazioni, il suo `localStorage`,
+  le sue playlist e le sue librerie.
+- Durante l'installazione e l'aggiornamento, Zephyr TV mostra **lo stato** (il pacchetto, ogni libreria) e **la
+  percentuale** scaricata. Si aspetta la fine: un'estensione con `libraries` non è pronta prima.
 - **Aggiungi un'estensione** accetta anche l'indirizzo di un **repository** (il suo `repository-zephyrtv.json`, qui
   sotto): Zephyr TV aggiunge il repository e ne mostra le estensioni.
 - Le estensioni dei repository non installate compaiono dopo quelle installate: OK ne installa una dal suo indirizzo.
@@ -400,6 +405,37 @@ massimo 1 MB. Resta tra le chiamate e si cancella con l'estensione.
   installate da lì restano). Zephyr TV non contiene estensioni; ha **il suo repository** fin dall'inizio
   (OMG Premium TV, Webcam dal vivo e le altre di
   [Zephyr-TV-Extensions](https://github.com/mccoy88f/Zephyr-TV-Extensions)), finché l'utente non lo toglie.
+
+### Librerie
+
+Una libreria è un file **JavaScript CommonJS** (`module.exports`) troppo grande o troppo spesso aggiornato per
+stare nello `.zip`. Non è un binario, non è `npm install` sul TV, non è Node.js.
+
+```json
+"libraries": [
+  {
+    "name": "youtubei.js",
+    "version": "15.0.1",
+    "url": "https://example.org/youyubez/youtubei.js",
+    "sha256": "ab12…"
+  }
+]
+```
+
+| Campo | Obbligatorio | Significato |
+|---|---|---|
+| `name` | sì | Quello che il codice passa a `require("youtubei.js")`. Unico nell'elenco. |
+| `version` | sì | Semver della libreria, indipendente da quella dell'estensione. |
+| `url` | sì | File unico, già bundleato (esbuild `--format=cjs --platform=neutral`). Indirizzo `https://`, o relativo al `manifest-zephyrtv.json`. |
+| `sha256` | sì | SHA-256 del file, in esadecimale: un file che non corrisponde viene rifiutato. |
+
+- Non stanno nello `.zip`. Zephyr TV le scarica **dopo** il pacchetto, nella cartella dell'estensione
+  (`lib/`), e le lascia lì quando si aggiorna solo lo `.zip`.
+- Al massimo **20 MB** ciascuna. Un'estensione che non può farne a meno mette `"requires": ["libraries"]`.
+- **Aggiorna ora** (e il controllo giornaliero) confronta `version` e `sha256` del `manifest-zephyrtv.json` con
+  quelle sul TV: si può aggiornare [youtubei.js](https://www.npmjs.com/package/youtubei.js) senza un nuovo
+  pacchetto dell'estensione.
+- Rimuovere l'estensione cancella anche le librerie.
 
 ### `manifest-zephyrtv.json`
 
@@ -417,7 +453,10 @@ altrove. Il suo indirizzo è quello che gli utenti aggiungono, e quello che Zeph
   "icon": "https://example.org/mia-estensione/icon.png",
   "package": "mia-estensione-1.1.0.zip",
   "sha256": "9f2c…",
-  "adult": false
+  "adult": false,
+  "libraries": [
+    { "name": "youtubei.js", "version": "15.0.1", "url": "youtubei.js", "sha256": "ab12…" }
+  ]
 }
 ```
 
@@ -428,6 +467,9 @@ altrove. Il suo indirizzo è quello che gli utenti aggiungono, e quello che Zeph
 | `package` | sì | Lo `.zip`: un indirizzo, o un percorso relativo all'indirizzo di questo file. |
 | `sha256` | sì | Lo SHA-256 del pacchetto, in esadecimale: un pacchetto che non corrisponde viene rifiutato. |
 | `adult` | no | Contenuti V.M. 18: quando si aggiunge, la casella 18+ è già spuntata. |
+| `libraries` | no | Come nel `manifest.json` del pacchetto. Gli `url` relativi sono rispetto a questo file. **Aggiorna ora** rilegge
+  queste voci: una libreria con `version` o `sha256` nuovi si scarica di nuovo, anche se la versione dell'estensione
+  è la stessa. |
 
 È fisso solo il nome del file: Zephyr TV accetta un indirizzo che finisce con `manifest-zephyrtv.json`, oppure la
 cartella che lo contiene (`https://example.org/mia-estensione/` legge
@@ -477,16 +519,18 @@ conferma.
 
 Zephyr TV legge il `manifest-zephyrtv.json` di un'estensione una volta al giorno: l'indirizzo da cui è stata aggiunta
 oppure, per una installata da `.zip`, il suo `updateUrl`. Una `version` più nuova, per uno `zephyr`
-che conosce, viene scaricata, verificata con `sha256` e installata al posto della vecchia, mantenendo impostazioni e
-dati. L'`id` non può cambiare. Un'estensione senza nessuno dei due indirizzi si aggiorna solo aggiungendo un suo nuovo
-`.zip`.
+che conosce, viene scaricata, verificata con `sha256` e installata al posto della vecchia, mantenendo impostazioni,
+dati e librerie. L'`id` non può cambiare. Le `libraries` del file pubblicato si scaricano se mancano o se `version` o
+`sha256` sono cambiati, anche a parità di versione dell'estensione. Un'estensione senza nessuno dei due indirizzi si
+aggiorna solo aggiungendo un suo nuovo `.zip` (le librerie, se ha un `updateUrl` solo per loro, seguono quel file).
 
 ## 9. Sicurezza
 
 Un'estensione è codice scritto da altri. Zephyr TV la esegue separata da tutto il resto: internet, le sue impostazioni
-e i suoi dati, i servizi qui sopra, nient'altro. Non può leggere file, altre app, altre estensioni, né impostazioni,
-account e chiavi di Zephyr TV; non può avviare niente. Quello che invia su internet dipende da lei: installa solo
-estensioni di cui ti fidi.
+e i suoi dati, i servizi qui sopra, le librerie che ha dichiarato, nient'altro. Non può leggere file, altre app, altre
+estensioni, né impostazioni, account e chiavi di Zephyr TV; non può avviare niente. Quello che invia su internet
+dipende da lei: installa solo estensioni di cui ti fidi. Un campo per i cookie (YouTube o altro) è l'accesso a
+quell'account: resta sul TV, nascosto, e va incollato dall'utente.
 
 ## 10. Versioni dello standard
 
@@ -508,6 +552,8 @@ estensioni di cui ti fidi.
   `manifest-zephyrtv.json`, `catalog`, `meta`, `stream`, `guide`,
   `manifest`, `settings` con `list`, `featured`, `radio`, `event`, i raccoglitori, il catch-up, `requires` e `zephyr.has()`,
   `zephyr.m3u`, `localStorage`, `repository-zephyrtv.json`.
+- **Dopo 1.0:** `libraries` — librerie CommonJS scaricate all'installazione, `require()` dal loro `name`, stato e
+  percentuale sullo schermo, aggiornamento della sola libreria con **Aggiorna ora**.
 
 ## 11. Un'estensione minima
 
@@ -564,3 +610,18 @@ standard, con il suo nome per `requires`, quando Zephyr TV la implementa.
 | `widevine` | DASH protetti con Widevine | `drm: { "widevine": { "license": "<url>", "headers"?: {…} } }` |
 
 Non previsti: stream torrent (`infoHash`), WebSocket, pacchetti firmati.
+
+## 13. Esempio: YouYubeZ
+
+**YouYubeZ** è un'estensione di esempio per ricerca, playlist e riproduzione YouTube. **Non è affiliata, sostenuta
+né collegata a YouTube o a Google.** YouTube è un marchio di Google LLC. Usa la libreria indipendente
+[youtubei.js](https://www.npmjs.com/package/youtubei.js) (client InnerTube, metadati ed extractor), scaricata come
+`libraries` e non inclusa nello `.zip`.
+
+Scheletro: [Zephyr-TV-Extensions/youyubez](https://github.com/mccoy88f/Zephyr-TV-Extensions/tree/main/youyubez).
+
+- **Riproduci con** (opzioni): **App YouTube nativa** (`ytId`), **Player Zephyr TV** (stream dal client, se la
+  libreria e il player lo consentono), o **Entrambi** (due voci nella lista degli stream).
+- **Cookie**: testo incollato dal browser dell'utente (`isPassword`). Senza cookie: ricerca pubblica. Con cookie:
+  di default le quattro liste localizzate — **Scopri**, **Iscrizioni**, **Guarda dopo**, **Cronologia**.
+- `requires`: `["libraries"]`. `collectors`: `["videos"]`.

@@ -75,6 +75,11 @@ internal object K {
     const val ADDONS_OFF = "addons_off" // add-ons switched off: kept, with their settings, but not shown nor asked
     const val ADDONS_MOVIES = "addons_movies" // where films show (VodPlace); none: as ADDONS_VOD, set before films and series were apart
     const val ADDONS_SERIES = "addons_series" // where series show, the same way
+    const val ADDONS_VIDEOS = "addons_videos" // where videos show (VodPlace)
+    const val ADDONS_COURSES = "addons_courses" // where courses show (VodPlace)
+    const val ADDONS_PODCASTS = "addons_podcasts" // where podcasts show (VodPlace)
+    const val ADDONS_AUDIOBOOKS = "addons_audiobooks" // where audiobooks show (VodPlace)
+    const val ADDONS_EVENTS = "addons_events" // where events show (VodPlace)
     const val RADIO_PLACE = "radio_place" // where the extensions' radio stations show (RadioPlace)
     const val NUVIO_REPOS_OFF = "nuvio_repos_off" // Nuvio repositories switched off, the same way
     const val NUVIO_REPOS = "nuvio_repos" // Nuvio plugin repositories, manifest addresses one per line (see Plugins)

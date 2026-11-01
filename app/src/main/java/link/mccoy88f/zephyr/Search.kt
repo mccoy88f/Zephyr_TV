@@ -558,7 +558,7 @@ internal fun MainActivity.availableFilterTypes(): List<String> {
     }.toSet()
     val collectors = listOf("radio", "videos", "podcasts", "courses", "audiobooks", "events")
     for (c in collectors) {
-        if (c in found || (c == "radio" && radioPlace() != RadioPlace.OFF)) {
+        if ((c in found || c == "radio") && collectorPlace(c) != VodPlace.OFF) {
             types.add(c)
         }
     }
@@ -583,8 +583,8 @@ private fun MainActivity.isRadioChannel(d: ChannelDetail): Boolean =
         COLLECTOR_PKGS[d.pkg] == "radio"
 
 private fun MainActivity.browseCollectors(filter: SearchFilter): List<Pair<Stremio.Title, String>> {
-    val collectors = if (filter.type == "all") listOf("videos", "podcasts", "courses", "audiobooks", "events")
-    else listOf(collectorOf(filter.type)).filter { it in listOf("videos", "podcasts", "courses", "audiobooks", "events") }
+    val collectors = (if (filter.type == "all") listOf("videos", "podcasts", "courses", "audiobooks", "events")
+    else listOf(collectorOf(filter.type))).filter { it in listOf("videos", "podcasts", "courses", "audiobooks", "events") && collectorPlace(it) != VodPlace.OFF }
     if (collectors.isEmpty()) return emptyList()
     val addons = activeVodAddons().filter { !isAdultAddon(it.url) }
     return addons.flatMap { addon ->

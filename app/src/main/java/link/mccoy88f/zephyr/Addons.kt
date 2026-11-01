@@ -165,7 +165,7 @@ internal fun MainActivity.addonsUnder(pkg: String): List<String> {
     if (pkg == ADULT_PKG) return if (adultApp()) shownAddonUrls().filter { isAdultAddon(it) } else emptyList()
     ownAppUrl(pkg)?.let { return listOf(it) } // an add-on's own app: its channels, whatever the others do
     // The Radio collector: the extensions' radio stations given to it (see extensionRoutes).
-    if (COLLECTOR_PKGS[pkg] == "radio") return shownAddonUrls().filter { extensionRoutes(it, "radio") && !inAdultApp(it) }
+    if (COLLECTOR_PKGS[pkg] == "radio") return if (collectorPlace("radio") == VodPlace.TILES) shownAddonUrls().filter { extensionRoutes(it, "radio") && !inAdultApp(it) } else emptyList()
     val urls = shownAddonUrls().filter { !apart(it) || extensionRoutes(it, "tv") }
     val mode = addonsTv()
     return when {
@@ -429,38 +429,44 @@ internal fun MainActivity.readsListings() = checkSelfPermission(MainActivity.TV_
 internal fun MainActivity.placementRows(back: (Int) -> Unit): List<Triple<String, String, () -> Unit>> {
     val mode = addonsTv()
     val modes = TvPlace.entries.filter { it != TvPlace.TV || hasTvApp() }
-    return listOf(
-        page(getString(R.string.setting_addons_tv), addonsTvName(mode)) {
-            val next = modes[(modes.indexOf(mode) + 1) % modes.size]
-            prefs.edit().putString(K.ADDONS_TV, next.key).apply()
-            addonsChanged()
-            // An app each: their logos, for the tiles, come with their channels.
-            if (next == TvPlace.APPS) addonUrls().forEach { updateAddon(it, null) }
-            if (next == TvPlace.IPTV) toFavourites(IPTV_PKG)
-            back(0)
-        },
-        // Films, then series, each: its virtual app (Films, Series), an app per add-on, or none (their catalog: under Content).
-        vodPlaceRow("movie", R.string.vod_movies, K.ADDONS_MOVIES, MOVIES_PKG) { back(1) },
-        vodPlaceRow("series", R.string.vod_series, K.ADDONS_SERIES, SERIES_PKG) { back(2) },
-        // The extensions' radio stations: the Radio virtual app, each extension's own app, or none.
-        page(getString(R.string.ext_kind_radio), radioPlaceName(radioPlace())) {
-            val modes = RadioPlace.entries
-            val next = modes[(modes.indexOf(radioPlace()) + 1) % modes.size]
-            prefs.edit().putString(K.RADIO_PLACE, next.key).apply()
-            if (next == RadioPlace.VIRTUAL) toFavourites(*COLLECTOR_PKGS.filterValues { it == "radio" }.keys.toTypedArray())
-            addonsChanged()
-            back(3)
-        },
-        // The adult add-ons: in Adult content, an app each, or with the others (apart, hidden while the 18+ lock holds).
-        page(getString(R.string.setting_adult_app), adultPlaceName(adultPlace())) {
-            val modes = AdultPlace.entries
-            val next = modes[(modes.indexOf(adultPlace()) + 1) % modes.size]
-            prefs.edit().putString(K.ADULT_PLACE, next.key).apply()
-            if (next == AdultPlace.VIRTUAL) toFavourites(ADULT_PKG)
-            addonsChanged()
-            back(4)
-        },
-    )
+    val rows = mutableListOf<Triple<String, String, () -> Unit>>()
+    fun add(row: Triple<String, String, () -> Unit>) { rows.add(row) }
+    val tvIdx = rows.size
+    add(page(getString(R.string.setting_addons_tv), addonsTvName(mode)) {
+        val next = modes[(modes.indexOf(mode) + 1) % modes.size]
+        prefs.edit().putString(K.ADDONS_TV, next.key).apply()
+        addonsChanged()
+        // An app each: their logos, for the tiles, come with their channels.
+        if (next == TvPlace.APPS) addonUrls().forEach { updateAddon(it, null) }
+        if (next == TvPlace.IPTV) toFavourites(IPTV_PKG)
+        back(tvIdx)
+    })
+    val movieIdx = rows.size
+    add(vodPlaceRow("movie", R.string.vod_movies, K.ADDONS_MOVIES, MOVIES_PKG) { back(movieIdx) })
+    val seriesIdx = rows.size
+    add(vodPlaceRow("series", R.string.vod_series, K.ADDONS_SERIES, SERIES_PKG) { back(seriesIdx) })
+    val videosIdx = rows.size
+    add(collectorPlaceRow("videos", R.string.ext_kind_videos, STREMIO + "c_videos") { back(videosIdx) })
+    val radioIdx = rows.size
+    add(collectorPlaceRow("radio", R.string.ext_kind_radio, STREMIO + "c_radio") { back(radioIdx) })
+    val podcastsIdx = rows.size
+    add(collectorPlaceRow("podcasts", R.string.ext_kind_podcasts, STREMIO + "c_podcasts") { back(podcastsIdx) })
+    val audiobooksIdx = rows.size
+    add(collectorPlaceRow("audiobooks", R.string.ext_kind_audiobooks, STREMIO + "c_audiobooks") { back(audiobooksIdx) })
+    val coursesIdx = rows.size
+    add(collectorPlaceRow("courses", R.string.ext_kind_courses, STREMIO + "c_courses") { back(coursesIdx) })
+    val eventsIdx = rows.size
+    add(collectorPlaceRow("events", R.string.ext_kind_events, STREMIO + "c_events") { back(eventsIdx) })
+    val adultIdx = rows.size
+    add(page(getString(R.string.setting_adult_app), adultPlaceName(adultPlace())) {
+        val adultModes = AdultPlace.entries
+        val next = adultModes[(adultModes.indexOf(adultPlace()) + 1) % adultModes.size]
+        prefs.edit().putString(K.ADULT_PLACE, next.key).apply()
+        if (next == AdultPlace.VIRTUAL) toFavourites(ADULT_PKG)
+        addonsChanged()
+        back(adultIdx)
+    })
+    return rows
 }
 
 /** The Stremio add-ons' section: Add an add-on, then each add-on (on or off, its page). */
@@ -619,6 +625,21 @@ private fun MainActivity.vodPlaceRow(type: String, label: Int, key: String, tile
         val modes = VodPlace.entries
         val next = modes[(modes.indexOf(addonsVod(type)) + 1) % modes.size]
         prefs.edit().putString(key, next.key).apply()
+        if (next == VodPlace.TILES) toFavourites(tile)
+        addonsChanged()
+        back()
+    }
+
+/** The row of where a collector kind (Video, Radio, Podcasts…) shows; [tile] its virtual app. */
+private fun MainActivity.collectorPlaceRow(kind: String, label: Int, tile: String, back: () -> Unit) =
+    page(getString(label), addonsVodName(collectorPlace(kind))) {
+        val modes = VodPlace.entries
+        val next = modes[(modes.indexOf(collectorPlace(kind)) + 1) % modes.size]
+        if (kind == "radio") {
+            prefs.edit().putString(K.RADIO_PLACE, if (next == VodPlace.TILES) RadioPlace.VIRTUAL.key else next.key).apply()
+        } else {
+            prefs.edit().putString(collectorPrefKey(kind), next.key).apply()
+        }
         if (next == VodPlace.TILES) toFavourites(tile)
         addonsChanged()
         back()

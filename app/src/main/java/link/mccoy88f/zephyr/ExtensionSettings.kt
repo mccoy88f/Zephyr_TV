@@ -162,7 +162,14 @@ internal fun MainActivity.refreshExtensions(force: Boolean = false, done: ((Int,
                 stamp.writeText("")
                 runCatching {
                     val p = Extensions.published(url)
-                    if (p.id == e.id && Extensions.newer(p.version, e.version)) { Extensions.download(filesDir, p); changed++ }
+                    if (p.id != e.id) return@runCatching
+                    if (Extensions.newer(p.version, e.version)) { Extensions.download(filesDir, p); changed++ }
+                    else {
+                        val want = p.libraries.ifEmpty { Extensions.librariesOf(e.manifest, url) }
+                        if (Extensions.librariesDue(e, want).isNotEmpty()) {
+                            Extensions.syncLibraries(e, want); changed++
+                        }
+                    }
                 }.onFailure { failed += e.name; warn("Extension update failed: ${e.name} ($it)") }
             }
         } finally {
@@ -307,20 +314,7 @@ private fun MainActivity.extensionPage(id: String, focus: Int = 0) {
     extensionUpdateUrl(prefs, e)?.let { url ->
         val row = rows.size
         rows += page(getString(R.string.addon_update)) {
-            Toast.makeText(this, getString(R.string.ext_reading), Toast.LENGTH_SHORT).show()
-            netIo.execute {
-                val result = runCatching {
-                    val p = Extensions.published(url)
-                    if (p.id == e.id && Extensions.newer(p.version, e.version)) Extensions.download(filesDir, p) else null
-                }
-                ui.post {
-                    val text = result.fold({ got -> if (got == null) getString(R.string.ext_up_to_date, e.name) else getString(R.string.ext_updated, got.name, got.version) },
-                        { refusal(it) })
-                    Toast.makeText(this, text, Toast.LENGTH_LONG).show()
-                    if (result.getOrNull() != null) extensionChanged(id)
-                    if (pageShowing(e.name)) extensionPage(id, row)
-                }
-            }
+            updateExtensionNow(e, url) { extensionPage(id, row) }
         }
     }
     rows += page(getString(R.string.addon_remove)) {
@@ -337,7 +331,8 @@ private fun MainActivity.extensionPage(id: String, focus: Int = 0) {
  * runs code by someone else, 18+ ([adult]), Install. [install] does it (off the UI thread), [back] leaves.
  */
 private fun MainActivity.extensionPreview(name: String, author: String, description: String, version: String, kinds: String,
-                                          adult: Boolean, back: () -> Unit, install: (adult: Boolean) -> Extensions.Extension) {
+                                          adult: Boolean, back: () -> Unit,
+                                          install: (adult: Boolean, progress: (String, Long, Long) -> Unit) -> Extensions.Extension) {
     val about = listOfNotNull(
         description.takeIf { it.isNotBlank() },
         listOfNotNull("v$version", author.takeIf { it.isNotBlank() }).joinToString(" · "),
@@ -348,20 +343,76 @@ private fun MainActivity.extensionPreview(name: String, author: String, descript
     showPage(name, listOf(
         page(getString(R.string.addon_adult), toggle(adult)) { extensionPreview(name, author, description, version, kinds, !adult, back, install) },
         page(getString(R.string.ext_install)) {
-            Toast.makeText(this, getString(R.string.ext_reading), Toast.LENGTH_SHORT).show()
-            netIo.execute {
-                val result = runCatching { install(adult) }
-                ui.post {
-                    result.onSuccess { e ->
-                        Toast.makeText(this, getString(R.string.ext_installed, e.name, e.version), Toast.LENGTH_LONG).show()
-                        extensionChanged(e.id)
-                        // One that does nothing until set up: its options at once.
-                        if (e.configurationRequired && e.settings) extensionOptions(e.id) { extensionPage(e.id) } else extensionPage(e.id)
-                    }.onFailure { Toast.makeText(this, refusal(it), Toast.LENGTH_LONG).show() }
-                }
+            runExtensionJob(name, getString(R.string.ext_status_package), back, { progress -> install(adult, progress) }) { e ->
+                Toast.makeText(this, getString(R.string.ext_installed, e.name, e.version), Toast.LENGTH_LONG).show()
+                extensionChanged(e.id)
+                if (e.configurationRequired && e.settings) extensionOptions(e.id) { extensionPage(e.id) } else extensionPage(e.id)
             }
         },
     ), 1, top = intro(about), back = back)
+}
+
+/**
+ * A page with the job's [status] and a percent, then [work] off the UI thread ([progress]: package or library name,
+ * bytes so far, total or -1). [then] on success.
+ */
+private fun MainActivity.runExtensionJob(name: String, firstStatus: String, back: () -> Unit,
+                                         work: ((String, Long, Long) -> Unit) -> Extensions.Extension,
+                                         then: (Extensions.Extension) -> Unit) {
+    val title = getString(R.string.ext_installing, name)
+    fun show(status: String, percent: Int?) {
+        val text = if (percent != null) getString(R.string.ext_install_progress, status, percent) else status
+        showPage(title, emptyList(), top = intro(text), back = back)
+    }
+    show(firstStatus, null)
+    netIo.execute {
+        var last = 0L
+        val result = runCatching {
+            work { key, got, all ->
+                val now = android.os.SystemClock.uptimeMillis()
+                if (now - last < 250 && !(all > 0 && got >= all)) return@work
+                last = now
+                val status = if (key == "package") getString(R.string.ext_status_package) else getString(R.string.ext_status_library, key)
+                val percent = if (all > 0) ((100 * got) / all).toInt().coerceIn(0, 100) else null
+                ui.post { if (pageShowing(title)) show(status, percent) }
+            }
+        }
+        ui.post {
+            result.onSuccess(then).onFailure {
+                Toast.makeText(this, refusal(it), Toast.LENGTH_LONG).show()
+                back()
+            }
+        }
+    }
+}
+
+/** Update now: a newer package, or only the libraries (same extension version). Shows status and percent. */
+private fun MainActivity.updateExtensionNow(e: Extensions.Extension, url: String, back: () -> Unit) {
+    val before = Extensions.installedLibraries(e).map { it.name to it.sha256 }
+    runExtensionJob(e.name, getString(R.string.ext_reading), back, { progress ->
+        val p = Extensions.published(url)
+        if (p.id != e.id) throw Extensions.Refused(Extensions.Why.DIFFERENT, p.id)
+        when {
+            Extensions.newer(p.version, e.version) -> Extensions.download(filesDir, p, progress)
+            else -> {
+                val want = p.libraries.ifEmpty { Extensions.librariesOf(e.manifest, url) }
+                if (Extensions.librariesDue(e, want).isEmpty()) e
+                else {
+                    Extensions.syncLibraries(e, want, progress)
+                    Extensions.installed(filesDir, e.id) ?: e
+                }
+            }
+        }
+    }) { got ->
+        val after = Extensions.installedLibraries(got).map { it.name to it.sha256 }
+        Toast.makeText(this, when {
+            got.version != e.version -> getString(R.string.ext_updated, got.name, got.version)
+            after != before -> getString(R.string.ext_updated_libs, got.name)
+            else -> getString(R.string.ext_up_to_date, e.name)
+        }, Toast.LENGTH_LONG).show()
+        if (got.version != e.version || after != before) extensionChanged(got.id)
+        back()
+    }
 }
 
 /** The extension published at [input] (a manifest-zephyrtv.json, or its folder): read, then shown before installing. */
@@ -390,8 +441,8 @@ internal fun MainActivity.extensionFromAddress(input: String) {
         ui.post {
             result.onSuccess { p ->
                 // What it provides is in its package, not read yet: shown once installed.
-                extensionPreview(p.name, p.author, p.description, p.version, "", p.adult, { extensionsPage() }) { adult ->
-                    Extensions.download(filesDir, p).also { rememberExtension(prefs, it, url, adult) }
+                extensionPreview(p.name, p.author, p.description, p.version, "", p.adult, { extensionsPage() }) { adult, progress ->
+                    Extensions.download(filesDir, p, progress).also { rememberExtension(prefs, it, url, adult) }
                 }
             }.onFailure { Toast.makeText(this, refusal(it), Toast.LENGTH_LONG).show() }
         }
@@ -440,8 +491,11 @@ private fun MainActivity.extensionFromZip(zip: File) {
     val types = m.optJSONArray("types")?.let { a -> (0 until a.length()).map { a.optString(it) } }.orEmpty()
     val resources = m.optJSONArray("resources")?.let { a -> (0 until a.length()).mapNotNull { (a.opt(it) as? String) ?: (a.opt(it) as? JSONObject)?.optString("name") } }.orEmpty()
     extensionPreview(m.optString("name").ifBlank { zip.name }, m.optString("author"), m.optString("description"), m.optString("version"),
-        provides(types, resources), m.optJSONObject("behaviorHints")?.optBoolean("adult") == true, { zip.delete(); extensionsPage() }) { adult ->
-        Extensions.install(filesDir, zip).also { rememberExtension(prefs, it, null, adult); zip.delete() }
+        provides(types, resources), m.optJSONObject("behaviorHints")?.optBoolean("adult") == true, { zip.delete(); extensionsPage() }) { adult, progress ->
+        val e = Extensions.install(filesDir, zip)
+        rememberExtension(prefs, e, null, adult)
+        zip.delete()
+        Extensions.finishInstall(e, null, progress)
     }
 }
 
@@ -526,12 +580,51 @@ internal fun MainActivity.kindName(type: String): String = getString(when (colle
     else -> R.string.ext_kind_videos
 })
 
+/** Preference key where the collector [kind]'s placement is saved (VodPlace). */
+internal fun collectorPrefKey(kind: String): String = when (kind) {
+    "videos" -> K.ADDONS_VIDEOS
+    "courses" -> K.ADDONS_COURSES
+    "podcasts" -> K.ADDONS_PODCASTS
+    "audiobooks" -> K.ADDONS_AUDIOBOOKS
+    "events" -> K.ADDONS_EVENTS
+    "radio" -> K.RADIO_PLACE
+    else -> "addons_$kind"
+}
+
+/** Where content of collector [kind] shows: virtual app tile, an app per add-on, or off. */
+internal fun MainActivity.collectorPlace(kind: String): VodPlace = when (kind) {
+    "radio" -> when (prefs.getString(K.RADIO_PLACE, null)) {
+        RadioPlace.APPS.key -> VodPlace.APPS
+        RadioPlace.OFF.key -> VodPlace.OFF
+        else -> VodPlace.TILES
+    }
+    else -> {
+        val key = collectorPrefKey(kind)
+        val v = prefs.getString(key, null)
+        VodPlace.entries.firstOrNull { it.key == v } ?: VodPlace.TILES
+    }
+}
+
+/** Where content of [type] shows (VodPlace): films, series, tv, or its collector's setting. */
+internal fun MainActivity.contentPlace(type: String): VodPlace = when (val c = collectorOf(type)) {
+    "movies" -> addonsVod("movie")
+    "series" -> addonsVod("series")
+    "tv" -> when (addonsTv()) {
+        TvPlace.APPS -> VodPlace.APPS
+        else -> VodPlace.TILES
+    }
+    else -> collectorPlace(c)
+}
+
 /** Where the extensions' radio stations show: the Radio tile, each extension's own app, or nowhere; kept by [key]. */
 internal enum class RadioPlace(val key: String) { VIRTUAL("virtual"), APPS("apps"), OFF("off") }
 
 /** Where the extensions' radio stations show (Virtual apps and integrations → Radio): the Radio tile by default. */
-internal fun MainActivity.radioPlace(): RadioPlace =
-    prefs.getString(K.RADIO_PLACE, null).let { k -> RadioPlace.entries.firstOrNull { it.key == k } } ?: RadioPlace.VIRTUAL
+internal fun MainActivity.radioPlace(): RadioPlace = when (collectorPlace("radio")) {
+    VodPlace.TILES -> RadioPlace.VIRTUAL
+    VodPlace.APPS -> RadioPlace.APPS
+    VodPlace.OFF -> RadioPlace.OFF
+}
 
 /** Whether the extension [id] puts its content in the collectors (Where it shows), not in its own app. */
 private fun MainActivity.inCollectors(id: String) = id in prefs.getStringSet(K.EXT_COLLECT, emptySet())!!
@@ -543,9 +636,11 @@ private fun MainActivity.inCollectors(id: String) = id in prefs.getStringSet(K.E
  */
 internal fun MainActivity.extensionRoutes(url: String, type: String): Boolean {
     val id = ExtensionCalls.idOf(url) ?: return false
-    if (collectorOf(type) == "radio") return radioPlace() == RadioPlace.VIRTUAL
+    val kind = collectorOf(type)
+    if (collectorPlace(kind) != VodPlace.TILES) return false
+    if (kind == "radio") return true
     if (!inCollectors(id)) return false
-    return collectorOf(type) in (Extensions.installed(filesDir, id)?.collectors ?: return false)
+    return kind in (Extensions.installed(filesDir, id)?.collectors ?: return false)
 }
 
 /**
@@ -561,7 +656,7 @@ internal fun MainActivity.extensionOwnApp(url: String): Boolean {
     val read = Stremio.saved(filesDir, url)?.addon?.let { a -> (a.catalogs + a.vod).map { it.type } }
     val types = read ?: Extensions.list(e, "catalogs").let { c -> (0 until c.length()).mapNotNull { c.optJSONObject(it)?.optString("type") } }
     if (types.isEmpty()) return true // not read yet, or not set up: its app, once it has something
-    return types.any { t -> !extensionRoutes(url, t) && !(collectorOf(t) == "radio" && radioPlace() == RadioPlace.OFF) }
+    return types.any { t -> !extensionRoutes(url, t) && contentPlace(t) != VodPlace.OFF }
 }
 
 /** The tile of the add-on at [url]'s own app. */
@@ -572,10 +667,10 @@ internal fun MainActivity.collectorApps(): List<MainActivity.App> {
     val given = shownAddonUrls().filter { !inAdultApp(it) }.flatMap { url ->
         Stremio.saved(filesDir, url)?.addon?.let { a -> a.vod + a.catalogs }.orEmpty().filter {
             if (ExtensionCalls.idOf(url) != null) extensionRoutes(url, it.type)
-            else collectorOf(it.type) !in listOf("movies", "series", "tv")
+            else collectorOf(it.type) !in listOf("movies", "series", "tv") && collectorPlace(collectorOf(it.type)) == VodPlace.TILES
         }.map { collectorOf(it.type) }
     }.toSet()
-    return COLLECTOR_PKGS.filterValues { it in given }.map { (pkg, kind) ->
+    return COLLECTOR_PKGS.filterValues { it in given && collectorPlace(it) == VodPlace.TILES }.map { (pkg, kind) ->
         val icon = when (kind) { "radio", "podcasts", "audiobooks" -> R.drawable.ic_audio; "events" -> R.drawable.ic_live_tv; else -> R.drawable.ic_movie }
         MainActivity.App(pkg, kindName(when (kind) { "videos" -> "video"; "courses" -> "course"; "podcasts" -> "podcast"; "audiobooks" -> "audiobook"; "events" -> "event"; else -> kind }),
             android.content.Intent(), getDrawable(icon)!!)
