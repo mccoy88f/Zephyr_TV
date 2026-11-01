@@ -395,7 +395,7 @@ internal object Stremio {
     private fun title(m: JSONObject, fallbackType: String? = null, channels: Boolean = false): Title? {
         val id = m.optString("id").takeIf { it.isNotEmpty() } ?: return null
         val name = m.optString("name").trim().takeIf { it.isNotEmpty() } ?: return null
-        val type = m.optString("type").ifBlank { fallbackType ?: return null }
+        val type = m.optString("type").ifBlank { fallbackType ?: "video" }
         if (!isVodType(type) && !(channels && type == "channel")) return null
         val year = (text(m, "releaseInfo") ?: text(m, "year"))?.take(9)
         val genres = (m.optJSONArray("genres") ?: m.optJSONArray("genre"))?.let { g -> (0 until g.length()).map { g.optString(it) } }.orEmpty()

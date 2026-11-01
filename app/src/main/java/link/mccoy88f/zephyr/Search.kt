@@ -589,7 +589,8 @@ private fun MainActivity.browseCollectors(filter: SearchFilter): List<Pair<Strem
     val addons = activeVodAddons().filter { !isAdultAddon(it.url) }
     return addons.flatMap { addon ->
         Stremio.shelves(filesDir, addon).filter { s ->
-            extensionRoutes(addon.url, s.catalog.type) && collectorOf(s.catalog.type) in collectors
+            (if (ExtensionCalls.idOf(addon.url) != null) extensionRoutes(addon.url, s.catalog.type) else true) &&
+                collectorOf(s.catalog.type) in collectors
         }.flatMap { s -> s.titles.map { it to addon.url } }
     }.filter { (t, _) -> filter.accepts(t) { g -> genreName(g) } }.distinctBy { it.first.type + it.first.id }.take(100)
 }

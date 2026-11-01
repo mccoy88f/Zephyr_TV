@@ -148,5 +148,7 @@ class StremioVodTest {
         assertEquals("videos", collectorOf("youtube"))
         assertEquals("videos", collectorOf("channel"))
         assertEquals("movies", collectorOf("movie"))
+        assertEquals("videos", collectorOf(""))
+        assertEquals("videos", collectorOf("unknown"))
     }
 }

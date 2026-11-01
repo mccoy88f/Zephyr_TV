@@ -49,7 +49,7 @@ internal fun MainActivity.addonsVod(type: String = "movie"): VodPlace =
         .let { k -> VodPlace.entries.firstOrNull { it.key == k } } ?: VodPlace.TILES
 
 /** Films' or series' setting a content [type] follows: series for series, films for the rest (an add-on's own types). */
-internal fun vodKind(type: String) = if (type == "series") "series" else "movie"
+internal fun vodKind(type: String) = if (collectorOf(type) == "series") "series" else "movie"
 
 /** The add-ons films and series are listed from (the catalog sources first, in their order), as manifest addresses. */
 internal fun MainActivity.libraryUrls(): List<String> = (catalogSources().filter { addonOn(it) } + shownAddonUrls()).distinct()
@@ -102,7 +102,9 @@ internal fun MainActivity.titleSections(pkg: String, hidden: Set<String>): List<
     val ownUrl = ownAppUrl(pkg)
     val adult = pkg == ADULT_PKG || (ownUrl != null && isAdultAddon(ownUrl))
     val addons = when {
-        collector != null -> vodAddons().filter { a -> a.vod.any { extensionRoutes(a.url, it.type) && collectorOf(it.type) == collector } }
+        collector != null -> vodAddons().filter { a -> a.vod.any {
+            (if (ExtensionCalls.idOf(a.url) != null) extensionRoutes(a.url, it.type) else true) && collectorOf(it.type) == collector
+        } }
         ownUrl != null -> vodAddons().filter { it.url == ownUrl } // an add-on's own app: its films and series
         adult -> if (adultApp()) vodAddons().filter { isAdultAddon(it.url) } else return emptyList()
         mode == VodPlace.TILES && type != null -> vodAddons().filter { !apart(it.url) || extensionRoutes(it.url, type) }
@@ -112,11 +114,12 @@ internal fun MainActivity.titleSections(pkg: String, hidden: Set<String>): List<
     // Which of an add-on's shelves of [shelfType] show here: in a collector, those given to it; in an extension's own
     // app, those not given away; under Films and Series, an extension's given to them (films: its own types too).
     fun shows(url: String, shelfType: String): Boolean = when {
-        collector != null -> extensionRoutes(url, shelfType) && collectorOf(shelfType) == collector
-        ownUrl != null -> !extensionRoutes(url, shelfType)
-        ExtensionCalls.idOf(url) != null && type != null -> !apart(url) || extensionRoutes(url, shelfType)
+        collector != null -> (if (ExtensionCalls.idOf(url) != null) extensionRoutes(url, shelfType) else true) && collectorOf(shelfType) == collector
+        ownUrl != null -> if (ExtensionCalls.idOf(url) != null) !extensionRoutes(url, shelfType) else collectorOf(shelfType) !in listOf("movies", "series")
+        ExtensionCalls.idOf(url) != null && type != null -> (!apart(url) || extensionRoutes(url, shelfType)) && collectorOf(shelfType) == (if (type == "series") "series" else "movies")
+        type != null -> collectorOf(shelfType) == (if (type == "series") "series" else "movies")
         // An add-on's own tile: its films, its series, those set to show in their add-on's tile.
-        type == null && !adult -> addonsVod(vodKind(shelfType)) == VodPlace.APPS
+        !adult -> addonsVod(vodKind(shelfType)) == VodPlace.APPS
         else -> true
     }
     val missing = ArrayList<String>()

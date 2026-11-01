@@ -498,22 +498,23 @@ internal val COLLECTOR_PKGS = mapOf(
     STREMIO + "c_podcasts" to "podcasts", STREMIO + "c_audiobooks" to "audiobooks", STREMIO + "c_events" to "events",
 )
 
-/** The collector a content [type] goes to ("movie" → "movies", "channel" → "videos"); an extension's own type is a film's. */
+/** The collector a content [type] goes to ("movie" → "movies", "channel" → "videos"); undeclared or unknown types go to "videos". */
 internal fun collectorOf(type: String) = when (type.lowercase()) {
-    "movie", "movies" -> "movies"
+    "movie", "movies", "adult", "porn", "anime" -> "movies"
     "series" -> "series"
     "tv" -> "tv"
     "radio" -> "radio"
-    "video", "videos", "channel", "youtube" -> "videos"
+    "video", "videos", "channel", "youtube", "" -> "videos"
     "course", "courses" -> "courses"
     "podcast", "podcasts" -> "podcasts"
     "audiobook", "audiobooks" -> "audiobooks"
     "event", "events" -> "events"
-    else -> "movies"
+    else -> "videos"
 }
 
 /** What a row of [type] is called: Films, Series, Radio, Videos… */
 internal fun MainActivity.kindName(type: String): String = getString(when (collectorOf(type)) {
+    "movies" -> R.string.vod_movies
     "series" -> R.string.vod_series
     "tv" -> R.string.setting_addons_tv
     "radio" -> R.string.ext_kind_radio
@@ -522,7 +523,7 @@ internal fun MainActivity.kindName(type: String): String = getString(when (colle
     "podcasts" -> R.string.ext_kind_podcasts
     "audiobooks" -> R.string.ext_kind_audiobooks
     "events" -> R.string.ext_kind_events
-    else -> R.string.vod_movies
+    else -> R.string.ext_kind_videos
 })
 
 /** Where the extensions' radio stations show: the Radio tile, each extension's own app, or nowhere; kept by [key]. */
@@ -568,8 +569,11 @@ internal fun MainActivity.ownAppPkg(url: String): String? = Stremio.saved(filesD
 
 /** The collectors' tiles that have rows: Radio, Videos, Courses, Podcasts, Audiobooks, Events. Runs on the io thread. */
 internal fun MainActivity.collectorApps(): List<MainActivity.App> {
-    val given = shownAddonUrls().filter { ExtensionCalls.idOf(it) != null && !inAdultApp(it) }.flatMap { url ->
-        Stremio.saved(filesDir, url)?.addon?.let { a -> a.vod + a.catalogs }.orEmpty().filter { extensionRoutes(url, it.type) }.map { collectorOf(it.type) }
+    val given = shownAddonUrls().filter { !inAdultApp(it) }.flatMap { url ->
+        Stremio.saved(filesDir, url)?.addon?.let { a -> a.vod + a.catalogs }.orEmpty().filter {
+            if (ExtensionCalls.idOf(url) != null) extensionRoutes(url, it.type)
+            else collectorOf(it.type) !in listOf("movies", "series", "tv")
+        }.map { collectorOf(it.type) }
     }.toSet()
     return COLLECTOR_PKGS.filterValues { it in given }.map { (pkg, kind) ->
         val icon = when (kind) { "radio", "podcasts", "audiobooks" -> R.drawable.ic_audio; "events" -> R.drawable.ic_live_tv; else -> R.drawable.ic_movie }
