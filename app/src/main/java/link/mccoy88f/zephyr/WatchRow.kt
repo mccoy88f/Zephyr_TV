@@ -86,7 +86,7 @@ internal fun MainActivity.queryWatchNext(): List<Prog> {
                 watchNext + channels
             } else emptyList()
         },
-        local = { titleProgressCards(hidden) + externalResumeCards(hidden) })
+        local = { titleProgressCards(hidden) + nuvioCloudCards(hidden) + externalResumeCards(hidden).filter { NuvioCloud.snapshot(vodDir())==null || it.second.pkg?.startsWith("com.nuvio")!=true } })
     publishingPkgs = all.mapNotNull { it.second.pkg }.toSet()
     val off = prefs.getStringSet(K.CW_OFF, emptySet())!!
     return newestPerApp(all.filter { it.second.pkg !in off && (it.second.vod != null || ExternalResume.allowed(it.second.pkg)) && (it.second.vod != null || it.second.progress in 1..94) }
@@ -188,20 +188,22 @@ internal fun MainActivity.queryAppChannels(pkg: String?) {
     if(android.os.Build.VERSION.SDK_INT<26 && ExternalResume.allowed(pkg)) {
         io.execute {
             val hidden=prefs.getStringSet(K.HIDDEN_WATCH,emptySet())!!
-            val cards=(if(pkg?.startsWith("com.nuvio")==true) titleProgressCards(hidden).map { it.second } else emptyList()) +
-                externalResumeCards(hidden).map { it.second }.filter { it.pkg==pkg } +
-                externalHistoryCards(pkg!!) + if(pkg.startsWith("com.nuvio"))nativeHistoryCards() else emptyList()
+            val cloud=NuvioCloud.snapshot(vodDir())
+            val nuvio=pkg?.startsWith("com.nuvio")==true
+            val cards=if(nuvio&&cloud!=null)(nuvioCloudCards(hidden)+titleProgressCards(hidden)).map{it.second}
+             else (if(nuvio)titleProgressCards(hidden).map{it.second}else emptyList())+externalResumeCards(hidden).map{it.second}.filter{it.pkg==pkg}+externalHistoryCards(pkg!!)+(if(nuvio)nativeHistoryCards()else emptyList())
             val sections=ArrayList<Section>()
-            if(cards.isNotEmpty())sections+=Section("local-history",getString(R.string.continue_watching),getString(R.string.continue_watching),cards.distinctBy { it.title.lowercase() })
-            val feed=NotificationFeed.cards(pkg).filter { hideKey(pkg,it.title) !in hidden }
-            if(pkg?.startsWith("org.smarttube")==true) {
-                val links=listOf(getString(R.string.firetv_smarttube_subscriptions) to "FEsubscriptions",getString(R.string.firetv_smarttube_history) to "FEmy_youtube")
-                sections+=Section("smarttube-links","SmartTube","SmartTube",links.map { (title,path) ->
-                    val i=Intent(Intent.ACTION_VIEW,Uri.parse("https://www.youtube.com/tv#/zylon-surface?c=$path")).setClassName(pkg,"com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity")
-                    Prog(title,getString(R.string.firetv_smarttube_open),0,null,i.toUri(Intent.URI_INTENT_SCHEME),pkg)
-                })
+            val feed=NotificationFeed.cards(pkg!!).filter { hideKey(pkg,it.title) !in hidden }
+            if(pkg.startsWith("org.smarttube")){
+             fun link(title:String,path:String)=Prog(title,"Apri in SmartTube",0,null,Intent(Intent.ACTION_VIEW,Uri.parse("https://www.youtube.com/tv#/zylon-surface?c=$path")).setClassName(pkg,"com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity").toUri(Intent.URI_INTENT_SCHEME),pkg)
+             sections+=Section("smarttube-subscriptions","Iscrizioni","SmartTube - Iscrizioni",listOf(link("Apri le tue iscrizioni","FEsubscriptions")))
+             if(feed.isNotEmpty())sections+=Section("legacy-tv-feed","Consigliati","SmartTube - Consigliati",feed)
+             if(cards.isNotEmpty())sections+=Section("local-history",getString(R.string.continue_watching),getString(R.string.continue_watching),cards.distinctBy{it.title.lowercase()})
+             sections+=Section("smarttube-history","Cronologia","SmartTube - Cronologia",listOf(link("Apri cronologia SmartTube","FEmy_youtube")))
+            }else{
+             if(cards.isNotEmpty())sections+=Section("local-history",getString(R.string.continue_watching),"Nuvio - Continua a guardare",cards.distinctBy{it.title.lowercase()})
+             if(feed.isNotEmpty())sections+=Section("legacy-tv-feed","Consigliati",appLabel(pkg)+" - Consigliati",feed)
             }
-            if(feed.isNotEmpty())sections+=Section("legacy-tv-feed","TV",appLabel(pkg)+" - Consigliati",feed)
             ui.post { if(tmdbLastFocusApp==pkg) {watchApp=pkg;if(sections.isEmpty())hideWatchRow() else showSections(sections)} }
         }
         return

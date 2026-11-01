@@ -338,9 +338,13 @@ class MainActivity : Activity() {
     }
     private var shownWidth = 0
 
+    private val nuvioCloudTick=object:Runnable{override fun run(){syncNuvioCloudNow();ui.postDelayed(this,30000)}}
+
     override fun onResume() {
         super.onResume()
         NotificationFeed.attach(this)
+        syncNuvioCloudNow(true)
+        ui.removeCallbacks(nuvioCloudTick);ui.postDelayed(nuvioCloudTick,30000)
         if (shownWidth == 0) shownWidth = resources.displayMetrics.widthPixels
         applyStatusBar()
         ensureHomeService()
@@ -435,6 +439,7 @@ class MainActivity : Activity() {
 
     override fun onStop() {
         NotificationFeed.detach(this)
+        ui.removeCallbacks(nuvioCloudTick)
         unlockedUntil = 0L // leaving the home screen locks it again (onPause would also fire for permission dialogs)
         if (homeTest != 0) leftDuringTest = true
         super.onStop()
@@ -1606,6 +1611,7 @@ class MainActivity : Activity() {
             getString(R.string.unlock_to_edit) to { unlock { v.requestFocus(); appMenu(v) } },
         ))
         holdMenu(v, listOfNotNull(
+            if(pkg.startsWith("com.nuvio")) "Nuvio · sincronizzazione cloud" to {showNuvioCloud()} else null,
             getString(R.string.menu_move) to { startEdit(grab = v, once = true) },
             getString(R.string.menu_remove_from_row) to {
                 val i = appRow.indexOfChild(v)

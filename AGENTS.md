@@ -14,3 +14,5 @@ Il monitor GitHub del Covo usa `followAllReleases: true` solo sulla variante per
 - Il pulsante Guarda usa il player interno e i plugin configurati in Zephyr, mai un reindirizzamento obbligatorio all?app Nuvio. Conservare cronologia VOD nativa insieme ai progressi esterni; la sincronizzazione fra app usa Trakt con consenso del proprietario.
 
 - Preservare navigazione DPAD verso Guarda/stagioni/episodi, feed TV legacy limitato alle recommendation SmartTube/Nuvio e zapping senza apertura automatica dei controlli. Supportare gruppi di canali senza perdere i figli. La regola privata partite mantiene eventi iniziati da meno di 100 minuti.
+
+- Conservare il collegamento Nuvio cloud integrato con QR, selezione profilo, snapshot autorevole per le righe condivise e lettura delle rimozioni/preferenze PC. Mai reintrodurre vecchi progressi locali sopra uno snapshot cloud riuscito. Nessuna scrittura alla cronologia remota da questa sincronizzazione.

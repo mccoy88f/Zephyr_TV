@@ -348,3 +348,16 @@ Le recommendation Android possono contenere Bitmap, Icon oppure nessuna immagine
 La riga legacy viene chiamata Consigliati; i collegamenti alle iscrizioni e alla cronologia SmartTube sono prima di questa riga. Questi collegamenti aprono SmartTube: non sono un'esportazione completa delle iscrizioni. Per mostrare contemporaneamente tutti i video delle iscrizioni e tutti i consigliati su Android 7 serve che SmartTube esporti entrambi i feed; il suo provider attuale esporta solo la ricerca e un feed recommendation selezionato. Questa limitazione resta esplicita.
 
 Immagine di sfondo, stemmi aggiuntivi e filtri dei cataloghi personali sono configurazioni private del proprietario e non fanno parte dell'APK pubblico.
+
+
+### Nuvio cloud e iscrizioni visibili
+
+Dal menu lungo sull’app Nuvio, oppure da Utenti → Impostazioni → utente, aprire Nuvio · sincronizzazione cloud. Il launcher usa la discovery pubblica ufficiale, avvia il normale device login Nuvio, mostra QR/codice nella propria schermata e permette di scegliere il profilo. Token e snapshot restano nella cartella privata di quell’utente; non vengono importati token da altre app. Il collegamento del proprietario e la lettura dei suoi progressi sono stati verificati sulla Fire TV.
+
+Con Nuvio collegato, Coda di riproduzione e la riga Nuvio leggono lo stesso snapshot cloud. È autorevole rispetto alle vecchie copie Trakt/locali, che restano salvate ma non vengono aggiunte alle righe condivise. Scollegando Nuvio torna il comportamento precedente. Il launcher legge soltanto i progressi remoti: non cancella né modifica la cronologia Nuvio sul server.
+
+Aggiornamento al rientro nella Home, ogni 30 secondi mentre è aperta e dal pulsante Aggiorna adesso. Una risposta completa vuota può rimuovere le vecchie voci; un errore di rete mantiene lo snapshot precedente. Un solo episodio per serie, scelto per ultimo aggiornamento prima di filtrare i completati: un episodio completato non fa riapparire un vecchio episodio in pausa. Vengono lette anche le preferenze cloud del PC (limite giorni e dismissedNextUpKeys), con fallback alle impostazioni TV. È stato verificato il passaggio di How I Met Your Mother dalla vecchia sorgente S6E14 al progresso cloud S6E21. I metadati vengono recuperati solo per le schede visibili.
+
+Test di regressione dello stato cloud e test strumentale del pannello passati. Il test del pannello è stato prima osservato fallire quando il menu non lo rendeva visibile, poi corretto.
+
+Su Android 7 SmartTube mostra per prima SmartTube - Iscrizioni con il comando esplicito Apri le tue iscrizioni. Questo apre la pagina nell’app: non è una replica dei video delle iscrizioni. Seguono consigliati disponibili, ripresa e accesso alla cronologia. Immagine personale e scritta “ripudiata” restano soltanto sulla TV del proprietario.

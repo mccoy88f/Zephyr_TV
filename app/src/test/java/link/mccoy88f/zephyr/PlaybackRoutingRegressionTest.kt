@@ -9,7 +9,7 @@ class PlaybackRoutingRegressionTest {
   assertFalse(source("Spotlight").contains("watchPreferred("))
  }
  @Test fun internalProgressIsIncludedAlongsideExternalProgressOnAndroid7() {
-  assertTrue(source("WatchRow").contains("titleProgressCards(hidden) + externalResumeCards(hidden)"))
+  assertTrue(source("WatchRow").contains("titleProgressCards(hidden) + nuvioCloudCards(hidden) + externalResumeCards(hidden)"))
  }
  @Test fun externalArtworkIsNotSkippedWhenThereIsNoVodOrChannelBadge() {
   assertTrue(source("WatchRow").contains("else if(p.vod==null) fillArt("))

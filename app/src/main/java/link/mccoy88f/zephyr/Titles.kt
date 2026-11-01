@@ -280,7 +280,8 @@ internal fun MainActivity.titleTile(type: String, source: String?): String? = if
 internal fun MainActivity.titleProgressCards(hidden: Set<String>): List<Pair<Long, Prog>> {
     Local.use(filesDir, tmdbLang())
     // One card a series: its newest episode, begun or waiting next.
-    return VodProgress.all(vodDir()).filter { hideKey(VOD_PKG, it.name) !in hidden }.distinctBy { it.metaId }.take(10).map { e ->
+    val cloudSnapshot=NuvioCloud.snapshot(vodDir())
+    return VodProgress.all(vodDir()).filter { NuvioCloudState.keepLegacy(cloudSnapshot,it.metaId,it.stream!=null) && hideKey(VOD_PKG, it.name) !in hidden }.distinctBy { it.metaId }.take(10).map { e ->
         val left = ((e.duration - e.position) / 60_000).coerceAtLeast(1)
         val tile = if (addonsVod(vodKind(e.type)) == VodPlace.TILES) (if (e.type == "series") SERIES_PKG else MOVIES_PKG) else null
         val state = if (e.upNext) getString(R.string.title_up_next) else getString(R.string.time_left_min, left.toInt())

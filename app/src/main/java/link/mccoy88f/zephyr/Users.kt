@@ -78,6 +78,7 @@ private fun MainActivity.userPage(u: User, focus: Int = 0) {
     val account = Trakt.account(dir)
     val back = { usersSettings(users().indexOfFirst { it.id == u.id }.coerceAtLeast(0)) }
     showPage(u.name, listOfNotNull(
+        page("Nuvio · sincronizzazione cloud", if(NuvioCloud.account(dir)==null)"Collega lo stesso account del PC" else "Collegato"){showNuvioCloud()},
         if (account == null) page(getString(R.string.trakt_connect), getString(R.string.trakt_not_connected)) { traktSignIn(u) }
         else page(getString(R.string.trakt_sync), account.user) { syncTrakt(u.id, tell = true) },
         account?.let { page(getString(R.string.trakt_disconnect)) { Trakt.forget(dir); userPage(u) } },

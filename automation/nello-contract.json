@@ -18,7 +18,10 @@
     "PanelNavigation.kt",
     "NotificationFeed.kt",
     "NotificationFeedPolicy.kt",
-    "NotificationArtwork.kt"
+    "NotificationArtwork.kt",
+    "NuvioCloud.kt",
+    "NuvioCloudState.kt",
+    "NuvioCloudUi.kt"
   ],
   "requiredTests": [
     "HomePolicyTest",
@@ -33,6 +36,7 @@
     "PlaybackRoutingRegressionTest",
     "ChannelGroupTest",
     "PanelNavigationTest",
-    "NotificationFeedPolicyTest"
+    "NotificationFeedPolicyTest",
+    "NuvioCloudStateTest"
   ]
 }
