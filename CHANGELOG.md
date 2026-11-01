@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 3.7.7
+
+- Saving YouYubeZ cookies reads its lists again. Empty lists are not kept for hours.
+
 ## 3.7.6
 
 - YouYubeZ plays a video's own picture and sound together, not only the 360p file.
