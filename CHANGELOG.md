@@ -13,6 +13,9 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 3.7.2
+
+- A video's page shows **Video**, not **Movie**. It does not list a director or a cast.
 
 ## 3.7.1
 

@@ -89,7 +89,11 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
     // Drawn again by what was started with an earlier version of it (the streams counted): the whole one, once in.
     val meta = wholeMeta[wholeKey(given.title.id)] ?: given
     val t = meta.title
-    val kind = getString(if (t.type == "series") R.string.tmdb_badge_tv else R.string.tmdb_badge_movie)
+    val kind = when (collectorOf(t.type)) {
+        "series" -> getString(R.string.tmdb_badge_tv)
+        "movies" -> getString(R.string.tmdb_badge_movie)
+        else -> kindName(t.type)
+    }
     markWhole(meta)
     // Watched (by the user in use): a film when, a series its last episode watched and when.
     var mine = VodWatched.all(vodDir())
@@ -105,8 +109,11 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
     val (servicesBar, services) = serviceBar(t, available)
     val genresText = meta.genres.take(3).joinToString(" · ").takeIf { it.isNotBlank() }
     val tmdbId = t.tmdbId ?: Local.get(t.id)?.tmdbId
+    val people = collectorOf(t.type) == "movies" || collectorOf(t.type) == "series"
     val top = titleTop(listOfNotNull((meta.rating ?: ref.rating)?.let { "★ $it" }, kind, t.year, genresText, meta.runtime)
-        .joinToString(" · "), null, meta.description, seenLine, director = meta.director, cast = meta.cast, tmdbId = tmdbId, isTv = t.type == "series")
+        .joinToString(" · "), null, meta.description, seenLine,
+        director = if (people) meta.director else emptyList(), cast = if (people) meta.cast else emptyList(),
+        tmdbId = tmdbId, isTv = t.type == "series", people = people)
 
     val sources = streamSources(t.type, meta.episodes.firstOrNull()?.id ?: t.id)
     val rows = ArrayList<Triple<String, String, () -> Unit>>()
@@ -471,7 +478,7 @@ private fun MainActivity.personCard(name: String, isDirector: Boolean, onImage: 
 /** Under a title's art: its [info] line, a [name] (an episode's), when the user [seen] it, what it's about, [director] and [cast]. */
 private fun MainActivity.titleTop(info: String, name: String?, about: String?, seen: String? = null,
                                   director: List<String> = emptyList(), cast: List<String> = emptyList(),
-                                  tmdbId: Long? = null, isTv: Boolean = false): TitleTopResult {
+                                  tmdbId: Long? = null, isTv: Boolean = false, people: Boolean = true): TitleTopResult {
     var descView: View? = null
     val directorCards = ArrayList<View>()
     val castCards = ArrayList<View>()
@@ -581,7 +588,7 @@ private fun MainActivity.titleTop(info: String, name: String?, about: String?, s
         }
     }
 
-    if (pendingPhotos.isNotEmpty()) {
+    if (people && pendingPhotos.isNotEmpty()) {
         val key = tmdbKey()
         if (key != null) posterIo.execute {
             if (tmdbId != null && tmdbId > 0) {

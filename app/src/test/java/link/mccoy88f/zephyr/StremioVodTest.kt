@@ -86,6 +86,32 @@ class StremioVodTest {
         assertNull(Stremio.titleMeta(JSONObject("{}"), "movie"))
     }
 
+    @Test fun aVideoPageKeepsChannelDateAndDescription() {
+        val meta = Stremio.titleMeta(JSONObject("""{"meta":{"id":"ytz:dQw4w9WgXcQ","type":"video","name":"Never Gonna Give You Up",
+            "description":"The official video.","releaseInfo":"2009-10-25","runtime":"3:33",
+            "genres":["Rick Astley"]}}"""), "video")!!
+        assertEquals("The official video.", meta.description)
+        assertEquals(emptyList<String>(), meta.director)
+        assertEquals("2009-10-25", meta.title.year)
+        assertEquals(listOf("Rick Astley"), meta.genres)
+        assertEquals("3:33", meta.runtime)
+        assertEquals("video", meta.title.type)
+    }
+
+    @Test fun anExtensionKeepsADirectUrlBesideTheYoutubeApp() {
+        val s = Stremio.streams(JSONObject("""{"streams":[
+            {"name":"YouTube","title":"YouTube app","ytId":"dQw4w9WgXcQ"},
+            {"name":"Zephyr TV","title":"360p video/mp4","url":"https://rr1.googlevideo.com/videoplayback?id=1",
+             "behaviorHints":{"proxyHeaders":{"request":{"User-Agent":"vr"}}}}
+        ]}"""), vod = true, external = true)
+        assertEquals(2, s.size)
+        assertEquals("https://www.youtube.com/watch?v=dQw4w9WgXcQ", s[0].url)
+        assertEquals("com.google.android.youtube.tv", s[0].app)
+        assertEquals("https://rr1.googlevideo.com/videoplayback?id=1", s[1].url)
+        assertEquals(null, s[1].app)
+        assertEquals("vr", s[1].headers["User-Agent"])
+    }
+
     @Test fun readsCastAndDirector() {
         val meta = Stremio.titleMeta(JSONObject("""{"meta":{"id":"tt1375666","type":"movie","name":"Inception",
             "cast":["Leonardo DiCaprio","Joseph Gordon-Levitt"],"director":["Christopher Nolan"]}}"""), "movie")!!
@@ -155,6 +181,7 @@ class StremioVodTest {
     @Test fun collectorOfMapsYouTubeToVideos() {
         assertEquals("videos", collectorOf("YouTube"))
         assertEquals("videos", collectorOf("youtube"))
+        assertEquals("videos", collectorOf("video"))
         assertEquals("videos", collectorOf("channel"))
         assertEquals("movies", collectorOf("movie"))
         assertEquals("videos", collectorOf(""))
