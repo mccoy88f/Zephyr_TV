@@ -111,6 +111,18 @@ internal fun MainActivity.sectionTitle(section: Int) = getString(when (section) 
     else -> R.string.settings_section_system
 })
 
+/** Icon at the start of that section's row on the first settings page. */
+internal fun MainActivity.sectionIcon(section: Int) = when (section) {
+    LOOK_SECTION -> R.drawable.ic_settings_look
+    APPS_SECTION -> R.drawable.ic_apps
+    WATCH_SECTION -> R.drawable.ic_movie
+    TV_SECTION -> R.drawable.ic_live_tv
+    ADDONS_SECTION -> R.drawable.ic_stream
+    SPOTLIGHT_SECTION -> R.drawable.ic_settings_spotlight
+    SCREENSAVER_SECTION -> R.drawable.ic_settings_screensaver
+    else -> R.drawable.ic_settings
+}
+
 /** The sections in the order the settings' first page lists them (their numbers aren't that order). */
 internal val HOME_SECTIONS = listOf(LOOK_SECTION, APPS_SECTION, WATCH_SECTION, TV_SECTION, ADDONS_SECTION, SPOTLIGHT_SECTION, SCREENSAVER_SECTION, SYSTEM_SECTION)
 
@@ -126,6 +138,9 @@ internal fun MainActivity.renderSettingsHome(focus: Int = 0) {
     // The one thing that needs doing by hand still shows on its section: Zephyr TV isn't fully set up as the home screen.
     if (!homeServiceOn()) (settingsList.getChildAt(sections.indexOf(SYSTEM_SECTION)) as? LinearLayout)?.addView(
         label(getString(R.string.settings_summary_setup), 13f).apply { alpha = 0.6f; setPadding(dp(12), 0, dp(8), 0) }, 1)
+    rowIcons(sections.mapIndexed { i, section ->
+        i to getDrawable(sectionIcon(section))!!.mutate()
+    }.toMap(), first = 0)
 }
 
 /** Shows the section page holding [row], focused on it. */

@@ -176,9 +176,24 @@ class YouYubeZTest {
         val seen = ArrayList<JSONObject>()
         run(
             """module.exports.catalog({id:"subs", extra:{}, settings:{cookies:${JSONObject.quote(netscape)}}})""",
-            mapOf("https://www.youtube.com/youtubei/v1/browse" to """{"contents":{}}"""),
+            mapOf("https://www.youtube.com/youtubei/v1/browse" to """{"contents":{"videoRenderer":{"videoId":"dQw4w9WgXcQ","title":{"simpleText":"x"}}}}"""),
             seen,
         )
         assertEquals("SID=abc; SAPISID=xyz", seen.single().getJSONObject("headers").getString("Cookie"))
+    }
+
+    @Test fun discoverFallsBackToAndroidWhenWebListsNothing() {
+        val androidPage = """{"contents":{"videoRenderer":{"videoId":"dQw4w9WgXcQ","title":{"simpleText":"Rick"}}}}"""
+        val seen = ArrayList<JSONObject>()
+        val fetch: (JSONObject) -> Js.Fetched = { req ->
+            seen += req
+            val ua = req.optJSONObject("headers")?.optString("User-Agent") ?: ""
+            val body = if (ua.contains("com.google.android.youtube/")) androidPage else "{}"
+            Js.Fetched(200, "OK", req.getString("url"), emptyList(), body.toByteArray(), "UTF-8")
+        }
+        val out = JSONObject(Js.run(script, """module.exports.catalog({id:"discover", extra:{}, settings:{}})""", timeoutMs = 8_000, fetch = fetch)!!)
+        assertEquals(1, out.getJSONArray("metas").length())
+        assertEquals("ytz:dQw4w9WgXcQ", out.getJSONArray("metas").getJSONObject(0).getString("id"))
+        assertTrue(seen.any { it.optJSONObject("headers")?.optString("User-Agent").orEmpty().contains("com.google.android.youtube/") })
     }
 }

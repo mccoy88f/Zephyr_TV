@@ -178,6 +178,19 @@ class StremioVodTest {
         assertFalse(a.vod[0].listed)
     }
 
+    @Test fun listedVideoCatalogsStayOnTheHomeRows() {
+        val m = JSONObject("""{"id":"org.zephyr.youyubez","name":"YouYubeZ","types":["video"],
+            "catalogs":[
+              {"type":"video","id":"discover","name":"Discover","extra":[{"name":"skip"}]},
+              {"type":"video","id":"trending","name":"Trending","extra":[{"name":"skip"}]},
+              {"type":"video","id":"search","name":"Search","extra":[{"name":"search","isRequired":true},{"name":"skip"}]}
+            ]}""")
+        val a = Stremio.addon(Stremio.EXT + "org.zephyr.youyubez/manifest.json", m)
+        assertEquals(listOf("discover", "trending", "search"), a.vod.map { it.id })
+        assertTrue(a.vod[0].listed && a.vod[1].listed)
+        assertFalse(a.vod[2].listed)
+    }
+
     @Test fun collectorOfMapsYouTubeToVideos() {
         assertEquals("videos", collectorOf("YouTube"))
         assertEquals("videos", collectorOf("youtube"))

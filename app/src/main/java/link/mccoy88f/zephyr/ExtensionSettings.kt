@@ -123,7 +123,9 @@ internal fun forgetExtension(p: SharedPreferences, id: String) {
         .putStringSet(K.EXT_OFF, p.getStringSet(K.EXT_OFF, emptySet())!! - id)
         .putStringSet(K.EXT_ADULT, p.getStringSet(K.EXT_ADULT, emptySet())!! - id)
         .putStringSet(K.EXT_COLLECT, p.getStringSet(K.EXT_COLLECT, emptySet())!! - id)
+        .putStringSet(K.EXT_OWN, p.getStringSet(K.EXT_OWN, emptySet())!! - id)
         .putString(K.EXT_OPTIONS, runCatching { JSONObject(p.getString(K.EXT_OPTIONS, null) ?: "{}").apply { remove(id) } }.getOrDefault(JSONObject()).toString())
+        .putString(K.EXT_APP, runCatching { JSONObject(p.getString(K.EXT_APP, null) ?: "{}").apply { remove(id) } }.getOrDefault(JSONObject()).toString())
         .putString(K.EXT_SOURCES, sources.toString()).apply()
 }
 
@@ -261,7 +263,7 @@ internal fun MainActivity.extensionsPage(focus: Int = 0) {
     ), focus, top = intro(getString(R.string.ext_intro))) { addonsAndPlugins(3) }
 }
 
-/** An extension's page: what it is, On, Options, Where it shows, 18+, up or down the list, Update now, Remove. */
+/** An extension's page: what it is, On, Options, Virtual app, 18+, up or down the list, Update now, Remove. */
 private fun MainActivity.extensionPage(id: String, focus: Int = 0) {
     val e = Extensions.installed(filesDir, id) ?: return extensionsPage()
     val ids = extensions(prefs, filesDir).map { it.id }
@@ -298,12 +300,12 @@ private fun MainActivity.extensionPage(id: String, focus: Int = 0) {
             extensionPage(id, row)
         }
     }
-    // Where it shows: in its own app, or in the collectors its manifest allows.
-    if (e.collectors.isNotEmpty()) {
-        val collect = id in prefs.getStringSet(K.EXT_COLLECT, emptySet())!!
+    if ("catalog" in e.resources && "stream" in e.resources) {
+        val mode = extApp(id)
         val row = rows.size
-        rows += page(getString(R.string.ext_place), getString(if (collect) R.string.ext_place_collectors else R.string.ext_place_own)) {
-            prefs.edit().putStringSet(K.EXT_COLLECT, prefs.getStringSet(K.EXT_COLLECT, emptySet())!!.let { if (collect) it - id else it + id }).apply()
+        rows += page(getString(R.string.ext_place), extAppName(mode)) {
+            val next = ExtApp.entries[(ExtApp.entries.indexOf(mode) + 1) % ExtApp.entries.size]
+            setExtApp(id, next)
             addonsChanged()
             extensionPage(id, row)
         }
@@ -619,6 +621,26 @@ internal fun MainActivity.contentPlace(type: String): VodPlace = when (val c = c
 /** Where the extensions' radio stations show: the Radio tile, each extension's own app, or nowhere; kept by [key]. */
 internal enum class RadioPlace(val key: String) { VIRTUAL("virtual"), APPS("apps"), OFF("off") }
 
+/** An extension's own virtual app: follow Videos and the other collectors, show it, or hide it. */
+internal enum class ExtApp(val key: String) { SYSTEM("system"), SHOW("show"), HIDE("hide") }
+
+internal fun MainActivity.extApp(id: String): ExtApp {
+    val v = runCatching { JSONObject(prefs.getString(K.EXT_APP, null) ?: "{}").optString(id) }.getOrNull()
+    return ExtApp.entries.firstOrNull { it.key == v } ?: ExtApp.SYSTEM
+}
+
+private fun MainActivity.setExtApp(id: String, mode: ExtApp) {
+    val all = runCatching { JSONObject(prefs.getString(K.EXT_APP, null) ?: "{}") }.getOrDefault(JSONObject())
+    if (mode == ExtApp.SYSTEM) all.remove(id) else all.put(id, mode.key)
+    prefs.edit().putString(K.EXT_APP, all.toString()).apply()
+}
+
+internal fun MainActivity.extAppName(mode: ExtApp) = getString(when (mode) {
+    ExtApp.SHOW -> R.string.ext_app_show
+    ExtApp.HIDE -> R.string.ext_app_hide
+    ExtApp.SYSTEM -> R.string.ext_app_system
+})
+
 /** Where the extensions' radio stations show (Virtual apps and integrations → Radio): the Radio tile by default. */
 internal fun MainActivity.radioPlace(): RadioPlace = when (collectorPlace("radio")) {
     VodPlace.TILES -> RadioPlace.VIRTUAL
@@ -626,37 +648,47 @@ internal fun MainActivity.radioPlace(): RadioPlace = when (collectorPlace("radio
     VodPlace.OFF -> RadioPlace.OFF
 }
 
-/** Whether the extension [id] puts its content in the collectors (Where it shows), not in its own app. */
-private fun MainActivity.inCollectors(id: String) = id in prefs.getStringSet(K.EXT_COLLECT, emptySet())!!
-
 /**
- * Whether the extension at the add-on address [url] gives its rows of [type] to their collector: it's set to show in
- * the collectors, and its manifest allows that collector. Radio stations go by Radio's own setting: to the Radio tile
- * from every extension, or none. Not for an add-on.
+ * Whether the extension at the add-on address [url] gives its rows of [type] to their collector: the collector is a
+ * virtual app, and its manifest allows that collector. Radio stations go by Radio's own setting: to the Radio tile
+ * from every extension, or none. Not for an add-on. **Virtual app → Show** keeps the rows in its own app; **Hide**
+ * still gives them to a collector that is a virtual app, so they are not lost.
  */
 internal fun MainActivity.extensionRoutes(url: String, type: String): Boolean {
     val id = ExtensionCalls.idOf(url) ?: return false
+    if (extApp(id) == ExtApp.SHOW) return false
     val kind = collectorOf(type)
     if (collectorPlace(kind) != VodPlace.TILES) return false
     if (kind == "radio") return true
-    if (!inCollectors(id)) return false
     return kind in (Extensions.installed(filesDir, id)?.collectors ?: return false)
+}
+
+/** Types of [e] that have a listable catalog (a search-only one is not a row). */
+private fun MainActivity.listedTypes(e: Extensions.Extension, url: String): List<String> {
+    Stremio.saved(filesDir, url)?.addon?.let { a ->
+        return a.catalogs.map { it.type } + a.vod.filter { it.listed }.map { it.type }
+    }
+    val list = Extensions.list(e, "catalogs")
+    return (0 until list.length()).mapNotNull { i ->
+        val o = list.optJSONObject(i) ?: return@mapNotNull null
+        val extras = o.optJSONArray("extra")?.let { extra -> (0 until extra.length()).mapNotNull { extra.optJSONObject(it) } }.orEmpty()
+        if (extras.any { it.optBoolean("isRequired") }) null else o.optString("type").takeIf { it.isNotEmpty() }
+    }
 }
 
 /**
  * Whether the extension at [url] has an app of its own: it has content of its own (catalogs and streams: not a
- * catalog of titles others play, nor streams or a guide alone), isn't in Adult content, and has rows that show in it
- * (not given to the collectors, not radio stations switched off). Its catalogs as last read (manifest() makes them
- * from its settings), else its manifest's.
+ * catalog of titles others play, nor streams or a guide alone), isn't in Adult content, and has listable rows that
+ * show in it (not given to the collectors, not radio stations switched off). Search-only, or nothing to list: no app.
  */
 internal fun MainActivity.extensionOwnApp(url: String): Boolean {
     val id = ExtensionCalls.idOf(url) ?: return false
     val e = Extensions.installed(filesDir, id) ?: return false
     if ("catalog" !in e.resources || "stream" !in e.resources || inAdultApp(url)) return false
-    val read = Stremio.saved(filesDir, url)?.addon?.let { a -> (a.catalogs + a.vod).map { it.type } }
-    val types = read ?: Extensions.list(e, "catalogs").let { c -> (0 until c.length()).mapNotNull { c.optJSONObject(it)?.optString("type") } }
-    if (types.isEmpty()) return true // not read yet, or not set up: its app, once it has something
-    return types.any { t -> contentPlace(t) != VodPlace.OFF }
+    if (extApp(id) == ExtApp.HIDE) return false
+    val types = listedTypes(e, url)
+    if (types.isEmpty()) return false
+    return types.any { t -> contentPlace(t) != VodPlace.OFF && !extensionRoutes(url, t) }
 }
 
 /** The tile of the add-on at [url]'s own app. */
@@ -665,13 +697,20 @@ internal fun MainActivity.ownAppPkg(url: String): String? = Stremio.saved(filesD
 /** The collectors' tiles that have rows: Radio, Videos, Courses, Podcasts, Audiobooks, Events. Runs on the io thread. */
 internal fun MainActivity.collectorApps(): List<MainActivity.App> {
     val given = shownAddonUrls().filter { !inAdultApp(it) }.flatMap { url ->
-        Stremio.saved(filesDir, url)?.addon?.let { a -> a.vod + a.catalogs }.orEmpty().filter {
+        val addon = Stremio.saved(filesDir, url)?.addon
+            ?: null.also { if (Stremio.due(filesDir, url)) updateAddon(url, null) }
+        addon?.let { a -> a.vod + a.catalogs }.orEmpty().filter {
             if (ExtensionCalls.idOf(url) != null) extensionRoutes(url, it.type)
             else collectorOf(it.type) !in listOf("movies", "series", "tv") && collectorPlace(collectorOf(it.type)) == VodPlace.TILES
         }.map { collectorOf(it.type) }
     }.toSet()
     return COLLECTOR_PKGS.filterValues { it in given && collectorPlace(it) == VodPlace.TILES }.map { (pkg, kind) ->
-        val icon = when (kind) { "radio", "podcasts", "audiobooks" -> R.drawable.ic_audio; "events" -> R.drawable.ic_live_tv; else -> R.drawable.ic_movie }
+        val icon = when (kind) {
+            "radio", "podcasts", "audiobooks" -> R.drawable.ic_audio
+            "events" -> R.drawable.ic_live_tv
+            "videos" -> R.drawable.ic_play
+            else -> R.drawable.ic_movie
+        }
         MainActivity.App(pkg, kindName(when (kind) { "videos" -> "video"; "courses" -> "course"; "podcasts" -> "podcast"; "audiobooks" -> "audiobook"; "events" -> "event"; else -> kind }),
             android.content.Intent(), getDrawable(icon)!!)
     }

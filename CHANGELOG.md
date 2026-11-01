@@ -13,6 +13,13 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 3.7.5
+
+- The first settings page shows an icon at the start of each section row.
+- **Videos** as a virtual app holds YouYubeZ's rows when **Virtual app** follows the system.
+- An extension's **Virtual app** is **Show**, **Hide** or **Follow the system**. **Follow the system** is the default.
+- An extension with no listable catalogs has no app of its own. Search still finds its titles.
+
 ## 3.7.4
 
 - An extension's own app shows its video rows, also when they are in **Videos**.

@@ -216,11 +216,10 @@ account Xtream, e i canali, i film e le serie compaiono nella sua app.
 - **Aggiungi un'estensione**: l'indirizzo del suo `manifest-zephyrtv.json` (o della cartella che lo contiene),
   incollato dal telefono o scritto con il telecomando; oppure il suo file `.zip` inviato dal telefono. Prima di
   installarla Zephyr TV mostra cos'è, chi l'ha scritta e cosa fornisce.
-- **Ogni estensione** ha una pagina con **Attivo**, **Opzioni** (la stessa pagina **Inserisci dal telefono…** del resto di Zephyr TV), **Dove compare** (nella sua app, oppure nei
-  raccoglitori: Film, Serie TV, Canali TV, Radio, Video…), **Contenuti V.M. - Adulti**, **Sposta su / giù**,
+- **Ogni estensione** ha una pagina con **Attivo**, **Opzioni** (la stessa pagina **Inserisci dal telefono…** del resto di Zephyr TV), **App virtuale** (**Segui il sistema**, **Mostra** o **Nascondi**), **Contenuti V.M. - Adulti**, **Sposta su / giù**,
   **Aggiorna ora** e **Rimuovi**.
-- Un'estensione con contenuti propri ha **la sua app** nella riga delle app, con il suo logo, quando ha qualcosa da
-  mostrare.
+- Dove compare il contenuto lo scegli tu per tipo (**Video**, **Radio**, film…): app virtuale, un'app per add-on, o
+  da nessuna parte. **App virtuale** sull'estensione segue quello, oppure mostra o nasconde la sua tile. Senza cataloghi da elencare non ha tile.
 - **Controlla aggiornamenti**: Zephyr TV lo fa anche da solo, una volta al giorno.
 
 ### Nascondere il tuo IP

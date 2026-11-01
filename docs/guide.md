@@ -216,11 +216,10 @@ trust.** **OMG Premium TV** is suggested in the list: OK installs it. Add your M
 - **Add an extension**: the address of its `manifest-zephyrtv.json` (or of the folder it's in), pasted from your
   phone or typed with the remote; or its `.zip` file sent from your phone. Before installing it, Zephyr TV shows what
   it is, who wrote it and what it provides.
-- **Each extension** has a page with **On**, **Options** (the same **Enter from your phone…** page as the rest of Zephyr TV), **Where it shows** (in its app, or in the collectors:
-  Films, TV Series, TV Channels, Radio, Videos…), **Adult content (18+)**, **Move up / Move down**, **Update now** and
+- **Each extension** has a page with **On**, **Options** (the same **Enter from your phone…** page as the rest of Zephyr TV), **Virtual app** (**Follow the system**, **Show** or **Hide**), **Adult content (18+)**, **Move up / Move down**, **Update now** and
   **Remove**.
-- An extension with content of its own has **its app** on the apps row, with its logo, once it has something to
-  show.
+- Where the content shows is yours to set per kind (**Videos**, **Radio**, films…): a virtual app, one app per
+  add-on, or off. **Virtual app** on the extension follows that, or shows or hides its tile. With no listable catalogs it has no tile.
 - **Check for updates**: Zephyr TV also does it by itself, once a day.
 
 ### Hiding your IP

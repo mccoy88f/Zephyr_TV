@@ -115,7 +115,9 @@ internal fun MainActivity.titleSections(pkg: String, hidden: Set<String>): List<
     // app, those not given away; under Films and Series, an extension's given to them (films: its own types too).
     fun shows(url: String, shelfType: String): Boolean = when {
         collector != null -> (if (ExtensionCalls.idOf(url) != null) extensionRoutes(url, shelfType) else true) && collectorOf(shelfType) == collector && collectorPlace(collector) == VodPlace.TILES
-        ownUrl != null -> if (ExtensionCalls.idOf(url) != null) contentPlace(shelfType) != VodPlace.OFF else contentPlace(shelfType) == VodPlace.APPS
+        ownUrl != null -> if (ExtensionCalls.idOf(url) != null)
+            contentPlace(shelfType) != VodPlace.OFF && !extensionRoutes(url, shelfType)
+        else contentPlace(shelfType) == VodPlace.APPS
         ExtensionCalls.idOf(url) != null && type != null -> (!apart(url) || extensionRoutes(url, shelfType)) && collectorOf(shelfType) == (if (type == "series") "series" else "movies")
         type != null -> collectorOf(shelfType) == (if (type == "series") "series" else "movies")
         // An add-on's own tile: its content set to show in its add-on's tile.

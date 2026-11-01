@@ -113,9 +113,12 @@ Un'estensione fornisce una qualsiasi di queste parti, da sola o insieme alle alt
 
 ### La sua app
 
-Un'estensione con contenuti propri ha **un'app tutta sua**: un'app virtuale nella riga delle app della home, con
-l'`icon` dell'estensione (o, senza, una tile con il suo nome), e **tutte le sue righe sotto**: film, serie, canali TV
-e video, nell'ordine dei suoi cataloghi. Aprendola si vedono come le righe di un'app.
+Un'estensione ha **un'app tutta sua** solo se ha **cataloghi elencabili** (righe che si aprono), e solo per i tipi
+che non vanno in un raccoglitore. Un catalogo solo di ricerca, i soli stream e la sola guida non fanno un'app.
+
+L'utente sceglie dove compare ogni tipo (**Video**, **Radio**, film…): un'app virtuale che raccoglie tutti, un'app
+per add-on o estensione, o da nessuna parte. Sull'estensione, **App virtuale** segue quello (predefinito), oppure
+**Mostra** / **Nascondi** la sua tile.
 
 - **Un catalogo**, cioè un'estensione i cui cataloghi elencano titoli che riproducono altri (film e serie con id
   IMDb, senza un suo `stream` per loro), **non ha app**: le sue righe vanno sotto **Film** e **Serie TV**, come quelle
@@ -147,18 +150,16 @@ Il manifest dice dove i suoi contenuti **possono** andare, oltre alla sua app:
 "collectors": ["movies", "series"]
 ```
 
-- Senza `collectors`, i contenuti restano nella sua app.
+- Senza `collectors`, i contenuti restano nella sua app, se ha cataloghi elencabili.
 - Un catalogo del manifest può restarne fuori con `"collector": false`: quel catalogo resta nell'app dell'estensione
   anche quando il resto va nei raccoglitori (una riga che ha senso solo lì, come "Aggiunti di recente al mio
   account").
-- Nelle impostazioni dell'estensione, **Dove compare** offre **Nella sua app** (predefinito) o **Nei raccoglitori**,
-  quando il manifest ha `collectors`. Nei raccoglitori, ogni sua riga va nel raccoglitore del suo tipo, se è in
-  `collectors`; le righe che restano (tipi non elencati, cataloghi con `"collector": false`) rimangono nella sua app,
-  che compare solo finché ne ha.
+- Nei raccoglitori, ogni sua riga va nel raccoglitore del suo tipo, se è in `collectors` e quel raccoglitore è un'app
+  virtuale. Le righe che restano (tipi non elencati, cataloghi con `"collector": false`) rimangono nella sua app, che
+  compare solo finché ne ha.
 - **Un catalogo** (vedi sopra) non ha app e non ha bisogno di `collectors`: le sue righe vanno in Film e Serie TV.
 - **Le radio** seguono la voce **Radio** di Zephyr TV (Virtual App e Integrazioni): nel raccoglitore Radio da tutte le
-  estensioni (predefinito), ognuna nell'app della sua estensione, o da nessuna parte, qualunque cosa dica **Dove
-  compare**.
+  estensioni (predefinito), ognuna nell'app della sua estensione, o da nessuna parte.
 - In un raccoglitore, le righe di ogni estensione arrivano nell'ordine delle estensioni (Impostazioni → Funzioni aggiuntive → Estensioni Zephyr),
   dopo quelle degli add-on e delle fonti di catalogo.
 

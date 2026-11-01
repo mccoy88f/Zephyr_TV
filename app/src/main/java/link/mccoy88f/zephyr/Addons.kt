@@ -154,7 +154,7 @@ internal fun MainActivity.addonApps(): List<MainActivity.App> {
     // An extension's only once it has something to show (one not set up yet has no catalogs).
     val adultOwn = shownAddonUrls().filter { ownApp(it) }.mapNotNull { url ->
         // Not read yet (just installed, or restored from a backup): its tile comes once it is.
-        (Stremio.saved(filesDir, url)?.addon ?: null.also { if (Stremio.due(filesDir, url)) updateAddon(url, null) })?.takeIf { adultOwnApp(url) || it.catalogs.isNotEmpty() || it.vod.isNotEmpty() }
+        (Stremio.saved(filesDir, url)?.addon ?: null.also { if (Stremio.due(filesDir, url)) updateAddon(url, null) })?.takeIf { adultOwnApp(url) || it.catalogs.isNotEmpty() || it.vod.any { c -> c.listed } }
             ?.let { tile(it, if (adultOwnApp(url)) R.drawable.ic_adult else R.drawable.ic_apps) }
     }
     return (tv + vodApps() + vodTileAddons().map { tile(it, R.drawable.ic_movie) } + adultTile() + adultOwn + collectorApps()).distinctBy { it.pkg }

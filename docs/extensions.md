@@ -112,9 +112,12 @@ An extension provides any part of these, alone or together, as its manifest's `r
 
 ### Its app
 
-An extension with content of its own gets **an app of its own**: a virtual app on the apps row of the home screen,
-with the extension's `icon` (or, without one, a tile with its name), and **all its rows under it** — films, series,
-TV channels and videos alike, in the order of its catalogs. Opening it shows them as an app's rows are shown.
+An extension gets **an app of its own** only while it has **listable catalogs** (rows you can open), and only for
+the kinds that do not go to a collector. Search-only catalogs, streams alone and a guide alone are not an app.
+
+The user sets where each kind shows (**Videos**, **Radio**, films…): a virtual app that gathers everyone, one app
+per add-on or extension, or off. On the extension, **Virtual app** follows that (the default), or **Show** / **Hide**
+its own tile.
 
 - **A catalog**, an extension whose catalogs list titles that others play (films and series by IMDb id, with no
   `stream` of its own for them), gets **no app**: its rows go under **Films** and **TV Series**, as the catalog
@@ -144,16 +147,15 @@ The manifest says where its content **may** go, besides its own app:
 "collectors": ["movies", "series"]
 ```
 
-- Without `collectors`, its content stays in its own app.
+- Without `collectors`, its content stays in its own app, if it has listable catalogs.
 - A catalog of the manifest can opt out with `"collector": false`: that catalog stays in the extension's app even when
   the rest goes to the collectors (a row that only makes sense there, such as "Recently added to my account").
-- In the extension's settings, **Where it shows** offers **In its app** (the default) or **In the collectors**, when
-  the manifest has `collectors`. In the collectors, each of its rows goes to the collector of its type, if listed in
-  `collectors`; the rows left (types not listed, catalogs with `"collector": false`) stay in its app, which shows only
-  while it has some.
+- In the collectors, each of its rows goes to the collector of its type, if listed in `collectors` and that collector
+  is a virtual app. The rows left (types not listed, catalogs with `"collector": false`) stay in its app, which shows
+  only while it has some.
 - **A catalog** (see above) has no app and needs no `collectors`: its rows go to Films and TV Series.
 - **Radio stations** go by Zephyr TV's own **Radio** setting (Virtual apps and integrations): to the Radio collector
-  from every extension (the default), each in its extension's app, or nowhere — whatever **Where it shows** says.
+  from every extension (the default), each in its extension's app, or nowhere.
 - In a collector, the rows of each extension come in the order of the extensions (Settings → Extra features → Zephyr Extensions), after the
   add-ons' and the catalog sources'.
 

@@ -477,9 +477,12 @@
     <string name="ext_kind_events">Eventos</string>
     <string name="ext_kind_streams">Streams</string>
     <string name="ext_kind_guide">Guía de TV</string>
-    <string name="ext_place">Dónde aparece</string>
+    <string name="ext_place">App virtual</string>
     <string name="ext_place_own">En su app</string>
     <string name="ext_place_collectors">En los recopiladores</string>
+    <string name="ext_app_show">Mostrar</string>
+    <string name="ext_app_hide">Ocultar</string>
+    <string name="ext_app_system">Seguir el sistema</string>
     <string name="place_per_extension">En la app de cada extensión</string>
     <string name="list_add">Añadir</string>
     <string name="list_from_phone">Introducir desde el teléfono…</string>
