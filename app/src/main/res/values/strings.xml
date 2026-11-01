@@ -488,7 +488,7 @@
     <string name="ext_options">Options</string>
     <string name="ext_cookies_checking">Checking cookies and refreshing lists…</string>
     <string name="ext_cookies_ok">Cookies work. Account lists updated.</string>
-    <string name="ext_cookies_rejected">YouTube did not accept these cookies. Discover and Trending stay public lists.</string>
+    <string name="ext_cookies_rejected">YouTube did not accept these cookies. Subscriptions, Watch later and History stay hidden.</string>
     <string name="ext_cookies_cleared">Cookies cleared. Lists reread.</string>
     <string name="ext_cookies_failed">Couldn\'t check the cookies. See Recent problems.</string>
     <string name="setting_addons_tv">TV Channels</string>

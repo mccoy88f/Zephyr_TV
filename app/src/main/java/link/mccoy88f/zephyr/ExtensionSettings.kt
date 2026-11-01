@@ -546,16 +546,33 @@ internal fun MainActivity.extensionChanged(id: String) {
     addonsChanged()
 }
 
+/** Fetch the extension's catalogs and their shelves. Network: off the UI thread. */
+private fun MainActivity.rereadExtensionListing(e: Extensions.Extension): Stremio.Listing? {
+    val url = ExtensionCalls.url(e.id)
+    val listing = runCatching { Stremio.update(filesDir, url) }.getOrNull()
+    listing?.addon?.takeIf { it.vod.any { c -> c.listed } }?.let { addon ->
+        runCatching { Stremio.updateShelves(filesDir, addon) }.onFailure { warn("Stremio catalogs failed: ${e.name} ($it)") }
+    }
+    return listing
+}
+
+/** Reread an extension's catalogs and rebuild its rows. */
+internal fun MainActivity.refreshExtensionCatalogs(e: Extensions.Extension) {
+    netIo.execute {
+        val listing = rereadExtensionListing(e)
+        ui.post {
+            addonsChanged()
+            listing?.addon?.let { rowsAgain(STREMIO + it.id) }
+        }
+    }
+}
+
 /** After cookies are pasted: check the session, reread every catalog, and rebuild the extension's rows. */
 internal fun MainActivity.checkExtensionCookies(e: Extensions.Extension) {
     Toast.makeText(this, getString(R.string.ext_cookies_checking), Toast.LENGTH_SHORT).show()
     netIo.execute {
         val checked = runCatching { ExtensionCalls.verify(this, e) }.onFailure { warn("Extension verify failed: ${e.name} ($it)") }.getOrNull()
-        val url = ExtensionCalls.url(e.id)
-        val listing = runCatching { Stremio.update(filesDir, url) }.getOrNull()
-        listing?.addon?.takeIf { it.vod.any { c -> c.listed } }?.let { addon ->
-            runCatching { Stremio.updateShelves(filesDir, addon) }.onFailure { warn("Stremio catalogs failed: ${e.name} ($it)") }
-        }
+        val listing = rereadExtensionListing(e)
         ui.post {
             Toast.makeText(this, when {
                 checked == null -> getString(R.string.ext_cookies_failed)
@@ -773,6 +790,7 @@ private fun MainActivity.extensionForm(e: Extensions.Extension, fields: List<Nuv
             setExtensionValue(e.id, fields, f.key, v)
             extensionChanged(e.id)
             if (f.key == "cookies") checkExtensionCookies(e)
+            if (f.key == "sections") refreshExtensionCatalogs(e)
         },
         { i -> extensionForm(e, fields, i, back) }, back)
 }

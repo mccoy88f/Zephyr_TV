@@ -203,6 +203,16 @@ class YouYubeZTest {
         assertTrue(out.getJSONObject("catalogs").getInt("discover") > 0)
     }
 
+    @Test fun settingsOfferVisibleSectionsAsAList() {
+        val list = org.json.JSONArray(Js.run(script, """module.exports.settings()""", timeoutMs = 8_000)!!)
+        val sections = (0 until list.length()).map { list.getJSONObject(it) }.first { it.optString("key") == "sections" }
+        assertEquals("list", sections.getString("type"))
+        assertEquals("name", sections.getString("itemLabel"))
+        assertEquals(2, sections.getJSONArray("defaultValue").length())
+        assertEquals("discover", sections.getJSONArray("defaultValue").getJSONObject(0).getString("id"))
+        assertEquals("trending", sections.getJSONArray("defaultValue").getJSONObject(1).getString("id"))
+    }
+
     @Test fun catalogsWithoutCookiesStillListDiscoverAndTrending() {
         val m = run("""module.exports.manifest({settings:{}})""", emptyMap())
         val ids = (0 until m.getJSONArray("catalogs").length()).map { m.getJSONArray("catalogs").getJSONObject(it).getString("id") }
@@ -216,7 +226,7 @@ class YouYubeZTest {
         val netscape = "# Netscape HTTP Cookie File\n#HttpOnly_.youtube.com\tTRUE\t/\tTRUE\t0\tSID\tabc\n.youtube.com\tTRUE\t/\tTRUE\t0\tSAPISID\txyz"
         val m = run("""module.exports.manifest({settings:{cookies:${JSONObject.quote(netscape)}}})""", emptyMap())
         val ids = (0 until m.getJSONArray("catalogs").length()).map { m.getJSONArray("catalogs").getJSONObject(it).getString("id") }
-        assertEquals(listOf("discover", "subs", "later", "history", "trending", "search"), ids)
+        assertEquals(listOf("discover", "trending", "subs", "later", "history", "search"), ids)
 
         val seen = ArrayList<JSONObject>()
         run(
@@ -230,19 +240,26 @@ class YouYubeZTest {
         assertEquals("https://www.youtube.com", headers.getString("X-Origin"))
     }
 
-    @Test fun discoverFallsBackToAndroidWhenWebListsNothing() {
-        val androidPage = """{"contents":{"videoRenderer":{"videoId":"dQw4w9WgXcQ","title":{"simpleText":"Rick"}}}}"""
+    @Test fun extraKeywordSectionJoinsTheCatalogs() {
+        val sections = """[{"name":"Jazz","keywords":"jazz piano"},{"name":"F1","keywords":"formula 1"}]"""
+        val m = run("""module.exports.manifest({settings:{sections:$sections}})""", emptyMap())
+        val ids = (0 until m.getJSONArray("catalogs").length()).map { m.getJSONArray("catalogs").getJSONObject(it).getString("id") }
+        assertEquals(listOf("jazz", "f1", "search"), ids)
+        assertEquals("Jazz", m.getJSONArray("catalogs").getJSONObject(0).getString("name"))
+    }
+
+    @Test fun keywordSectionSearchesTheUsersWords() {
+        val page = """{"contents":{"videoRenderer":{"videoId":"dQw4w9WgXcQ","title":{"simpleText":"Rick"}}}}"""
         val seen = ArrayList<JSONObject>()
-        val fetch: (JSONObject) -> Js.Fetched = { req ->
-            seen += req
-            val ua = req.optJSONObject("headers")?.optString("User-Agent") ?: ""
-            val body = if (ua.contains("com.google.android.youtube/")) androidPage else "{}"
-            Js.Fetched(200, "OK", req.getString("url"), emptyList(), body.toByteArray(), "UTF-8")
-        }
-        val out = JSONObject(Js.run(script, """module.exports.catalog({id:"discover", extra:{}, settings:{}})""", timeoutMs = 8_000, fetch = fetch)!!)
+        val out = run(
+            """module.exports.catalog({id:"jazz", extra:{}, settings:{sections:[{name:"Jazz",keywords:"jazz piano"}]}})""",
+            mapOf("https://www.youtube.com/youtubei/v1/search" to page),
+            seen,
+        )
         assertEquals(1, out.getJSONArray("metas").length())
         assertEquals("ytz:dQw4w9WgXcQ", out.getJSONArray("metas").getJSONObject(0).getString("id"))
-        assertTrue(seen.any { it.optJSONObject("headers")?.optString("User-Agent").orEmpty().contains("com.google.android.youtube/") })
+        assertTrue(seen.single().getString("url").contains("/search"))
+        assertTrue(seen.single().getString("body").contains("jazz piano"))
     }
 
     @Test fun catalogSkipsAdsAndShorts() {

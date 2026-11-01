@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 3.7.13
+
+- YouYubeZ **Visible sections** are keyword lists. Zephyr TV rereads them when you change the list.
+
 ## 3.7.12
 
 - After YouYubeZ cookies are pasted, Zephyr TV checks them and rereads every list.

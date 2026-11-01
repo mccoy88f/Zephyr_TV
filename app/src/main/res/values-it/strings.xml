@@ -489,7 +489,7 @@
     <string name="ext_options">Opzioni</string>
     <string name="ext_cookies_checking">Verifica dei cookie e aggiornamento delle liste…</string>
     <string name="ext_cookies_ok">Cookie validi. Liste dell\'account aggiornate.</string>
-    <string name="ext_cookies_rejected">YouTube non ha accettato questi cookie. Scopri e Tendenze restano liste pubbliche.</string>
+    <string name="ext_cookies_rejected">YouTube non ha accettato questi cookie. Iscrizioni, Guarda dopo e Cronologia restano nascoste.</string>
     <string name="ext_cookies_cleared">Cookie rimossi. Liste rilette.</string>
     <string name="ext_cookies_failed">Impossibile verificare i cookie. Vedi Problemi recenti.</string>
     <string name="setting_addons_tv">Canali TV</string>
