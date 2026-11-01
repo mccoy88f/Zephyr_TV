@@ -34,15 +34,15 @@ class YouYubeZLiveTest {
         assertTrue("discover must list videos", discover.length() > 0)
         val raw = run("""module.exports.stream({id:"ytz:dQw4w9WgXcQ", settings:{play:"both", cookies:$q}})""")
         val parsed = Stremio.streams(raw, vod = true, external = true)
-        val direct = parsed.filter { it.app == null && (it.url.contains("googlevideo") || it.url.contains("manifest")) }
-        println("DIRECT ${direct.map { it.title }}")
-        assertTrue("more than muxed 360p", direct.size > 1 || direct.any { it.title.contains("Auto") || it.audio != null })
-        val play = direct.first { it.title.contains("Auto") || it.audio != null || !it.title.contains("360") }
-        val probe = Stremio.probe(play.url, play.headers)
+        val direct = parsed.filter { it.app == null && it.url.contains("googlevideo") }
+        println("DIRECT ${direct.map { "${it.title} audio=${it.audio != null}" }}")
+        assertTrue("several heights", direct.size > 1)
+        val auto = direct.first { it.title.contains("Auto") }
+        assertTrue("Auto is the highest", streamQuality(auto.title) == direct.maxOf { streamQuality(it.title) })
+        assertTrue("every height has paired audio", direct.all { !it.audio.isNullOrEmpty() })
+        val probe = Stremio.probe(auto.url, auto.headers)
         assertTrue("direct url answers ${probe.why}", probe.ok)
-        play.audio?.let { audio ->
-            val a = Stremio.probe(audio, play.headers)
-            assertTrue("audio url answers ${a.why}", a.ok)
-        }
+        val a = Stremio.probe(auto.audio!!, auto.headers)
+        assertTrue("audio url answers ${a.why}", a.ok)
     }
 }

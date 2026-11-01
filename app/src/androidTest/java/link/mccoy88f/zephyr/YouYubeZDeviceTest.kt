@@ -28,14 +28,19 @@ class YouYubeZDeviceTest {
 
         val raw = JSONObject(Js.run(script, """module.exports.stream({id:"ytz:dQw4w9WgXcQ", settings:{play:"zephyr"}})""", timeoutMs = 90_000)!!)
         val direct = Stremio.streams(raw, vod = true, external = true).filter { it.app == null }
-        Log.i("YouYubeZTest", "STREAMS ${direct.map { it.title }}")
-        assertTrue("more than muxed 360p", direct.size > 1 || direct.any { it.title.contains("Auto") || it.audio != null })
+        Log.i("YouYubeZTest", "STREAMS ${direct.map { "${it.title} audio=${it.audio != null}" }}")
+        assertTrue("several heights", direct.size > 1)
+        val auto = direct.first { it.title.contains("Auto") }
+        val max = direct.maxOf { streamQuality(it.title) }
+        Log.i("YouYubeZTest", "AUTO ${auto.title} q=${streamQuality(auto.title)} max=$max")
+        assertTrue("Auto is the highest", streamQuality(auto.title) == max && max >= 720)
+        assertTrue("every height has paired audio", direct.all { !it.audio.isNullOrEmpty() })
         val ok = direct.filter { s ->
             val p = Stremio.probe(s.url, s.headers)
-            Log.i("YouYubeZTest", "PROBE ${s.title} ok=${p.ok} why=${p.why} fmt=${p.format}")
-            p.ok
+            val a = s.audio?.let { Stremio.probe(it, s.headers) }
+            Log.i("YouYubeZTest", "PROBE ${s.title} ok=${p.ok} audio=${a?.ok}")
+            p.ok && a?.ok == true
         }
-        assertTrue("a direct url must answer on the TV", ok.isNotEmpty())
-        assertTrue("playable stream is not only broken 360p", ok.any { !it.title.contains("360") || it.title.contains("Auto") || it.audio != null })
+        assertTrue("a paired stream must answer on the TV", ok.isNotEmpty())
     }
 }

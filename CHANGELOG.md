@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 3.7.11
+
+- YouYubeZ Auto is the highest pair. Every quality keeps its audio track.
+
 ## 3.7.10
 
 - YouYubeZ player calls do not reuse YouTube cookies from an earlier page, so direct streams stay listed.

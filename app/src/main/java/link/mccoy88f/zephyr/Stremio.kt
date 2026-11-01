@@ -452,7 +452,7 @@ internal object Stremio {
     fun titleStreams(base: String, name: String, type: String, id: String): List<Stream> =
         streams(get("$base/stream/${enc(type)}/${enc(id)}.json", Http.STREAMS_TIMEOUT_MS), vod = true,
             external = base.startsWith(EXT) || type.equals("YouTube", ignoreCase = true) || id.startsWith("yt_id:")).map {
-            Stream(it.url, it.title, it.headers, it.group, name, clearkey = it.clearkey, app = it.app)
+            Stream(it.url, it.title, it.headers, it.group, name, clearkey = it.clearkey, app = it.app, audio = it.audio)
         }
 
     /** What the add-on tells about a channel on its page: what's on and next ([description]), and what's on in short. */

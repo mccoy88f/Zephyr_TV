@@ -162,10 +162,12 @@ class YouYubeZTest {
         val streams = out.getJSONArray("streams")
         assertEquals(3, streams.length())
         val hi = streams.getJSONObject(0)
-        assertEquals("1080p", hi.getString("title"))
+        assertEquals("1080p Auto", hi.getString("title"))
         assertEquals("https://rr1.googlevideo.com/videoplayback?id=v1080", hi.getString("url"))
         assertEquals("https://rr1.googlevideo.com/videoplayback?id=a140", hi.getJSONObject("behaviorHints").getString("audioUrl"))
         assertEquals("720p", streams.getJSONObject(1).getString("title"))
+        assertEquals("https://rr1.googlevideo.com/videoplayback?id=a140",
+            streams.getJSONObject(1).getJSONObject("behaviorHints").getString("audioUrl"))
         assertEquals("dQw4w9WgXcQ", streams.getJSONObject(2).getString("ytId"))
     }
 
@@ -246,7 +248,7 @@ class YouYubeZTest {
         assertEquals("ytz:jNQXAC9IVRw", metas.getJSONObject(0).getString("id"))
     }
 
-    @Test fun streamListsHlsAheadOfMuxed360() {
+    @Test fun streamAutoIsTheHighestPairAndEveryHeightHasAudio() {
         val player = """{"playabilityStatus":{"status":"OK"},"streamingData":{
             "hlsManifestUrl":"https://manifest.googlevideo.com/api/manifest/hls_playlist/x.m3u8",
             "formats":[{"itag":18,"qualityLabel":"360p","mimeType":"video/mp4; codecs=\"avc1, mp4a\"",
@@ -254,6 +256,8 @@ class YouYubeZTest {
             "adaptiveFormats":[
             {"itag":137,"qualityLabel":"1080p","mimeType":"video/mp4; codecs=\"avc1\"","width":1920,"height":1080,
              "url":"https://rr1.googlevideo.com/videoplayback?id=v1080"},
+            {"itag":136,"qualityLabel":"720p","mimeType":"video/mp4; codecs=\"avc1\"","width":1280,"height":720,
+             "url":"https://rr1.googlevideo.com/videoplayback?id=v720"},
             {"itag":140,"audioQuality":"AUDIO_QUALITY_MEDIUM","mimeType":"audio/mp4; codecs=\"mp4a.40.2\"",
              "url":"https://rr1.googlevideo.com/videoplayback?id=a140"}]}}"""
         val out = run(
@@ -261,11 +265,14 @@ class YouYubeZTest {
             mapOf("https://www.youtube.com/youtubei/v1/player" to player),
         )
         val streams = out.getJSONArray("streams")
+        assertEquals(2, streams.length())
         assertEquals("1080p Auto", streams.getJSONObject(0).getString("title"))
-        assertTrue(streams.getJSONObject(0).getString("url").contains("hls_playlist"))
-        assertEquals("1080p", streams.getJSONObject(1).getString("title"))
-        assertEquals("https://rr1.googlevideo.com/videoplayback?id=a140",
-            streams.getJSONObject(1).getJSONObject("behaviorHints").getString("audioUrl"))
+        assertEquals("https://rr1.googlevideo.com/videoplayback?id=v1080", streams.getJSONObject(0).getString("url"))
+        assertEquals("720p", streams.getJSONObject(1).getString("title"))
+        for (i in 0 until streams.length()) {
+            assertEquals("https://rr1.googlevideo.com/videoplayback?id=a140",
+                streams.getJSONObject(i).getJSONObject("behaviorHints").getString("audioUrl"))
+        }
     }
 
     @Test fun discoverFallsBackToSearchWhenBrowseIsEmpty() {

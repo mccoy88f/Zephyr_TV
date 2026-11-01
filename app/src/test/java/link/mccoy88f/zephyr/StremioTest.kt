@@ -66,6 +66,10 @@ class StremioTest {
         val streams = Stremio.streams(answer, vod = true)
         assertEquals("https://v.example/v", streams[0].url)
         assertEquals("https://v.example/a", streams[0].audio)
+        val titled = streams.map {
+            Stremio.Stream(it.url, it.title, it.headers, it.group, "YouYubeZ", clearkey = it.clearkey, app = it.app, audio = it.audio)
+        }
+        assertEquals("https://v.example/a", titled[0].audio)
     }
 
     @Test fun tellsTheStreamFormat() {
