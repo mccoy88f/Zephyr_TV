@@ -36,6 +36,7 @@ internal abstract class ScriptService : Service() {
     override fun onCreate() {
         super.onCreate()
         Js.useAssets(applicationContext) // the modules scripts require()
+        Js.console = { android.util.Log.i("Zephyr TV", it) }
     }
 
     override fun onBind(intent: Intent): IBinder = messenger.binder

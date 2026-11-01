@@ -112,7 +112,7 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
     val people = collectorOf(t.type) == "movies" || collectorOf(t.type) == "series"
     val top = titleTop(listOfNotNull((meta.rating ?: ref.rating)?.let { "★ $it" }, kind, t.year, genresText, meta.runtime)
         .joinToString(" · "), null, meta.description, seenLine,
-        director = if (people) meta.director else emptyList(), cast = if (people) meta.cast else emptyList(),
+        director = meta.director, cast = if (people) meta.cast else emptyList(),
         tmdbId = tmdbId, isTv = t.type == "series", people = people)
 
     val sources = streamSources(t.type, meta.episodes.firstOrNull()?.id ?: t.id)
