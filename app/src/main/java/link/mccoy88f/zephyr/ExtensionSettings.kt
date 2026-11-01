@@ -261,6 +261,9 @@ internal fun MainActivity.extensionsPage(focus: Int = 0) {
             refreshRepos(force = true) { changed -> if (changed && pageShowing(getString(R.string.ext_title))) extensionsPage(focusedRow() ?: 0) }
         },
     ), focus, top = intro(getString(R.string.ext_intro))) { addonsAndPlugins(3) }
+    showRowLogos(getString(R.string.ext_title), all.mapIndexed { i, e ->
+        i to (e.iconFile?.let { "file://" + it.path } ?: e.icon?.takeIf { it.startsWith("http") })
+    }.toMap(), 1)
 }
 
 /** An extension's page: what it is, On, Options, Virtual app, 18+, up or down the list, Update now, Remove. */
@@ -488,7 +491,7 @@ private fun MainActivity.repoPage(url: String, focus: Int = 0) {
 }
 
 /** The extension in the package [zip] (sent from a phone): shown before installing, then installed from it. */
-private fun MainActivity.extensionFromZip(zip: File) {
+internal fun MainActivity.extensionFromZip(zip: File) {
     val m = Extensions.manifestOf(zip) ?: return Toast.makeText(this, getString(R.string.ext_err_not), Toast.LENGTH_LONG).show()
     val types = m.optJSONArray("types")?.let { a -> (0 until a.length()).map { a.optString(it) } }.orEmpty()
     val resources = m.optJSONArray("resources")?.let { a -> (0 until a.length()).mapNotNull { (a.opt(it) as? String) ?: (a.opt(it) as? JSONObject)?.optString("name") } }.orEmpty()
@@ -519,7 +522,7 @@ private fun MainActivity.extensionFromPhone() {
     }, status, listOf(
         page(getString(R.string.ext_zip)) { extensionZipFromPhone() },
         page(getString(R.string.addon_type)) { typeExtension() },
-    )) { extensionsPage(extensions(prefs, filesDir).size) }
+    ), target = "ext-add") { extensionsPage(extensions(prefs, filesDir).size) }
 }
 
 /** An extension's .zip sent from a phone. */
@@ -532,7 +535,7 @@ private fun MainActivity.extensionZipFromPhone() {
         if (Extensions.manifestOf(zip) == null) { zip.delete(); return@PhoneTask 415 to getString(R.string.ext_err_not) }
         ui.post { extensionFromZip(zip) }
         200 to getString(R.string.ext_received)
-    }, status) { extensionFromPhone() }
+    }, status, target = "ext-zip") { extensionFromPhone() }
 }
 
 /** The extensions on, as add-ons' addresses (see ExtensionCalls), in their order: the rest of Zephyr TV asks them so. */

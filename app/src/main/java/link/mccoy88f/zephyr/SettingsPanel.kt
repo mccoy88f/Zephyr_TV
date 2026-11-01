@@ -27,6 +27,7 @@ import link.mccoy88f.zephyr.MainActivity.Companion.ADDON_ROWS
 import link.mccoy88f.zephyr.MainActivity.Companion.HIDDEN_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.UPDATE_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.EPG_ROW
+import link.mccoy88f.zephyr.MainActivity.Companion.PLAY_CHANNELS_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.CHANNEL_LOGOS_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.ICONS_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.INPUTS_MODE_ROW
@@ -98,6 +99,7 @@ internal fun MainActivity.closeLauncherSettings() {
     homeFocusable(allApps.visibility != View.VISIBLE) // the PIN can open over All apps
     (panelFrom?.takeIf { it.isAttachedToWindow } ?: findViewById(R.id.launcherSettings)).requestFocus()
     panelFrom = null
+    noteRemotePage("", emptyList(), null) // the phone's page follows the panel: closed with it
 }
 
 internal fun MainActivity.sectionTitle(section: Int) = getString(when (section) {
@@ -159,7 +161,7 @@ internal fun MainActivity.renderSettings(row: Int) {
 }
 
 /** Logos asked for once while Zephyr TV runs: one that won't download isn't asked again on every redraw. */
-private val askedLogos = java.util.Collections.synchronizedSet(HashSet<String>())
+internal val askedLogos = java.util.Collections.synchronizedSet(HashSet<String>())
 
 /** The add-ons' logos not on disk yet (added before every logo was kept): downloaded, then their rows again. */
 private fun MainActivity.fetchAddonLogos() {
@@ -389,6 +391,10 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
             }
         },
         page(getString(R.string.setting_epg), epgUrl()?.let { Uri.parse(it).host } ?: getString(R.string.state_off)) { configureEpg() },
+        page(getString(R.string.setting_play_channels), toggle(playChannelsOnOpen())) {
+            prefs.edit().putBoolean(K.PLAY_CHANNELS, !playChannelsOnOpen()).apply()
+            renderSettings(PLAY_CHANNELS_ROW)
+        },
     )
     ADDONS_SECTION -> addonRows()
     SPOTLIGHT_SECTION -> spotlightRows()
@@ -406,6 +412,8 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
         page(getString(R.string.setting_problems), Problems.recent().size.let { if (it == 0) getString(R.string.problems_none) else "$it" }) { showProblems() },
         page(getString(R.string.setting_guide), SUBMENU) { showGuide() }, // the user guide, in the TV's language
         page(getString(R.string.setting_about), myVersion()) { showAbout() },
+        page(getString(R.string.setting_remote), toggle(remoteOn())) { toggleRemote() },
+        if (!remoteOn()) null else page(getString(R.string.remote_show)) { showRemoteAddress() },
         if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE == 0) null
         else page(getString(R.string.preview_home_setup)) { closeLauncherSettings(); previewHomeSetup() },
     )
@@ -573,6 +581,7 @@ internal fun MainActivity.textPage(title: String, value: String, hint: String, i
         intro?.let { addView(label(it, 12f).apply { alpha = 0.6f; maxLines = 4; setPadding(dp(4), dp(10), dp(4), 0) }) }
     }
     showPage(title, rows { input.text?.toString()?.trim().orEmpty() }, top = box, back = back)
+    remoteField = input // a phone on remote access can type into this box
     downFrom(input)
 }
 
@@ -667,10 +676,20 @@ internal fun MainActivity.showPage(title: String, allRows: List<Triple<String, S
     }
     // Keep focus inside the panel: Up from the first row and Down from the last go nowhere.
     (settingsList.parent as View).scrollTo(0, 0)
-    if (rows.isEmpty()) return // a page that's all [top], like the PIN boxes, focuses itself
+    if (rows.isEmpty()) return noteRemotePage(title, rows, back) // a page that's all [top], like the PIN boxes, focuses itself
     if (top == null) settingsList.getChildAt(first).let { it.nextFocusUpId = it.id }
     settingsList.getChildAt(first + rows.size - 1).let { it.nextFocusDownId = it.id }
     if (focus >= 0) settingsList.getChildAt(first + focus.coerceIn(0, rows.size - 1)).requestFocus()
+    noteRemotePage(title, rows, back)
+}
+
+/** The panel's page, for a phone on remote access (see Remote). A new page clears the box and the PIN of the last one. */
+internal fun MainActivity.noteRemotePage(title: String, rows: List<Triple<String, String, () -> Unit>>, back: (() -> Unit)?) {
+    remoteTitle = title
+    remoteRows = rows
+    remoteBack = back
+    remoteField = null
+    remotePinSubmit = null
 }
 
 // ---------- layout lock ----------
@@ -820,6 +839,7 @@ internal fun MainActivity.pinPage(title: String, back: (() -> Unit)?, done: (Str
         row.setOnClickListener { showKeyboard(t) }
     }
     showPage(title, emptyList(), top = box, back = back)
+    remotePinSubmit = done // a phone on remote access can enter this PIN
     pinBox = row
     if (typed != null) showKeyboard(typed) else row.requestFocus()
 }
@@ -850,7 +870,7 @@ internal fun MainActivity.glassPane(v: View, radius: Int): (Boolean) -> Unit {
     return { lit ->
         slice.lit = lit
         rim.setStroke(if (lit) dp(2) else 1, if (lit) 0x99FFFFFF.toInt() else 0x1FFFFFFF)
-        if (lit) glint.play()
+        if (lit) glint.play() else glint.cancel()
     }
 }
 

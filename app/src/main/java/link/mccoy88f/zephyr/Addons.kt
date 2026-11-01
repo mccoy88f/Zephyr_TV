@@ -585,7 +585,7 @@ internal fun MainActivity.catalogFromPhone() {
             addCatalogUrl(url)
         }
         200 to getString(R.string.phone_addon_saved)
-    }, status, listOf(page(getString(R.string.addon_type)) { addCatalog() })) { addSourcePage() }
+    }, status, listOf(page(getString(R.string.addon_type)) { addCatalog() }), target = "catalog-add") { addSourcePage() }
 }
 
 /** A catalog's address typed with the remote: added once it answers with catalogs of films or series. */
@@ -598,7 +598,7 @@ private fun MainActivity.addCatalog() {
     }
 }
 
-private fun MainActivity.addCatalogUrl(url: String) {
+internal fun MainActivity.addCatalogUrl(url: String) {
     if (url == Stremio.CINEMETA) return configureCinemeta()
     Toast.makeText(this, getString(R.string.addon_checking), Toast.LENGTH_SHORT).show()
     updateAddon(url, null) { listing ->
@@ -707,7 +707,7 @@ internal fun MainActivity.addonFromPhone() {
             addAddon(url, adult)
         }
         200 to getString(R.string.phone_addon_saved)
-    }, status, listOf(page(getString(R.string.addon_type)) { configureAddon() })) { renderSettings(ADDON_ADD_ROW) }
+    }, status, listOf(page(getString(R.string.addon_type)) { configureAddon() }), target = "addon-add") { renderSettings(ADDON_ADD_ROW) }
 }
 
 /**

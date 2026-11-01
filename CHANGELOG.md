@@ -13,6 +13,24 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.0.0-beta.1
+
+- In the Glass theme, the light waits until you rest on an app tile.
+- When WARP is on, a local code shows a warning. A phone on your home network cannot reach the TV.
+- Select the microphone in Search to say a title. Hold it for the voice assistant.
+- Select the cross in the search bar to clear the words.
+- Select Search under the filters.
+- Nuvio plugins and installed extensions show their icon.
+- Add-on TV channels play when you open them.
+- A search result opens the channel page.
+- The channel page shows its buttons on the right.
+- In TV and EPG, Play TV channels when you open them is on. Turn it off to open the page first.
+- Turn on **Remote access**. A phone on your home network can change settings.
+- Set a PIN on the TV. The phone asks for this PIN.
+- Select **Use remote access**. The code opens that setting.
+- The screen closes when the phone saves that setting.
+- Save the address. You can open every setting later without a new code.
+
 ## 3.9.0-beta.2
 
 - A focused card grows with a soft spring, then settles.

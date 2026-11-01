@@ -58,6 +58,7 @@
     <string name="toast_channel_logos_updated">Logos des chaînes mis à jour : %1$d noms</string>
     <string name="toast_channel_logos_failed">Impossible de télécharger les logos des chaînes. Réessayez plus tard.</string>
     <string name="setting_epg">Guide TV (XMLTV)</string>
+    <string name="setting_play_channels">Lire les chaînes TV à l\'ouverture</string>
     <string name="setting_epg_phone">Coller l\'adresse depuis le téléphone</string>
     <string name="epg_hint">https://…/guide.xml.gz</string>
     <string name="epg_intro">L\'adresse d\'un guide TV au format XMLTV, pour afficher le programme en cours sous chaque chaîne. Zephyr TV le télécharge une fois par jour.</string>
@@ -340,6 +341,7 @@
     <string name="search_title">Rechercher</string>
     <string name="search_hint">Film, série ou chaîne TV</string>
     <string name="search_dictate">Le dire à voix haute</string>
+    <string name="search_clear">Effacer la recherche</string>
     <string name="search_assistant">Assistant vocal</string>
     <string name="search_phone">Ou écrivez sur le téléphone : scannez le code</string>
     <string name="phone_search_title">Rechercher sur l\'appareil</string>
@@ -347,7 +349,7 @@
     <string name="phone_search_sent">Recherche de « %1$s » sur l\'appareil.</string>
     <string name="toast_no_voice_search">Cet appareil n\'a pas de recherche vocale</string>
     <string name="search_listening">Je vous écoute… dites un titre</string>
-    <string name="search_not_heard">Je n\'ai pas compris. Choisissez Le dire à voix haute pour réessayer</string>
+    <string name="search_not_heard">Je n\'ai pas compris. Choisissez le microphone pour réessayer</string>
     <string name="search_results_tile">Résultats : « %1$s »</string>
     <string name="toast_mic_needed">Zephyr TV a besoin du micro pour entendre le titre</string>
     <string name="search_films_for">Films pour « %1$s »</string>
@@ -424,6 +426,21 @@
     <string name="warp_no_vpn">Cet appareil ne peut pas démarrer de VPN.</string>
     <string name="warp_failed">Impossible de démarrer WARP. Réessayez plus tard.</string>
     <string name="toast_safe_mode">Zephyr TV a arrêté WARP et les extensions après plusieurs plantages. Vous pouvez les réactiver dans les réglages.</string>
+    <string name="warp_qr_blocked">WARP est activé, donc un téléphone sur le réseau local n\'atteint pas cette TV. Désactivez WARP pour utiliser le code QR.</string>
+    <string name="setting_remote">Accès à distance</string>
+    <string name="remote_use">Utiliser l\'accès à distance</string>
+    <string name="remote_show">Afficher l\'adresse</string>
+    <string name="remote_qr_intro">Scannez le code. Il ouvre ce réglage. Enregistrez l\'adresse pour le rouvrir.</string>
+    <string name="remote_home_intro">Scannez le code et enregistrez l\'adresse. Le téléphone ouvre les réglages après le PIN.</string>
+    <string name="remote_waiting">En attente de la modification depuis le téléphone…</string>
+    <string name="remote_pin_choose">Choisissez un PIN pour l\'accès à distance</string>
+    <string name="remote_menu_title">Accès à distance</string>
+    <string name="remote_open">Ouvrir les réglages</string>
+    <string name="remote_back">Retour</string>
+    <string name="remote_closed">Les réglages sont fermés sur la TV.</string>
+    <string name="remote_pin_enter">Entrez le PIN</string>
+    <string name="remote_open_form">Ouvrir ce réglage</string>
+    <string name="remote_not_open">Ouvrez ceci sur la TV, puis réessayez.</string>
     <string name="warp_on_toast">WARP activé : Zephyr TV passe par Cloudflare</string>
     <string name="warp_device">Tout l\'appareil : l\'appli 1.1.1.1</string>
     <string name="warp_switch">WARP pour Zephyr TV</string>

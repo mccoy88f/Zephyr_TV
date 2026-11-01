@@ -25,6 +25,9 @@ internal object K {
     const val CRASHES = "crashes" // times the process died, so a run of them can turn extras off (see Safety)
     const val WARP = "warp" // Cloudflare WARP on, as this app's VPN (see Warp); not in backups
     const val WARP_ACCOUNT = "warp_account" // its WARP account, JSON with its private key: never in backups
+    const val REMOTE = "remote" // remote access on: a phone on the home network can change settings (see Remote)
+    const val REMOTE_PIN = "remote_pin" // that phone's PIN, hashed; kept when remote access is turned off; not in backups
+    const val REMOTE_TOKEN = "remote_token" // the secret piece of its address, so a guess on the network misses it; not in backups
     const val ROWLESS = "rowless" // apps that showed no rows under them: one tap opens them on a phone (see rowless)
     const val STATUS_BAR = "status_bar" // a phone or tablet: its status bar (time, network) shown; hidden by default
     const val NIGHT_FROM = "night_from" // night mode window, minutes after midnight
@@ -48,6 +51,7 @@ internal object K {
     const val CW_OFF = "cw_off"
     const val SECTIONS_OFF = "sections_off" // "pkg/section" of the app sections turned off
     const val CHANNEL_LOGOS = "channel_logos" // logos from iptv-org for channels the TV has none for
+    const val PLAY_CHANNELS = "play_channels" // open an add-on TV channel straight into play (off: its page first)
     const val EPG_URL = "epg_url" // an XMLTV guide's address, for what's on (see Epg)
 
     // Stremio add-ons

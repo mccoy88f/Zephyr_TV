@@ -20,7 +20,7 @@ internal object Nuvio {
      */
     internal class Scraper(val id: String, val name: String, val description: String, val version: String, val file: String,
                            val types: List<String>, val prefixes: List<String>?, val enabled: Boolean, val languages: List<String>,
-                           val options: Boolean = false)
+                           val options: Boolean = false, val logo: String? = null)
 
     /**
      * One of a plugin's options, as its onSettings() describes it: [type] "toggle" (yes or no), "select" (one of
@@ -33,7 +33,7 @@ internal object Nuvio {
 
     /** A repository: its manifest's address, name, version and author, and its plugins. */
     internal class Repo(val url: String, val name: String, val version: String, val author: String, val description: String,
-                        val scrapers: List<Scraper>)
+                        val scrapers: List<Scraper>, val logo: String? = null)
 
     private const val RUN_MS = 25_000L // a plugin finding its streams, at most
 
@@ -116,6 +116,16 @@ internal object Nuvio {
         }
     }
 
+    /** A logo address from a manifest: absolute as it is, or next to the manifest when it's a file name. */
+    private fun logoOf(base: String, o: JSONObject): String? {
+        val raw = o.optString("logo").ifBlank { o.optString("icon") }.trim()
+        if (raw.isEmpty() || raw.contains("..")) return null
+        if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("file://")) return raw
+        if (raw.startsWith("/")) return null
+        val dir = base.substringBefore('?').substringBefore('#').substringBeforeLast('/')
+        return "$dir/${raw.removePrefix("./")}"
+    }
+
     internal fun repo(url: String, m: JSONObject): Repo {
         fun strings(a: JSONArray?) = a?.let { (0 until it.length()).map { i -> it.optString(i) }.filter { s -> s.isNotBlank() } }
         val list = m.optJSONArray("scrapers") ?: JSONArray()
@@ -125,10 +135,10 @@ internal object Nuvio {
             Scraper(id, s.optString("name").ifBlank { id }, s.optString("description"), s.optString("version"), file,
                 strings(s.optJSONArray("supportedTypes")).orEmpty().map { it.lowercase() },
                 strings(s.optJSONArray("idPrefixes"))?.takeIf { it.isNotEmpty() }, s.optBoolean("enabled", true),
-                strings(s.optJSONArray("contentLanguage")).orEmpty(), s.optBoolean("hasSettings"))
+                strings(s.optJSONArray("contentLanguage")).orEmpty(), s.optBoolean("hasSettings"), logoOf(url, s))
         }
         return Repo(url, m.optString("name").ifBlank { host(url) }, m.optString("version"), m.optString("author"),
-            m.optString("description"), scrapers)
+            m.optString("description"), scrapers, logoOf(url, m))
     }
 
     /** The repository at [url] as last read, or null. Reads the disk the first time. */

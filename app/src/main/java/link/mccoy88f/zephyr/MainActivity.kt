@@ -323,6 +323,7 @@ class MainActivity : Activity() {
         shortcuts() // a phone or tablet: Search and the Play queue on the icon
         ui.post { handleLink(intent) } // started by a link, a share or a shortcut (see Links)
         if (calmed) ui.post { Safety.tell(this) }
+        Remote.attach(this) // remote access on: the phone's page is served again after a restart
     }
 
     /**
@@ -455,6 +456,7 @@ class MainActivity : Activity() {
         getSystemService(TvInputManager::class.java)?.unregisterCallback(inputCallback)
         contentResolver.unregisterContentObserver(inputsObserver)
         upload?.stop()
+        Remote.detach(this) // the page stays up across a recreate; it stops when remote access is turned off
         io.shutdownNow()
         posterIo.shutdownNow()
         spotlightIo.shutdownNow()
@@ -868,6 +870,12 @@ class MainActivity : Activity() {
     internal var goingBack = false // Back is drawing the page before: its row left from gets focus (see showPage)
     internal val pageFocus = HashMap<String, Int>() // each page's row last left from, by its title
     internal var pageExit: (() -> Unit)? = null // cleanup when the page goes away (stops the upload server)
+    // What the phone's remote-access page is showing (see Remote): the panel's current page, and a box or a PIN it can fill.
+    internal var remoteRows: List<Triple<String, String, () -> Unit>> = emptyList()
+    internal var remoteBack: (() -> Unit)? = null
+    internal var remoteTitle = ""
+    internal var remoteField: EditText? = null
+    internal var remotePinSubmit: ((String) -> String?)? = null
     internal var pageSides: ((Int) -> Unit)? = null // Left/Right (-1, +1) on a page that has them: a series' seasons
     internal var pageReturn: (() -> Unit)? = null // the page to show again, as it was, back from the player it opened
 
@@ -1648,6 +1656,8 @@ class MainActivity : Activity() {
     /** What holding OK does depends on what's focused. */
     internal fun onHold(v: View) {
         val tag = v.tag as? String
+        if (tag == "search-mic") return run { closeLauncherSettings(); assistant() } // hold the microphone: the TV's voice assistant
+        if (tag == "search-clear") return
         @Suppress("UNCHECKED_CAST")
         (v.getTag(R.id.settingsList) as? () -> Unit)?.let { return it() } // a page's row with a hold of its own (an episode's: watched)
         when {
@@ -2178,7 +2188,7 @@ class MainActivity : Activity() {
             sheen.alpha = if (focused) 255 else 0
             rim.setStroke(if (focused) dp(1) else 1, if (focused) 0x99FFFFFF.toInt() else 0x1FFFFFFF)
             if (slice != null) slice.lit = focused else if (card) bg.colors = if (focused) cardLit else cardRest
-            if (focused) glint?.play()
+            if (focused) glint?.play() else glint?.cancel()
             v.animate()
                 .scaleX(if (focused) lift else 1f).scaleY(if (focused) lift else 1f)
                 .translationZ(if (focused) dp(14).toFloat() else 0f)
@@ -2243,6 +2253,7 @@ class MainActivity : Activity() {
         const val INPUTS_IN_APPS_ROW = TV_SECTION * SECTION + 1
         const val CHANNEL_LOGOS_ROW = TV_SECTION * SECTION + 2
         const val EPG_ROW = TV_SECTION * SECTION + 4
+        const val PLAY_CHANNELS_ROW = TV_SECTION * SECTION + 5
         const val ADDON_ADD_ROW = ADDONS_SECTION * SECTION // the Stremio add-ons' section: Add, then one row per add-on
         const val ADDON_ROWS = ADDON_ADD_ROW + 1
         const val CINEMETA_ROW = WATCH_SECTION * SECTION + 3 // the content catalog, last of Content
@@ -2258,6 +2269,7 @@ class MainActivity : Activity() {
         const val PROBLEMS_ROW = HOME_BUTTON_ROW + 4
         const val GUIDE_ROW = HOME_BUTTON_ROW + 5
         const val ABOUT_ROW = HOME_BUTTON_ROW + 6
+        const val REMOTE_ROW = ABOUT_ROW + 1 // Remote access, after About, so the rows above keep their addresses
         val SPOTLIGHT_EVERY = listOf(0, 5, 8, 10, 15, 30) // seconds between Spotlight titles; 0 = off
         val ROW_ALIGN = linkedMapOf( // setting -> its name, and the row's gravity in the scroller
             "left" to (R.string.align_left to Gravity.START),

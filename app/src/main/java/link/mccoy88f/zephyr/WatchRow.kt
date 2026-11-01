@@ -578,6 +578,9 @@ internal fun MainActivity.placeholderCard(gapBefore: Boolean, delay: Long): View
     return col
 }
 
+/** Add-on TV channels play when opened. Off: the channel page opens first. On when the setting was never saved. */
+internal fun MainActivity.playChannelsOnOpen() = prefs.getBoolean(K.PLAY_CHANNELS, true)
+
 internal fun MainActivity.sourceIcon(pkg: String?): Drawable? {
     if (pkg == null) return null
     // An add-on's tile (or the IPTV app's): its icon, as the apps row shows it.
@@ -787,12 +790,20 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
     }, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.END).apply {
         setMargins(0, 0, dp(6), dp(6))
     })
-    frame.setOnClickListener { p.channelPage?.let { showChannel(it) } ?: p.vod?.let { openTitle(it) } ?: p.addon?.let {
-        // The row's channels, for CH+ and CH- in the player, when it's a row of them (not Continue Playing).
-        val row = ((col.parent as? ViewGroup)?.getTag(R.id.watchScroll) as? RowCards)?.items
-            ?.takeIf { items -> items.all { it.addon != null } }?.mapNotNull { it.addon }
-        playAddonChannel(p, row)
-    } ?: open(p) }
+    frame.setOnClickListener {
+        val fromSearch = watchApp == SEARCH_PKG
+        val addon = p.addon ?: p.channelPage?.addon
+        // An added channel plays at once. A search result opens its page. The TV and EPG option turns the play off.
+        if (addon != null && !fromSearch) {
+            if (playChannelsOnOpen()) {
+                val row = ((col.parent as? ViewGroup)?.getTag(R.id.watchScroll) as? RowCards)?.items
+                    ?.takeIf { items -> items.all { it.addon != null } }?.mapNotNull { it.addon }
+                playAddonChannel(p, row)
+            } else showAddonChannelDetails(addon)
+            return@setOnClickListener
+        }
+        p.channelPage?.let { showChannel(it) } ?: p.vod?.let { openTitle(it) } ?: open(p)
+    }
     frame.setTag(R.id.watchRow, p) // holding OK hides it (see onHold)
     col.addView(frame, LinearLayout.LayoutParams(w, cardHeight))
     // Thin bar under the poster, card width. Kept (invisible) when there's no progress so titles line up.

@@ -879,14 +879,67 @@ internal fun MainActivity.watchIcon(addon: Stremio.Addon?): android.graphics.dra
 
 /** A Watch on row's icon for the stream source [base]: a Nuvio plugin's mark, else its add-on's (see watchIcon). */
 internal fun MainActivity.sourceIcon(base: String, name: String): android.graphics.drawable.Drawable =
-    if (base.startsWith(PLUGIN)) getDrawable(R.drawable.ic_stream)!!.mutate() else watchIcon(soleAddon(listOf(base to name)))
+    if (base.startsWith(PLUGIN)) pluginIcon(base) else watchIcon(soleAddon(listOf(base to name)))
+
+/** A Nuvio plugin's logo once it's on disk, else the stream mark. A missing one is fetched for the next time. */
+private fun MainActivity.pluginIcon(base: String): android.graphics.drawable.Drawable {
+    val rest = base.removePrefix(PLUGIN)
+    val repo = rest.substringBeforeLast('#')
+    val id = rest.substringAfterLast('#')
+    val logo = Nuvio.saved(filesDir, repo)?.scrapers?.firstOrNull { it.id == id }?.logo
+    logoDrawable(logo)?.let { return it }
+    if (logo != null && logo.startsWith("http") && !Images.has(logo, Images.Kind.LOGO)) {
+        netIo.execute { runCatching { Images.file(logo, Images.Kind.LOGO) } }
+    }
+    return getDrawable(R.drawable.ic_stream)!!.mutate()
+}
 
 /** [addon]'s icon: its tile's (when it has a tile of its own), else its logo once on disk (see updateAddon); else none. */
 internal fun MainActivity.addonIcon(addon: Stremio.Addon): android.graphics.drawable.Drawable? {
     apps.firstOrNull { it.pkg == STREMIO + addon.id }?.icon?.constantState?.newDrawable(resources)?.mutate()?.let { return it }
-    return addon.logo?.takeIf { Images.has(it, Images.Kind.LOGO) }?.let { uri ->
-        runCatching { android.graphics.BitmapFactory.decodeFile(Images.file(uri, Images.Kind.LOGO).path) }.getOrNull()
-            ?.let { android.graphics.drawable.BitmapDrawable(resources, it) }
+    return logoDrawable(addon.logo)
+}
+
+/**
+ * A logo already on disk: a file in an extension's package, or one downloaded (see Images). Null until the picture
+ * is here.
+ */
+internal fun MainActivity.logoDrawable(uri: String?): android.graphics.drawable.Drawable? {
+    if (uri.isNullOrBlank()) return null
+    val path = when {
+        uri.startsWith("file://") -> uri.removePrefix("file://")
+        uri.startsWith("http") && Images.has(uri, Images.Kind.LOGO) -> Images.file(uri, Images.Kind.LOGO).path
+        else -> return null
+    }
+    return runCatching { android.graphics.BitmapFactory.decodeFile(path) }.getOrNull()
+        ?.let { android.graphics.drawable.BitmapDrawable(resources, it) }
+}
+
+/**
+ * Puts each logo on its row (index in [logos], the first row at [first] in the list), as an add-on's row does.
+ * One not on disk yet is downloaded, then drawn if [title] is still the page on screen.
+ */
+internal fun MainActivity.showRowLogos(title: String, logos: Map<Int, String?>, first: Int) {
+    val painted = HashSet<Int>()
+    fun paint(ready: Map<Int, android.graphics.drawable.Drawable>) {
+        val fresh = ready.filterKeys { painted.add(it) }
+        if (fresh.isNotEmpty()) rowIcons(fresh, first)
+    }
+    paint(logos.mapNotNull { (i, uri) -> logoDrawable(uri)?.let { i to it } }.toMap())
+    val missing = logos.mapNotNull { (i, uri) ->
+        uri?.takeIf { it.startsWith("http") && !Images.has(it, Images.Kind.LOGO) }?.let { i to it }
+    }
+    if (missing.isEmpty()) return
+    netIo.execute {
+        val got = missing.mapNotNull { (i, uri) ->
+            if (Images.has(uri, Images.Kind.LOGO) || askedLogos.add(uri) && runCatching { Images.file(uri, Images.Kind.LOGO) }.isSuccess) i to uri
+            else null
+        }
+        if (got.isEmpty()) return@execute
+        ui.post {
+            if (!pageShowing(title)) return@post
+            paint(got.mapNotNull { (i, uri) -> logoDrawable(uri)?.let { i to it } }.toMap())
+        }
     }
 }
 

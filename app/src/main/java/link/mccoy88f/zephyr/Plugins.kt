@@ -258,6 +258,7 @@ internal fun MainActivity.nuvioPage(focus: Int = 0) {
         }
         page(r?.name ?: url, value) { repoPage(url) }
     } + page(getString(R.string.nuvio_add), SUBMENU) { nuvioFromPhone() }, focus, top = intro) { addonsAndPlugins(2) }
+    showRowLogos(getString(R.string.nuvio_plugins), repos.mapIndexed { i, url -> i to Nuvio.saved(filesDir, url)?.logo }.toMap(), 1)
 }
 
 /**
@@ -341,6 +342,7 @@ private fun MainActivity.repoPage(url: String, focus: Int = 0) {
             nuvioPage()
         },
     ), focus, top = if (about.isEmpty()) null else top) { nuvioPage(at.coerceAtLeast(0)) }
+    showRowLogos(r?.name ?: url, scrapers.mapIndexed { i, s -> rowOf[i] to s.logo }.toMap(), if (about.isEmpty()) 0 else 1)
 }
 
 /**
@@ -436,5 +438,5 @@ private fun MainActivity.nuvioFromPhone() {
             addRepo(url, adult)
         }
         200 to getString(R.string.phone_addon_saved)
-    }, status, listOf(page(getString(R.string.addon_type)) { typeRepo() })) { nuvioPage(nuvioRepoUrls(prefs).size) }
+    }, status, listOf(page(getString(R.string.addon_type)) { typeRepo() }), target = "nuvio-add") { nuvioPage(nuvioRepoUrls(prefs).size) }
 }

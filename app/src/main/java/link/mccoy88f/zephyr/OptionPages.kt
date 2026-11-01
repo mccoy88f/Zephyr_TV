@@ -48,7 +48,7 @@ internal fun MainActivity.formPage(title: String, about: String, all: List<Nuvio
                         { v -> set(f, v.ifEmpty { null }) }, { again(i) },
                         more = listOf(page(getString(R.string.from_phone_type)) {
                             typeField(f, t, { v -> set(f, v.ifEmpty { null }) }) { again(i) }
-                        }), secret = f.secret)
+                        }), secret = f.secret, target = "opt-" + remoteId(f.key))
                 }
             }
         }
@@ -144,5 +144,5 @@ private fun MainActivity.itemFromPhone(f: Nuvio.Field, got: (JSONObject) -> Unit
             status.text = getString(R.string.nuvio_option_saved)
         }
         200 to getString(R.string.nuvio_option_saved)
-    }, status) { received?.let(got) ?: got(JSONObject()) }
+    }, status, target = "opt-item") { received?.let(got) ?: got(JSONObject()) }
 }

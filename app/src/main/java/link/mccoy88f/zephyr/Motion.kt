@@ -8,6 +8,9 @@ package link.mccoy88f.zephyr
 internal const val FOCUS_IN_MS = 460L
 internal const val FOCUS_OUT_MS = 240L
 internal const val GLINT_MS = 1150L
+
+/** The light waits this long. A fast pass along the row leaves each icon sooner, so it never starts. */
+internal const val GLINT_WAIT_MS = 400L
 internal const val SAFE_CRASHES = 3
 internal const val SAFE_WINDOW_MS = 5 * 60_000L
 

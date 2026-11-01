@@ -104,25 +104,51 @@ internal fun glassFilter(saturation: Float, vararg layers: Int): ColorMatrixColo
 
 private fun tint(rgb: Int, alpha: Float) = (rgb and 0x00FFFFFF) or ((255 * alpha).toInt().coerceIn(0, 255) shl 24)
 
-/** A band of light that crosses a pane once. The gradient is built once and moved. */
+/**
+ * A band of light that crosses a pane once. The gradient is built once and moved.
+ * It waits [GLINT_WAIT_MS] after focus arrives, and [cancel] drops it if focus has already moved on.
+ */
 internal class GlintDrawable(private val radius: Float) : Drawable() {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val matrix = Matrix()
     private var shader: LinearGradient? = null
     private var pos = -1f
     private var running: ValueAnimator? = null
+    private var ticket = 0
 
+    /** Start after a short rest, so a fast pass along a row does not light every icon. */
     fun play() {
         if (running?.isRunning == true) return
+        val view = callback as? View ?: return
+        val mine = ++ticket
+        view.postDelayed({
+            if (mine == ticket) start(mine)
+        }, GLINT_WAIT_MS)
+    }
+
+    /** Focus left before the light began, or while it was crossing: nothing stays lit behind. */
+    fun cancel() {
+        ticket++
+        running?.cancel()
+        running = null
+        if (pos >= 0f) {
+            pos = -1f
+            invalidateSelf()
+        }
+    }
+
+    private fun start(mine: Int) {
+        if (mine != ticket || running?.isRunning == true) return
         if (bounds.width() == 0) {
             val view = callback as? View ?: return
-            view.post { if (bounds.width() > 0 && running?.isRunning != true) play() }
+            view.post { if (mine == ticket && bounds.width() > 0) start(mine) }
             return
         }
         val anim = ValueAnimator.ofFloat(0f, 1f)
         anim.duration = GLINT_MS
         anim.interpolator = PathInterpolator(0.4f, 0f, 0.2f, 1f)
         anim.addUpdateListener {
+            if (mine != ticket) return@addUpdateListener
             pos = if (it.animatedFraction >= 1f) -1f else it.animatedValue as Float
             invalidateSelf()
         }

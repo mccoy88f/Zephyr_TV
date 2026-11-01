@@ -179,7 +179,7 @@ private fun MainActivity.userName(u: User?) {
         fromPhoneText(title, getString(R.string.phone_user_intro), getString(R.string.user_name_hint),
             getString(R.string.user_phone_waiting), { save(it.take(40)) }, { userName(u) }, maxBytes = 1024,
             refuse = { if (it.take(40).isEmpty()) getString(R.string.user_name_hint) else null },
-            saved = { getString(R.string.phone_user_saved, it.take(40)) })
+            saved = { getString(R.string.phone_user_saved, it.take(40)) }, target = "user-name")
     }
     textPage(title, u?.name.orEmpty(), getString(R.string.user_name_hint), getString(R.string.user_name_intro), Typing.NAME, back = back) { typed ->
         listOf(

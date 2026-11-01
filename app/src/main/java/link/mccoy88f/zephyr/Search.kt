@@ -9,7 +9,9 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.text.Editable
 import android.text.InputType
+import android.text.TextWatcher
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
@@ -23,9 +25,8 @@ import android.widget.Toast
 import link.mccoy88f.zephyr.MainActivity.Companion.CHOSEN
 import link.mccoy88f.zephyr.MainActivity.Companion.MIC_REQUEST
 import link.mccoy88f.zephyr.MainActivity.Prog
-import java.io.IOException
 
-// Searching from the top bar (films and series in Cinemeta and the add-ons, TV channels): typed with the remote, dictated, or typed on a phone. The results get a tile of
+// Searching from the top bar (films and series in Cinemeta and the add-ons, TV channels): typed with the remote, said with the microphone (hold it for the TV's voice assistant), or typed on a phone through remote access. The results get a tile of
 // their own in the apps row, with their cards under it; Spotlight is left alone.
 // Functions of MainActivity, kept here by topic; their state lives in MainActivity.
 
@@ -45,6 +46,11 @@ internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
         closeLauncherSettings()
         searchTmdb(query.trim())
     }
+    val barBg = GradientDrawable().apply {
+        cornerRadius = dp(8).toFloat()
+        setColor(field)
+        setStroke(dp(1), fieldEdge())
+    }
     val input = EditText(this).apply {
         id = View.generateViewId()
         hint = getString(R.string.search_hint)
@@ -54,22 +60,76 @@ internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
         isSingleLine = true
         inputType = InputType.TYPE_CLASS_TEXT
         imeOptions = EditorInfo.IME_ACTION_SEARCH
-        setPadding(dp(14), 0, dp(14), 0)
-        val bg = GradientDrawable().apply {
-            cornerRadius = dp(8).toFloat()
-            setColor(field)
-            setStroke(dp(1), fieldEdge())
-        }
-        background = bg
-        setOnFocusChangeListener { _, focused -> bg.setStroke(if (focused) dp(2) else dp(1), if (focused) fg else fieldEdge()) }
+        setPadding(dp(8), 0, dp(8), 0)
+        background = null
         setOnEditorActionListener { v, _, _ -> go(v.text.toString()); true }
         setText(text)
         setSelection(text.length)
     }
+    // The microphone says the title. Hold it for the TV's voice assistant. The cross clears the words.
+    fun barButton(icon: Int, desc: String) = ImageView(this).apply {
+        id = View.generateViewId()
+        setImageResource(icon)
+        setColorFilter(fg)
+        contentDescription = desc
+        isFocusable = true
+        isClickable = true
+        scaleType = ImageView.ScaleType.CENTER_INSIDE
+        setPadding(dp(10), dp(10), dp(10), dp(10))
+        val ring = GradientDrawable().apply {
+            cornerRadius = dp(8).toFloat()
+            setColor(Color.TRANSPARENT)
+        }
+        background = ring
+        setOnFocusChangeListener { v, focused ->
+            ring.setStroke(if (focused) dp(2) else 0, if (focused) fg else Color.TRANSPARENT)
+            v.animate().scaleX(if (focused) 1.08f else 1f).scaleY(if (focused) 1.08f else 1f)
+                .setDuration(if (focused) FOCUS_IN_MS else FOCUS_OUT_MS)
+                .setInterpolator(if (focused) MainActivity.SPRING else MainActivity.DECELERATE).start()
+        }
+    }
+    val mic = barButton(R.drawable.ic_mic, getString(R.string.search_dictate)).apply {
+        tag = "search-mic"
+        setOnClickListener { listen(input, ::go) }
+    }
+    val clear = barButton(R.drawable.ic_panel_close, getString(R.string.search_clear)).apply {
+        tag = "search-clear"
+        visibility = if (text.isEmpty()) View.GONE else View.VISIBLE
+        setOnClickListener {
+            input.setText("")
+            input.requestFocus()
+        }
+    }
+    input.addTextChangedListener(object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        override fun afterTextChanged(s: Editable?) {
+            val show = !s.isNullOrEmpty()
+            if ((clear.visibility == View.VISIBLE) != show) clear.visibility = if (show) View.VISIBLE else View.GONE
+        }
+    })
+    val bar = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        background = barBg
+        addView(mic, LinearLayout.LayoutParams(dp(44), dp(44)))
+        addView(input, LinearLayout.LayoutParams(0, dp(44), 1f))
+        addView(clear, LinearLayout.LayoutParams(dp(44), dp(44)))
+    }
+    fun restroke() {
+        val on = input.isFocused || mic.isFocused || clear.isFocused
+        barBg.setStroke(if (on) dp(2) else dp(1), if (on) fg else fieldEdge())
+    }
+    val inputFocus = input.onFocusChangeListener
+    input.setOnFocusChangeListener { v, focused -> inputFocus?.onFocusChange(v, focused); restroke() }
+    val micFocus = mic.onFocusChangeListener
+    mic.setOnFocusChangeListener { v, focused -> micFocus?.onFocusChange(v, focused); restroke() }
+    val clearFocus = clear.onFocusChangeListener
+    clear.setOnFocusChangeListener { v, focused -> clearFocus?.onFocusChange(v, focused); restroke() }
     val top = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         setPadding(0, dp(4), 0, 0)
-        addView(input, LinearLayout.LayoutParams(MATCH_PARENT, dp(44)))
+        addView(bar, LinearLayout.LayoutParams(MATCH_PARENT, dp(44)))
     }
     val f = searchFilter
     val summary = if (!f.any) getString(R.string.search_filter_any)
@@ -88,86 +148,60 @@ internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
         if (!adultSearchOffered()) null else page(getString(R.string.adult_app), adultFilterName(f.adult)) {
             val modes = listOf(SearchFilter.ADULT_SHOW, SearchFilter.ADULT_HIDE, SearchFilter.ADULT_ONLY)
             searchFilter = SearchFilter(f.type, f.year, f.genre, modes[(modes.indexOf(f.adult) + 1) % modes.size], f.director, f.actor)
-            openSearch(typed(), 8)
+            openSearch(typed(), 6)
         },
         if (!f.any) null else page(getString(R.string.search_filter_clear)) {
             searchFilter = SearchFilter()
-            openSearch(typed(), 2)
+            openSearch(typed(), 0)
         },
     )
+    // Filters first, then Search under them. The microphone and the cross live in the bar, not as rows.
     val rows = listOf(
-        // Search: with words, or with the filters alone (all of Cinemeta's popular ones, without either).
-        page(getString(R.string.search_go)) { go(typed(), always = true) },
-        page(getString(R.string.search_dictate)) { listen(input, ::go) },
         page(getString(R.string.search_filters), if (searchFiltersExpanded) "▲ $summary" else "▼ $summary") {
             searchFiltersExpanded = !searchFiltersExpanded
-            openSearch(typed(), 2)
+            openSearch(typed(), 0)
         },
     ) + filterRows + listOf(
-        page(getString(R.string.search_assistant)) { closeLauncherSettings(); assistant() },
+        page(getString(R.string.search_go)) { go(typed(), always = true) },
+    ) + listOfNotNull(
+        // The same search, typed on a phone: one code for remote access, not a new server each time the page opens.
+        if (handheld()) null else page(getString(R.string.remote_use)) {
+            val texts = phoneTexts(R.string.phone_search_title, R.string.phone_search_intro)
+            val task = PhoneTask(PhonePages.text(texts, getString(R.string.search_hint)), 1024) { file ->
+                val query = file.readText().trim().take(200)
+                if (query.isEmpty()) return@PhoneTask 400 to getString(R.string.search_hint)
+                ui.post { go(query) }
+                200 to getString(R.string.phone_search_sent, query)
+            }
+            presentRemote(getString(R.string.search_title), "search", task, { openSearch(typed()) }, close = false)
+        },
     )
     showPage(getString(R.string.search_title), rows, focus ?: 0, top = top) { closeLauncherSettings() }
     val first = settingsList.getChildAt(1)
     first.nextFocusUpId = input.id // showPage pins Up on the first row to itself; here it goes to the box
+    mic.nextFocusRightId = input.id
+    mic.nextFocusDownId = first.id
+    mic.nextFocusUpId = mic.id
+    clear.nextFocusLeftId = input.id
+    clear.nextFocusDownId = first.id
+    clear.nextFocusUpId = clear.id
+    input.nextFocusDownId = first.id
     // The TV keyboard keeps Down for itself while the box has focus, even with the keyboard put away.
+    // Left at the start of the words goes to the microphone; Right at the end goes to the cross.
     input.setOnKeyListener { _, key, e ->
-        (key == KeyEvent.KEYCODE_DPAD_DOWN && e.action == KeyEvent.ACTION_DOWN).also { if (it) first.requestFocus() }
+        if (e.action != KeyEvent.ACTION_DOWN) return@setOnKeyListener false
+        when (key) {
+            KeyEvent.KEYCODE_DPAD_DOWN -> { first.requestFocus(); true }
+            KeyEvent.KEYCODE_DPAD_LEFT -> if (input.selectionStart == 0) { mic.requestFocus(); true } else false
+            KeyEvent.KEYCODE_DPAD_RIGHT -> if (clear.visibility == View.VISIBLE && input.selectionEnd == input.length()) {
+                clear.requestFocus(); true
+            } else false
+            else -> false
+        }
     }
     if (focus == null) input.requestFocus()
     pageExit = { stopListening() }
-    // Under the rows, the phone: the same search typed on its own keyboard. The link works while the page is open.
-    if (handheld()) return // a phone or tablet: its own keyboard is the one in the box
-    val ip = lanAddress() ?: return
-    val page = PhonePages.text(phoneTexts(R.string.phone_search_title, R.string.phone_search_intro), getString(R.string.search_hint))
-    lateinit var link: PhoneLink // the task below checks it's still this page's
-    link = try {
-        PhoneLink(cacheDir, PhoneTask(page, 1024) { file ->
-            val query = file.readText().trim().take(200)
-            if (query.isEmpty()) return@PhoneTask 400 to getString(R.string.search_hint)
-            ui.postDelayed({ if (upload === link) go(query) }, 300) // once the phone has its answer: closing the page stops the server
-            200 to getString(R.string.phone_search_sent, query)
-        })
-    } catch (e: IOException) {
-        return
-    }
-    upload = link
-    pageExit = {
-        stopListening()
-        link.stop()
-        if (upload === link) upload = null
-    }
-    val qrCard = FrameLayout(this).apply {
-        id = View.generateViewId()
-        isFocusable = true
-        isFocusableInTouchMode = true
-        val bg = GradientDrawable().apply {
-            cornerRadius = dp(12).toFloat()
-            setColor(Color.TRANSPARENT)
-        }
-        background = bg
-        val img = ImageView(this@openSearch).apply {
-            setImageBitmap(qrBitmap(link.url(ip), dp(160)))
-        }
-        addView(img, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER).apply {
-            setMargins(dp(6), dp(6), dp(6), dp(6))
-        })
-        setOnFocusChangeListener { _, focused ->
-            bg.setColor(if (focused) (0x22000000 or (fg and 0x00FFFFFF)) else Color.TRANSPARENT)
-            bg.setStroke(if (focused) dp(2) else 0, if (focused) fg else Color.TRANSPARENT)
-            if (focused) (settingsList.parent as? android.widget.ScrollView)?.smoothScrollTo(0, bottom + dp(40))
-        }
-    }
-    settingsList.addView(LinearLayout(this).apply {
-        orientation = LinearLayout.VERTICAL
-        gravity = Gravity.CENTER_HORIZONTAL
-        setPadding(0, dp(16), 0, dp(16))
-        addView(label(getString(R.string.search_phone), 12f).apply { gravity = Gravity.CENTER; alpha = 0.6f; maxLines = 2 })
-        addView(qrCard, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
-    })
-    val lastRow = settingsList.getChildAt(rows.size)
-    lastRow?.nextFocusDownId = qrCard.id
-    qrCard.nextFocusUpId = lastRow?.id ?: View.NO_ID
-    qrCard.nextFocusDownId = qrCard.id
+    remoteField = input // a phone on remote access can type the search into this box
 }
 
 /**
@@ -449,8 +483,8 @@ internal fun MainActivity.showChannelDetails(id: Long) = io.execute {
 }
 
 /**
- * A channel's page, as a whole page like a film's (see DetailPage): its logo large on the right (on a blur of itself), what's on with
- * its time and what it's about, what follows, and Watch on TV.
+ * A channel's page, as a whole page like a film's (see DetailPage): the logo over the screen, what's on with
+ * its time and what it's about on the left, and Watch on the right.
  */
 internal fun MainActivity.showChannel(d: ChannelDetail) {
     if (settingsScrim.visibility != View.VISIBLE) showPanel()
@@ -490,19 +524,19 @@ internal fun MainActivity.showChannel(d: ChannelDetail) {
         val p = Prog(d.name, d.number, 0, null, d.intent, d.pkg, addon = d.addon)
         if (d.addon != null) playAddonChannel(p) else open(p)
     })
-    showPage(d.name, rows, top = top, back = { closeLauncherSettings() }, panes = glass)
-    // A whole page: the channel's logo large on the right half, on a blur of itself (see DetailPage).
-    detailPage("channel|${d.name}|${d.number}", emptyList()) { frame, w, h ->
-        val half = FrameLayout(this)
-        frame.addView(half, FrameLayout.LayoutParams(w / 2, h, android.view.Gravity.END))
-        channelArt(half, w / 2, h, d.number, d.name) {
+    val wide = resources.displayMetrics.widthPixels > dp(720)
+    showPage(d.name, rows, top = if (wide) null else top, back = { closeLauncherSettings() }, panes = glass)
+    // The same page as a film: art over the screen, the details on the left, the buttons on the right.
+    detailPage("channel|${d.name}|${d.number}", listOfNotNull(d.logo?.takeIf { it.startsWith("http") }), title = d.name, infoView = top) { frame, fw, fh ->
+        channelArt(frame, fw, fh, d.number, d.name) {
             listOfNotNull(d.logo, d.addon?.let { ChannelLogos.match(channelLogoTable(), d.name) })
         }
     }
     val icon = (d.pkg ?: tile?.pkg?.takeIf { !it.startsWith(STREMIO) })?.let { pkg -> runCatching { packageManager.getApplicationIcon(pkg) }.getOrNull() }
         ?: tile?.icon?.constantState?.newDrawable(resources)?.mutate()
+        ?: d.addon?.let { addonIcon(Stremio.saved(filesDir, it.addon)?.addon ?: return@let null) }
     if (icon != null) {
-        val row = settingsList.getChildAt(1) as? LinearLayout
+        val row = (0 until settingsList.childCount).map { settingsList.getChildAt(it) }.firstOrNull { it.hasOnClickListeners() } as? LinearLayout
         val iv = ImageView(this).apply {
             setImageDrawable(icon)
             scaleType = ImageView.ScaleType.FIT_CENTER
@@ -573,9 +607,9 @@ private fun MainActivity.pickType(text: String) {
     showPage(getString(R.string.search_filter_type), types.map { t ->
         page(typeName(t), if (t == f.type) CHOSEN else "") {
             searchFilter = SearchFilter(t, f.year, f.genre, f.adult, f.director, f.actor)
-            openSearch(text, 3)
+            openSearch(text, 1)
         }
-    }, types.indexOf(f.type).coerceAtLeast(0)) { openSearch(text, 3) }
+    }, types.indexOf(f.type).coerceAtLeast(0)) { openSearch(text, 1) }
 }
 
 private fun MainActivity.isRadioChannel(d: ChannelDetail): Boolean =
@@ -655,9 +689,9 @@ private fun MainActivity.pickYear(text: String) {
     showPage(getString(R.string.search_filter_year), years.map { y ->
         page(y ?: getString(R.string.search_filter_any), if (y == f.year) CHOSEN else "") {
             searchFilter = SearchFilter(f.type, y, f.genre, f.adult, f.director, f.actor)
-            openSearch(text, 4)
+            openSearch(text, 2)
         }
-    }, years.indexOf(f.year).coerceAtLeast(0)) { openSearch(text, 4) }
+    }, years.indexOf(f.year).coerceAtLeast(0)) { openSearch(text, 2) }
     // Left/Right: ten years on or back, not a hundred rows one by one.
     pageSides = { step -> focusRow(((focusedRow() ?: 0) + step * 10).coerceIn(0, years.size - 1)) }
 }
@@ -669,27 +703,27 @@ private fun MainActivity.pickGenre(text: String) {
     showPage(getString(R.string.search_filter_genre), genres.map { g ->
         page(g?.let { genreName(it) } ?: getString(R.string.search_filter_any), if (g == f.genre) CHOSEN else "") {
             searchFilter = SearchFilter(f.type, f.year, g, f.adult, f.director, f.actor)
-            openSearch(text, 5)
+            openSearch(text, 3)
         }
-    }, genres.indexOf(f.genre).coerceAtLeast(0)) { openSearch(text, 5) }
+    }, genres.indexOf(f.genre).coerceAtLeast(0)) { openSearch(text, 3) }
 }
 
 private fun MainActivity.pickPersonFilter(isDirector: Boolean, text: String) {
     val f = searchFilter
     val current = if (isDirector) f.director else f.actor
     val title = getString(if (isDirector) R.string.search_filter_director else R.string.search_filter_actor)
-    textPage(title, current.orEmpty(), getString(R.string.search_hint), null, typing = Typing.NAME, back = { openSearch(text, if (isDirector) 6 else 7) }) { typed ->
+    textPage(title, current.orEmpty(), getString(R.string.search_hint), null, typing = Typing.NAME, back = { openSearch(text, if (isDirector) 4 else 5) }) { typed ->
         listOfNotNull(
             page(getString(R.string.dialog_save)) {
                 val value = typed().ifBlank { null }
                 searchFilter = if (isDirector) SearchFilter(f.type, f.year, f.genre, f.adult, director = value, actor = f.actor)
                 else SearchFilter(f.type, f.year, f.genre, f.adult, director = f.director, actor = value)
-                openSearch(text, if (isDirector) 6 else 7)
+                openSearch(text, if (isDirector) 4 else 5)
             },
             if (current != null) page(getString(R.string.search_filter_any)) {
                 searchFilter = if (isDirector) SearchFilter(f.type, f.year, f.genre, f.adult, director = null, actor = f.actor)
                 else SearchFilter(f.type, f.year, f.genre, f.adult, director = f.director, actor = null)
-                openSearch(text, if (isDirector) 6 else 7)
+                openSearch(text, if (isDirector) 4 else 5)
             } else null
         )
     }
