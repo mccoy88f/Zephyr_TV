@@ -140,6 +140,7 @@ In `PlayerActivity.kt`.
   nessuna app li gestisce. Serve `<queries>` nel manifest Android per vedere le app (visibilità dei pacchetti da
   Android 11).
 - ☑ **ClearKey** (`drm.clearkey`): `MediaItem.DrmConfiguration` con `C.CLEARKEY_UUID` e le chiavi in locale.
+- ☑ **`behaviorHints.audioUrl`**: video-only più un secondo indirizzo audio, riprodotti insieme (`MergingMediaSource`).
 - ☐ **`bingeGroup`**: l'episodio successivo con uno stream dello stesso gruppo, se c'è.
 - ☐ **Prossimo elemento in automatico** per `channel`, `course`, `podcast`, `audiobook` (oggi c'è per le serie).
 - ☑ `externalUrl` / `ytId` aprono l'app (con `androidPackage` per prima, se c'è); ClearKey con le chiavi come licenza

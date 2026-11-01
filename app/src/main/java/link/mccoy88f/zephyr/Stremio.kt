@@ -124,7 +124,8 @@ internal object Stremio {
                           val source: String? = null, // source: the add-on it came from, when streams of several are mixed
                           val langRank: Int = LANG_OURS, // in the TV's language (0), saying none (1), in another (2)
                           val clearkey: Map<String, String> = emptyMap(), // DASH keys, key id to key (hex): an extension's drm.clearkey
-                          val app: String? = null) // [url] opened by another app (externalUrl, ytId), with this one first
+                          val app: String? = null, // [url] opened by another app (externalUrl, ytId), with this one first
+                          val audio: String? = null) // a second address, video-only [url] plus this audio (YouTube adaptive / yt-dlp)
 
     @Volatile private var listings: Map<String, Listing> = emptyMap() // manifest address to what's saved, once read
     private val updating = java.util.Collections.synchronizedSet(HashSet<String>())
@@ -516,7 +517,8 @@ internal object Stremio {
                     described?.lines()?.firstOrNull { it.isNotBlank() }?.trim()).distinct().joinToString(" · ")
             val isYt = yt != null || text(s, "ytId") != null || url.contains("youtube.com") || url.contains("youtu.be")
             Stream(url, title, headers, hints?.let { text(it, "bingeGroup") }, clearkey = keys,
-                app = if (url == external) hints?.let { text(it, "androidPackage") } ?: (if (isYt) YOUTUBE_TV else "") else null)
+                app = if (url == external) hints?.let { text(it, "androidPackage") } ?: (if (isYt) YOUTUBE_TV else "") else null,
+                audio = hints?.let { text(it, "audioUrl") })
         }
     }
 

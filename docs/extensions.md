@@ -256,6 +256,7 @@ the extension's own is the fallback.
 | `behaviorHints.proxyHeaders.request` | headers to play it with: `{ "User-Agent": …, "Referer": … }` |
 | `behaviorHints.bingeGroup` | as Stremio's: the next episode starts with a stream of the same group |
 | `behaviorHints.audioOnly` | **Zephyr TV.** `true`: it's audio only (see the types above); an `.mp3`, `.m4a`, `.aac`, `.ogg` or `.opus` address is audio anyway |
+| `behaviorHints.audioUrl` | **Zephyr TV.** A second address: `url` is video-only, this is its audio. The player plays them together (YouTube adaptive formats) |
 | `drm` | **Zephyr TV.** `{ "clearkey": { "<key id hex>": "<key hex>" } }` for DASH protected by ClearKey |
 | `externalUrl` | instead of `url`: an address another app opens — a link of a music or video app (`https://…`, or its own scheme such as `spotify:…`). Zephyr TV opens it with the app that handles it; Back comes back to Zephyr TV |
 | `ytId` | instead of `url`: a YouTube video's id; Zephyr TV opens it in the YouTube app |

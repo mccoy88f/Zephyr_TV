@@ -99,7 +99,7 @@ internal fun sourceStreams(p: SharedPreferences, dir: File, base: String, name: 
     // Each marked with its language against the TV's: the player and the streams' page put ours first, then those
     // saying none (unless they're hidden), then the others, as a last choice.
     val hideUnknown = p.getBoolean(K.HIDE_UNKNOWN_LANG, false)
-    return all.map { s -> Stremio.Stream(s.url, s.title, s.headers, s.group, s.source, languageRank(s.title, lang, declared), s.clearkey, s.app) }
+    return all.map { s -> Stremio.Stream(s.url, s.title, s.headers, s.group, s.source, languageRank(s.title, lang, declared), s.clearkey, s.app, s.audio) }
         .filter { !(hideUnknown && it.langRank == Stremio.LANG_UNKNOWN) }
 }
 

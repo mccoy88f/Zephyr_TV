@@ -261,6 +261,7 @@ Per film e serie, le immagini mostrate da Zephyr TV vengono dal **catalogo princ
 | `behaviorHints.proxyHeaders.request` | gli header con cui riprodurlo: `{ "User-Agent": …, "Referer": … }` |
 | `behaviorHints.bingeGroup` | come in Stremio: l'episodio successivo parte con uno stream dello stesso gruppo |
 | `behaviorHints.audioOnly` | **Zephyr TV.** `true`: è solo audio (vedi i tipi qui sopra); un indirizzo `.mp3`, `.m4a`, `.aac`, `.ogg` o `.opus` è audio comunque |
+| `behaviorHints.audioUrl` | **Zephyr TV.** Un secondo indirizzo: `url` è solo video, questo è l'audio. Il player li riproduce insieme (formati adaptive di YouTube) |
 | `drm` | **Zephyr TV.** `{ "clearkey": { "<key id hex>": "<chiave hex>" } }` per i DASH protetti con ClearKey |
 | `externalUrl` | al posto di `url`: un indirizzo che apre un'altra app, cioè il link di un'app di musica o video (`https://…`, o il suo schema, come `spotify:…`). Zephyr TV lo apre con l'app che lo gestisce; Indietro riporta a Zephyr TV |
 | `ytId` | al posto di `url`: l'id di un video YouTube; Zephyr TV lo apre nell'app YouTube |

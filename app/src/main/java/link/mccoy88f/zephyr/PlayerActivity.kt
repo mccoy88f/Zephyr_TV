@@ -1907,6 +1907,14 @@ class PlayerActivity : Activity() {
             .setExtractorFactory(HlsAlign()).apply { drm?.let { m -> setDrmSessionManagerProvider { m } } }.createMediaSource(item))
         // A Blu-ray's MPEG-TS read as plain MPEG-TS, its packets' times left out (see M2ts).
         else if (format == "m2ts") p.setMediaSource(DefaultMediaSourceFactory(M2ts.Factory(DefaultDataSource.Factory(this, http))).createMediaSource(item))
+        // Video-only plus a second audio address (YouTube adaptive): play them together, as ffmpeg would merge them.
+        else if (!s.audio.isNullOrEmpty() && format != "dash") {
+            val data = DefaultDataSource.Factory(this, http)
+            val files = androidx.media3.exoplayer.source.ProgressiveMediaSource.Factory(data)
+            p.setMediaSource(androidx.media3.exoplayer.source.MergingMediaSource(
+                files.createMediaSource(MediaItem.fromUri(s.url)),
+                files.createMediaSource(MediaItem.fromUri(s.audio))))
+        }
         else p.setMediaItem(item)
         p.playWhenReady = true
         p.prepare()
@@ -2042,13 +2050,15 @@ class PlayerActivity : Activity() {
         internal fun streamJson(s: Stremio.Stream): JSONObject = JSONObject().put("url", s.url).put("title", s.title)
             .put("headers", JSONObject(s.headers as Map<*, *>)).put("group", s.group ?: JSONObject.NULL).put("source", s.source ?: JSONObject.NULL)
             .put("clearkey", JSONObject(s.clearkey as Map<*, *>)).put("app", s.app ?: JSONObject.NULL).put("lang", s.langRank)
+            .put("audio", s.audio ?: JSONObject.NULL)
 
         internal fun streamOf(j: JSONObject): Stremio.Stream {
             val h = j.optJSONObject("headers") ?: JSONObject()
             val k = j.optJSONObject("clearkey") ?: JSONObject()
             return Stremio.Stream(j.getString("url"), j.optString("title"), h.keys().asSequence().associateWith { h.optString(it) },
                 j.optString("group").takeIf { !j.isNull("group") && it.isNotEmpty() }, j.optString("source").takeIf { !j.isNull("source") && it.isNotEmpty() },
-                j.optInt("lang", Stremio.LANG_OURS), k.keys().asSequence().associateWith { k.optString(it) }, if (j.isNull("app")) null else j.optString("app"))
+                j.optInt("lang", Stremio.LANG_OURS), k.keys().asSequence().associateWith { k.optString(it) }, if (j.isNull("app")) null else j.optString("app"),
+                j.optString("audio").takeIf { !j.isNull("audio") && it.isNotEmpty() })
         }
         const val TYPES = "types"
         const val IDS = "ids"

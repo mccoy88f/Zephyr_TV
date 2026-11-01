@@ -142,6 +142,31 @@ class YouYubeZTest {
         assertTrue(cookieReqs.first().optJSONObject("headers")?.optString("Cookie").isNullOrEmpty())
     }
 
+    @Test fun streamPairsAdaptiveVideoWithAudio() {
+        val player = """{"playabilityStatus":{"status":"OK"},"streamingData":{"formats":[
+            {"itag":18,"qualityLabel":"360p","mimeType":"video/mp4; codecs=\"avc1.42001E, mp4a.40.2\"",
+             "audioQuality":"AUDIO_QUALITY_LOW","url":"https://rr1.googlevideo.com/videoplayback?id=mux"}],
+            "adaptiveFormats":[
+            {"itag":137,"qualityLabel":"1080p","mimeType":"video/mp4; codecs=\"avc1.640028\"","width":1920,"height":1080,
+             "bitrate":5000000,"url":"https://rr1.googlevideo.com/videoplayback?id=v1080"},
+            {"itag":136,"qualityLabel":"720p","mimeType":"video/mp4; codecs=\"avc1.4d401f\"","width":1280,"height":720,
+             "bitrate":2000000,"url":"https://rr1.googlevideo.com/videoplayback?id=v720"},
+            {"itag":140,"audioQuality":"AUDIO_QUALITY_MEDIUM","mimeType":"audio/mp4; codecs=\"mp4a.40.2\"",
+             "bitrate":128000,"url":"https://rr1.googlevideo.com/videoplayback?id=a140"}]}}"""
+        val out = run(
+            """module.exports.stream({id:"ytz:dQw4w9WgXcQ", settings:{play:"both"}})""",
+            mapOf("https://www.youtube.com/youtubei/v1/player" to player),
+        )
+        val streams = out.getJSONArray("streams")
+        assertEquals(3, streams.length())
+        val hi = streams.getJSONObject(0)
+        assertEquals("1080p", hi.getString("title"))
+        assertEquals("https://rr1.googlevideo.com/videoplayback?id=v1080", hi.getString("url"))
+        assertEquals("https://rr1.googlevideo.com/videoplayback?id=a140", hi.getJSONObject("behaviorHints").getString("audioUrl"))
+        assertEquals("720p", streams.getJSONObject(1).getString("title"))
+        assertEquals("dQw4w9WgXcQ", streams.getJSONObject(2).getString("ytId"))
+    }
+
     @Test fun streamAsksThePlayerWithoutCookiesFirst() {
         val player = """{"streamingData":{"formats":[{"itag":18,"qualityLabel":"360p","mimeType":"video/mp4; codecs=\"avc1, mp4a\"",
             "url":"https://rr1.googlevideo.com/videoplayback?id=1"}]}}"""

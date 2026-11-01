@@ -60,6 +60,14 @@ class StremioTest {
         assertEquals(mapOf("User-Agent" to "VLC", "Referer" to "https://r.example/"), streams[1].headers)
     }
 
+    @Test fun readsAPairedAudioAddress() {
+        val answer = JSONObject("""{"streams":[{"name":"YouYubeZ","title":"1080p","url":"https://v.example/v",
+            "behaviorHints":{"audioUrl":"https://v.example/a"}}]}""")
+        val streams = Stremio.streams(answer, vod = true)
+        assertEquals("https://v.example/v", streams[0].url)
+        assertEquals("https://v.example/a", streams[0].audio)
+    }
+
     @Test fun tellsTheStreamFormat() {
         val none = ByteArray(0)
         assertEquals("hls", Stremio.format("application/vnd.apple.mpegurl", "https://x/s/token", none))
