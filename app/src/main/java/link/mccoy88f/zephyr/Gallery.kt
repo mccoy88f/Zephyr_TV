@@ -213,8 +213,17 @@ private class GalleryShow(private val context: Context) : SurfaceHolder.Callback
             } finally {
                 holder.unlockCanvasAndPost(canvas)
             }
-            Thread.sleep(FRAME_MS) // 30 fps is plenty for motion this slow, and spares the GPU
+            Thread.sleep(pace(now)) // 30 fps while a picture fades or its caption is up; twice a second while it drifts
         }
+    }
+
+    /** Fast frames only while something on screen is actually changing quickly. */
+    private fun pace(now: Long): Long {
+        val cur = current ?: return FRAME_MS
+        val age = now - cur.start
+        val fading = previous != null && age < cur.fadeMs
+        val caption = cur.painting.title.isNotEmpty() && age < CAPTION_MS + FADE_MS
+        return if (fading || caption || age < FIRST_FADE_MS) FRAME_MS else DRIFT_MS
     }
 
     private fun draw(c: Canvas, now: Long) = synchronized(lock) {
@@ -223,12 +232,12 @@ private class GalleryShow(private val context: Context) : SurfaceHolder.Callback
         val cur = current ?: return
         val fade = ((now - cur.start).toFloat() / cur.fadeMs).coerceIn(0f, 1f)
         previous?.let {
-            if (fade < 1f) drawSlide(c, it, ((1f - fade) * 255).toInt()) else {
+            if (fade < 1f) drawSlide(c, it, ((1f - fade) * 255).toInt(), now) else {
                 it.bmp.recycle() // faded out: free it now rather than whenever GC gets to it
                 previous = null
             }
         }
-        drawSlide(c, cur, (fade * 255).toInt())
+        drawSlide(c, cur, (fade * 255).toInt(), now)
 
         // Title for the first seconds of each painting, fading in and out.
         val t = now - cur.start
@@ -249,10 +258,11 @@ private class GalleryShow(private val context: Context) : SurfaceHolder.Callback
         }
     }
 
-    /** The paintings are already the screen's shape, so each one simply covers the whole surface. */
-    private fun drawSlide(c: Canvas, s: Slide, alpha: Int) {
+    /** The picture covers the screen, grown and shifted a little so it drifts. See [kenBurns]. */
+    private fun drawSlide(c: Canvas, s: Slide, alpha: Int, now: Long) {
         paint.alpha = alpha
-        c.drawBitmap(s.bmp, null, RectF(0f, 0f, c.width.toFloat(), c.height.toFloat()), paint)
+        val d = kenBurns(c.width.toFloat(), c.height.toFloat(), now - s.start, HOLD_MS)
+        c.drawBitmap(s.bmp, null, RectF(d.left, d.top, d.right, d.bottom), paint)
     }
 
     private companion object {

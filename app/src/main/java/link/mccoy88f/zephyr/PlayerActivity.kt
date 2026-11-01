@@ -1215,7 +1215,9 @@ class PlayerActivity : Activity() {
         setOnFocusChangeListener { v, has ->
             bg.setColor(if (has) Color.WHITE else 0x33FFFFFF)
             setColorFilter(if (has) Color.BLACK else Color.WHITE)
-            v.animate().scaleX(if (has) 1.08f else 1f).scaleY(if (has) 1.08f else 1f).setDuration(120).start()
+            v.animate().scaleX(if (has) 1.08f else 1f).scaleY(if (has) 1.08f else 1f)
+                .setDuration(if (has) FOCUS_IN_MS else FOCUS_OUT_MS)
+                .setInterpolator(if (has) MainActivity.SPRING else MainActivity.DECELERATE).start()
         }
         layoutParams = LinearLayout.LayoutParams(dp(40), dp(40)).apply { marginStart = dp(10) }
     }

@@ -22,6 +22,7 @@ internal object K {
     const val COLOUR_ICONS = "colour_icons"
     const val CLOCK_24 = "clock_24" // "auto" (the TV's setting), "24" or "12"
     const val NIGHT = "night" // night mode on
+    const val CRASHES = "crashes" // times the process died, so a run of them can turn extras off (see Safety)
     const val WARP = "warp" // Cloudflare WARP on, as this app's VPN (see Warp); not in backups
     const val WARP_ACCOUNT = "warp_account" // its WARP account, JSON with its private key: never in backups
     const val ROWLESS = "rowless" // apps that showed no rows under them: one tap opens them on a phone (see rowless)

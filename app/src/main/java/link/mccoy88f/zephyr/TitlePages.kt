@@ -456,7 +456,9 @@ private fun MainActivity.personCard(name: String, isDirector: Boolean, onImage: 
     card.setOnFocusChangeListener { _, focused ->
         rim.setStroke(dp(2), if (focused) Color.WHITE else Color.TRANSPARENT)
         nameLabel.alpha = if (focused) 1f else 0.8f
-        card.animate().scaleX(if (focused) 1.1f else 1f).scaleY(if (focused) 1.1f else 1f).setDuration(140).start()
+        card.animate().scaleX(if (focused) 1.1f else 1f).scaleY(if (focused) 1.1f else 1f)
+            .setDuration(if (focused) FOCUS_IN_MS else FOCUS_OUT_MS)
+            .setInterpolator(if (focused) MainActivity.SPRING else MainActivity.DECELERATE).start()
         if (focused) {
             val hScroll = card.parent?.parent as? android.widget.HorizontalScrollView
             hScroll?.post {

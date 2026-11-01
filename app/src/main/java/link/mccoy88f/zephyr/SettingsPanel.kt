@@ -834,21 +834,23 @@ internal fun MainActivity.showKeyboard(field: EditText) {
 internal fun MainActivity.fieldEdge() = (fg and 0xFFFFFF) or 0x40000000
 
 /**
- * Glass: [v] as a pane of smoked glass, like the cards on the home screen: the cards' tint with a gloss on its top
- * half and a hairline rim. Returns what focus does to it: the glass lightens and the rim brightens; the content
- * stays white, so it isn't inverted as on a plain row.
+ * Glass: [v] as a pane over the photograph, like the cards on the home screen: the blurred photo (or the cards' tint,
+ * when there is no photo), a gloss on its top half and a hairline rim. A band of light crosses it once as it
+ * takes focus. Returns what focus does to it: the glass lightens and the rim brightens; the content stays white.
  */
 internal fun MainActivity.glassPane(v: View, radius: Int): (Boolean) -> Unit {
-    val bg = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, cardRest).apply { cornerRadius = radius.toFloat() }
+    val slice = GlassSlice(this, radius.toFloat())
     val gloss = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(0x24FFFFFF, 0x08FFFFFF, 0x00FFFFFF)).apply {
         cornerRadius = radius.toFloat()
     }
     val rim = GradientDrawable().apply { cornerRadius = radius.toFloat(); setStroke(1, 0x1FFFFFFF) }
-    v.background = LayerDrawable(arrayOf(bg, gloss))
-    v.foreground = rim
+    val glint = GlintDrawable(radius.toFloat())
+    v.background = LayerDrawable(arrayOf(slice, gloss))
+    v.foreground = LayerDrawable(arrayOf(rim, glint))
     return { lit ->
-        bg.colors = if (lit) cardLit else cardRest
+        slice.lit = lit
         rim.setStroke(if (lit) dp(2) else 1, if (lit) 0x99FFFFFF.toInt() else 0x1FFFFFFF)
+        if (lit) glint.play()
     }
 }
 

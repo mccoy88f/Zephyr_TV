@@ -26,7 +26,6 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
-import android.graphics.drawable.TransitionDrawable
 import android.media.tv.TvContract
 import android.media.tv.TvInputInfo
 import android.media.tv.TvInputManager
@@ -46,6 +45,7 @@ import android.util.LruCache
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.EditText
@@ -151,6 +151,13 @@ class MainActivity : Activity() {
     internal var editing = false
     internal var grabbed: View? = null
     internal var holdFired = false
+    private var holdView: View? = null
+    private val holdTick = Runnable {
+        val v = holdView
+        if (!holdFired && v != null && v === currentFocus) fireHold(v)
+    }
+    internal var sceneAlive = false
+    internal val scene = Scene(this)
     internal var dark = false
     internal var glass = false // the Glass theme: dark, with glossy see-through cards over the wallpaper
     internal var fg = Color.BLACK
@@ -222,6 +229,8 @@ class MainActivity : Activity() {
 
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
+        Safety.watch(applicationContext)
+        val calmed = Safety.calm(this)
         Problems.init(File(filesDir, "problems.log"))
         Images.use(this) // images on disk (see Images): every part of Zephyr TV goes through it
         Js.useAssets(applicationContext) // the modules plugins and extensions require()
@@ -269,7 +278,8 @@ class MainActivity : Activity() {
                 ring.setColor(if (focused) fg else 0)
                 setColorFilter(if (focused) onFg else fg)
                 animate().scaleX(if (focused) 1.15f else 1f).scaleY(if (focused) 1.15f else 1f)
-                    .setDuration(160).setInterpolator(DECELERATE).start()
+                    .setDuration(if (focused) FOCUS_IN_MS else FOCUS_OUT_MS)
+                    .setInterpolator(if (focused) SPRING else DECELERATE).start()
             }
             setOnClickListener { action() }
         }
@@ -312,6 +322,7 @@ class MainActivity : Activity() {
         }
         shortcuts() // a phone or tablet: Search and the Play queue on the icon
         ui.post { handleLink(intent) } // started by a link, a share or a shortcut (see Links)
+        if (calmed) ui.post { Safety.tell(this) }
     }
 
     /**
@@ -361,6 +372,8 @@ class MainActivity : Activity() {
         syncTraktNow() // what the user watched elsewhere, now and then
         piumeGoesNow() // Piume's things taken and the Home set: Piume can go
         spotlightIdle = false
+        sceneAlive = true
+        scene.arm()
         restartSpotlightTick()
         // Gallery chosen but its paintings missing (updated from a version that bundled them): fetch them.
         if (galleryOn() && photoScreensaver() == null && !paintingsReady(this)) downloadPaintings {}
@@ -411,6 +424,9 @@ class MainActivity : Activity() {
     }
 
     override fun onPause() {
+        sceneAlive = false
+        scene.stop()
+        ui.removeCallbacks(holdTick)
         ui.removeCallbacks(weatherTick)
         ui.removeCallbacks(themeTick)
         ui.removeCallbacks(wallpaperTick)
@@ -510,9 +526,8 @@ class MainActivity : Activity() {
         // Dark cards are matte black glass on a true-black ground: lit faintly from the top and fading to
         // near-black, no outline (outlines read as a grey grid). Focus brightens the glass, never to grey.
         // Light cards are frosted grey glass, so they still read on white wallpapers; focus turns them white.
-        // Glass cards are smoked glass: the wallpaper shows through, but dark enough under white marks and text to
-        // read on any photo. Without a blur (Android 9 has none for views), the tint does the blur's job. Focus
-        // lightens the glass; the rim and the sheen (see style) give the gloss.
+        // Glass cards sample a blurred copy of the photograph (see Scene). The smoked tint is the fallback when
+        // there is no photo. Focus lightens the glass; the rim and the sheen (see style) give the gloss.
         cardRest = when {
             glass -> intArrayOf(0x8C2C2C34.toInt(), 0xA6121216.toInt())
             dark -> intArrayOf(0xFF16161B.toInt(), 0xFF060607.toInt())
@@ -586,8 +601,10 @@ class MainActivity : Activity() {
     internal fun loadWallpaper() {
         val view = findViewById<ImageView>(R.id.wallpaper)
         val choice = currentWallpaper()
+        val gen = scene.bump()
         if (choice.startsWith("plain:")) { // the root's ground colour shows through
             view.setImageDrawable(null)
+            scene.clear()
             return
         }
         val fallback = defaultWallpaper(dark)
@@ -597,23 +614,26 @@ class MainActivity : Activity() {
             } catch (e: Exception) {
                 null
             } ?: decodeWallpaper(fallback)
+            val blur = bmp?.let { blurPhoto(it) }
             ui.post {
+                if (gen != scene.generation) {
+                    bmp?.recycle()
+                    blur?.recycle()
+                    return@post
+                }
                 // The next title's countdown starts once this backdrop is up, so slow loads never pile up.
                 if (choice == "tmdb:trending") {
                     restartSpotlightTick()
                     prefetchBackdrops()
                 }
-                val old = view.drawable
-                if (old == null || bmp == null) {
-                    view.setImageBitmap(bmp)
+                if (bmp == null || blur == null) {
+                    view.setImageDrawable(null)
+                    scene.clear()
                     renderSpotlight()
                     return@post
                 }
-                // Soft change from one photo to the next; then drop the old one so only one stays in memory.
-                val fade = TransitionDrawable(arrayOf(old, BitmapDrawable(resources, bmp))).apply { isCrossFadeEnabled = true }
-                view.setImageDrawable(fade)
-                fade.startTransition(800)
-                ui.postDelayed({ if (view.drawable === fade) view.setImageBitmap(bmp) }, 900)
+                // Soft change from one photo to the next, then a slow drift. The old photo is dropped once the fade ends.
+                scene.show(view, bmp, blur)
                 renderSpotlight()
             }
         }
@@ -1261,7 +1281,7 @@ class MainActivity : Activity() {
         val restText = if (glass) 0.85f else if (dark) 0.65f else 1f
         img.alpha = restLogo
         text?.alpha = restText
-        style(col, dp(8), card = true) { focused ->
+        style(col, dp(8), card = true, frost = glass) { focused ->
             if (!dark) return@style
             img.animate().alpha(if (focused) 1f else restLogo).setDuration(160).start()
             text?.animate()?.alpha(if (focused) 1f else restText)?.setDuration(160)?.start()
@@ -1389,9 +1409,9 @@ class MainActivity : Activity() {
     // ---------- holding OK, and editing the apps row ----------
 
     /**
-     * Hold detection lives here, not in View long-click: this TV's remote doesn't reliably trigger the
-     * framework's long-press timer. We treat the first auto-repeat of OK as "held"; the long-click
-     * listener in style() is a fallback for remotes that send no repeats. [holdFired] stops both firing.
+     * Hold detection lives here, not in View long-click. The timer starts when OK goes down, not on the remote's
+     * key repeats: an infrared remote repeats at its own pace, and some barely repeat at all. The long-click
+     * listener in style() is a fallback for a key that never arrives as a down. [holdFired] stops both firing.
      */
     override fun dispatchTouchEvent(e: android.view.MotionEvent): Boolean {
         lastInput = SystemClock.elapsedRealtime()
@@ -1411,14 +1431,19 @@ class MainActivity : Activity() {
         val confirm = e.keyCode == KeyEvent.KEYCODE_DPAD_CENTER || e.keyCode == KeyEvent.KEYCODE_ENTER ||
             e.keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
         if (confirm) {
-            if (e.action == KeyEvent.ACTION_DOWN && e.repeatCount == 0) holdFired = false
-            if (e.action == KeyEvent.ACTION_DOWN && e.repeatCount > 0) {
-                if (!holdFired) currentFocus?.let { fireHold(it) }
+            if (e.action == KeyEvent.ACTION_DOWN && e.repeatCount == 0) {
+                holdFired = false
+                holdView = currentFocus
+                ui.removeCallbacks(holdTick)
+                ui.postDelayed(holdTick, ViewConfiguration.getLongPressTimeout().toLong())
+            } else if (e.action == KeyEvent.ACTION_DOWN && e.repeatCount > 0) {
                 return true
-            }
-            if (e.action == KeyEvent.ACTION_UP && holdFired) {
-                currentFocus?.isPressed = false
-                return true
+            } else if (e.action == KeyEvent.ACTION_UP) {
+                ui.removeCallbacks(holdTick)
+                if (holdFired) {
+                    currentFocus?.isPressed = false
+                    return true
+                }
             }
         }
         // The settings panel is a vertical list: don't let Left/Right leak focus to the home screen behind it.
@@ -2105,9 +2130,10 @@ class MainActivity : Activity() {
     /**
      * tvOS-style focus, no outline: the focused card lifts (scale + shadow). Light mode adds a soft
      * top sheen; dark mode brightens the glass gradient instead (a white sheen would haze it grey).
-     * Only transform/alpha/colour change, so it stays on the GPU and costs no re-layout.
+     * Only transform and colour change, so it stays on the GPU and costs no re-layout. Glass app tiles ([frost])
+     * sample the blurred photograph and, once, a band of light crosses them.
      */
-    internal fun style(v: View, corner: Int, card: Boolean, lift: Float = 1.08f, onFocus: ((Boolean) -> Unit)? = null) {
+    internal fun style(v: View, corner: Int, card: Boolean, lift: Float = 1.08f, frost: Boolean = false, onFocus: ((Boolean) -> Unit)? = null) {
         val radius = if (glass && card) corner * 2 else corner // glass panes are rounder
         val sheen = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(0x40FFFFFF, 0x00FFFFFF)).apply {
             cornerRadius = radius.toFloat()
@@ -2125,8 +2151,19 @@ class MainActivity : Activity() {
         val gloss = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(0x24FFFFFF, 0x08FFFFFF, 0x00FFFFFF)).apply {
             cornerRadius = radius.toFloat()
         }
-        v.background = if (glass && card) LayerDrawable(arrayOf(bg, gloss)) else bg
-        if (glass && card) v.foreground = rim else if (!dark) v.foreground = sheen
+        val slice = if (frost && card) GlassSlice(this, radius.toFloat()) else null
+        val glint = if (slice != null) GlintDrawable(radius.toFloat()) else null
+        v.background = when {
+            slice != null -> LayerDrawable(arrayOf(slice, gloss))
+            glass && card -> LayerDrawable(arrayOf(bg, gloss))
+            else -> bg
+        }
+        v.foreground = when {
+            glint != null -> LayerDrawable(arrayOf(rim, glint))
+            glass && card -> rim
+            !dark -> sheen
+            else -> null
+        }
         v.clipToOutline = true
         // Android 9+ only (8.x would crash on these); black is the default shadow colour before that anyway.
         if (Build.VERSION.SDK_INT >= 28) {
@@ -2140,11 +2177,13 @@ class MainActivity : Activity() {
         v.setOnFocusChangeListener { _, focused ->
             sheen.alpha = if (focused) 255 else 0
             rim.setStroke(if (focused) dp(1) else 1, if (focused) 0x99FFFFFF.toInt() else 0x1FFFFFFF)
-            if (card) bg.colors = if (focused) cardLit else cardRest
+            if (slice != null) slice.lit = focused else if (card) bg.colors = if (focused) cardLit else cardRest
+            if (focused) glint?.play()
             v.animate()
                 .scaleX(if (focused) lift else 1f).scaleY(if (focused) lift else 1f)
                 .translationZ(if (focused) dp(14).toFloat() else 0f)
-                .setDuration(160).setInterpolator(DECELERATE).start()
+                .setDuration(if (focused) FOCUS_IN_MS else FOCUS_OUT_MS)
+                .setInterpolator(if (focused) SPRING else DECELERATE).start()
             onFocus?.invoke(focused)
         }
     }
@@ -2259,6 +2298,7 @@ class MainActivity : Activity() {
         )
         val GREYSCALE = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) })
         val DECELERATE = android.view.animation.DecelerateInterpolator(1.5f)
+        val SPRING = android.animation.TimeInterpolator { spring(it) }
         @Volatile var APPS: List<App>? = null
         /** Mono marks made by glyph(), by package; null = icon has no usable symbol. Main thread only. */
         val GLYPHS = HashMap<String, Bitmap?>()

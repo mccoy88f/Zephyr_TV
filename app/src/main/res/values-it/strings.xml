@@ -423,6 +423,7 @@
     <string name="warp_not_allowed">Per avviarsi, WARP ha bisogno del permesso VPN.</string>
     <string name="warp_no_vpn">Questo dispositivo non può avviare una VPN.</string>
     <string name="warp_failed">Impossibile avviare WARP. Riprova più tardi.</string>
+    <string name="toast_safe_mode">Zephyr TV ha spento WARP e le estensioni dopo alcuni arresti. Puoi riattivarli nelle impostazioni.</string>
     <string name="warp_on_toast">WARP attivo: Zephyr TV passa da Cloudflare</string>
     <string name="warp_device">Tutto il dispositivo: l\'app 1.1.1.1</string>
     <string name="warp_switch">WARP per Zephyr TV</string>

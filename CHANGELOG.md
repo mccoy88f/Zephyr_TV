@@ -13,6 +13,16 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 3.9.0-beta.2
+
+- A focused card grows with a soft spring, then settles.
+- Hold OK for the same time on every remote. The menu opens from the moment you press.
+- In the Glass theme, a light crosses a focused app tile once.
+- After three crashes in five minutes, Zephyr TV turns WARP and extensions off and tells you.
+- Gallery pictures drift slowly while they stay on screen.
+- The home wallpaper drifts slowly. One photo still fades into the next.
+- In the Glass theme, tiles and panels show the blurred photo behind them.
+
 ## 3.7.14
 
 - YouYubeZ video and audio start on the same clock, so the first seconds do not stall.
