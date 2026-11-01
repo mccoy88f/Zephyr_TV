@@ -540,7 +540,7 @@ class MainActivity : Activity() {
             else -> intArrayOf(0xD9E2E5E9.toInt(), 0xD9D8DCE1.toInt())
         }
         cardLit = when {
-            glass -> intArrayOf(0xCC5A5A66.toInt(), 0xCC24242C.toInt())
+            glass -> intArrayOf(0xF04B6385.toInt(), 0xF0223552.toInt())
             dark -> intArrayOf(0xFF26262E.toInt(), 0xFF0C0C0F.toInt())
             else -> intArrayOf(Color.WHITE, Color.WHITE)
         }
@@ -2159,7 +2159,8 @@ class MainActivity : Activity() {
         v.setOnLongClickListener { if (!holdFired) fireHold(v); true }
         v.setOnFocusChangeListener { _, focused ->
             sheen.alpha = if (focused) 255 else 0
-            rim.setStroke(if (focused) dp(1) else 1, if (focused) 0x99FFFFFF.toInt() else 0x1FFFFFFF)
+            // A solid, wide rim remains visible from the sofa over detailed wallpapers.
+            rim.setStroke(if (focused) dp(3) else 1, if (focused) Color.WHITE else 0x1FFFFFFF)
             if (card) bg.colors = if (focused) cardLit else cardRest
             v.animate()
                 .scaleX(if (focused) lift else 1f).scaleY(if (focused) lift else 1f)
