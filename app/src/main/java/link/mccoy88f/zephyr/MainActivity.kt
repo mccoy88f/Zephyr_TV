@@ -1451,6 +1451,64 @@ class MainActivity : Activity() {
             false
         } ?: false
         if (settingsScrim.visibility == View.VISIBLE && currentFocus !== pinBox && currentFocus !is EditText) {
+            val leftScroll = detailLeftScroll
+            val inLeftCol = leftScroll != null && (currentFocus === detailDescView || isDescendantOf(currentFocus, leftScroll))
+            val inRightCol = leftScroll != null && isDescendantOf(currentFocus, findViewById(R.id.settingsPanel))
+            val firstRightRow = if (inLeftCol || inRightCol) (0 until settingsList.childCount).map { settingsList.getChildAt(it) }.firstOrNull { it.isFocusable } else null
+            val leftTitleView = leftScroll?.findViewWithTag<View>("leftTitle")?.takeIf { it.visibility == View.VISIBLE && it.isFocusable }
+            val leftTop = if (inLeftCol || inRightCol) (leftTitleView ?: detailDescView) else null
+
+            if (inLeftCol) {
+                if (e.action == KeyEvent.ACTION_DOWN) {
+                    when (e.keyCode) {
+                        KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                            val inCards = inHorizontal && currentFocus in detailLastLeftFocusables
+                            val nextCard = if (inCards) currentFocus?.focusSearch(View.FOCUS_RIGHT)?.takeIf { isDescendantOf(it, leftScroll!!) } else null
+                            if (nextCard != null && nextCard !== currentFocus) {
+                                nextCard.requestFocus()
+                                return true
+                            }
+                            if (firstRightRow != null && firstRightRow.requestFocus()) return true
+                            return true
+                        }
+                        KeyEvent.KEYCODE_DPAD_DOWN -> {
+                            val inCards = currentFocus in detailLastLeftFocusables
+                            if (inCards || (detailLastLeftFocusables.isEmpty() && currentFocus === detailDescView)) {
+                                if (firstRightRow != null && firstRightRow.requestFocus()) return true
+                                return true
+                            }
+                            if (currentFocus === leftTitleView) {
+                                if (detailDescView != null && detailDescView!!.requestFocus()) return true
+                            } else if (currentFocus === detailDescView && detailLastLeftFocusables.isNotEmpty()) {
+                                if (detailLastLeftFocusables[0].requestFocus()) return true
+                            }
+                        }
+                        KeyEvent.KEYCODE_DPAD_UP -> {
+                            if (currentFocus in detailLastLeftFocusables) {
+                                if (detailDescView != null && detailDescView!!.requestFocus()) return true
+                            } else if (currentFocus === detailDescView) {
+                                leftScroll?.smoothScrollTo(0, 0)
+                                if (leftTitleView != null && leftTitleView.requestFocus()) return true
+                                return true
+                            } else if (currentFocus === leftTitleView) {
+                                leftScroll?.smoothScrollTo(0, 0)
+                                return true
+                            }
+                        }
+                    }
+                } else if (e.action == KeyEvent.ACTION_UP && (e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT || e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || e.keyCode == KeyEvent.KEYCODE_DPAD_UP || e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN)) {
+                    return true
+                }
+            } else if (inRightCol) {
+                if (e.action == KeyEvent.ACTION_DOWN && e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    leftScroll?.smoothScrollTo(0, 0)
+                    if (leftTop != null && leftTop.requestFocus()) return true
+                    return true
+                } else if (e.action == KeyEvent.ACTION_UP && e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    return true
+                }
+            }
+
             if (e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN || e.keyCode == KeyEvent.KEYCODE_DPAD_UP) {
                 if (e.action == KeyEvent.ACTION_DOWN) {
                     val targetId = if (e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN) currentFocus?.nextFocusDownId else currentFocus?.nextFocusUpId

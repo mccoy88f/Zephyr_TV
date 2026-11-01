@@ -521,6 +521,7 @@ internal fun MainActivity.urlField(value: String, hint: String): EditText =
         setHintTextColor(if (dark) 0x66FFFFFF else 0x66000000)
         isSingleLine = true
         inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
+        filters = arrayOf(android.text.InputFilter.LengthFilter(1024 * 1024))
         setPadding(dp(14), dp(10), dp(14), dp(10))
         val bg = GradientDrawable().apply {
             cornerRadius = dp(8).toFloat()
@@ -548,6 +549,7 @@ internal fun MainActivity.textPage(title: String, value: String, hint: String, i
             Typing.SENTENCE -> android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
             Typing.KEY -> android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
         }
+        filters = arrayOf(android.text.InputFilter.LengthFilter(1024 * 1024))
     }
     val box = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL

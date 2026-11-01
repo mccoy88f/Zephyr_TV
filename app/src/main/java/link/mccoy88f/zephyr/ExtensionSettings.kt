@@ -511,12 +511,12 @@ internal val COLLECTOR_PKGS = mapOf(
 )
 
 /** The collector a content [type] goes to ("movie" → "movies", "channel" → "videos"); an extension's own type is a film's. */
-internal fun collectorOf(type: String) = when (type) {
+internal fun collectorOf(type: String) = when (type.lowercase()) {
     "movie", "movies" -> "movies"
     "series" -> "series"
     "tv" -> "tv"
     "radio" -> "radio"
-    "video", "videos", "channel" -> "videos"
+    "video", "videos", "channel", "youtube" -> "videos"
     "course", "courses" -> "courses"
     "podcast", "podcasts" -> "podcasts"
     "audiobook", "audiobooks" -> "audiobooks"

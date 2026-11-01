@@ -35,7 +35,7 @@ internal fun MainActivity.catalogSources(): List<String> {
 }
 
 /** The main catalog source (see catalogSources): Cinemeta by default. */
-internal fun MainActivity.cinemetaUrl(): String = catalogSources().first()
+internal fun MainActivity.cinemetaUrl(): String = catalogSources().firstOrNull { addonOn(it) } ?: catalogSources().first()
 
 /** Nuvio's catalog in the TMDB language and the TV's country: it follows them when they change. */
 internal fun MainActivity.nuvioUrl() = Stremio.nuvio(tmdbLang(), TmdbClient.region(tmdbLang()))
@@ -52,7 +52,7 @@ internal fun MainActivity.addonsVod(type: String = "movie"): VodPlace =
 internal fun vodKind(type: String) = if (type == "series") "series" else "movie"
 
 /** The add-ons films and series are listed from (the catalog sources first, in their order), as manifest addresses. */
-internal fun MainActivity.libraryUrls(): List<String> = (catalogSources() + shownAddonUrls()).distinct()
+internal fun MainActivity.libraryUrls(): List<String> = (catalogSources().filter { addonOn(it) } + shownAddonUrls()).distinct()
 
 /** The add-ons as read, those with film or series catalogs or streams. Reads them when they're missing (in the background). */
 internal fun MainActivity.vodAddons(): List<Stremio.Addon> = libraryUrls().mapNotNull { url ->

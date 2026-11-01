@@ -496,7 +496,8 @@ internal fun MainActivity.catalogName(url: String) =
 internal fun MainActivity.configureCinemeta(focus: Int = 0) {
     val sources = catalogSources()
     val rows = sources.mapIndexed { i, url ->
-        page(catalogName(url), if (i == 0) getString(R.string.catalog_primary) else "${i + 1}") { sourcePage(url) }
+        val state = if (!addonOn(url)) getString(R.string.state_off) else if (i == 0) getString(R.string.catalog_primary) else "${i + 1}"
+        page(catalogName(url), state) { sourcePage(url) }
     } + page(getString(R.string.catalog_add), SUBMENU) { addSourcePage() } + tmdbContentRows()
     val intro = label(getString(R.string.cinemeta_intro), 13f).apply {
         alpha = 0.7f
@@ -542,6 +543,13 @@ private fun MainActivity.sourcePage(url: String) {
     val addon = Stremio.saved(filesDir, url)?.addon
     val shelves = addon?.vod.orEmpty().filter { it.listed }
     showPage(catalogName(url), listOfNotNull(
+        page(getString(R.string.addon_on), toggle(addonOn(url))) {
+            val off = prefs.getStringSet(K.ADDONS_OFF, emptySet())!!.toMutableSet()
+            if (addonOn(url)) off += url else off -= url
+            prefs.edit().putStringSet(K.ADDONS_OFF, off).apply()
+            addonsChanged()
+            sourcePage(url)
+        },
         // Its rows, each shown or not, under Films, Series and its own tile alike.
         if (addon == null || shelves.isEmpty()) null else page(getString(R.string.catalog_rows), SUBMENU) {
             toggles(getString(R.string.catalog_rows), shelves.map { "${kindName(it.type)} · ${it.name}" to shelfKey(addon, it) },
@@ -562,32 +570,51 @@ private fun MainActivity.addSourcePage() {
     val known = (listOf(Stremio.CINEMETA, nuvioUrl()) + catalogUrls()).filter { it !in sources }
     showPage(getString(R.string.catalog_add), known.map { url ->
         page(catalogName(url)) { saveSources(sources + url); configureCinemeta(sources.size) }
-    } + page(getString(R.string.catalog_new_address), SUBMENU) { addCatalog() }) { configureCinemeta(sources.size) }
+    } + page(getString(R.string.catalog_new_address), SUBMENU) { catalogFromPhone() }) { configureCinemeta(sources.size) }
+}
+
+/** Add a catalog from a phone over a QR code: typing it with the remote is the row under it. */
+internal fun MainActivity.catalogFromPhone() {
+    val status = label(getString(R.string.addon_phone_waiting), 14f)
+    val page = PhonePages.text(phoneTexts(R.string.catalog_add, R.string.catalog_add_intro), getString(R.string.addon_hint))
+    showPhoneLink(getString(R.string.catalog_new_address), PhoneTask(page, 1024L * 1024) { file ->
+        val url = Stremio.manifestUrl(file.readText().lines().firstOrNull().orEmpty())
+            ?: return@PhoneTask 400 to getString(R.string.phone_epg_bad)
+        ui.post {
+            status.text = getString(R.string.addon_checking)
+            addCatalogUrl(url)
+        }
+        200 to getString(R.string.phone_addon_saved)
+    }, status, listOf(page(getString(R.string.addon_type)) { addCatalog() })) { addSourcePage() }
 }
 
 /** A catalog's address typed with the remote: added once it answers with catalogs of films or series. */
 private fun MainActivity.addCatalog() {
-    textPage(getString(R.string.catalog_new_address), "", getString(R.string.addon_hint), getString(R.string.catalog_add_intro), back = { addSourcePage() }) { typed ->
+    textPage(getString(R.string.catalog_new_address), "", getString(R.string.addon_hint), getString(R.string.catalog_add_intro), back = { catalogFromPhone() }) { typed ->
         listOf(page(getString(R.string.dialog_save)) {
             val url = Stremio.manifestUrl(typed()) ?: return@page Toast.makeText(this, getString(R.string.phone_epg_bad), Toast.LENGTH_LONG).show()
-            if (url == Stremio.CINEMETA) return@page configureCinemeta()
-            Toast.makeText(this, getString(R.string.addon_checking), Toast.LENGTH_SHORT).show()
-            updateAddon(url, null) { listing ->
-                val a = listing?.addon
-                when {
-                    a == null -> Toast.makeText(this, getString(R.string.toast_addon_failed), Toast.LENGTH_LONG).show()
-                    a.vod.isEmpty() -> {
-                        if (url !in addonUrls()) Stremio.forget(filesDir, url)
-                        Toast.makeText(this, getString(R.string.toast_catalog_no_vod), Toast.LENGTH_LONG).show()
-                    }
-                    else -> {
-                        saveCatalogUrls(catalogUrls() + url)
-                        saveSources(catalogSources() + url)
-                        configureCinemeta(catalogSources().indexOf(url).coerceAtLeast(0))
-                    }
-                }
-            }
+            addCatalogUrl(url)
         })
+    }
+}
+
+private fun MainActivity.addCatalogUrl(url: String) {
+    if (url == Stremio.CINEMETA) return configureCinemeta()
+    Toast.makeText(this, getString(R.string.addon_checking), Toast.LENGTH_SHORT).show()
+    updateAddon(url, null) { listing ->
+        val a = listing?.addon
+        when {
+            a == null -> Toast.makeText(this, getString(R.string.toast_addon_failed), Toast.LENGTH_LONG).show()
+            a.vod.isEmpty() -> {
+                if (url !in addonUrls()) Stremio.forget(filesDir, url)
+                Toast.makeText(this, getString(R.string.toast_catalog_no_vod), Toast.LENGTH_LONG).show()
+            }
+            else -> {
+                saveCatalogUrls(catalogUrls() + url)
+                saveSources(catalogSources() + url)
+                configureCinemeta(catalogSources().indexOf(url).coerceAtLeast(0))
+            }
+        }
     }
 }
 

@@ -173,7 +173,7 @@ internal fun MainActivity.cardsOnScreen() {
     for (row in cardRows()) {
         if ((row.getTag(R.id.watchScroll) as? RowCards)?.built != 0) continue
         val at = IntArray(2).also { (row.parent as? View ?: row).getLocationInWindow(it) }
-        if (at[1] < bottom) moreCards(row)
+        if (at[1] < bottom + dp(300)) moreCards(row)
     }
 }
 

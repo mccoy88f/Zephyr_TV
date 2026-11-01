@@ -114,9 +114,21 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
     val holds = HashMap<Int, () -> Unit>()
     val marks = VodWatched.all(vodDir())
 
-    val episodic = sources.isNotEmpty() && t.type == "series" && meta.episodes.isNotEmpty()
+    val episodic = sources.isNotEmpty() && (t.type == "series" || meta.episodes.size > 1)
     if (sources.isEmpty()) {
         rows += page(getString(R.string.title_no_streams)) { }
+    } else if (t.type != "series" && meta.episodes.size > 1) {
+        val begun = VodProgress.all(vodDir()).associateBy { it.id }
+        meta.episodes.forEach { e ->
+            val name = e.name.ifBlank { getString(R.string.title_episode_n, e.episode) }
+            val value = begun[e.id]?.let { if (it.upNext) getString(R.string.title_up_next) else clock(it.position) }
+                ?: if (e.id in marks) "✓" else ""
+            holds[rows.size] = {
+                markWatched(meta, listOf(e), e.id !in marks)
+                showVodTitle(meta, ref, services.known, focusRow = rows.size)
+            }
+            rows += page(name, value) { showVodEpisode(meta, ref, e, services.known) }
+        }
     } else if (!episodic) {
         val at = VodProgress.position(vodDir(), t.id)
         val seen = t.id in marks
@@ -296,7 +308,8 @@ internal fun MainActivity.showVodEpisode(given: Stremio.TitleMeta, ref: TitleRef
     if (handheld()) rows += page(getString(R.string.share)) { shareTitle(t.type, t.id, t.name, e.season, e.episode) }
     val targetFocus = if (focus < 0 && top.descView != null) -1 else if (focus < 0) 0 else focus
     titlePage(title, art, ref.fallback, t.name, top, rows, targetFocus, icons, servicesBar = servicesBar) {
-        showVodSeason(meta, ref, e.season, services.known, e.id)
+        if (t.type != "series") showVodTitle(meta, ref, services.known)
+        else showVodSeason(meta, ref, e.season, services.known, e.id)
     }
     services.later { showVodEpisode(meta, ref, e, it, found, focusedRow() ?: targetFocus) }
     if (found == null) warmTitle(t.type, e.id, sources, title) { counts -> showVodEpisode(meta, ref, e, services.known, counts, focusedRow() ?: targetFocus) }
@@ -626,17 +639,18 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
     }
     val focusBg = (fg and 0xFFFFFF) or 0x2E000000
     val descBg = GradientDrawable().apply {
-        cornerRadius = dp(10).toFloat()
+        cornerRadius = dp(14).toFloat()
         setColor(Color.TRANSPARENT)
     }
     descView?.background = descBg
+    descView?.alpha = 0.75f
     descView?.setOnFocusChangeListener { _, focused ->
         val from = if (focused) Color.TRANSPARENT else focusBg
         val to = if (focused) focusBg else Color.TRANSPARENT
         android.animation.ValueAnimator.ofArgb(from, to).setDuration(180).apply {
             addUpdateListener { descBg.setColor(it.animatedValue as Int) }
         }.start()
-        descView.alpha = if (focused) 1f else 0.85f
+        descView.alpha = if (focused) 1f else 0.75f
         if (focused) {
             var p = descView.parent
             while (p != null && p !is android.widget.ScrollView) {
@@ -982,7 +996,6 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
             }
             settingsList.addView(twoLineRow(s.title.ifBlank { s.url.substringAfterLast('/').take(60) }, s.source.orEmpty()) {
                 pageReturn = back
-                closeLauncherSettings()
                 playTitle(ref, meta, episode, chosen = s)
             }.apply {
                 tag = s.url
