@@ -137,7 +137,7 @@ class YouYubeZTest {
         assertTrue(!zephyr.has("ytId") || zephyr.optString("ytId").isEmpty())
         assertEquals("dQw4w9WgXcQ", streams.getJSONObject(1).getString("ytId"))
         val req = seen.first { it.getString("url").startsWith("https://www.youtube.com/youtubei/v1/player") }
-        assertTrue(req.getString("body").contains("ANDROID_VR"))
+        assertTrue(req.getString("body").contains("VISIONOS"))
         val cookieReqs = seen.filter { it.getString("url").startsWith("https://www.youtube.com/youtubei/v1/player") }
         assertTrue(cookieReqs.first().optJSONObject("headers")?.optString("Cookie").isNullOrEmpty())
     }
@@ -223,6 +223,47 @@ class YouYubeZTest {
         assertEquals(1, out.getJSONArray("metas").length())
         assertEquals("ytz:dQw4w9WgXcQ", out.getJSONArray("metas").getJSONObject(0).getString("id"))
         assertTrue(seen.any { it.optJSONObject("headers")?.optString("User-Agent").orEmpty().contains("com.google.android.youtube/") })
+    }
+
+    @Test fun catalogSkipsAdsAndShorts() {
+        val page = """{"contents":[
+            {"promotedVideoRenderer":{"videoRenderer":{"videoId":"AAAAAAAAAAA","title":{"simpleText":"Ad"}}}},
+            {"adSlotRenderer":{"adSlot":true}},
+            {"videoRenderer":{"videoId":"dQw4w9WgXcQ","title":{"simpleText":"Rick"},
+              "badges":[{"metadataBadgeRenderer":{"label":"Ad"}}]}},
+            {"videoRenderer":{"videoId":"oHg5SJYRHA0","title":{"simpleText":"Short"},
+              "navigationEndpoint":{"reelWatchEndpoint":{"videoId":"oHg5SJYRHA0"}}}},
+            {"videoRenderer":{"videoId":"jNQXAC9IVRw","title":{"simpleText":"Me at the zoo"}}}
+        ]}"""
+        val out = run(
+            """module.exports.catalog({id:"search", extra:{search:"zoo"}, settings:{}})""",
+            mapOf("https://www.youtube.com/youtubei/v1/search" to page),
+        )
+        val metas = out.getJSONArray("metas")
+        assertEquals(1, metas.length())
+        assertEquals("ytz:jNQXAC9IVRw", metas.getJSONObject(0).getString("id"))
+    }
+
+    @Test fun streamListsHlsAheadOfMuxed360() {
+        val player = """{"playabilityStatus":{"status":"OK"},"streamingData":{
+            "hlsManifestUrl":"https://manifest.googlevideo.com/api/manifest/hls_playlist/x.m3u8",
+            "formats":[{"itag":18,"qualityLabel":"360p","mimeType":"video/mp4; codecs=\"avc1, mp4a\"",
+             "url":"https://rr1.googlevideo.com/videoplayback?id=mux"}],
+            "adaptiveFormats":[
+            {"itag":137,"qualityLabel":"1080p","mimeType":"video/mp4; codecs=\"avc1\"","width":1920,"height":1080,
+             "url":"https://rr1.googlevideo.com/videoplayback?id=v1080"},
+            {"itag":140,"audioQuality":"AUDIO_QUALITY_MEDIUM","mimeType":"audio/mp4; codecs=\"mp4a.40.2\"",
+             "url":"https://rr1.googlevideo.com/videoplayback?id=a140"}]}}"""
+        val out = run(
+            """module.exports.stream({id:"ytz:dQw4w9WgXcQ", settings:{play:"zephyr"}})""",
+            mapOf("https://www.youtube.com/youtubei/v1/player" to player),
+        )
+        val streams = out.getJSONArray("streams")
+        assertEquals("1080p Auto", streams.getJSONObject(0).getString("title"))
+        assertTrue(streams.getJSONObject(0).getString("url").contains("hls_playlist"))
+        assertEquals("1080p", streams.getJSONObject(1).getString("title"))
+        assertEquals("https://rr1.googlevideo.com/videoplayback?id=a140",
+            streams.getJSONObject(1).getJSONObject("behaviorHints").getString("audioUrl"))
     }
 
     @Test fun discoverFallsBackToSearchWhenBrowseIsEmpty() {

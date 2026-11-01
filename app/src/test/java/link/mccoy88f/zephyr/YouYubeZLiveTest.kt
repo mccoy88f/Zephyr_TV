@@ -34,12 +34,15 @@ class YouYubeZLiveTest {
         assertTrue("discover must list videos", discover.length() > 0)
         val raw = run("""module.exports.stream({id:"ytz:dQw4w9WgXcQ", settings:{play:"both", cookies:$q}})""")
         val parsed = Stremio.streams(raw, vod = true, external = true)
-        val direct = parsed.filter { it.app == null && it.url.contains("googlevideo") }
-        println("DIRECT ${direct.size} first=${direct.firstOrNull()?.title} audio=${direct.firstOrNull()?.audio != null}")
-        assertTrue("paired googlevideo streams", direct.isNotEmpty() && direct.first().audio != null)
-        val probe = Stremio.probe(direct.first().url, direct.first().headers)
+        val direct = parsed.filter { it.app == null && (it.url.contains("googlevideo") || it.url.contains("manifest")) }
+        println("DIRECT ${direct.map { it.title }}")
+        assertTrue("more than muxed 360p", direct.size > 1 || direct.any { it.title.contains("Auto") || it.audio != null })
+        val play = direct.first { it.title.contains("Auto") || it.audio != null || !it.title.contains("360") }
+        val probe = Stremio.probe(play.url, play.headers)
         assertTrue("direct url answers ${probe.why}", probe.ok)
-        val audio = Stremio.probe(direct.first().audio!!, direct.first().headers)
-        assertTrue("audio url answers ${audio.why}", audio.ok)
+        play.audio?.let { audio ->
+            val a = Stremio.probe(audio, play.headers)
+            assertTrue("audio url answers ${a.why}", a.ok)
+        }
     }
 }
