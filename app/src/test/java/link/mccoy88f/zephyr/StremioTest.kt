@@ -114,6 +114,48 @@ class StremioTest {
         assertEquals("Film%20-%20Serie%20TV", Stremio.enc("Film - Serie TV"))
     }
 
+    @Test fun aRefusalKeepsEveryCatalog() {
+        val url = "zext://live-rows/manifest.json"
+        val manifest = JSONObject("""{"id":"live","name":"Live","catalogs":[
+            {"type":"tv","id":"one","name":"One"},
+            {"type":"tv","id":"two","name":"Two"},
+            {"type":"tv","id":"three","name":"Three"}]}""")
+        fun page(prefix: String, n: Int) = JSONObject().put("metas", org.json.JSONArray().apply {
+            repeat(n) { put(JSONObject().put("id", "$prefix-$it").put("type", "tv").put("name", "$prefix $it")) }
+        })
+        var blockTwo = false
+        val calls = ArrayList<String>()
+        val previous = Stremio.local
+        val dir = java.nio.file.Files.createTempDirectory("stremio").toFile()
+        try {
+            Stremio.local = { address, _ ->
+                calls += address
+                when {
+                    address.endsWith("/manifest.json") -> manifest
+                    address.contains("skip=") -> throw java.io.IOException("HTTP 503")
+                    address.contains("/one.json") -> page("one", 60)
+                    address.contains("/two.json") -> if (blockTwo) throw java.io.IOException("HTTP 503") else page("two", 3)
+                    address.contains("/three.json") -> page("three", 4)
+                    else -> JSONObject().put("metas", org.json.JSONArray())
+                }
+            }
+            val first = Stremio.update(dir, url)
+            assertEquals(listOf("one", "two", "three"), first!!.rows.map { it.catalog.id })
+            assertEquals(60, first.rows.first { it.catalog.id == "one" }.items.size)
+            val skipAt = calls.indexOfFirst { it.contains("skip=") }
+            val threeAt = calls.indexOfFirst { it.contains("/three.json") }
+            org.junit.Assert.assertTrue(threeAt >= 0 && skipAt > threeAt) // every catalog's first page, then later pages
+            blockTwo = true
+            val second = Stremio.update(dir, url)
+            assertEquals(listOf("one", "two", "three"), second!!.rows.map { it.catalog.id })
+            assertEquals(60, second.rows.first { it.catalog.id == "one" }.items.size)
+            assertEquals(listOf("two 0", "two 1", "two 2"), second.rows.first { it.catalog.id == "two" }.items.map { it.name })
+        } finally {
+            Stremio.local = previous
+            dir.deleteRecursively()
+        }
+    }
+
     @Test fun anotherAppsStreamIsNotCheckedOnTheWeb() {
         // A YouTube live (an extension's ytId) is opened by its app: nothing to ask, and never a failure that closes the player.
         org.junit.Assert.assertTrue(Stremio.probe("vnd.youtube:abcdefghijk", emptyMap()).ok)

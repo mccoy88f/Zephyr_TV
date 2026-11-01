@@ -191,13 +191,28 @@ internal object Stremio {
         try {
             val manifest = get(url)
             val addon = addon(url, manifest)
-            // A catalog that fails leaves the others (an add-on can have TV, films, series or only some): only
-            // all of them failing is the add-on failing.
+            // The rows already saved. A catalog that refuses this time keeps them: one answer out of many used to
+            // replace the whole list, so a phone showed a single row while a TV still had every catalog.
+            val previous = saved(dir, url)?.rows.orEmpty()
+            fun kept(id: String) = previous.filter { it.catalog.id == id }
+            // One page of every catalog first. A long one (its later pages fetch the whole list again) would
+            // otherwise draw every answer the site will give before the catalogs after it are asked.
             var failures = 0
+            val first = addon.catalogs.associate { c ->
+                c.id to runCatching { items(addon, c, null, pages = 1) }.onFailure {
+                    failures++
+                    warn("Stremio catalog failed: ${Uri.host(url)} ${c.id} ($it)")
+                }.getOrNull()
+            }
             val rows = addon.catalogs.flatMap { c ->
-                runCatching { rows(addon, c) }.getOrElse { failures++; warn("Stremio catalog failed: ${Uri.host(url)} ${c.id} ($it)"); emptyList() }
+                when (val head = first[c.id]) {
+                    null -> kept(c.id)
+                    else -> if (head.isEmpty()) emptyList() else rows(addon, c, seed = head, rest = head.size >= 50)
+                }
             }.filter { it.items.isNotEmpty() }
-            if (failures > 0 && failures == addon.catalogs.size) throw java.io.IOException("every TV catalog failed")
+            // Every catalog refused, and none was saved before: the add-on failed. A refusal that leaves the
+            // saved rows is the list, still.
+            if (rows.isEmpty() && failures > 0 && failures == addon.catalogs.size) throw java.io.IOException("every TV catalog failed")
             val items = rows.flatMap { it.items }.distinctBy { it.id }
             val saved = JSONObject().put("manifest", manifest)
                 .put("items", JSONArray(items.map { JSONObject().put("type", it.type).put("id", it.id).put("name", it.name)
@@ -279,22 +294,31 @@ internal object Stremio {
     }
 
     /**
-     * A catalog's rows: the whole of it, then one per category. When its channels say their categories (some do),
-     * those rows come from the whole one, without asking again for each; else each category is asked for.
+     * A catalog's rows: the whole of it, then one per category. [seed] is its first page, already read.
+     * [rest]: read the pages after it. When its channels say their categories (some do), those rows come from
+     * the whole one, without asking again for each; else each category is asked for.
      */
-    private fun rows(addon: Addon, c: Catalog): List<Row> {
-        val all = items(addon, c, null)
+    private fun rows(addon: Addon, c: Catalog, seed: List<Item> = emptyList(), rest: Boolean = true): List<Row> {
+        val all = if (!rest && seed.isNotEmpty()) seed else items(addon, c, null, seed = seed)
         val known = all.any { it.genres.isNotEmpty() }
         return listOf(Row(c, null, all)) + c.genres.map { g -> Row(c, g, if (known) all.filter { g in it.genres } else items(addon, c, g)) }
     }
 
-    /** A catalog's channels, all its pages: whole, or those of one [genre]. */
-    private fun items(addon: Addon, c: Catalog, genre: String?): List<Item> {
+    /** A catalog's channels, all its pages: whole, or those of one [genre]. [seed] counts as the first page. */
+    private fun items(addon: Addon, c: Catalog, genre: String?, pages: Int = MAX_PAGES, seed: List<Item> = emptyList()): List<Item> {
         val out = LinkedHashMap<String, Item>()
-        for (page in 0 until MAX_PAGES) {
+        seed.forEach { out.putIfAbsent(it.id, it) }
+        for (page in (if (seed.isEmpty()) 0 else 1) until pages) {
             val extra = listOfNotNull(genre?.let { "genre=${enc(it)}" }, if (out.isEmpty()) null else "skip=${out.size}").joinToString("&")
             val path = "${addon.base}/catalog/${enc(c.type)}/${enc(c.id)}" + (if (extra.isEmpty()) "" else "/$extra") + ".json"
-            val metas = items(get(path))
+            // A later page that fails leaves the pages already read. The row stays, shorter, instead of vanishing.
+            val metas = try {
+                items(get(path))
+            } catch (e: Exception) {
+                if (out.isEmpty()) throw e
+                warn("Stremio catalog page failed: ${Uri.host(addon.url)} ${c.id} ($e)")
+                break
+            }
             val before = out.size
             for (it in metas) out.putIfAbsent(it.id, it)
             // A short page is the last; one with nothing new means the add-on ignores "skip".

@@ -13,6 +13,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.0.0-beta.2
+
+- Zephyr TV reads one page of every add-on catalog before it reads the later pages.
+- A catalog that fails keeps its saved row. The other rows stay on screen.
+
 ## 4.0.0-beta.1
 
 - In the Glass theme, the light waits until you rest on an app tile.
