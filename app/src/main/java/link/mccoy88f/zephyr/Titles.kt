@@ -242,9 +242,12 @@ private val refreshing = java.util.Collections.synchronizedSet(HashSet<String>()
 private fun MainActivity.refreshShelves(addon: Stremio.Addon, pkg: String) {
     if (!refreshing.add(addon.url)) return
     netIo.execute {
-        val ok = runCatching { Stremio.updateShelves(filesDir, addon) }.onFailure { warn("Stremio catalogs failed: ${android.net.Uri.parse(addon.url).host} ($it)") }.isSuccess
+        val had = Stremio.shelves(filesDir, addon).any { it.titles.isNotEmpty() }
+        val got = runCatching { Stremio.updateShelves(filesDir, addon) }.onFailure { warn("Stremio catalogs failed: ${android.net.Uri.parse(addon.url).host} ($it)") }.getOrNull()
         refreshing.remove(addon.url)
-        if (ok) ui.post { rowsAgain(pkg) }
+        val has = got?.any { it.titles.isNotEmpty() } == true
+        // Still empty: leave the app as it is. The next time the user opens it, vodDue tries again.
+        if (got != null && (has || had)) ui.post { rowsAgain(pkg) }
     }
 }
 

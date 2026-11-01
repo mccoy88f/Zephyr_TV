@@ -244,7 +244,7 @@ internal fun MainActivity.updateAddon(url: String, pkg: String?, done: ((Stremio
     ui.post {
         done?.invoke(listing)
         if (tiles && listing != null && (logo || first)) refreshApps()
-        if (listing != null) rowsAgain(pkg)
+        if (listing != null && (listing.rows.isNotEmpty() || first)) rowsAgain(pkg)
     }
 }
 

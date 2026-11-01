@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 3.7.8
+
+- An app with no rows tries its catalogs again each time you open it.
+
 ## 3.7.7
 
 - Saving YouYubeZ cookies reads its lists again. Empty lists are not kept for hours.

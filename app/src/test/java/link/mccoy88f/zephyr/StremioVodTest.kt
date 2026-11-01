@@ -206,14 +206,13 @@ class StremioVodTest {
         assertEquals("radio", collectorOf("radio"))
     }
 
-    @Test fun emptyVideoShelvesAreDueAgainAfterARetry() {
+    @Test fun emptyVideoShelvesAreDueAsSoonAsTheAppOpens() {
         val dir = kotlin.io.path.createTempDirectory("stremio").toFile()
         val url = Stremio.EXT + "org.zephyr.youyubez/manifest.json"
         val key = java.security.MessageDigest.getInstance("SHA-1").digest(url.toByteArray())
             .joinToString("") { "%02x".format(it) }.take(16)
         val f = java.io.File(dir, "stremio_vod2_$key.json")
         f.writeText("""{"shelves":[]}""")
-        f.setLastModified(System.currentTimeMillis() - 6 * 60_000L)
         assertTrue(Stremio.vodDue(dir, url))
         f.writeText("""{"shelves":[{"type":"video","catalog":"discover","metas":[{"id":"ytz:dQw4w9WgXcQ","type":"video","name":"x"}]}]}""")
         assertFalse(Stremio.vodDue(dir, url))

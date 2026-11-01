@@ -160,13 +160,16 @@ internal object Stremio {
         return listing
     }
 
-    /** Whether the add-on's channels are missing or a quarter of an hour old, and a failed try isn't too recent. */
+    /** Whether the add-on's channels are missing, empty, or a quarter of an hour old, and a failed try isn't too recent. */
     fun due(dir: File, url: String): Boolean {
         val now = System.currentTimeMillis()
-        val f = file(dir, url)
-        if (f.exists() && now - f.lastModified() < MAX_AGE_MS) return false
         val fail = failed(dir, url)
-        return !(fail.exists() && now - fail.lastModified() < RETRY_MS)
+        if (fail.exists() && now - fail.lastModified() < RETRY_MS) return false
+        val f = file(dir, url)
+        if (!f.exists()) return true
+        val listing = saved(dir, url)
+        if (listing != null && listing.addon.catalogs.isNotEmpty() && listing.rows.isEmpty()) return true
+        return now - f.lastModified() >= MAX_AGE_MS
     }
 
     /** Forgets what's saved for an add-on the user removed (its channels, and its film and series catalogs). */
@@ -329,15 +332,13 @@ internal object Stremio {
     // v2: with each title's genres and rating.
     private fun shelfFile(dir: File, url: String) = File(dir, "stremio_vod2_${key(url)}.json")
 
-    /** Whether the add-on's film and series catalogs are missing, empty, or a few hours old. */
+    /** Whether the add-on's film and series catalogs are missing, empty, or a few hours old. Empty: try again as soon as the app opens. */
     fun vodDue(dir: File, url: String): Boolean {
         val f = shelfFile(dir, url)
         if (!f.exists()) return true
-        val age = System.currentTimeMillis() - f.lastModified()
-        if (age > VOD_AGE_MS) return true
+        if (System.currentTimeMillis() - f.lastModified() > VOD_AGE_MS) return true
         val list = runCatching { JSONObject(f.readText()).optJSONArray("shelves") }.getOrNull() ?: return true
-        val empty = (0 until list.length()).none { i -> (list.optJSONObject(i)?.optJSONArray("metas")?.length() ?: 0) > 0 }
-        return empty && age > RETRY_MS
+        return (0 until list.length()).none { i -> (list.optJSONObject(i)?.optJSONArray("metas")?.length() ?: 0) > 0 }
     }
 
     @Volatile private var shelves: Map<String, Pair<Long, List<Shelf>>> = emptyMap()
