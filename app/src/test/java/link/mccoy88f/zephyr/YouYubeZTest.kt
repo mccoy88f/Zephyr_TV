@@ -158,11 +158,20 @@ class YouYubeZTest {
         assertTrue(playerReqs[0].optJSONObject("headers")?.optString("Cookie").isNullOrEmpty())
     }
 
+    @Test fun catalogsWithoutCookiesStillListDiscoverAndTrending() {
+        val m = run("""module.exports.manifest({settings:{}})""", emptyMap())
+        val ids = (0 until m.getJSONArray("catalogs").length()).map { m.getJSONArray("catalogs").getJSONObject(it).getString("id") }
+        assertEquals(listOf("discover", "trending", "search"), ids)
+        assertTrue(m.getJSONArray("catalogs").getJSONObject(0).optJSONArray("extra")?.let { extra ->
+            (0 until extra.length()).none { extra.getJSONObject(it).optBoolean("isRequired") }
+        } == true)
+    }
+
     @Test fun netscapeCookiesBecomeACookieHeaderAndUnlockTheFourLists() {
         val netscape = "# Netscape HTTP Cookie File\n.youtube.com\tTRUE\t/\tTRUE\t0\tSID\tabc\n.youtube.com\tTRUE\t/\tTRUE\t0\tSAPISID\txyz"
         val m = run("""module.exports.manifest({settings:{cookies:${JSONObject.quote(netscape)}}})""", emptyMap())
         val ids = (0 until m.getJSONArray("catalogs").length()).map { m.getJSONArray("catalogs").getJSONObject(it).getString("id") }
-        assertEquals(listOf("discover", "subs", "later", "history", "search"), ids)
+        assertEquals(listOf("discover", "subs", "later", "history", "trending", "search"), ids)
 
         val seen = ArrayList<JSONObject>()
         run(

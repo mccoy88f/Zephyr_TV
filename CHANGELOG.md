@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 3.7.4
+
+- An extension's own app shows its video rows, also when they are in **Videos**.
+
 ## 3.7.3
 
 - A video's page lists its channel as the director.

@@ -656,7 +656,7 @@ internal fun MainActivity.extensionOwnApp(url: String): Boolean {
     val read = Stremio.saved(filesDir, url)?.addon?.let { a -> (a.catalogs + a.vod).map { it.type } }
     val types = read ?: Extensions.list(e, "catalogs").let { c -> (0 until c.length()).mapNotNull { c.optJSONObject(it)?.optString("type") } }
     if (types.isEmpty()) return true // not read yet, or not set up: its app, once it has something
-    return types.any { t -> !extensionRoutes(url, t) && contentPlace(t) != VodPlace.OFF }
+    return types.any { t -> contentPlace(t) != VodPlace.OFF }
 }
 
 /** The tile of the add-on at [url]'s own app. */
