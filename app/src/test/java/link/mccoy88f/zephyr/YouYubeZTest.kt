@@ -179,7 +179,10 @@ class YouYubeZTest {
             mapOf("https://www.youtube.com/youtubei/v1/browse" to """{"contents":{"videoRenderer":{"videoId":"dQw4w9WgXcQ","title":{"simpleText":"x"}}}}"""),
             seen,
         )
-        assertEquals("SID=abc; SAPISID=xyz", seen.single().getJSONObject("headers").getString("Cookie"))
+        val headers = seen.single().getJSONObject("headers")
+        assertEquals("SID=abc; SAPISID=xyz", headers.getString("Cookie"))
+        assertTrue(headers.getString("Authorization").startsWith("SAPISIDHASH "))
+        assertEquals("https://www.youtube.com", headers.getString("X-Origin"))
     }
 
     @Test fun discoverFallsBackToAndroidWhenWebListsNothing() {
