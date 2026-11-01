@@ -209,15 +209,21 @@ Repositories update by themselves once a day. Plugins that declare only language
 Extensions are Zephyr TV's own format to add films, series, TV channels, radio, videos and more. As Nuvio plugins
 do, they run on the TV, apart from everything else and with access to the internet only. **Add only extensions you
 trust.** **OMG Premium TV** is suggested in the list: OK installs it. Add your M3U playlists or Xtream accounts in its
-**Options**, and the channels, films and series show in its app.
+**Options**, and the channels, films and series show in its app. **YouYubeZ** is there too: YouTube search and play in
+Zephyr TV (not affiliated with YouTube). In its **Options**: **Play with** (YouTube app, Zephyr TV player, or both);
+**Cookies** (paste from your phone: **Subscriptions**, **Watch later** and **History**); **Visible sections** (video
+rows from keywords — **Discover** and **Trending** are already there; add as many as you want).
 
 **Settings → Extra features → Zephyr Extensions**:
 
 - **Add an extension**: the address of its `manifest-zephyrtv.json` (or of the folder it's in), pasted from your
   phone or typed with the remote; or its `.zip` file sent from your phone. Before installing it, Zephyr TV shows what
   it is, who wrote it and what it provides.
-- **Each extension** has a page with **On**, **Options** (the same **Enter from your phone…** page as the rest of Zephyr TV), **Virtual app** (**Follow the system**, **Show** or **Hide**), **Adult content (18+)**, **Move up / Move down**, **Update now** and
+- **Each extension** has a page with **On**, **Options**, **Virtual app** (**Follow the system**, **Show** or **Hide**), **Adult content (18+)**, **Move up / Move down**, **Update now** and
   **Remove**.
+- **Options** are the extension's own: switches, a choice from a list, a text (**Enter from your phone…**, or type
+  with the remote), and **lists** of items you add, edit, move and remove (a name and keywords, a playlist, an
+  account). A change of **Cookies** or of a list of sections rereads its rows.
 - Where the content shows is yours to set per kind (**Videos**, **Radio**, films…): a virtual app, one app per
   add-on, or off. **Virtual app** on the extension follows that, or shows or hides its tile. With no listable catalogs it has no tile.
 - **Check for updates**: Zephyr TV also does it by itself, once a day.

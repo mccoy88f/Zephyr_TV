@@ -205,6 +205,7 @@ module.exports = {
   async featured({ settings })                  { return { metas: [] }; },
   async manifest({ settings })                  { return { catalogs: [] }; },  // optional
   async settings({ settings })                  { return []; },                // optional, see 5
+  async verify({ settings })                    { return { cookies: false, loggedIn: false }; }, // optional
 };
 ```
 
@@ -217,6 +218,7 @@ module.exports = {
 | `featured` | for Spotlight, and the top of the extension's app | — | `{ metas: [Meta preview] }`, up to 20, each with a `background` (a wide picture) and a `description` |
 | `manifest` | when settings change, and on install | — | `{ catalogs }`: the catalogs as they are with these settings, replacing the manifest's |
 | `settings` | when its options page opens | — | the fields (see 5) |
+| `verify` | after a `cookies` field is saved | — | `{ cookies, loggedIn, catalogs? }`: whether the cookies look valid, whether the source accepted the session, and a count per catalog |
 
 Every handler gets `settings`, the values the user chose (see 5). An answer may carry Stremio's `cacheMaxAge`
 (seconds): Zephyr TV keeps it that long. Without it, catalogs are kept 6 hours, `meta` a day, `stream` not at all.
@@ -293,9 +295,10 @@ plugins with one more type, `list`:
 | `text` | a text: Zephyr TV's **Enter from your phone…** page (QR code), or typed with the remote | `key`, `label`, `description`, `placeholder`, `defaultValue`, `isPassword` |
 | `select` | one choice of a list | `key`, `label`, `description`, `options: [{ label, value }]`, `defaultValue` |
 | `toggle` | yes or no | `key`, `label`, `description`, `defaultValue` (boolean) |
-| `list` | **Zephyr TV.** Items the user adds, edits, moves and removes | `key`, `label`, `description`, `item`: the fields of one item (no `list` inside), `itemLabel`: the key whose value names an item |
+| `list` | **Zephyr TV.** Items the user adds, edits, moves and removes | `key`, `label`, `description`, `defaultValue` (array of items), `item`: the fields of one item (no `list` inside), `itemLabel`: the key whose value names an item |
 
-Values are JSON: a `list` is an array of objects, one per item, keyed by its fields' `key`s.
+Values are JSON: a `list` is an array of objects, one per item, keyed by its fields' `key`s. A `list` that has no
+value yet uses `defaultValue`. The user can add as many items as they want.
 
 ```js
 async settings() {
@@ -313,6 +316,7 @@ async settings() {
 
 The values reach every handler as `args.settings` (and `globalThis.SCRAPER_SETTINGS`, as for Nuvio's plugins).
 When they change, Zephyr TV calls `manifest()` (when exported) and `guide()` again, and reads the catalogs anew.
+A field whose `key` is `cookies` also runs `verify()` (when exported), then rereads the catalogs.
 Values are kept on the TV only, in Zephyr TV's backups too; `isPassword` values are shown hidden.
 
 ## 6. The runtime
@@ -607,8 +611,11 @@ by, or connected to YouTube or Google.** YouTube is a trademark of Google LLC. I
 
 Skeleton: [Zephyr-TV-Extensions/youyubez](https://github.com/mccoy88f/Zephyr-TV-Extensions/tree/main/youyubez).
 
-- **Play with** (options): **YouTube app** (`ytId`), **Zephyr TV player** (a stream from the client, when the
-  library and the player allow it), or **Both** (two rows in the stream list).
-- **Cookies**: Zephyr TV's **Enter from your phone…** page (`isPassword`). With no cookies: public search. With cookies:
-  by default the four localised lists — **Discover**, **Subscriptions**, **Watch later**, **History**.
+- **Play with** (options): **YouTube app** (`ytId`), **Zephyr TV player** (a stream from InnerTube, video plus paired
+  audio), or **Both** (two rows in the stream list).
+- **Cookies**: Zephyr TV's **Enter from your phone…** page (`isPassword`). They are needed for **Subscriptions**,
+  **Watch later** and **History**. After they are pasted, Zephyr TV calls `verify()` and rereads the lists.
+- **Visible sections** (`list` of `name` + `keywords`): video rows from keyword search. **Discover** and **Trending**
+  are the two default items; the user can change them, remove them, or add as many as they want. Search stays in the
+  list. Account lists still need cookies.
 - `requires`: `["libraries"]`. `collectors`: `["videos"]`.

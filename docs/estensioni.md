@@ -209,6 +209,7 @@ module.exports = {
   async featured({ settings })                  { return { metas: [] }; },
   async manifest({ settings })                  { return { catalogs: [] }; },  // facoltativo
   async settings({ settings })                  { return []; },                // facoltativo, vedi 5
+  async verify({ settings })                    { return { cookies: false, loggedIn: false }; }, // facoltativo
 };
 ```
 
@@ -221,6 +222,7 @@ module.exports = {
 | `featured` | per lo Spotlight, e in cima all'app dell'estensione | — | `{ metas: [Meta ridotto] }`, fino a 20, ognuno con un `background` (un'immagine larga) e una `description` |
 | `manifest` | quando cambiano le impostazioni, e all'installazione | — | `{ catalogs }`: i cataloghi come sono con queste impostazioni, al posto di quelli del manifest |
 | `settings` | quando si apre la pagina delle opzioni | — | i campi (vedi 5) |
+| `verify` | dopo il salvataggio di un campo `cookies` | — | `{ cookies, loggedIn, catalogs? }`: se i cookie sembrano validi, se la fonte ha accettato la sessione, e un conteggio per catalogo |
 
 Ogni handler riceve `settings`, i valori scelti dall'utente (vedi 5). Una risposta può avere il `cacheMaxAge` di
 Stremio (in secondi): Zephyr TV la conserva per quel tempo. Senza, i cataloghi si conservano 6 ore, `meta` un giorno,
@@ -300,9 +302,10 @@ Nuvio e un tipo in più, `list`:
 | `text` | un testo: la pagina **Inserisci dal telefono…** di Zephyr TV (codice QR), oppure scritto con il telecomando | `key`, `label`, `description`, `placeholder`, `defaultValue`, `isPassword` |
 | `select` | una scelta da una lista | `key`, `label`, `description`, `options: [{ label, value }]`, `defaultValue` |
 | `toggle` | sì o no | `key`, `label`, `description`, `defaultValue` (booleano) |
-| `list` | **Zephyr TV.** Elementi che l'utente aggiunge, modifica, sposta e rimuove | `key`, `label`, `description`, `item`: i campi di un elemento (senza altre `list`), `itemLabel`: la chiave il cui valore dà il nome a un elemento |
+| `list` | **Zephyr TV.** Elementi che l'utente aggiunge, modifica, sposta e rimuove | `key`, `label`, `description`, `defaultValue` (array di elementi), `item`: i campi di un elemento (senza altre `list`), `itemLabel`: la chiave il cui valore dà il nome a un elemento |
 
-I valori sono JSON: una `list` è un array di oggetti, uno per elemento, con le `key` dei suoi campi.
+I valori sono JSON: una `list` è un array di oggetti, uno per elemento, con le `key` dei suoi campi. Una `list` senza
+valore usa `defaultValue`. L'utente può aggiungere quanti elementi vuole.
 
 ```js
 async settings() {
@@ -320,6 +323,7 @@ async settings() {
 
 I valori arrivano a ogni handler come `args.settings` (e come `globalThis.SCRAPER_SETTINGS`, come per i plugin Nuvio).
 Quando cambiano, Zephyr TV richiama `manifest()` (se esportato) e `guide()`, e rilegge i cataloghi.
+Un campo con `key` `cookies` chiama anche `verify()` (se esportato), poi rilegge i cataloghi.
 I valori restano solo sul TV, anche nei backup di Zephyr TV; quelli `isPassword` appaiono nascosti.
 
 ## 6. L'ambiente di esecuzione
@@ -622,8 +626,11 @@ né collegata a YouTube o a Google.** YouTube è un marchio di Google LLC. Usa l
 
 Scheletro: [Zephyr-TV-Extensions/youyubez](https://github.com/mccoy88f/Zephyr-TV-Extensions/tree/main/youyubez).
 
-- **Riproduci con** (opzioni): **App YouTube nativa** (`ytId`), **Player Zephyr TV** (stream dal client, se la
-  libreria e il player lo consentono), o **Entrambi** (due voci nella lista degli stream).
-- **Cookie**: la pagina **Inserisci dal telefono…** di Zephyr TV (`isPassword`). Senza cookie: ricerca pubblica. Con cookie:
-  di default le quattro liste localizzate — **Scopri**, **Iscrizioni**, **Guarda dopo**, **Cronologia**.
+- **Riproduci con** (opzioni): **App YouTube nativa** (`ytId`), **Player Zephyr TV** (stream da InnerTube, video più
+  audio accoppiato), o **Entrambi** (due voci nella lista degli stream).
+- **Cookie**: la pagina **Inserisci dal telefono…** di Zephyr TV (`isPassword`). Servono per **Iscrizioni**,
+  **Guarda dopo** e **Cronologia**. Dopo l'incolla, Zephyr TV chiama `verify()` e rilegge le liste.
+- **Sezioni visibili** (`list` di `name` + `keywords`): righe di video da una ricerca per parole chiave. **Scopri** e
+  **Tendenze** sono le due voci di default; l'utente può cambiarle, toglierle o aggiungerne quante ne vuole. La ricerca
+  resta in elenco. Le liste dell'account restano legate ai cookie.
 - `requires`: `["libraries"]`. `collectors`: `["videos"]`.

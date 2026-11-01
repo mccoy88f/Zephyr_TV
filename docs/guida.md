@@ -209,15 +209,21 @@ I repository si aggiornano da soli una volta al giorno. I plugin che dichiarano 
 Le estensioni sono il formato di Zephyr TV per aggiungere film, serie, canali TV, radio, video e altro. Come i plugin
 Nuvio, girano sul TV, separate dal resto e con accesso solo a internet. **Aggiungi solo estensioni di cui ti fidi.**
 **OMG Premium TV** è proposta nell'elenco: OK la installa. Nelle sue **Opzioni** aggiungi le tue playlist M3U o i tuoi
-account Xtream, e i canali, i film e le serie compaiono nella sua app.
+account Xtream, e i canali, i film e le serie compaiono nella sua app. C'è anche **YouYubeZ**: ricerca e riproduzione
+YouTube in Zephyr TV (non affiliata a YouTube). Nelle sue **Opzioni**: **Riproduci con** (app YouTube, player Zephyr TV,
+o entrambi); **Cookie** (incolla dal telefono: **Iscrizioni**, **Guarda dopo** e **Cronologia**); **Sezioni visibili**
+(righe di video da parole chiave — **Scopri** e **Tendenze** ci sono già; aggiungine quante ne vuoi).
 
 **Impostazioni → Funzioni aggiuntive → Estensioni Zephyr**:
 
 - **Aggiungi un'estensione**: l'indirizzo del suo `manifest-zephyrtv.json` (o della cartella che lo contiene),
   incollato dal telefono o scritto con il telecomando; oppure il suo file `.zip` inviato dal telefono. Prima di
   installarla Zephyr TV mostra cos'è, chi l'ha scritta e cosa fornisce.
-- **Ogni estensione** ha una pagina con **Attivo**, **Opzioni** (la stessa pagina **Inserisci dal telefono…** del resto di Zephyr TV), **App virtuale** (**Segui il sistema**, **Mostra** o **Nascondi**), **Contenuti V.M. - Adulti**, **Sposta su / giù**,
+- **Ogni estensione** ha una pagina con **Attivo**, **Opzioni**, **App virtuale** (**Segui il sistema**, **Mostra** o **Nascondi**), **Contenuti V.M. - Adulti**, **Sposta su / giù**,
   **Aggiorna ora** e **Rimuovi**.
+- Le **Opzioni** sono quelle dell'estensione: interruttori, una scelta da una lista, un testo (**Inserisci dal telefono…**,
+  o scrivilo con il telecomando) e **elenchi** di elementi da aggiungere, modificare, spostare e togliere (un nome e
+  delle parole chiave, una playlist, un account). Un cambiamento di **Cookie** o di un elenco di sezioni rilegge le sue righe.
 - Dove compare il contenuto lo scegli tu per tipo (**Video**, **Radio**, film…): app virtuale, un'app per add-on, o
   da nessuna parte. **App virtuale** sull'estensione segue quello, oppure mostra o nasconde la sua tile. Senza cataloghi da elencare non ha tile.
 - **Controlla aggiornamenti**: Zephyr TV lo fa anche da solo, una volta al giorno.
