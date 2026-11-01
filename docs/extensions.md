@@ -287,7 +287,7 @@ plugins with one more type, `list`:
 |---|---|---|
 | `header` | a title | `label` |
 | `info` | a note | `label`, `description` |
-| `text` | a text, typed with the remote or pasted from a phone | `key`, `label`, `description`, `placeholder`, `defaultValue`, `isPassword` |
+| `text` | a text: Zephyr TV's **Enter from your phone…** page (QR code), or typed with the remote | `key`, `label`, `description`, `placeholder`, `defaultValue`, `isPassword` |
 | `select` | one choice of a list | `key`, `label`, `description`, `options: [{ label, value }]`, `defaultValue` |
 | `toggle` | yes or no | `key`, `label`, `description`, `defaultValue` (boolean) |
 | `list` | **Zephyr TV.** Items the user adds, edits, moves and removes | `key`, `label`, `description`, `item`: the fields of one item (no `list` inside), `itemLabel`: the key whose value names an item |
@@ -606,6 +606,6 @@ Skeleton: [Zephyr-TV-Extensions/youyubez](https://github.com/mccoy88f/Zephyr-TV-
 
 - **Play with** (options): **YouTube app** (`ytId`), **Zephyr TV player** (a stream from the client, when the
   library and the player allow it), or **Both** (two rows in the stream list).
-- **Cookies**: text the user pastes from their browser (`isPassword`). With no cookies: public search. With cookies:
+- **Cookies**: Zephyr TV's **Enter from your phone…** page (`isPassword`). With no cookies: public search. With cookies:
   by default the four localised lists — **Discover**, **Subscriptions**, **Watch later**, **History**.
 - `requires`: `["libraries"]`. `collectors`: `["videos"]`.

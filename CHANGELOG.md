@@ -14,6 +14,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
 
+## 3.7.1
+
+- Text options (a cookie, a key, an address) open the same **Enter from your phone…** page, with a QR code. Type with the remote is a row under it.
+- Search also asks extensions that only have a search catalog, such as YouYubeZ without cookies.
+
 ## 3.7.0
 
 - The extensions standard adds libraries after 1.0. Zephyr TV downloads them at install and shows the status and the percent.

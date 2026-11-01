@@ -186,7 +186,7 @@ Oggi `Epg.kt` ha un solo indirizzo XMLTV, abbinato per nome.
 
 ## Fase 8 — Le impostazioni delle estensioni ☑
 
-- ☑ Riusare le pagine delle opzioni dei plugin Nuvio (`Plugins.kt`: `toggle`, `select`, `text`, `info`, dal telefono).
+- ☑ Riusare le pagine delle opzioni dei plugin Nuvio (`Plugins.kt`: `toggle`, `select`, `text`, `info`). Un campo `text` apre `fromPhoneText` (la stessa pagina QR di TMDB, EPG, cookie).
 - ☑ **Tipo `list`**: elenco degli elementi (nominati con `itemLabel`), Aggiungi, e per ognuno Modifica (i campi di
   `item`), Sposta su/giù, Rimuovi; valori come array di oggetti.
 - ☑ **Dal telefono**: un modulo con tutti i campi di un elemento in una volta (per esempio server, utente e password

@@ -412,6 +412,9 @@
     <string name="nuvio_option_phone_intro">Saisissez ou collez le texte de cette option.</string>
     <string name="nuvio_option_empty">Rien à enregistrer : la case est vide.</string>
     <string name="nuvio_option_saved">Enregistré sur l\'appareil.</string>
+    <string name="from_phone">Saisir depuis le téléphone…</string>
+    <string name="from_phone_type">Saisir avec la télécommande</string>
+    <string name="from_phone_waiting">En attente du texte depuis le téléphone…</string>
     <string name="nuvio_order">Ordre des plugins</string>
     <string name="nuvio_order_intro">OK sur un plugin pour le prendre, puis OK à l\'endroit où il va. Leurs flux sont demandés dans cet ordre.</string>
     <string name="nuvio_order_moving">Déplacement de %1$s : OK à l\'endroit où il va, ou de nouveau sur lui pour le laisser à sa place.</string>

@@ -197,7 +197,7 @@ I plugin Nuvio sono piccoli programmi che trovano da soli gli stream di film, se
   - **Attivo**: tutto il repository, acceso o spento.
   - **Un interruttore per ogni plugin**.
   - **Ordine dei plugin** (con due o più plugin): OK su un plugin per prenderlo, poi OK sul posto dove metterlo. I loro stream vengono chiesti in quest'ordine.
-  - **Opzioni disponibili**, sotto i plugin che hanno opzioni proprie: interruttori, scelte da una lista, testi (per esempio un token o un cookie, da scrivere con il telecomando o incollare dal telefono).
+  - **Opzioni disponibili**, sotto i plugin che hanno opzioni proprie: interruttori, scelte da una lista, testi (per esempio un token o un cookie). Sulla voce: **Inserisci dal telefono…** (inquadra il codice) oppure **Scrivilo con il telecomando**.
   - **Contenuti V.M. - Adulti**, **Sposta su / giù**, **Aggiorna ora**, **Rimuovi**.
 
 Le fonti che richiedono WebSocket non sono supportate: un plugin che ne usa una dà comunque gli stream delle altre.
@@ -216,7 +216,7 @@ account Xtream, e i canali, i film e le serie compaiono nella sua app.
 - **Aggiungi un'estensione**: l'indirizzo del suo `manifest-zephyrtv.json` (o della cartella che lo contiene),
   incollato dal telefono o scritto con il telecomando; oppure il suo file `.zip` inviato dal telefono. Prima di
   installarla Zephyr TV mostra cos'è, chi l'ha scritta e cosa fornisce.
-- **Ogni estensione** ha una pagina con **Attivo**, **Opzioni**, **Dove compare** (nella sua app, oppure nei
+- **Ogni estensione** ha una pagina con **Attivo**, **Opzioni** (la stessa pagina **Inserisci dal telefono…** del resto di Zephyr TV), **Dove compare** (nella sua app, oppure nei
   raccoglitori: Film, Serie TV, Canali TV, Radio, Video…), **Contenuti V.M. - Adulti**, **Sposta su / giù**,
   **Aggiorna ora** e **Rimuovi**.
 - Un'estensione con contenuti propri ha **la sua app** nella riga delle app, con il suo logo, quando ha qualcosa da
@@ -333,7 +333,7 @@ Il pulsante **Utenti** nella barra in alto (mostra l'iniziale dell'utente in uso
 
 ## 21. Il telefono come tastiera
 
-Molte schermate mostrano un **codice QR**: inquadralo con il telefono, che deve essere nella stessa rete Wi-Fi del TV. Si apre una pagina dove scrivere o incollare (indirizzi di add-on e repository, chiave e lista TMDB, guida TV, ricerche) o inviare foto e backup.
+Molte schermate mostrano un **codice QR**: inquadralo con il telefono, che deve essere nella stessa rete Wi-Fi del TV. Si apre una pagina dove scrivere o incollare (indirizzi di add-on e repository, cookie e altre opzioni, chiave e lista TMDB, guida TV, ricerche) o inviare foto e backup. Sul TV quella pagina è sempre **Inserisci dal telefono…**.
 
 La pagina funziona solo mentre quella schermata è aperta sul TV, e quello che invii va solo dal telefono al TV.
 

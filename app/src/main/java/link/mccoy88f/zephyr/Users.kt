@@ -176,18 +176,15 @@ private fun MainActivity.userName(u: User?) {
         }
     }
     fun fromPhone() {
-        val status = label(getString(R.string.user_phone_waiting), 14f)
-        val page = PhonePages.text(phoneTexts(R.string.phone_user_title, R.string.phone_user_intro), getString(R.string.user_name_hint))
-        showPhoneLink(title, PhoneTask(page, 1024) { file ->
-            val name = file.readText().trim().take(40).ifEmpty { return@PhoneTask 400 to getString(R.string.user_name_hint) }
-            ui.post { save(name) }
-            200 to getString(R.string.phone_user_saved, name)
-        }, status) { userName(u) }
+        fromPhoneText(title, getString(R.string.phone_user_intro), getString(R.string.user_name_hint),
+            getString(R.string.user_phone_waiting), { save(it.take(40)) }, { userName(u) }, maxBytes = 1024,
+            refuse = { if (it.take(40).isEmpty()) getString(R.string.user_name_hint) else null },
+            saved = { getString(R.string.phone_user_saved, it.take(40)) })
     }
     textPage(title, u?.name.orEmpty(), getString(R.string.user_name_hint), getString(R.string.user_name_intro), Typing.NAME, back = back) { typed ->
         listOf(
             page(getString(R.string.dialog_save)) { save(typed()) },
-            page(getString(R.string.user_name_phone)) { fromPhone() },
+            page(getString(R.string.from_phone)) { fromPhone() },
         )
     }
 }

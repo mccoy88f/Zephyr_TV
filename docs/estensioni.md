@@ -295,7 +295,7 @@ Nuvio e un tipo in più, `list`:
 |---|---|---|
 | `header` | un titolo | `label` |
 | `info` | una nota | `label`, `description` |
-| `text` | un testo, scritto con il telecomando o incollato dal telefono | `key`, `label`, `description`, `placeholder`, `defaultValue`, `isPassword` |
+| `text` | un testo: la pagina **Inserisci dal telefono…** di Zephyr TV (codice QR), oppure scritto con il telecomando | `key`, `label`, `description`, `placeholder`, `defaultValue`, `isPassword` |
 | `select` | una scelta da una lista | `key`, `label`, `description`, `options: [{ label, value }]`, `defaultValue` |
 | `toggle` | sì o no | `key`, `label`, `description`, `defaultValue` (booleano) |
 | `list` | **Zephyr TV.** Elementi che l'utente aggiunge, modifica, sposta e rimuove | `key`, `label`, `description`, `item`: i campi di un elemento (senza altre `list`), `itemLabel`: la chiave il cui valore dà il nome a un elemento |
@@ -622,6 +622,6 @@ Scheletro: [Zephyr-TV-Extensions/youyubez](https://github.com/mccoy88f/Zephyr-TV
 
 - **Riproduci con** (opzioni): **App YouTube nativa** (`ytId`), **Player Zephyr TV** (stream dal client, se la
   libreria e il player lo consentono), o **Entrambi** (due voci nella lista degli stream).
-- **Cookie**: testo incollato dal browser dell'utente (`isPassword`). Senza cookie: ricerca pubblica. Con cookie:
+- **Cookie**: la pagina **Inserisci dal telefono…** di Zephyr TV (`isPassword`). Senza cookie: ricerca pubblica. Con cookie:
   di default le quattro liste localizzate — **Scopri**, **Iscrizioni**, **Guarda dopo**, **Cronologia**.
 - `requires`: `["libraries"]`. `collectors`: `["videos"]`.

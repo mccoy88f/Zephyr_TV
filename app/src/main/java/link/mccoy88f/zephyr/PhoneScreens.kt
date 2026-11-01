@@ -15,7 +15,7 @@ import link.mccoy88f.zephyr.MainActivity.Companion.PROBLEMS_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.TMDB_LIST_ROW
 import java.io.IOException
 
-// Screens that hand a job to a phone over a QR code (PhoneLink): wallpapers, the TMDB key, recent problems.
+// Screens that hand a job to a phone over a QR code (PhoneLink): wallpapers, text (fromPhoneText), recent problems.
 // Functions of MainActivity, kept here by topic; their state lives in MainActivity.
 
 /**
@@ -73,6 +73,32 @@ internal fun MainActivity.showPhoneLink(
 }
 
 /**
+ * Paste some text from a phone: the same QR page everywhere (a cookie, a key, an address). [got] runs on the UI
+ * thread with the text. [refuse] may reject it on the server thread (the message, or null). [saved] is what the
+ * phone and the status show when it is kept. [more] is usually **Type it with the remote**.
+ */
+internal fun MainActivity.fromPhoneText(
+    title: String, intro: String, hint: String, waiting: String, got: (String) -> Unit, back: () -> Unit,
+    more: List<Triple<String, String, () -> Unit>> = emptyList(), secret: Boolean = false, maxBytes: Long = 1024L * 1024,
+    refuse: (String) -> String? = { if (it.isEmpty()) getString(R.string.nuvio_option_empty) else null },
+    saved: (String) -> String = { getString(R.string.nuvio_option_saved) },
+) {
+    val status = label(waiting, 14f)
+    val texts = PhoneTexts(title, intro, getString(R.string.phone_send), getString(R.string.phone_sending),
+        getString(R.string.phone_unreachable), phoneFooter())
+    showPhoneLink(title, PhoneTask(PhonePages.text(texts, hint, secret), maxBytes) { file ->
+        val text = file.readText().trim()
+        refuse(text)?.let { return@PhoneTask 400 to it }
+        val ok = saved(text)
+        ui.post {
+            got(text)
+            status.text = ok
+        }
+        200 to ok
+    }, status, more, back)
+}
+
+/**
  * A QR code of [url] for the phone, [caption] under it (the address, to type instead), [intro] (what to do), and
  * [status] (how it's going), all in the middle: the top of a page for something done on a phone.
  */
@@ -114,34 +140,28 @@ internal fun MainActivity.problemsOnPhone() {
 
 /** The TMDB key typed or pasted on a phone: checked with TMDB, then saved like the Save row does. */
 internal fun MainActivity.tmdbKeyFromPhone() {
-    val status = label(getString(R.string.tmdb_phone_waiting), 14f)
-    val page = PhonePages.text(phoneTexts(R.string.phone_tmdb_title, R.string.phone_tmdb_intro), getString(R.string.phone_tmdb_hint))
-    showPhoneLink(getString(R.string.setting_tmdb_api_key), PhoneTask(page, 2048) { file ->
-        val key = file.readText().trim()
-        if (key.length < 16 || key.any { it.isWhitespace() }) return@PhoneTask 400 to getString(R.string.phone_tmdb_refused)
-        val ok = TmdbClient.check(key)
-        if (ok == false) return@PhoneTask 400 to getString(R.string.phone_tmdb_refused)
-        ui.post {
-            saveTmdbKey(key)
-            status.text = getString(R.string.phone_tmdb_saved)
-        }
-        200 to getString(if (ok == true) R.string.phone_tmdb_saved else R.string.phone_tmdb_unchecked)
-    }, status) { configureCinemeta(tmdbRow(1)) }
+    var unchecked = false
+    fromPhoneText(getString(R.string.setting_tmdb_api_key), getString(R.string.phone_tmdb_intro), getString(R.string.phone_tmdb_hint),
+        getString(R.string.tmdb_phone_waiting), { saveTmdbKey(it) }, { configureCinemeta(tmdbRow(1)) }, secret = true, maxBytes = 2048,
+        refuse = { key ->
+            if (key.length < 16 || key.any { it.isWhitespace() }) getString(R.string.phone_tmdb_refused)
+            else {
+                val ok = TmdbClient.check(key)
+                unchecked = ok == null
+                if (ok == false) getString(R.string.phone_tmdb_refused) else null
+            }
+        },
+        saved = { getString(if (unchecked) R.string.phone_tmdb_unchecked else R.string.phone_tmdb_saved) })
 }
 
 /** The guide's address pasted on a phone: saved like the Save row does, and fetched at once. */
 internal fun MainActivity.epgFromPhone() {
-    val status = label(getString(R.string.epg_phone_waiting), 14f)
-    val page = PhonePages.text(phoneTexts(R.string.phone_epg_title, R.string.phone_epg_intro), getString(R.string.epg_hint))
-    showPhoneLink(getString(R.string.setting_epg), PhoneTask(page, 1024L * 1024) { file ->
-        val url = file.readText().trim()
-        if (!url.startsWith("http://") && !url.startsWith("https://")) return@PhoneTask 400 to getString(R.string.phone_epg_bad)
-        ui.post {
-            saveEpgUrl(url)
-            status.text = getString(R.string.phone_epg_saved)
-        }
-        200 to getString(R.string.phone_epg_saved)
-    }, status) { configureEpg() }
+    fromPhoneText(getString(R.string.setting_epg), getString(R.string.phone_epg_intro), getString(R.string.epg_hint),
+        getString(R.string.epg_phone_waiting), { saveEpgUrl(it) }, { configureEpg() },
+        refuse = { url ->
+            if (!url.startsWith("http://") && !url.startsWith("https://")) getString(R.string.phone_epg_bad) else null
+        },
+        saved = { getString(R.string.phone_epg_saved) })
 }
 
 /** The TV's own address on the home network (IPv4: easy to read and type). */

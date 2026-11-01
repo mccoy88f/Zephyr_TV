@@ -25,7 +25,7 @@ internal class PhonePage(val html: String, val local: PhoneLocal, val texts: Pho
 
 /** What a phone page asks for: some text, a file, a form, or a file to save; View: only something to read. */
 internal sealed class PhoneLocal {
-    class Text(val hint: String) : PhoneLocal()
+    class Text(val hint: String, val secret: Boolean = false) : PhoneLocal()
     class Addon(val hint: String, val adultLabel: String) : PhoneLocal()
     class File(val accept: String) : PhoneLocal()
     class Download(val fileName: String, val content: String) : PhoneLocal()
@@ -202,13 +202,13 @@ internal object PhonePages {
             PhoneLocal.Download(fileName, content), texts)
     }
 
-    /** Type or paste some text and send it. */
-    fun text(t: PhoneTexts, hint: String) = PhonePage(frame(t,
-        """<textarea id="t" placeholder="${esc(hint)}" autocapitalize="off" autocomplete="off" spellcheck="false"></textarea>
+    /** Type or paste some text and send it. [secret]: hide it (a cookie, a key). */
+    fun text(t: PhoneTexts, hint: String, secret: Boolean = false) = PhonePage(frame(t,
+        """<textarea id="t" placeholder="${esc(hint)}" autocapitalize="off" autocomplete="off" spellcheck="false"${if (secret) " style=\"-webkit-text-security:disc\"" else ""}></textarea>
         <button id="b" disabled>${esc(t.send)}</button>""",
         """const x=document.getElementById('t');
         x.oninput=()=>{b.disabled=!x.value.trim();s.textContent=''};
-        b.onclick=()=>send(x.value.trim());"""), PhoneLocal.Text(hint), t)
+        b.onclick=()=>send(x.value.trim());"""), PhoneLocal.Text(hint, secret), t)
 
     /**
      * Several fields at once ([fields]: key, label, placeholder, secret), sent as a JSON object: an account's server,

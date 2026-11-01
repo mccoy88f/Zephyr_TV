@@ -143,6 +143,15 @@ class StremioVodTest {
         assertEquals(listOf("com.google.android.youtube.tv", "com.google.android.youtube.tv"), s.map { it.app })
     }
 
+    @Test fun anExtensionsSearchOnlyVideoCatalogIsKeptForSearch() {
+        val m = JSONObject("""{"id":"org.zephyr.youyubez","name":"YouYubeZ","types":["video"],
+            "catalogs":[{"type":"video","id":"search","name":"Search","extra":[{"name":"search","isRequired":true},{"name":"skip"}]}]}""")
+        val a = Stremio.addon(Stremio.EXT + "org.zephyr.youyubez/manifest.json", m)
+        assertEquals(1, a.vod.size)
+        assertTrue(a.vod[0].search)
+        assertFalse(a.vod[0].listed)
+    }
+
     @Test fun collectorOfMapsYouTubeToVideos() {
         assertEquals("videos", collectorOf("YouTube"))
         assertEquals("videos", collectorOf("youtube"))

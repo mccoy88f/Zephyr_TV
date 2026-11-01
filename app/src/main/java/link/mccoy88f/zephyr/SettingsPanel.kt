@@ -500,7 +500,7 @@ internal fun MainActivity.saveTmdbKey(key: String) {
 internal fun MainActivity.configureEpg() =
     textPage(getString(R.string.setting_epg), epgUrl() ?: "", getString(R.string.epg_hint), getString(R.string.epg_intro), back = { renderSettings(EPG_ROW) }) { typed ->
         listOf(
-            page(getString(R.string.setting_epg_phone)) { epgFromPhone() },
+            page(getString(R.string.from_phone)) { epgFromPhone() },
             page(getString(R.string.dialog_save)) {
                 saveEpgUrl(typed())
                 renderSettings(EPG_ROW)
@@ -590,7 +590,7 @@ internal fun MainActivity.configureTmdbApiKey() =
         Typing.KEY, back = { configureCinemeta(tmdbRow(1)) }) { typed ->
         listOf(
             // Typing a 32-character key (or a 200-character token) with a remote is no fun: paste it on a phone.
-            page(getString(R.string.setting_tmdb_key_phone)) { tmdbKeyFromPhone() },
+            page(getString(R.string.from_phone)) { tmdbKeyFromPhone() },
             page(getString(R.string.dialog_save)) {
                 typed().takeIf { it.isNotBlank() }?.let { saveTmdbKey(it) }
                 configureCinemeta(tmdbRow(1))

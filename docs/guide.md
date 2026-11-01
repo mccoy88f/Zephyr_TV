@@ -197,7 +197,7 @@ Nuvio plugins are small programs that find the streams of films, series and (whe
   - **On**: the whole repository, on or off.
   - **A switch for each plugin**.
   - **Order of the plugins** (with two or more): OK on a plugin to pick it up, then OK on the place it goes. Their streams are asked for in this order.
-  - **Options available**, under the plugins that have options of their own: switches, choices from a list, texts (a token or a cookie, for example, typed with the remote or pasted from your phone).
+  - **Options available**, under the plugins that have options of their own: switches, choices from a list, texts (a token or a cookie, for example). Select the field: **Enter from your phone…** (scan the code) or **Type it with the remote**.
   - **Adult content (18+)**, **Move up / Move down**, **Update now**, **Remove**.
 
 Sources that need WebSocket aren't supported: a plugin that uses one still gives the streams of its other sources.
@@ -216,7 +216,7 @@ trust.** **OMG Premium TV** is suggested in the list: OK installs it. Add your M
 - **Add an extension**: the address of its `manifest-zephyrtv.json` (or of the folder it's in), pasted from your
   phone or typed with the remote; or its `.zip` file sent from your phone. Before installing it, Zephyr TV shows what
   it is, who wrote it and what it provides.
-- **Each extension** has a page with **On**, **Options**, **Where it shows** (in its app, or in the collectors:
+- **Each extension** has a page with **On**, **Options** (the same **Enter from your phone…** page as the rest of Zephyr TV), **Where it shows** (in its app, or in the collectors:
   Films, TV Series, TV Channels, Radio, Videos…), **Adult content (18+)**, **Move up / Move down**, **Update now** and
   **Remove**.
 - An extension with content of its own has **its app** on the apps row, with its logo, once it has something to
@@ -333,7 +333,7 @@ The **Users** button in the top bar (it shows the initial of the user in use):
 
 ## 21. Your phone as a keyboard
 
-Many screens show a **QR code**: scan it with your phone, which must be on the same Wi-Fi as the TV. A page opens where you type or paste (add-on and repository addresses, the TMDB key and list, the TV guide, searches) or send photos and backups.
+Many screens show a **QR code**: scan it with your phone, which must be on the same Wi-Fi as the TV. A page opens where you type or paste (add-on and repository addresses, cookies and other options, the TMDB key and list, the TV guide, searches) or send photos and backups. On the TV that page is always **Enter from your phone…**.
 
 The page works only while that screen is open on the TV, and what you send goes only from your phone to the TV.
 

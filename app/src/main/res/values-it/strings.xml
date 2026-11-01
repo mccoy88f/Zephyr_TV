@@ -412,6 +412,9 @@
     <string name="nuvio_option_phone_intro">Scrivi o incolla il testo di questa opzione.</string>
     <string name="nuvio_option_empty">Niente da salvare: la casella è vuota.</string>
     <string name="nuvio_option_saved">Salvato sul dispositivo.</string>
+    <string name="from_phone">Inserisci dal telefono…</string>
+    <string name="from_phone_type">Scrivilo con il telecomando</string>
+    <string name="from_phone_waiting">In attesa del testo dal telefono…</string>
     <string name="nuvio_order">Ordine dei plugin</string>
     <string name="nuvio_order_intro">OK su un plugin per prenderlo, poi OK sul posto dove metterlo. I loro stream vengono chiesti in quest\'ordine.</string>
     <string name="nuvio_order_moving">Stai spostando %1$s: OK sul posto dove metterlo, oppure di nuovo su di lui per lasciarlo dov\'era.</string>

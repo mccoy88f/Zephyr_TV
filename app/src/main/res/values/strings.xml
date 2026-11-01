@@ -411,6 +411,9 @@
     <string name="nuvio_option_phone_intro">Type or paste the text for this option.</string>
     <string name="nuvio_option_empty">Nothing to save: the box is empty.</string>
     <string name="nuvio_option_saved">Saved on the device.</string>
+    <string name="from_phone">Enter from your phone…</string>
+    <string name="from_phone_type">Type it with the remote</string>
+    <string name="from_phone_waiting">Waiting for the text from your phone…</string>
     <string name="nuvio_order">Order of the plugins</string>
     <string name="nuvio_order_intro">OK on a plugin to pick it up, then OK on the place it goes. Their streams are asked for in this order.</string>
     <string name="nuvio_order_moving">Moving %1$s: OK on the place it goes, or on it again to leave it where it was.</string>

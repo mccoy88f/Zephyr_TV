@@ -64,7 +64,7 @@ internal fun MainActivity.activeVodAddons(): List<Stremio.Addon> {
     val shelvesOff = prefs.getStringSet(K.SHELVES_OFF, emptySet())!!
     return vodAddons().filter { addon ->
         addonOn(addon.url) && (!isAdultAddon(addon.url) || adultUnlocked()) &&
-            (addon.vod.isEmpty() || addon.vod.filter { it.listed }.any { shelfKey(addon, it) !in shelvesOff })
+            (addon.vod.none { it.listed } || addon.vod.filter { it.listed }.any { shelfKey(addon, it) !in shelvesOff })
     }
 }
 

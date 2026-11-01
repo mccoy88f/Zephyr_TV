@@ -43,7 +43,12 @@ internal fun MainActivity.formPage(title: String, about: String, all: List<Nuvio
             else -> {
                 val t = value(f)?.toString().orEmpty()
                 page(f.label, if (t.isEmpty()) SUBMENU else if (f.secret) "••••••" else t) {
-                    typeField(f, t, { v -> set(f, v.ifEmpty { null }) }) { again(i) }
+                    fromPhoneText(f.label, f.description.ifBlank { getString(R.string.nuvio_option_phone_intro) },
+                        f.placeholder.ifBlank { f.label }, getString(R.string.from_phone_waiting),
+                        { v -> set(f, v.ifEmpty { null }) }, { again(i) },
+                        more = listOf(page(getString(R.string.from_phone_type)) {
+                            typeField(f, t, { v -> set(f, v.ifEmpty { null }) }) { again(i) }
+                        }), secret = f.secret)
                 }
             }
         }
@@ -60,31 +65,14 @@ private fun MainActivity.pickField(f: Nuvio.Field, now: String?, chosen: (Any) -
         at.coerceAtLeast(0), top = top, back = back)
 }
 
-/** [f]'s text typed with the remote or pasted on a phone; [save] gets it ("" clears it), then [back]. */
+/** [f]'s text typed with the remote; [save] gets it ("" clears it), then [back]. Paste from a phone is the QR page. */
 private fun MainActivity.typeField(f: Nuvio.Field, text: String, save: (String) -> Unit, back: () -> Unit) {
     textPage(f.label, text, f.placeholder.ifBlank { f.label }, f.description.ifBlank { null }, Typing.KEY, back = back) { typed ->
         listOf(
-            page(getString(R.string.setting_tmdb_key_phone)) { fieldFromPhone(f, save, back) },
             page(getString(R.string.dialog_save)) { save(typed()); back() },
             page(getString(R.string.dialog_clear)) { save(""); back() },
         )
     }
-}
-
-/** [f]'s text pasted on a phone (a cookie, a token, an address): saved as it arrives. */
-private fun MainActivity.fieldFromPhone(f: Nuvio.Field, save: (String) -> Unit, back: () -> Unit) {
-    val status = label(getString(R.string.nuvio_option_waiting), 14f)
-    val texts = PhoneTexts(f.label, f.description.ifBlank { getString(R.string.nuvio_option_phone_intro) }, getString(R.string.phone_send),
-        getString(R.string.phone_sending), getString(R.string.phone_unreachable), phoneFooter())
-    showPhoneLink(f.label, PhoneTask(PhonePages.text(texts, f.placeholder.ifBlank { f.label }), 1024L * 1024) { file ->
-        val text = file.readText().trim()
-        if (text.isEmpty()) return@PhoneTask 400 to getString(R.string.nuvio_option_empty)
-        ui.post {
-            save(text)
-            status.text = getString(R.string.nuvio_option_saved)
-        }
-        200 to getString(R.string.nuvio_option_saved)
-    }, status, back = back)
 }
 
 /** What an item of the list [f] is called: its [Nuvio.Field.itemLabel] value, else its first text, else its number. */
@@ -143,7 +131,7 @@ private fun MainActivity.itemPage(f: Nuvio.Field, items: () -> JSONArray, save: 
 
 /** All the text fields of an item of [f] typed on a phone at once; [got] gets them. */
 private fun MainActivity.itemFromPhone(f: Nuvio.Field, got: (JSONObject) -> Unit) {
-    val status = label(getString(R.string.nuvio_option_waiting), 14f)
+    val status = label(getString(R.string.from_phone_waiting), 14f)
     val texts = PhoneTexts(f.label, f.description.ifBlank { getString(R.string.nuvio_option_phone_intro) }, getString(R.string.phone_send),
         getString(R.string.phone_sending), getString(R.string.phone_unreachable), phoneFooter())
     val inputs = f.item.filter { it.type == "text" }.map { Triple(it.key, it.label, it.placeholder to it.secret) }

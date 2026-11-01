@@ -26,7 +26,7 @@ internal fun MainActivity.handheld(): Boolean = !packageManager.hasSystemFeature
  */
 internal fun MainActivity.handheldRows(rows: List<Triple<String, String, () -> Unit>>): List<Triple<String, String, () -> Unit>> {
     if (!handheld()) return rows
-    val gone = listOf(R.string.user_name_phone, R.string.setting_epg_phone, R.string.setting_tmdb_key_phone, R.string.problems_on_phone)
+    val gone = listOf(R.string.from_phone, R.string.from_phone_type, R.string.problems_on_phone)
         .map { getString(it) }.toSet()
     val renamed = mapOf(getString(R.string.add_from_phone) to getString(R.string.add_photo), getString(R.string.list_from_phone) to getString(R.string.here_type))
     return rows.filter { it.first !in gone }.map { r -> renamed[r.first]?.let { Triple(it, r.second, r.third) } ?: r }
@@ -40,7 +40,7 @@ internal fun MainActivity.handheldRows(rows: List<Triple<String, String, () -> U
 internal fun MainActivity.doHere(title: String, task: PhoneTask, status: TextView, more: List<Triple<String, String, () -> Unit>>, back: () -> Unit) {
     val intro = task.page.texts?.intro
     when (val l = task.page.local) {
-        is PhoneLocal.Text -> fieldsHere(title, intro, listOf(Triple("", l.hint, "" to false)), status, more, back) { v -> sendHere(task, v[0], status) }
+        is PhoneLocal.Text -> fieldsHere(title, intro, listOf(Triple("", l.hint, "" to l.secret)), status, more, back) { v -> sendHere(task, v[0], status) }
         is PhoneLocal.Form -> fieldsHere(title, intro, l.fields, status, more, back) { v ->
             val o = JSONObject()
             l.fields.forEachIndexed { i, f -> if (v[i].isNotBlank()) o.put(f.first, v[i]) }
