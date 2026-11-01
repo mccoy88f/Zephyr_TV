@@ -37,6 +37,8 @@ internal abstract class ScriptService : Service() {
         super.onCreate()
         Js.useAssets(applicationContext) // the modules scripts require()
         Js.console = { android.util.Log.i("Zephyr TV", it) }
+        // YouTube's Set-Cookie on a catalog call would otherwise ride on the next player call and yield LOGIN_REQUIRED.
+        java.net.CookieHandler.setDefault(java.net.CookieManager(null, java.net.CookiePolicy.ACCEPT_NONE))
     }
 
     override fun onBind(intent: Intent): IBinder = messenger.binder

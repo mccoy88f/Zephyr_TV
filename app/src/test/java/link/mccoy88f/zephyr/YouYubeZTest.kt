@@ -103,6 +103,8 @@ class YouYubeZTest {
         assertEquals("Channel Z", m.getJSONArray("director").getString(0))
         assertEquals("Oct 25, 2009", m.getString("releaseInfo"))
         assertTrue(seen.filter { it.getString("url").startsWith("https://www.youtube.com/youtubei/v1/player") }
+            .all { it.optJSONObject("headers")?.optString("Cookie").isNullOrEmpty() })
+        assertTrue(seen.filter { it.getString("url").startsWith("https://www.youtube.com/youtubei/v1/next") }
             .any { it.optJSONObject("headers")?.optString("Cookie") == "SID=abc" })
 
         val oembed = run(
