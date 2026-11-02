@@ -1,0 +1,14 @@
+{
+  "id": "link.mccoy88f.zephyr",
+  "version": "4.0.0",
+  "vendor": "Zephyr TV",
+  "type": "web",
+  "main": "index.html",
+  "title": "Zephyr TV",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "bgColor": "#0B1220",
+  "iconColor": "#38BDF8",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true
+}

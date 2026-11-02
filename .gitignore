@@ -9,3 +9,5 @@ keystore.properties
 *.keystore
 .DS_Store
 .vscode/
+webos/node_modules/
+webos/dist/

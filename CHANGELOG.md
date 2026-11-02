@@ -13,6 +13,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- Zephyr TV has a webOS package in `webos/`. It runs on webOS TV 6 and newer.
+- The webOS package plays HTTP streams. It does not replace the LG home screen.
+
 ## 4.0.0-beta.2
 
 - Zephyr TV reads one page of every add-on catalog before it reads the later pages.
