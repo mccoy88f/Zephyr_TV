@@ -13,6 +13,15 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.0.0-beta.5
+
+- Remote access uses the 18+ PIN.
+- An existing 18+ PIN opens remote access.
+- A new PIN for remote access turns the 18+ lock on.
+- Select Users, Search, Settings or Remote again. The screen returns to Home.
+- Program plus and Program minus change the channel.
+- The remote moves the focus on a phone and on a tablet.
+
 ## 4.0.0-beta.4
 
 - Settings names the row Show the access address.

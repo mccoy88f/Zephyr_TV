@@ -1440,6 +1440,8 @@ class MainActivity : Activity() {
             spotlightIdle = false
             restartSpotlightTick()
         }
+        // A key from the phone, on a touch screen that has nothing focused yet: land on the first item. The next key moves.
+        if (e.deviceId == -1 && e.action == KeyEvent.ACTION_DOWN && currentFocus == null && seedRemoteFocus()) return true
         val confirm = e.keyCode == KeyEvent.KEYCODE_DPAD_CENTER || e.keyCode == KeyEvent.KEYCODE_ENTER ||
             e.keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
         if (confirm) {
@@ -1483,30 +1485,30 @@ class MainActivity : Activity() {
                             val inCards = inHorizontal && currentFocus in detailLastLeftFocusables
                             val nextCard = if (inCards) currentFocus?.focusSearch(View.FOCUS_RIGHT)?.takeIf { isDescendantOf(it, leftScroll!!) } else null
                             if (nextCard != null && nextCard !== currentFocus) {
-                                nextCard.requestFocus()
+                                nextCard.steer()
                                 return true
                             }
-                            if (firstRightRow != null && firstRightRow.requestFocus()) return true
+                            if (firstRightRow != null && firstRightRow.steer()) return true
                             return true
                         }
                         KeyEvent.KEYCODE_DPAD_DOWN -> {
                             val inCards = currentFocus in detailLastLeftFocusables
                             if (inCards || (detailLastLeftFocusables.isEmpty() && currentFocus === detailDescView)) {
-                                if (firstRightRow != null && firstRightRow.requestFocus()) return true
+                                if (firstRightRow != null && firstRightRow.steer()) return true
                                 return true
                             }
                             if (currentFocus === leftTitleView) {
-                                if (detailDescView != null && detailDescView!!.requestFocus()) return true
+                                if (detailDescView != null && detailDescView!!.steer()) return true
                             } else if (currentFocus === detailDescView && detailLastLeftFocusables.isNotEmpty()) {
-                                if (detailLastLeftFocusables[0].requestFocus()) return true
+                                if (detailLastLeftFocusables[0].steer()) return true
                             }
                         }
                         KeyEvent.KEYCODE_DPAD_UP -> {
                             if (currentFocus in detailLastLeftFocusables) {
-                                if (detailDescView != null && detailDescView!!.requestFocus()) return true
+                                if (detailDescView != null && detailDescView!!.steer()) return true
                             } else if (currentFocus === detailDescView) {
                                 leftScroll?.smoothScrollTo(0, 0)
-                                if (leftTitleView != null && leftTitleView.requestFocus()) return true
+                                if (leftTitleView != null && leftTitleView.steer()) return true
                                 return true
                             } else if (currentFocus === leftTitleView) {
                                 leftScroll?.smoothScrollTo(0, 0)
@@ -1520,7 +1522,7 @@ class MainActivity : Activity() {
             } else if (inRightCol) {
                 if (e.action == KeyEvent.ACTION_DOWN && e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                     leftScroll?.smoothScrollTo(0, 0)
-                    if (leftTop != null && leftTop.requestFocus()) return true
+                    if (leftTop != null && leftTop.steer()) return true
                     return true
                 } else if (e.action == KeyEvent.ACTION_UP && e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                     return true
@@ -1532,7 +1534,7 @@ class MainActivity : Activity() {
                     val targetId = if (e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN) currentFocus?.nextFocusDownId else currentFocus?.nextFocusUpId
                     if (targetId != null && targetId != View.NO_ID && targetId != currentFocus?.id) {
                         val target = findViewById<View>(targetId)
-                        if (target != null && target.requestFocus()) return true
+                        if (target != null && target.steer()) return true
                     }
                     if (e.keyCode == KeyEvent.KEYCODE_DPAD_UP && currentFocus != null && currentFocus === detailDescView) {
                         var p = currentFocus?.parent
@@ -1547,14 +1549,14 @@ class MainActivity : Activity() {
                         val dir = if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) View.FOCUS_LEFT else View.FOCUS_RIGHT
                         val next = currentFocus?.focusSearch(dir)
                         if (next != null && next !== currentFocus) {
-                            next.requestFocus()
+                            next.steer()
                             return true
                         }
                     }
                     val targetId = if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) currentFocus?.nextFocusLeftId else currentFocus?.nextFocusRightId
                     if (targetId != null && targetId != View.NO_ID && targetId != currentFocus?.id) {
                         val target = findViewById<View>(targetId)
-                        if (target != null && target.requestFocus()) return true
+                        if (target != null && target.steer()) return true
                     }
                     if (!inHorizontal) pageSides?.invoke(if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) -1 else 1)
                 }
@@ -1563,9 +1565,25 @@ class MainActivity : Activity() {
         }
         if (editing && editKey(e, confirm)) return true
         if (e.action == KeyEvent.ACTION_DOWN && settingsScrim.visibility != View.VISIBLE && allApps.visibility != View.VISIBLE) {
-            currentFocus?.let { homeNav(it, e.keyCode) }?.let { it.requestFocus(); return true }
+            currentFocus?.let { homeNav(it, e.keyCode) }?.let { it.steer(); return true }
         }
         return super.dispatchKeyEvent(e)
+    }
+
+    /** Focus from the phone's remote. A finger's screen ignores a focus that is not allowed in touch mode. */
+    private fun View.steer(): Boolean {
+        if (isInTouchMode) isFocusableInTouchMode = true
+        return requestFocus()
+    }
+
+    /** The first focusable item, when a remote key arrives and nothing has focus. True when one took it. */
+    private fun seedRemoteFocus(): Boolean {
+        val start = when {
+            settingsScrim.visibility == View.VISIBLE ->
+                (0 until settingsList.childCount).firstNotNullOfOrNull { settingsList.getChildAt(it).takeIf { v -> v.isFocusable && v.visibility == View.VISIBLE } }
+            else -> appRow.getChildAt(0) ?: findViewById(R.id.usersButton)
+        } ?: return false
+        return start.steer()
     }
 
     /**

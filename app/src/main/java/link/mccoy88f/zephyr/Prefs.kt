@@ -26,7 +26,7 @@ internal object K {
     const val WARP = "warp" // Cloudflare WARP on, as this app's VPN (see Warp); not in backups
     const val WARP_ACCOUNT = "warp_account" // its WARP account, JSON with its private key: never in backups
     const val REMOTE = "remote" // remote access on: a phone on the home network can change settings (see Remote)
-    const val REMOTE_PIN = "remote_pin" // that phone's PIN, hashed; kept when remote access is turned off; not in backups
+    const val REMOTE_PIN = "remote_pin" // older remote PIN, hashed; the phone uses the 18+ PIN when that is set; not in backups
     const val REMOTE_TOKEN = "remote_token" // the secret piece of its address, so a guess on the network misses it; not in backups
     const val ROWLESS = "rowless" // apps that showed no rows under them: one tap opens them on a phone (see rowless)
     const val STATUS_BAR = "status_bar" // a phone or tablet: its status bar (time, network) shown; hidden by default

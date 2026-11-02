@@ -41,6 +41,12 @@ class RemoteTest {
         assertEquals(null, remotePanelName("home"))
     }
 
+    @Test fun thePhoneUsesTheAdultPin() {
+        assertEquals("adult", remotePinStored("adult", "remote"))
+        assertEquals("remote", remotePinStored(null, "remote"))
+        assertNull(remotePinStored(null, null))
+    }
+
     @Test fun showAddressMovesTheRowsUnderIt() {
         assertEquals(1, rowsAfterRemote(false))
         assertEquals(2, rowsAfterRemote(true))

@@ -26,7 +26,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
-// Remote access: one page on this TV, for a phone on the home network. A PIN (set on the TV) opens it. The address
+// Remote access: one page on this TV, for a phone on the home network. The 18+ PIN opens it. The address
 // stays the same, so it can be saved. The page shows the panel that is open (settings, users or search) and can
 // change it, and its remote sends the TV's keys. A code on a single setting opens that setting; saving it closes
 // the screen. WARP hides the codes: the phone cannot reach the TV while Zephyr TV's traffic goes through the tunnel.
@@ -226,7 +226,7 @@ internal object Remote {
         val authed = authed(headers)
         when {
             rest == "api/pin" && method == "POST" -> pin(a, out, readBody(input, headers, 32))
-            !authed && rest.startsWith("api/") -> reply(out, 401, "text/plain; charset=utf-8", a.getString(R.string.remote_pin_enter))
+            !authed && rest.startsWith("api/") -> reply(out, 401, "text/plain; charset=utf-8", a.remotePinPrompt())
             rest == "api/page" && method == "GET" -> reply(out, 200, "application/json; charset=utf-8", onMain { remoteSnapshot().toString() })
             rest == "api/press" && method == "POST" -> {
                 press(readBody(input, headers, 16))
@@ -260,7 +260,8 @@ internal object Remote {
         val now = SystemClock.elapsedRealtime()
         synchronized(this) {
             if (now < pinWait) return a.getString(R.string.pin_too_many_tries_wait, ((pinWait - now) / 1000 + 1).toInt())
-            val stored = a.prefs.getString(K.REMOTE_PIN, null) ?: return a.getString(R.string.remote_not_open)
+            val stored = remotePinStored(a.prefs.getString(K.ADULT_PIN, null), a.prefs.getString(K.REMOTE_PIN, null))
+                ?: return a.getString(R.string.remote_not_open)
             if (pin.length != 4 || pin.any { !it.isDigit() } || !pinMatches(stored, pin)) {
                 if (++pinFails >= MainActivity.PIN_TRIES) {
                     pinFails = 0
@@ -333,7 +334,7 @@ internal object Remote {
     }
 
     private fun goPost(a: MainActivity, out: OutputStream, input: InputStream, headers: Map<String, String>, id: String, authed: Boolean) {
-        if (!authed) return reply(out, 401, "text/plain; charset=utf-8", a.getString(R.string.remote_pin_enter))
+        if (!authed) return reply(out, 401, "text/plain; charset=utf-8", a.remotePinPrompt())
         if (!ID.matches(id)) return reply(out, 404, "text/plain; charset=utf-8", "Not found.")
         val task = held[id] ?: a.remoteTask(id) ?: return reply(out, 404, "text/plain; charset=utf-8", a.getString(R.string.remote_not_open))
         if (task.maxBytes < 1) return reply(out, 405, "text/plain; charset=utf-8", "Not allowed")
@@ -426,8 +427,18 @@ internal fun MainActivity.guideRow() = backupRow() + 2
 internal fun MainActivity.aboutRow() = backupRow() + 3
 
 /**
- * Remote access on, with a PIN. The PIN is asked here when there isn't one yet. [back] leaves the PIN page.
- * [then] runs once it's on.
+ * The PIN the phone must match. The 18+ PIN wins when it is set, including while that lock is already on.
+ * An older remote PIN still works until a 18+ PIN exists.
+ */
+internal fun remotePinStored(adult: String?, legacy: String?) = adult ?: legacy
+
+/** What the phone asks for: the 18+ PIN when that lock has one, otherwise the older remote PIN. */
+private fun MainActivity.remotePinPrompt() =
+    getString(if (prefs.contains(K.ADULT_PIN)) R.string.remote_pin_adult else R.string.remote_pin_enter)
+
+/**
+ * Remote access on, with the 18+ PIN. A PIN that is already set is used as it is. A new PIN is the 18+ PIN and turns
+ * that lock on. [back] leaves the PIN page. [then] runs once remote access is on.
  */
 internal fun MainActivity.ensureRemote(back: () -> Unit, then: () -> Unit) {
     fun arm() {
@@ -435,15 +446,17 @@ internal fun MainActivity.ensureRemote(back: () -> Unit, then: () -> Unit) {
         Remote.attach(this)
         then()
     }
-    if (prefs.contains(K.REMOTE_PIN)) return arm()
-    pinPage(getString(R.string.remote_pin_choose), back) { first ->
+    if (remotePinStored(prefs.getString(K.ADULT_PIN, null), prefs.getString(K.REMOTE_PIN, null)) != null) return arm()
+    pinPage(getString(R.string.adult_pin_choose), back) { first ->
         pinPage(getString(R.string.pin_enter_again_title), back) { again ->
             if (again != first) {
                 Toast.makeText(this, getString(R.string.pin_mismatch), Toast.LENGTH_LONG).show()
                 ensureRemote(back, then)
                 return@pinPage null
             }
-            prefs.edit().putString(K.REMOTE_PIN, hashPin(first)).apply()
+            prefs.edit().putString(K.ADULT_PIN, hashPin(first)).putLong(K.ADULT_UNTIL, 0L).apply()
+            adultChanged()
+            Toast.makeText(this, getString(R.string.adult_locked_toast), Toast.LENGTH_LONG).show()
             arm()
             null
         }
@@ -521,6 +534,7 @@ private fun MainActivity.showOnTv(open: () -> Unit) {
 
 /** One key from the phone's remote. Volume changes the TV's volume. Home brings Zephyr TV forward. */
 private fun MainActivity.remoteCommand(name: String) {
+    comeForward()
     when (name) {
         "home" -> startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
         "vol+", "vol-" -> {
@@ -533,8 +547,24 @@ private fun MainActivity.remoteCommand(name: String) {
             null -> if (HomeOverride.running?.goBack() != true) onBackPressed()
             else -> front.remoteTap(KeyEvent.KEYCODE_BACK)
         }
+        // Arrows and channel keys on the player: the picture's view can swallow them, so the player handles them itself.
+        "up", "down", "left", "right", "ch+", "ch-" -> {
+            val code = remoteKeyCode(name) ?: return
+            val front = Screen.activity ?: this
+            if (front is PlayerActivity) front.onKeyDown(code, KeyEvent(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), KeyEvent.ACTION_DOWN, code, 0))
+            else front.remoteTap(code)
+        }
         else -> (Screen.activity ?: this).remoteTap(remoteKeyCode(name) ?: return)
     }
+}
+
+/** Zephyr TV to the front, still on the screen it had open. A Home press is a different path. */
+private fun MainActivity.comeForward() {
+    val front = Screen.activity
+    if (front != null && front.hasWindowFocus()) return
+    try {
+        getSystemService(android.app.ActivityManager::class.java).appTasks.firstOrNull()?.moveToFront()
+    } catch (_: RuntimeException) {}
 }
 
 /** A press and a release, as the TV's own remote sends them. */
@@ -826,7 +856,7 @@ private fun MainActivity.pinHtml(): String {
     val lost = js(getString(R.string.phone_unreachable))
     return remotePage("""
         <h2>$TUNE<span>${escHtml(getString(R.string.remote_menu_title))}</span></h2>
-        <p class="note">${escHtml(getString(R.string.remote_pin_enter))}</p>
+        <p class="note">${escHtml(remotePinPrompt())}</p>
         <input id="p" inputmode="numeric" autocomplete="off" maxlength="4" type="password">
         <button id="b" class="send" type="button">${escHtml(getString(R.string.phone_send))}</button>
         <div id="e"></div>
@@ -944,10 +974,16 @@ private fun MainActivity.menuHtml(): String {
         const panel=document.getElementById('panel'), pad=document.getElementById('pad');
         function choose(id){['users','search','open','remote'].forEach(function(x){document.getElementById(x).classList.toggle('on', x===id);});}
         function showPanel(){panel.hidden=false; pad.hidden=true;}
-        document.getElementById('users').onclick=function(){showPanel(); act('api/panel','users');};
-        document.getElementById('search').onclick=function(){showPanel(); act('api/panel','search');};
-        document.getElementById('open').onclick=function(){showPanel(); act('api/open');};
-        document.getElementById('remote').onclick=function(){panel.hidden=true; pad.hidden=false; choose('remote');};
+        function home(){showPanel(); choose(''); act('api/key','home');}
+        function dock(id, open){
+          document.getElementById(id).onclick=function(){
+            if(document.getElementById(id).classList.contains('on')) home(); else open();
+          };
+        }
+        dock('users', function(){showPanel(); act('api/panel','users');});
+        dock('search', function(){showPanel(); act('api/panel','search');});
+        dock('open', function(){showPanel(); act('api/open');});
+        dock('remote', function(){panel.hidden=true; pad.hidden=false; choose('remote');});
         pad.querySelectorAll('button').forEach(function(b){b.onclick=function(){act('api/key', b.dataset.k);};});
         back.onclick=function(){act('api/back');};
         draw(); setInterval(draw, 800);
