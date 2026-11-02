@@ -40,6 +40,30 @@ function mediaType(mime, startMs, audioOnly) {
   return mime + ";mediaOption=" + encodeURIComponent(JSON.stringify(options));
 }
 
+function chromeMajor() {
+  const match = /Chrome\/(\d+)/.exec(navigator.userAgent || "");
+  return match ? Number(match[1]) : 100;
+}
+
+function playPromise(video) {
+  const played = video.play();
+  if (played && played.catch) played.catch(() => {});
+}
+
+const loading = {};
+
+function loadScript(src) {
+  if (loading[src]) return loading[src];
+  loading[src] = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("script"));
+    document.head.appendChild(script);
+  });
+  return loading[src];
+}
+
 function native(video, url, mime, startMs, audioOnly) {
   const source = document.createElement("source");
   source.src = url;
@@ -53,15 +77,19 @@ function native(video, url, mime, startMs, audioOnly) {
       };
       video.addEventListener("loadedmetadata", seek);
     }
-    video.play().catch(() => {});
+    playPromise(video);
   };
   start();
 }
 
 async function playHls(video, url, startMs) {
-  const mod = await import("hls.js");
-  const Hls = mod.default;
-  if (!Hls.isSupported()) {
+  if (chromeMajor() < 47) {
+    native(video, url, "application/vnd.apple.mpegurl", startMs, false);
+    return;
+  }
+  await loadScript("hls.js");
+  const Hls = window.Hls;
+  if (!Hls || !Hls.isSupported()) {
     native(video, url, "application/vnd.apple.mpegurl", startMs, false);
     return;
   }
@@ -70,7 +98,7 @@ async function playHls(video, url, startMs) {
   hls.attachMedia(video);
   hls.on(Hls.Events.MANIFEST_PARSED, () => {
     if (startMs > 0) video.currentTime = startMs / 1000;
-    video.play().catch(() => {});
+    playPromise(video);
   });
   hls.on(Hls.Events.ERROR, (_, data) => {
     if (data && data.fatal) video.dispatchEvent(new Event("error"));
@@ -78,13 +106,15 @@ async function playHls(video, url, startMs) {
 }
 
 async function playDash(video, url, startMs) {
-  await import("shaka-player/dist/shaka-player.compiled.js");
+  // Shaka 4.3 needs Chromium 68 (webOS 5). Earlier TVs play DASH only through the proxy.
+  if (chromeMajor() < 68 || typeof MediaSource === "undefined") throw new Error("dash");
+  await loadScript("shaka-player.compiled.js");
   const shaka = window.shaka;
   if (!shaka || !shaka.Player.isBrowserSupported()) throw new Error("dash");
   shaka.polyfill.installAll();
   dash = new shaka.Player(video);
   await dash.load(url, startMs > 0 ? startMs / 1000 : undefined);
-  video.play().catch(() => {});
+  playPromise(video);
 }
 
 /**

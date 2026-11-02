@@ -7,7 +7,7 @@ import { start, stop } from "./player.js";
 import { forgetProxyKind, needsProxy, proxied, proxyKind } from "./proxy.js";
 import { loadHistory, loadProblems, loadSettings, pushProblem, saveProgress, saveSettings } from "./store.js";
 import {
-  catalogUrl, enc, getJson, manifestUrl, metaUrl, parseAddon, parseMeta, parseMetas, parseStreams, provides, streamUrl,
+  catalogUrl, enc, getJson, getText, manifestUrl, metaUrl, parseAddon, parseMeta, parseMetas, parseStreams, provides, streamUrl,
 } from "./stremio.js";
 import { formatClock, hhmm, inNight } from "./time.js";
 import { screenHtml, spotlightHtml } from "./view.js";
@@ -220,9 +220,8 @@ async function loadEpg() {
   const url = state.settings.epgUrl;
   if (!url) return {};
   try {
-    const res = await fetch(url);
-    const text = await res.text();
-    if (!res.ok || text.length > 2500000) return {};
+    const text = await getText(url);
+    if (text.length > 2500000) return {};
     const xml = new DOMParser().parseFromString(text, "text/xml");
     const now = Date.now();
     const map = {};

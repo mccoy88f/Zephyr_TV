@@ -30,7 +30,7 @@ export async function sdkVersion() {
     const info = await luna("luna://com.webos.service.tv.systemproperty", "getSystemInfo", { keys: ["sdkVersion", "modelName"] });
     return info.sdkVersion || info.modelName || "";
   } catch (e) {
-    return onTV() ? "6" : "browser";
+    return onTV() ? "" : "browser";
   }
 }
 

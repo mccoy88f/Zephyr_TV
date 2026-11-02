@@ -15,10 +15,13 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 ## Unreleased
 
-- Zephyr TV has a webOS package in `webos/`. It runs on webOS TV 6 and newer.
+- Zephyr TV has a webOS package in `webos/`. It runs on webOS TV 3 and newer.
 - The webOS package plays HTTP streams. It does not replace the LG home screen.
+- The webOS package is one script. webOS TV 3 can read it.
 - Set a MediaFlow or EasyProxy address. The webOS package sends a stream there when the TV cannot play it directly.
 - A DASH stream through MediaFlow asks for an HLS version 3 playlist.
+- On webOS TV 3 and webOS TV 4, play a DASH stream through the proxy.
+- Shaka Player starts on webOS TV 5.
 
 ## 4.0.0-beta.2
 

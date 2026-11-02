@@ -1,7 +1,7 @@
 /** Arrow keys move between [data-row] controls. Back is key 461 on webOS. */
 
 export function isBack(event) {
-  return event.keyCode === 461 || event.key === "Escape" || event.key === "GoBack" || event.keyCode === 10009;
+  return event.keyCode === 461 || event.keyCode === 27 || event.keyCode === 10009 || event.key === "Escape" || event.key === "GoBack";
 }
 
 export function isEnter(event) {
@@ -12,8 +12,14 @@ function visible(el) {
   return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 }
 
+function list(nodes) {
+  const out = [];
+  for (let i = 0; i < nodes.length; i++) out.push(nodes[i]);
+  return out;
+}
+
 function rowsOf(root) {
-  const all = [...root.querySelectorAll("[data-row]")].filter(visible);
+  const all = list(root.querySelectorAll("[data-row]")).filter(visible);
   const order = [];
   all.forEach((el) => {
     if (order.indexOf(el.dataset.row) === -1) order.push(el.dataset.row);
@@ -46,8 +52,14 @@ export function move(root, keyCode) {
 }
 
 function focus(el) {
+  if (!el) return;
   el.focus();
-  if (el.scrollIntoView) el.scrollIntoView({ block: "nearest", inline: "nearest" });
+  if (!el.scrollIntoView) return;
+  try {
+    el.scrollIntoView({ block: "nearest", inline: "nearest" });
+  } catch (e) {
+    el.scrollIntoView(false);
+  }
 }
 
 export function focusId(root, id) {
@@ -68,13 +80,8 @@ export function installKeys(root, handlers) {
       return;
     }
     if (isBack(event)) {
-      if (typing && event.key === "Escape") {
-        event.preventDefault();
-        handlers.back();
-      } else if (!typing || event.keyCode === 461 || event.keyCode === 10009) {
-        event.preventDefault();
-        handlers.back();
-      }
+      event.preventDefault();
+      handlers.back();
       return;
     }
     if (typing && event.keyCode !== 38 && event.keyCode !== 40 && !isEnter(event)) return;

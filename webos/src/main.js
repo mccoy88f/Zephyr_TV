@@ -1,3 +1,4 @@
+import "./compat.js";
 import { boot } from "./app.js";
 
 boot().catch((e) => {

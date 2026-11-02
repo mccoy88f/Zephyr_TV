@@ -25,6 +25,19 @@ export function isVodType(type) {
   return !!type && type !== "tv" && type !== "channel";
 }
 
+/** A letter or a digit. Chromium 38 cannot parse a Unicode-property escape. */
+function hasNameChar(s) {
+  const text = String(s);
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if ((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122)) return true;
+    if (c >= 192 && c <= 687) return true;
+    if (c >= 880 && c <= 1514) return true;
+    if (c >= 0x4E00 && c <= 0x9FFF) return true;
+  }
+  return false;
+}
+
 function strings(list) {
   if (!Array.isArray(list)) return [];
   return list.map((s) => String(s || "")).filter(Boolean);
@@ -57,7 +70,7 @@ function catalogOf(c, manifest) {
   const search = extras.some((e) => e && e.name === "search");
   const genres = ((extras.find((e) => e && e.name === "genre") || {}).options || [])
     .map((g) => String(g))
-    .filter((g) => /[\p{L}\p{N}]/u.test(g));
+    .filter(hasNameChar);
   const required = extras.filter((e) => e && e.isRequired);
   const name = c.name || (manifest && manifest.name) || id;
   return { type, id, name, genres, search, required };
@@ -188,14 +201,21 @@ export function parseStreams(page) {
   }).filter(Boolean);
 }
 
+export function getText(url, ms) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.timeout = ms || 15000;
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.responseText);
+      else reject(new Error(String(xhr.status || 0)));
+    };
+    xhr.onerror = () => reject(new Error("network"));
+    xhr.ontimeout = () => reject(new Error("timeout"));
+    xhr.send();
+  });
+}
+
 export async function getJson(url, ms) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), ms || 15000);
-  try {
-    const res = await fetch(url, { signal: ctrl.signal });
-    if (!res.ok) throw new Error(String(res.status));
-    return await res.json();
-  } finally {
-    clearTimeout(timer);
-  }
+  return JSON.parse(await getText(url, ms));
 }

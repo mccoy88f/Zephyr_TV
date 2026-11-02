@@ -78,13 +78,26 @@ export async function saveSettings(settings) {
   await txDone(tx);
 }
 
-export async function loadHistory(user) {
-  const database = await db();
-  const all = await new Promise((resolve, reject) => {
-    const req = database.transaction("history").objectStore("history").getAll();
-    req.onsuccess = () => resolve(req.result || []);
+function readAll(store) {
+  return new Promise((resolve, reject) => {
+    const out = [];
+    const req = store.openCursor();
+    req.onsuccess = () => {
+      const cursor = req.result;
+      if (!cursor) {
+        resolve(out);
+        return;
+      }
+      out.push(cursor.value);
+      cursor.continue();
+    };
     req.onerror = () => reject(req.error);
   });
+}
+
+export async function loadHistory(user) {
+  const database = await db();
+  const all = await readAll(database.transaction("history").objectStore("history"));
   return all.filter((row) => row && row.user === user && row.position > 15)
     .sort((a, b) => b.updated - a.updated)
     .slice(0, 30);

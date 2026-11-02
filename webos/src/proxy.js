@@ -1,5 +1,7 @@
 /** MediaFlow and EasyProxy. A stream the TV can play stays direct. The others go through the proxy. */
 
+import { getText } from "./stremio.js";
+
 const XTREAM_UA = "VLC/3.0.20 LibVLC/3.0.20";
 const XTREAM_LINK = /\/(live|movie|series)\/[^/]+\/[^/]+\/[^/?]+\.[a-z0-9]{2,5}(\?|$)/i;
 
@@ -83,8 +85,7 @@ export async function proxyKind(settings) {
   try {
     const info = new URLSearchParams();
     if (settings.proxyPassword) info.set("api_password", settings.proxyPassword);
-    const res = await fetch(base + "/api/info?" + info.toString());
-    const body = res.ok ? await res.json() : {};
+    const body = JSON.parse(await getText(base + "/api/info?" + info.toString()));
     if (String(body.proxy || "").toLowerCase().indexOf("easyproxy") !== -1) kind = "easyproxy";
   } catch (e) { /* The add-on assumes MediaFlow when the check fails. */ }
   kinds.set(base, kind);

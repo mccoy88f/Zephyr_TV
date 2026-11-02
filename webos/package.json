@@ -3,7 +3,7 @@
   "private": true,
   "version": "4.0.0",
   "type": "module",
-  "description": "Zephyr TV for webOS TV 6 and newer",
+  "description": "Zephyr TV for webOS TV 3 and newer",
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node --test test/*.test.mjs"
@@ -13,6 +13,9 @@
     "shaka-player": "4.3.16"
   },
   "devDependencies": {
-    "esbuild": "0.25.5"
+    "@babel/core": "^8.1.0",
+    "@babel/preset-env": "^8.0.7",
+    "esbuild": "0.25.5",
+    "regenerator-runtime": "^0.14.1"
   }
 }
