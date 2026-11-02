@@ -353,7 +353,7 @@ La pagina funziona solo mentre quella schermata è aperta sul TV, e quello che i
 | **Launcher predefinito** | Imposta Zephyr TV come Home di Android |
 | **Aggiornamenti** | Cerca e installa le nuove versioni. Si possono ricevere anche le **beta** |
 | **Accesso remoto** | Un telefono nella rete di casa cambia le impostazioni, dopo un PIN |
-| **Mostra indirizzo** | Il codice da salvare. Compare quando l'accesso remoto è acceso |
+| **Mostra indirizzo accesso** | Il codice da salvare. Compare quando l'accesso remoto è acceso |
 | **Backup e ripristino** | Salva le impostazioni sul telefono e le ripristina. Il file contiene la chiave TMDB e gli indirizzi degli add-on: tienilo privato |
 | **Problemi recenti** | Cosa non ha funzionato di recente. Per uno stream che fallisce: fonte, server e cosa ha risposto |
 | **Guida** | Questa guida, sul TV, capitolo per capitolo |

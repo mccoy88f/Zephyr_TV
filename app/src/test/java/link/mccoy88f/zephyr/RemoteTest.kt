@@ -31,6 +31,16 @@ class RemoteTest {
         assertFalse(isPrivateLan(ip("1.1.1.1")))
     }
 
+    @Test fun thePhoneSendsOnlyKnownKeys() {
+        assertEquals(android.view.KeyEvent.KEYCODE_DPAD_UP, remoteKeyCode("up"))
+        assertEquals(android.view.KeyEvent.KEYCODE_CHANNEL_UP, remoteKeyCode("ch+"))
+        assertEquals(null, remoteKeyCode("home"))
+        assertEquals(null, remoteKeyCode("vol+"))
+        assertTrue("ok" in REMOTE_COMMANDS && "home" in REMOTE_COMMANDS && "vol-" in REMOTE_COMMANDS)
+        assertEquals("users", remotePanelName("users"))
+        assertEquals(null, remotePanelName("home"))
+    }
+
     @Test fun showAddressMovesTheRowsUnderIt() {
         assertEquals(1, rowsAfterRemote(false))
         assertEquals(2, rowsAfterRemote(true))

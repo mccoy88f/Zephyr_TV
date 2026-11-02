@@ -1,6 +1,11 @@
 package link.mccoy88f.zephyr
 
+import android.app.Activity
+import android.content.Intent
+import android.media.AudioManager
 import android.os.SystemClock
+import android.view.InputDevice
+import android.view.KeyEvent
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -22,9 +27,31 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
 // Remote access: one page on this TV, for a phone on the home network. A PIN (set on the TV) opens it. The address
-// stays the same, so it can be saved. The page shows the settings that are open and can change any of them. A code
-// on a single setting opens that setting; saving it closes the screen. WARP hides the codes: the phone cannot
-// reach the TV while Zephyr TV's traffic goes through the tunnel.
+// stays the same, so it can be saved. The page shows the panel that is open (settings, users or search) and can
+// change it, and its remote sends the TV's keys. A code on a single setting opens that setting; saving it closes
+// the screen. WARP hides the codes: the phone cannot reach the TV while Zephyr TV's traffic goes through the tunnel.
+
+/** The Zephyr TV screen in front, so a key from the phone reaches the player or the home screen. */
+internal object Screen {
+    var activity: Activity? = null
+}
+
+/** A name the phone may send. Anything else is ignored. */
+internal val REMOTE_COMMANDS = setOf("up", "down", "left", "right", "ok", "back", "home", "vol+", "vol-", "ch+", "ch-")
+
+internal fun remotePanelName(name: String) = name.takeIf { it == "users" || it == "search" || it == "settings" }
+
+internal fun remoteKeyCode(name: String): Int? = when (name) {
+    "up" -> KeyEvent.KEYCODE_DPAD_UP
+    "down" -> KeyEvent.KEYCODE_DPAD_DOWN
+    "left" -> KeyEvent.KEYCODE_DPAD_LEFT
+    "right" -> KeyEvent.KEYCODE_DPAD_RIGHT
+    "ok" -> KeyEvent.KEYCODE_DPAD_CENTER
+    "back" -> KeyEvent.KEYCODE_BACK
+    "ch+" -> KeyEvent.KEYCODE_CHANNEL_UP
+    "ch-" -> KeyEvent.KEYCODE_CHANNEL_DOWN
+    else -> null
+}
 
 private const val PORT = 8765
 private const val SESSION_MS = 12 * 3600_000L
@@ -206,7 +233,9 @@ internal object Remote {
                 reply(out, 200, "text/plain; charset=utf-8", "")
             }
             rest == "api/back" && method == "POST" -> { onMain { goBack() }; reply(out, 200, "text/plain; charset=utf-8", "") }
-            rest == "api/open" && method == "POST" -> { onMain { openFromPhone() }; reply(out, 200, "text/plain; charset=utf-8", "") }
+            rest == "api/open" && method == "POST" -> { onMain { showOnTv { openFromPhone() } }; reply(out, 200, "text/plain; charset=utf-8", "") }
+            rest == "api/panel" && method == "POST" -> panel(out, readBody(input, headers, 16))
+            rest == "api/key" && method == "POST" -> key(out, readBody(input, headers, 16))
             rest == "api/text" && method == "POST" -> text(out, readBody(input, headers, 1024L * 1024))
             rest.isEmpty() && method == "GET" -> reply(out, 200, "text/html; charset=utf-8", if (authed) a.menuHtml() else a.pinHtml())
             rest.startsWith("go/") && method == "GET" -> goGet(a, out, rest.removePrefix("go/"), authed)
@@ -254,6 +283,29 @@ internal object Remote {
             return false
         }
         return true
+    }
+
+    private fun panel(out: OutputStream, body: String?) {
+        val which = remotePanelName(body?.trim().orEmpty()) ?: return reply(out, 400, "text/plain; charset=utf-8", "")
+        val a = home ?: return reply(out, 503, "text/plain; charset=utf-8", "")
+        onMain {
+            a.showOnTv {
+                when (which) {
+                    "users" -> a.showUsers()
+                    "search" -> a.openSearch(if (a.searchQuery != null) a.lastSearchWord else "")
+                    else -> a.openFromPhone()
+                }
+            }
+        }
+        reply(out, 200, "text/plain; charset=utf-8", "")
+    }
+
+    private fun key(out: OutputStream, body: String?) {
+        val name = body?.trim().orEmpty()
+        if (name !in REMOTE_COMMANDS) return reply(out, 400, "text/plain; charset=utf-8", "")
+        val a = home ?: return reply(out, 503, "text/plain; charset=utf-8", "")
+        onMain { a.remoteCommand(name) }
+        reply(out, 200, "text/plain; charset=utf-8", "")
     }
 
     private fun press(body: String?) {
@@ -457,6 +509,42 @@ private fun MainActivity.goBack() {
     remoteBack?.invoke() ?: closeLauncherSettings()
 }
 
+/** Brings the home screen forward when the player is in front, then opens [open] once that screen is up. */
+private fun MainActivity.showOnTv(open: () -> Unit) {
+    if (Screen.activity === this) {
+        open()
+        return
+    }
+    remoteOpen = open
+    startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+}
+
+/** One key from the phone's remote. Volume changes the TV's volume. Home brings Zephyr TV forward. */
+private fun MainActivity.remoteCommand(name: String) {
+    when (name) {
+        "home" -> startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+        "vol+", "vol-" -> {
+            val host = Screen.activity ?: this
+            val dir = if (name == "vol+") AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER
+            host.getSystemService(AudioManager::class.java).adjustStreamVolume(AudioManager.STREAM_MUSIC, dir, AudioManager.FLAG_SHOW_UI)
+        }
+        "back" -> when (val front = Screen.activity) {
+            is MainActivity -> front.onBackPressed()
+            null -> if (HomeOverride.running?.goBack() != true) onBackPressed()
+            else -> front.remoteTap(KeyEvent.KEYCODE_BACK)
+        }
+        else -> (Screen.activity ?: this).remoteTap(remoteKeyCode(name) ?: return)
+    }
+}
+
+/** A press and a release, as the TV's own remote sends them. */
+private fun Activity.remoteTap(code: Int) {
+    val t = SystemClock.uptimeMillis()
+    fun event(action: Int, at: Long) = KeyEvent(t, at, action, code, 0, 0, -1, 0, 0, InputDevice.SOURCE_DPAD)
+    dispatchKeyEvent(event(KeyEvent.ACTION_DOWN, t))
+    dispatchKeyEvent(event(KeyEvent.ACTION_UP, t + 40))
+}
+
 private fun MainActivity.openFromPhone() {
     unlockedUntil = SystemClock.elapsedRealtime() + MainActivity.UNLOCKED_MS
     openLauncherSettings()
@@ -498,6 +586,12 @@ internal fun MainActivity.remoteSnapshot(): JSONObject {
         })
         .put("rows", rows)
         .put("form", Remote.active.orEmpty())
+        .put("kind", when {
+            !open -> ""
+            remoteTitle == getString(R.string.users_title) || remoteTitle == getString(R.string.users_settings) -> "users"
+            remoteTitle == getString(R.string.search_title) -> "search"
+            else -> "settings"
+        })
 }
 
 /**
@@ -655,6 +749,15 @@ private const val LOGO = """<svg class="logo" viewBox="0 0 72 72" aria-hidden="t
 /** The settings button on the home screen (ic_tune). */
 private const val TUNE = """<svg class="tune" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3,17v2h6v-2H3zM3,5v2h10V5H3zM13,21v-2h8v-2h-8v-2h-2v6h2zM7,9v2H3v2h4v2h2V9H7zM21,13v-2H11v2h10zM15,9h2V7h4V5h-4V3h-2v6z"/></svg>"""
 
+/** The users button on the home screen (ic_profile), first of the top bar. */
+private const val PROFILE = """<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM12,5c1.66,0 3,1.34 3,3s-1.34,3 -3,3 -3,-1.34 -3,-3 1.34,-3 3,-3zM12,19.2c-2.5,0 -4.71,-1.28 -6,-3.22 0.03,-1.99 4,-3.08 6,-3.08 1.99,0 5.97,1.09 6,3.08 -1.29,1.94 -3.5,3.22 -6,3.22z"/></svg>"""
+
+/** The search button, next to the users button. */
+private const val SEARCH = """<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.5,14h-0.79l-0.28,-0.27A6.47,6.47 0 0 0 16,9.5 6.5,6.5 0 1 0 9.5,16c1.61,0 3.09,-0.59 4.23,-1.57l0.27,0.28v0.79l5,4.99L20.49,19l-4.99,-5zM9.5,14C7.01,14 5,11.99 5,9.5S7.01,5 9.5,5 14,7.01 14,9.5 11.99,14 9.5,14z"/></svg>"""
+
+/** A handset, for the remote page. */
+private const val HANDSET = """<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7.5" r="1.3" fill="currentColor"/><circle cx="12" cy="13" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>"""
+
 /**
  * The phone page in the TV's theme. [body] is the page. [dock] is the bar at the bottom. The logo, the app name
  * and the TV's name stay at the top.
@@ -692,11 +795,24 @@ private fun MainActivity.remotePage(body: String, dock: String, script: String) 
       a.form{display:block;margin:8px 14px 12px;color:inherit}
       textarea,input{display:block;width:100%;margin:8px 0;padding:14px;border:0;border-radius:8px;background:var(--field);color:inherit;font:inherit}
       textarea{min-height:6em} #e{min-height:1.4em;margin:8px 14px;font-size:14px}
-      .send{display:block;width:100%;margin-top:8px;padding:14px;border:0;border-radius:8px;background:var(--fill);color:var(--on);font:500 15px system-ui,sans-serif}
-      .dock{position:sticky;bottom:0;display:flex;gap:8px;margin-top:auto;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
+      .send,button.back{display:block;width:100%;margin-top:8px;padding:14px;border:0;border-radius:8px;background:var(--fill);color:var(--on);font:500 15px system-ui,sans-serif}
+      button.back{margin:0 0 8px;background:transparent;color:inherit;border:1px solid var(--line)}
+      button.back[hidden]{display:none}
+      #pad{display:flex;flex-direction:column;gap:8px;padding-top:8px}
+      #pad[hidden],#panel[hidden]{display:none}
+      .dpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:min(100%,280px);margin:0 auto}
+      .dpad button,.pair button{min-height:64px;border:0;border-radius:8px;background:var(--field);color:inherit;font:600 20px system-ui,sans-serif}
+      .dpad .up{grid-column:2;grid-row:1} .dpad .left{grid-column:1;grid-row:2} .dpad .ok{grid-column:2;grid-row:2;background:var(--fill);color:var(--on)}
+      .dpad .right{grid-column:3;grid-row:2} .dpad .down{grid-column:2;grid-row:3}
+      .pair{display:flex;gap:8px} .pair button{flex:1;min-height:52px;font-size:16px}
+      .group{margin:10px 0 0;font-size:13px;color:var(--muted);text-align:center}
+      .dpad button:active,.pair button:active{background:var(--fg);color:var(--on)}
+      .dock{position:sticky;bottom:0;display:flex;align-items:center;gap:8px;margin-top:auto;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
       body.glass .dock{background:rgba(16,16,20,.92)}
-      .dock button{flex:1;padding:14px;border:0;border-radius:8px;background:var(--fill);color:var(--on);font:500 15px system-ui,sans-serif}
-      .dock button[hidden]{display:none}
+      .dock button{flex:1;padding:14px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--fg);font:500 15px system-ui,sans-serif}
+      .dock button.ico{flex:none;width:44px;height:44px;padding:10px}
+      .dock button.ico svg{width:100%;height:100%;display:block}
+      .dock button.on{background:var(--fill);color:var(--on);border-color:transparent}
     </style></head><body class="${remoteTheme()}">
     <div class="sheet">
     <header>$LOGO<h1>${escHtml(getString(R.string.app_name))}</h1><p class="tv">${escHtml(tvName())}</p></header>
@@ -735,14 +851,38 @@ private fun MainActivity.menuHtml(): String {
     val lost = js(getString(R.string.phone_unreachable))
     val on = js(getString(R.string.state_on))
     val off = js(getString(R.string.state_off))
-    val dock = """<nav class="dock"><button id="open" type="button">${escHtml(getString(R.string.remote_open))}</button><button id="back" type="button">${escHtml(getString(R.string.remote_back))}</button></nav>"""
+    val up = escHtml(getString(R.string.remote_up))
+    val down = escHtml(getString(R.string.remote_down))
+    val left = escHtml(getString(R.string.remote_left))
+    val right = escHtml(getString(R.string.remote_right))
+    val dock = """<nav class="dock"><button id="users" class="ico" type="button" aria-label="${escHtml(getString(R.string.users_title))}">$PROFILE</button><button id="search" class="ico" type="button" aria-label="${escHtml(getString(R.string.search_title))}">$SEARCH</button><button id="open" type="button">${escHtml(getString(R.string.remote_open))}</button><button id="remote" class="ico" type="button" aria-label="${escHtml(getString(R.string.remote_pad))}">$HANDSET</button></nav>"""
     return remotePage("""
+        <div id="panel">
         <h2 id="heading">$TUNE<span id="title"></span></h2>
         <p id="closed" class="note" hidden>${escHtml(getString(R.string.remote_closed))}</p>
+        <button id="back" class="back" type="button" hidden>${escHtml(getString(R.string.remote_back))}</button>
         <a id="form" class="form" hidden href=""></a>
         <div id="rows"></div>
         <div id="extra"></div>
         <div id="e"></div>
+        </div>
+        <div id="pad" hidden>
+        <div class="dpad">
+          <button class="up" type="button" data-k="up" aria-label="$up">▲</button>
+          <button class="left" type="button" data-k="left" aria-label="$left">◀</button>
+          <button class="ok" type="button" data-k="ok">${escHtml(getString(R.string.remote_ok))}</button>
+          <button class="right" type="button" data-k="right" aria-label="$right">▶</button>
+          <button class="down" type="button" data-k="down" aria-label="$down">▼</button>
+        </div>
+        <div class="pair">
+          <button type="button" data-k="back">${escHtml(getString(R.string.remote_back))}</button>
+          <button type="button" data-k="home">${escHtml(getString(R.string.remote_home_key))}</button>
+        </div>
+        <p class="group">${escHtml(getString(R.string.remote_volume))}</p>
+        <div class="pair"><button type="button" data-k="vol-">−</button><button type="button" data-k="vol+">+</button></div>
+        <p class="group">${escHtml(getString(R.string.remote_program))}</p>
+        <div class="pair"><button type="button" data-k="ch-">−</button><button type="button" data-k="ch+">+</button></div>
+        </div>
     """.trimIndent(), dock, """
         const root=location.pathname.replace(/\/go\/[^/]*$/, '').replace(/\/?$/, '/');
         const title=document.getElementById('title'), heading=document.getElementById('heading'), rows=document.getElementById('rows'), back=document.getElementById('back');
@@ -799,8 +939,16 @@ private fun MainActivity.menuHtml(): String {
             }
           }
           e.textContent=err;
+          if(pad.hidden) choose(p.kind==='users'?'users':p.kind==='search'?'search':p.title?'open':'');
         }
-        document.getElementById('open').onclick=function(){act('api/open');};
+        const panel=document.getElementById('panel'), pad=document.getElementById('pad');
+        function choose(id){['users','search','open','remote'].forEach(function(x){document.getElementById(x).classList.toggle('on', x===id);});}
+        function showPanel(){panel.hidden=false; pad.hidden=true;}
+        document.getElementById('users').onclick=function(){showPanel(); act('api/panel','users');};
+        document.getElementById('search').onclick=function(){showPanel(); act('api/panel','search');};
+        document.getElementById('open').onclick=function(){showPanel(); act('api/open');};
+        document.getElementById('remote').onclick=function(){panel.hidden=true; pad.hidden=false; choose('remote');};
+        pad.querySelectorAll('button').forEach(function(b){b.onclick=function(){act('api/key', b.dataset.k);};});
         back.onclick=function(){act('api/back');};
         draw(); setInterval(draw, 800);
     """.trimIndent())

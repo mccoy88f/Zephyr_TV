@@ -341,6 +341,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        Screen.activity = this
         if (shownWidth == 0) shownWidth = resources.displayMetrics.widthPixels
         applyStatusBar()
         ensureHomeService()
@@ -357,6 +358,7 @@ class MainActivity : Activity() {
             pageReturn = null
             if (settingsScrim.visibility == View.VISIBLE) again()
         }
+        remoteOpen?.let { remoteOpen = null; it() }
         watchSessions() // once allowed (see NowPlaying): the Play queue follows what's playing
         refreshExtensions() // the preinstalled ones, and a newer version of each, once a day
         ui.post(playingTick)
@@ -425,6 +427,7 @@ class MainActivity : Activity() {
     }
 
     override fun onPause() {
+        if (Screen.activity === this) Screen.activity = null
         sceneAlive = false
         scene.stop()
         ui.removeCallbacks(holdTick)
@@ -874,6 +877,7 @@ class MainActivity : Activity() {
     internal var remoteRows: List<Triple<String, String, () -> Unit>> = emptyList()
     internal var remoteBack: (() -> Unit)? = null
     internal var remoteTitle = ""
+    internal var remoteOpen: (() -> Unit)? = null // a panel the phone asked for while another screen was in front
     internal var remoteField: EditText? = null
     internal var remotePinSubmit: ((String) -> String?)? = null
     internal var pageSides: ((Int) -> Unit)? = null // Left/Right (-1, +1) on a page that has them: a series' seasons

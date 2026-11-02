@@ -1031,6 +1031,16 @@ class PlayerActivity : Activity() {
 
     // ---------- remote ----------
 
+    override fun onResume() {
+        super.onResume()
+        Screen.activity = this
+    }
+
+    override fun onPause() {
+        if (Screen.activity === this) Screen.activity = null
+        super.onPause()
+    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         // Audio and subtitles open: its rows take the arrows and OK; Back closes it.
         if (tracksPanel.visibility == View.VISIBLE) {

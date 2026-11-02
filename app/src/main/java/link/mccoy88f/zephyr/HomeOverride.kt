@@ -37,6 +37,9 @@ class HomeOverride : AccessibilityService() {
         return true
     }
 
+    /** Back for the phone's remote when another app is in front. */
+    fun goBack() = performGlobalAction(GLOBAL_ACTION_BACK)
+
     override fun onAccessibilityEvent(e: AccessibilityEvent) {
         if (e.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && e.packageName == GOOGLE_TV &&
             e.className?.contains("dashboard", ignoreCase = true) != true

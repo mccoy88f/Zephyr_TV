@@ -13,6 +13,13 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.0.0-beta.4
+
+- Settings names the row Show the access address.
+- The phone page opens Users and Search from the buttons on the left.
+- Select Settings to open settings. Select Remote to open the keys.
+- The remote sends the arrows, OK, Back, Home, the volume and the channel.
+
 ## 4.0.0-beta.3
 
 - Settings lists Remote access above Backup and restore.
