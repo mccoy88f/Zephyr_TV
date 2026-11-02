@@ -4,7 +4,6 @@ import android.graphics.drawable.GradientDrawable
 import android.text.Html
 import android.view.View
 import android.widget.LinearLayout
-import link.mccoy88f.zephyr.MainActivity.Companion.GUIDE_ROW
 
 // The user guide on the TV: Settings → System → Guide. It's docs/guida.md (Italian) or docs/guide.md (every other
 // language), copied into the assets when the app is built (see build.gradle.kts), so it's written once. Its chapters
@@ -76,7 +75,7 @@ private fun inline(s: String): String = s
 internal fun MainActivity.showGuide(focus: Int = 0) {
     val chapters = guide()
     showPage(getString(R.string.setting_guide), chapters.mapIndexed { i, c -> page(c.title, MainActivity.SUBMENU) { showChapter(chapters, i) } },
-        focus) { renderSettings(GUIDE_ROW) }
+        focus) { renderSettings(guideRow()) }
 }
 
 /** A chapter: its paragraphs, each taking focus in turn, so Up and Down go through it and the page scrolls. */

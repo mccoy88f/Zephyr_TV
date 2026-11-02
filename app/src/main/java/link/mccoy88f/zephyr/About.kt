@@ -4,7 +4,6 @@ import android.graphics.Typeface
 import android.view.Gravity
 import android.widget.ImageView
 import android.widget.LinearLayout
-import link.mccoy88f.zephyr.MainActivity.Companion.ABOUT_ROW
 
 // Zephyr TV settings → System → About: the logo and version, who made it and whose work it builds on, its
 // license, and the pages to see on a phone (a QR code each: a TV has no browser to speak of).
@@ -39,7 +38,7 @@ internal fun MainActivity.showAbout(focus: Int = 0) {
         page(getString(R.string.about_author), "github.com/mccoy88f") { showLink(getString(R.string.about_author), AUTHOR_URL) { showAbout(0) } },
         page(getString(R.string.about_source)) { showLink(getString(R.string.about_source), SOURCE_URL) { showAbout(1) } },
         page(getString(R.string.about_plume)) { showLink(getString(R.string.about_plume), PLUME_URL) { showAbout(2) } },
-    ), focus, top = top) { renderSettings(ABOUT_ROW) }
+    ), focus, top = top) { renderSettings(aboutRow()) }
 }
 
 /** A page with [url] as a QR code, to open it on a phone. */

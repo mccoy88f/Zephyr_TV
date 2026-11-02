@@ -362,6 +362,18 @@ internal object Remote {
 internal fun MainActivity.remoteOn() = prefs.getBoolean(K.REMOTE, false)
 
 /**
+ * Rows from Remote access to the next fixed row. Show the address sits under the switch while remote access is on,
+ * so Backup and restore and the rows under it move down by one.
+ */
+internal fun rowsAfterRemote(remoteOn: Boolean) = if (remoteOn) 2 else 1
+
+internal fun MainActivity.remoteShowRow() = MainActivity.REMOTE_ROW + 1
+internal fun MainActivity.backupRow() = MainActivity.REMOTE_ROW + rowsAfterRemote(remoteOn())
+internal fun MainActivity.problemsRow() = backupRow() + 1
+internal fun MainActivity.guideRow() = backupRow() + 2
+internal fun MainActivity.aboutRow() = backupRow() + 3
+
+/**
  * Remote access on, with a PIN. The PIN is asked here when there isn't one yet. [back] leaves the PIN page.
  * [then] runs once it's on.
  */
@@ -399,7 +411,7 @@ internal fun MainActivity.toggleRemote() {
 
 /** The address to save: the whole settings page, after the PIN. */
 internal fun MainActivity.showRemoteAddress() {
-    val back = { renderSettings(MainActivity.REMOTE_ROW) }
+    val back = { renderSettings(if (remoteOn()) remoteShowRow() else MainActivity.REMOTE_ROW) }
     ensureRemote(back) {
         if (warpOn()) {
             showPage(getString(R.string.setting_remote), listOf(page(getString(R.string.dialog_done)) { back() }), top = warpQrNotice(), back = back)
@@ -557,7 +569,7 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
                 return@PhoneTask 400 to getString(R.string.phone_restore_bad)
             }
             ui.postDelayed({
-                prefs.edit().putInt(K.REOPEN_ROW, MainActivity.BACKUP_ROW).apply()
+                prefs.edit().putInt(K.REOPEN_ROW, backupRow()).apply()
                 recreate()
             }, 2000)
             200 to getString(R.string.phone_restore_done, n)
@@ -629,37 +641,90 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
 
 private fun js(s: String) = s.replace("\\", "\\\\").replace("'", "\\'").replace("<", "\\x3c").replace("\n", " ")
 
+/** Light, dark or glass, as the TV is set. Auto follows the same hours as the home screen. */
+private fun MainActivity.remoteTheme() = when (prefs.getString(K.THEME, "light")) {
+    "dark" -> "dark"
+    "glass" -> "glass"
+    "auto" -> if (prefersDark(prefs)) "dark" else "light"
+    else -> "light"
+}
+
+/** The mark from the app icon: a TV, without the word under it. */
+private const val LOGO = """<svg class="logo" viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0F172A"/><stop offset="1" stop-color="#020617"/></linearGradient><linearGradient id="lf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38BDF8"/><stop offset="1" stop-color="#2563EB"/></linearGradient></defs><rect width="72" height="72" rx="16" fill="url(#lg)"/><circle cx="36" cy="12" r="1.7" fill="#38BDF8"/><path d="M36 13.8 V18" stroke="#38BDF8" stroke-width="1.6" stroke-linecap="round"/><rect x="14" y="18" width="44" height="28" rx="5" fill="none" stroke="url(#lf)" stroke-width="3"/><polygon points="31,25 31,39 45,32" fill="#fff"/></svg>"""
+
+/** The settings button on the home screen (ic_tune). */
+private const val TUNE = """<svg class="tune" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3,17v2h6v-2H3zM3,5v2h10V5H3zM13,21v-2h8v-2h-8v-2h-2v6h2zM7,9v2H3v2h4v2h2V9H7zM21,13v-2H11v2h10zM15,9h2V7h4V5h-4V3h-2v6z"/></svg>"""
+
+/**
+ * The phone page in the TV's theme. [body] is the page. [dock] is the bar at the bottom. The logo, the app name
+ * and the TV's name stay at the top.
+ */
+private fun MainActivity.remotePage(body: String, dock: String, script: String) = """
+    <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>${escHtml(getString(R.string.app_name))}</title><style>
+      :root{--panel:#f7f8fa;--ground:#f3f5f7;--fg:#111214;--on:#fff;--muted:rgba(17,18,20,.6);--line:rgba(17,18,20,.12);--field:#e5e7eb;--fill:#111214}
+      body.dark{--panel:#09090b;--ground:#000;--fg:#f5f5f7;--on:#111214;--muted:rgba(245,245,247,.6);--line:rgba(245,245,247,.16);--field:#2a2a32;--fill:#f5f5f7}
+      body.glass{--panel:transparent;--ground:#000;--fg:#fff;--on:#111214;--muted:rgba(255,255,255,.6);--line:rgba(255,255,255,.16);--field:rgba(255,255,255,.08);--fill:#fff}
+      *{box-sizing:border-box} body{margin:0;background:var(--ground);color:var(--fg);font:17px system-ui,sans-serif}
+      .sheet{max-width:420px;min-height:100vh;margin:0 auto;display:flex;flex-direction:column;background:var(--panel)}
+      body.glass .sheet{background:linear-gradient(180deg,rgba(42,42,50,.85),rgba(16,16,20,.9))}
+      header{text-align:center;padding:28px 20px 8px}
+      .logo{width:72px;height:72px;display:block;margin:0 auto 12px}
+      h1{font:500 20px system-ui,sans-serif;margin:0}
+      .tv{margin:4px 0 0;font-size:14px;color:var(--muted)}
+      main{flex:1;padding:12px 16px 16px}
+      h2{display:flex;align-items:center;gap:10px;margin:8px 0 10px;padding:0 14px;font:500 20px system-ui,sans-serif}
+      .tune{width:22px;height:22px;flex:none}
+      p.note{margin:0 14px 12px;color:var(--muted);font-size:15px}
+      button.row{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;margin-top:4px;padding:0 14px;border:0;border-radius:8px;background:transparent;color:inherit;font:14px system-ui,sans-serif;text-align:left}
+      body.glass button.row{margin-top:6px;background:linear-gradient(180deg,rgba(44,44,52,.55),rgba(18,18,22,.63));box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+      button.row:active{background:var(--fg);color:var(--on)}
+      body.glass button.row:active{background:linear-gradient(180deg,rgba(90,90,102,.8),rgba(36,36,44,.8));color:#fff}
+      .name{flex:1;font-weight:500} .val{max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:var(--muted)}
+      button.row:active .val{color:inherit;opacity:.75}
+      .chev{width:20px;height:20px;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M8.6 7.4 10 6l6 6-6 6-1.4-1.4L13.2 12z'/></svg>") center/contain no-repeat;mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M8.6 7.4 10 6l6 6-6 6-1.4-1.4L13.2 12z'/></svg>") center/contain no-repeat}
+      .sw{width:36px;height:20px;border-radius:10px;border:2px solid var(--muted);position:relative;flex:none}
+      .sw:after{content:"";position:absolute;width:12px;height:12px;border-radius:50%;top:2px;left:2px;background:var(--muted)}
+      .sw.on{background:var(--fg);border-color:var(--fg)} .sw.on:after{left:18px;background:var(--panel)}
+      body.glass .sw.on:after{background:#121216}
+      button.row:active .sw{border-color:var(--on)} button.row:active .sw:after{background:var(--on)}
+      button.row:active .sw.on{background:var(--on)} button.row:active .sw.on:after{background:var(--fg)}
+      a.form{display:block;margin:8px 14px 12px;color:inherit}
+      textarea,input{display:block;width:100%;margin:8px 0;padding:14px;border:0;border-radius:8px;background:var(--field);color:inherit;font:inherit}
+      textarea{min-height:6em} #e{min-height:1.4em;margin:8px 14px;font-size:14px}
+      .send{display:block;width:100%;margin-top:8px;padding:14px;border:0;border-radius:8px;background:var(--fill);color:var(--on);font:500 15px system-ui,sans-serif}
+      .dock{position:sticky;bottom:0;display:flex;gap:8px;margin-top:auto;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
+      body.glass .dock{background:rgba(16,16,20,.92)}
+      .dock button{flex:1;padding:14px;border:0;border-radius:8px;background:var(--fill);color:var(--on);font:500 15px system-ui,sans-serif}
+      .dock button[hidden]{display:none}
+    </style></head><body class="${remoteTheme()}">
+    <div class="sheet">
+    <header>$LOGO<h1>${escHtml(getString(R.string.app_name))}</h1><p class="tv">${escHtml(tvName())}</p></header>
+    <main>$body</main>
+    $dock
+    </div>
+    <script>$script</script></body></html>
+""".trimIndent()
+
 private fun MainActivity.pinHtml(): String {
     val lost = js(getString(R.string.phone_unreachable))
-    return """
-        <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>Zephyr TV</title><style>
-          body{font:17px system-ui,sans-serif;margin:0;padding:32px 20px;background:#f7f8fa;color:#111214}
-          @media (prefers-color-scheme:dark){body{background:#09090b;color:#f5f5f7}}
-          h1{font-size:24px;margin:0 0 8px} p{opacity:.7}
-          input,button{display:block;width:100%;box-sizing:border-box;padding:16px;border-radius:12px;font:inherit;margin:12px 0}
-          input{border:1.5px solid currentColor;background:transparent;color:inherit}
-          button{border:0;background:#111214;color:#fff} @media (prefers-color-scheme:dark){button{background:#f5f5f7;color:#111214}}
-          #e{min-height:1.5em} footer{margin-top:40px;font-size:13px;opacity:.5;text-align:center}
-        </style></head><body>
-        <h1>${escHtml(getString(R.string.remote_menu_title))}</h1>
-        <p>${escHtml(getString(R.string.remote_pin_enter))}</p>
+    return remotePage("""
+        <h2>$TUNE<span>${escHtml(getString(R.string.remote_menu_title))}</span></h2>
+        <p class="note">${escHtml(getString(R.string.remote_pin_enter))}</p>
         <input id="p" inputmode="numeric" autocomplete="off" maxlength="4" type="password">
-        <button id="b" type="button">${escHtml(getString(R.string.phone_send))}</button>
+        <button id="b" class="send" type="button">${escHtml(getString(R.string.phone_send))}</button>
         <div id="e"></div>
-        <footer>${escHtml(phoneFooter())}</footer>
-        <script>
-          const root=location.pathname.replace(/\/go\/[^/]*$/, '').replace(/\/?$/, '/');
-          const e=document.getElementById('e'), p=document.getElementById('p');
-          document.getElementById('b').onclick=async()=>{
-            e.textContent='';
-            try{
-              const r=await fetch(root+'api/pin',{method:'POST',body:p.value});
-              if(r.ok) location.reload(); else e.textContent=await r.text();
-            }catch(x){e.textContent='$lost';}
-          };
-        </script></body></html>
-    """.trimIndent()
+    """.trimIndent(), "", """
+        const root=location.pathname.replace(/\/go\/[^/]*$/, '').replace(/\/?$/, '/');
+        const e=document.getElementById('e'), p=document.getElementById('p');
+        document.getElementById('b').onclick=async()=>{
+          e.textContent='';
+          try{
+            const r=await fetch(root+'api/pin',{method:'POST',body:p.value});
+            if(r.ok) location.reload(); else e.textContent=await r.text();
+          }catch(x){e.textContent='$lost';}
+        };
+    """.trimIndent())
 }
 
 private fun escHtml(s: String) = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -668,83 +733,75 @@ private fun MainActivity.menuHtml(): String {
     val send = js(getString(R.string.phone_send))
     val form = js(getString(R.string.remote_open_form))
     val lost = js(getString(R.string.phone_unreachable))
-    return """
-        <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>Zephyr TV</title><style>
-          body{font:17px system-ui,sans-serif;margin:0;padding:24px 16px 48px;background:#f7f8fa;color:#111214}
-          @media (prefers-color-scheme:dark){body{background:#09090b;color:#f5f5f7}}
-          h1{font-size:22px;margin:12px 0} p{opacity:.7}
-          button,textarea,input{box-sizing:border-box;font:inherit;border-radius:12px}
-          button{border:0;background:#111214;color:#fff} @media (prefers-color-scheme:dark){button{background:#f5f5f7;color:#111214}}
-          .bar{display:flex;gap:8px} .bar button{flex:1;padding:12px}
-          button.row{display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;padding:14px 16px;margin:0 0 8px;background:transparent;color:inherit;border:1px solid rgba(127,127,127,.35)}
-          button.row span{opacity:.6;font-size:14px;max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-          textarea,input{display:block;width:100%;padding:14px;margin:8px 0;border:1.5px solid currentColor;background:transparent;color:inherit}
-          #send{width:100%;padding:14px}
-          a{display:block;margin:8px 0 16px} #e{min-height:1.4em} footer{margin-top:32px;font-size:13px;opacity:.5;text-align:center}
-        </style></head><body>
-        <div class="bar"><button id="open" type="button">${escHtml(getString(R.string.remote_open))}</button>
-        <button id="back" type="button">${escHtml(getString(R.string.remote_back))}</button></div>
-        <h1 id="title"></h1>
-        <p id="closed" hidden>${escHtml(getString(R.string.remote_closed))}</p>
-        <a id="form" hidden href=""></a>
+    val on = js(getString(R.string.state_on))
+    val off = js(getString(R.string.state_off))
+    val dock = """<nav class="dock"><button id="open" type="button">${escHtml(getString(R.string.remote_open))}</button><button id="back" type="button">${escHtml(getString(R.string.remote_back))}</button></nav>"""
+    return remotePage("""
+        <h2 id="heading">$TUNE<span id="title"></span></h2>
+        <p id="closed" class="note" hidden>${escHtml(getString(R.string.remote_closed))}</p>
+        <a id="form" class="form" hidden href=""></a>
         <div id="rows"></div>
         <div id="extra"></div>
         <div id="e"></div>
-        <footer>${escHtml(phoneFooter())}</footer>
-        <script>
-          const root=location.pathname.replace(/\/go\/[^/]*$/, '').replace(/\/?$/, '/');
-          const title=document.getElementById('title'), rows=document.getElementById('rows'), back=document.getElementById('back');
-          const closed=document.getElementById('closed'), extra=document.getElementById('extra'), form=document.getElementById('form'), e=document.getElementById('e');
-          let last='', err='', kind='';
-          async function api(path, body){
-            const r=await fetch(root+path,{method:body==null?'GET':'POST',body:body==null?undefined:body});
-            if(r.status==401){location.reload();return null;}
-            return r;
-          }
-          async function act(path, body){
-            e.textContent='';
-            try{const r=await api(path, body==null?'':body); if(!r)return; err=r.ok?'':await r.text(); last=''; await draw();}
-            catch(x){e.textContent='$lost';}
-          }
-          async function draw(){
-            let r; try{r=await api('api/page');}catch(x){e.textContent='$lost';return;}
-            if(!r)return;
-            const p=await r.json();
-            const raw=JSON.stringify(p);
-            if(raw===last){if(err)e.textContent=err; return;}
-            last=raw;
-            title.textContent=p.title||'';
-            closed.hidden=!p.closed;
-            back.hidden=!p.back;
-            form.hidden=!p.form;
-            form.textContent='$form';
-            form.href=p.form?root+'go/'+encodeURIComponent(p.form):'';
-            while(rows.firstChild) rows.removeChild(rows.firstChild);
-            (p.rows||[]).forEach(function(row,i){
-              const b=document.createElement('button');
-              b.type='button'; b.className='row';
-              const n=document.createElement('b'); n.textContent=row.label; b.appendChild(n);
-              if(row.value){const v=document.createElement('span'); v.textContent=row.value; b.appendChild(v);}
-              b.onclick=function(){act('api/press', String(i));};
-              rows.appendChild(b);
-            });
-            const mark=(p.input||'')+'\n'+(p.title||'');
-            if(mark!==kind){
-              kind=mark; while(extra.firstChild) extra.removeChild(extra.firstChild);
-              if(p.input==='text'||p.input==='pin'){
-                const x=document.createElement(p.input==='pin'?'input':'textarea');
-                if(p.input==='pin'){x.type='password'; x.inputMode='numeric'; x.maxLength=4;}
-                const s=document.createElement('button'); s.id='send'; s.type='button'; s.textContent='$send';
-                s.onclick=function(){act('api/text', x.value);};
-                extra.appendChild(x); extra.appendChild(s);
-              }
+    """.trimIndent(), dock, """
+        const root=location.pathname.replace(/\/go\/[^/]*$/, '').replace(/\/?$/, '/');
+        const title=document.getElementById('title'), heading=document.getElementById('heading'), rows=document.getElementById('rows'), back=document.getElementById('back');
+        const closed=document.getElementById('closed'), extra=document.getElementById('extra'), form=document.getElementById('form'), e=document.getElementById('e');
+        let last='', err='', kind='';
+        async function api(path, body){
+          const r=await fetch(root+path,{method:body==null?'GET':'POST',body:body==null?undefined:body});
+          if(r.status==401){location.reload();return null;}
+          return r;
+        }
+        async function act(path, body){
+          e.textContent='';
+          try{const r=await api(path, body==null?'':body); if(!r)return; err=r.ok?'':await r.text(); last=''; await draw();}
+          catch(x){e.textContent='$lost';}
+        }
+        async function draw(){
+          let r; try{r=await api('api/page');}catch(x){e.textContent='$lost';return;}
+          if(!r)return;
+          const p=await r.json();
+          const raw=JSON.stringify(p);
+          if(raw===last){if(err)e.textContent=err; return;}
+          last=raw;
+          title.textContent=p.title||'';
+          heading.hidden=!p.title;
+          closed.hidden=!p.closed;
+          back.hidden=!p.back;
+          form.hidden=!p.form;
+          form.textContent='$form';
+          form.href=p.form?root+'go/'+encodeURIComponent(p.form):'';
+          while(rows.firstChild) rows.removeChild(rows.firstChild);
+          (p.rows||[]).forEach(function(row,i){
+            const b=document.createElement('button');
+            b.type='button'; b.className='row';
+            const n=document.createElement('span'); n.className='name'; n.textContent=row.label; b.appendChild(n);
+            if(row.value==='$on'||row.value==='$off'){
+              const s=document.createElement('span'); s.className='sw'+(row.value==='$on'?' on':''); b.appendChild(s);
+            }else if(row.value){
+              const v=document.createElement('span'); v.className='val'; v.textContent=row.value; b.appendChild(v);
+            }else{
+              const c=document.createElement('span'); c.className='chev'; b.appendChild(c);
             }
-            e.textContent=err;
+            b.onclick=function(){act('api/press', String(i));};
+            rows.appendChild(b);
+          });
+          const mark=(p.input||'')+'\n'+(p.title||'');
+          if(mark!==kind){
+            kind=mark; while(extra.firstChild) extra.removeChild(extra.firstChild);
+            if(p.input==='text'||p.input==='pin'){
+              const x=document.createElement(p.input==='pin'?'input':'textarea');
+              if(p.input==='pin'){x.type='password'; x.inputMode='numeric'; x.maxLength=4;}
+              const s=document.createElement('button'); s.className='send'; s.type='button'; s.textContent='$send';
+              s.onclick=function(){act('api/text', x.value);};
+              extra.appendChild(x); extra.appendChild(s);
+            }
           }
-          document.getElementById('open').onclick=function(){act('api/open');};
-          back.onclick=function(){act('api/back');};
-          draw(); setInterval(draw, 800);
-        </script></body></html>
-    """.trimIndent()
+          e.textContent=err;
+        }
+        document.getElementById('open').onclick=function(){act('api/open');};
+        back.onclick=function(){act('api/back');};
+        draw(); setInterval(draw, 800);
+    """.trimIndent())
 }

@@ -13,6 +13,14 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.0.0-beta.3
+
+- Settings lists Remote access above Backup and restore.
+- Show the address sits under Remote access.
+- The phone page shows the Zephyr TV logo, the app name and the TV name.
+- Open settings and Back sit at the bottom of that page.
+- That page uses the TV theme and the settings icon.
+
 ## 4.0.0-beta.2
 
 - Zephyr TV reads one page of every add-on catalog before it reads the later pages.

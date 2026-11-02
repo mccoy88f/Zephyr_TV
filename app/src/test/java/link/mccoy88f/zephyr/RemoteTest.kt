@@ -31,6 +31,11 @@ class RemoteTest {
         assertFalse(isPrivateLan(ip("1.1.1.1")))
     }
 
+    @Test fun showAddressMovesTheRowsUnderIt() {
+        assertEquals(1, rowsAfterRemote(false))
+        assertEquals(2, rowsAfterRemote(true))
+    }
+
     @Test fun idsStayInThePath() {
         assertEquals("tmdb-key", remoteId("tmdb-key"))
         assertEquals("api-key", remoteId("api key"))

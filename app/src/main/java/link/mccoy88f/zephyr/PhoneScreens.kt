@@ -9,8 +9,6 @@ import android.view.Gravity
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import link.mccoy88f.zephyr.MainActivity.Companion.BACKUP_ROW
-import link.mccoy88f.zephyr.MainActivity.Companion.PROBLEMS_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.TMDB_LIST_ROW
 
 // Screens that hand a job to a phone (remote access): wallpapers, text (fromPhoneText), recent problems.
@@ -37,11 +35,12 @@ internal fun MainActivity.uploadWallpaper(forDark: Boolean) {
 internal fun MainActivity.phoneTexts(title: Int, intro: Int) = PhoneTexts(getString(title), getString(intro),
     getString(R.string.phone_send), getString(R.string.phone_sending), getString(R.string.phone_unreachable), phoneFooter())
 
-/** "Zephyr TV - TV del salotto": the TV's name as set in Android settings, else its model. */
-internal fun MainActivity.phoneFooter(): String {
-    val name = android.provider.Settings.Global.getString(contentResolver, "device_name")?.takeIf { it.isNotBlank() } ?: android.os.Build.MODEL
-    return "Zephyr TV - $name"
-}
+/** The TV's name as set in Android settings, else its model. */
+internal fun MainActivity.tvName(): String =
+    android.provider.Settings.Global.getString(contentResolver, "device_name")?.takeIf { it.isNotBlank() } ?: android.os.Build.MODEL
+
+/** "Zephyr TV - TV del salotto". */
+internal fun MainActivity.phoneFooter() = "${getString(R.string.app_name)} - ${tvName()}"
 
 /**
  * A settings page that can hand [task] to a phone on the home network, for anything easier done on a phone than
@@ -133,7 +132,7 @@ internal fun MainActivity.showProblems() {
         page(getString(R.string.problems_on_phone)) { problemsOnPhone() },
         page(getString(R.string.dialog_clear)) { Problems.clear(); showProblems() },
     ) + recent.map { page(it) {} }
-    showPage(getString(R.string.setting_problems), rows) { renderSettings(PROBLEMS_ROW) }
+    showPage(getString(R.string.setting_problems), rows) { renderSettings(problemsRow()) }
 }
 
 /** The recent problems as a page, read on a phone. Built when the page is asked for, so it stays current. */
@@ -205,7 +204,7 @@ internal fun MainActivity.showBackup() {
     showPage(getString(R.string.setting_backup), listOf(
         page(getString(R.string.backup_save)) { backupToPhone() },
         page(getString(R.string.backup_restore)) { restoreFromPhone() },
-    )) { renderSettings(BACKUP_ROW) }
+    )) { renderSettings(backupRow()) }
 }
 
 internal fun MainActivity.backupToPhone() {
@@ -228,7 +227,7 @@ internal fun MainActivity.restoreFromPhone() {
         // Restart the home screen with the restored settings once the phone has its answer, back on this row.
         ui.post { status.text = getString(R.string.phone_restore_done, n) }
         ui.postDelayed({
-            prefs.edit().putInt(K.REOPEN_ROW, BACKUP_ROW).apply()
+            prefs.edit().putInt(K.REOPEN_ROW, backupRow()).apply()
             recreate()
         }, 2000)
         200 to getString(R.string.phone_restore_done, n)
