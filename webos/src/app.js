@@ -4,6 +4,7 @@ import { t } from "./i18n.js";
 import { focusId, installKeys, isEnter } from "./nav.js";
 import { launchApp, listApps, platformBack, sdkVersion } from "./platform.js";
 import { start, stop } from "./player.js";
+import { forgetProxyKind, needsProxy, proxied, proxyKind } from "./proxy.js";
 import { loadHistory, loadProblems, loadSettings, pushProblem, saveProgress, saveSettings } from "./store.js";
 import {
   catalogUrl, enc, getJson, manifestUrl, metaUrl, parseAddon, parseMeta, parseMetas, parseStreams, provides, streamUrl,
@@ -270,6 +271,7 @@ function activate(el) {
   if (act === "cycle-theme") return cycle("theme", ["dark", "light", "glass", "auto"]);
   if (act === "cycle-clock") return cycle("clock", ["auto", "24", "12"]);
   if (act === "cycle-lang") return cycle("lang", ["it", "en", "es", "fr"]);
+  if (act === "cycle-proxy") return cycle("proxyType", ["auto", "mediaflow", "easyproxy"]);
   if (act === "toggle") return toggle(el.dataset.key);
   if (act === "edit") return beginEdit(el.dataset.key);
   if (act === "save-edit") return saveEdit();
@@ -450,7 +452,8 @@ async function playCurrent() {
   const label = document.getElementById("stream-label");
   if (label) label.textContent = stream.title || "";
   try {
-    await start(video, stream, (state.playItem.position || 0) * 1000);
+    const playable = await playableStream(stream);
+    await start(video, playable, (state.playItem.position || 0) * 1000);
     state.playItem.position = 0;
     video.onerror = () => { video.onerror = null; nextStream(1); };
     video.ontimeupdate = () => {
@@ -462,6 +465,12 @@ async function playCurrent() {
   } catch (e) {
     nextStream(1);
   }
+}
+
+async function playableStream(stream) {
+  if (!needsProxy(state.settings, stream)) return stream;
+  const kind = await proxyKind(state.settings);
+  return Object.assign({}, stream, { url: proxied(kind, state.settings, stream), headers: {}, clearkey: "" });
 }
 
 function nextStream(delta) {
@@ -578,6 +587,7 @@ function inputValue(id) {
 async function cycle(key, values) {
   const i = values.indexOf(state.settings[key]);
   state.settings[key] = values[(i + 1) % values.length];
+  if (key === "proxyType") forgetProxyKind();
   await persist();
   render();
   if (key === "lang") refresh();
@@ -598,6 +608,8 @@ function beginEdit(key) {
   else if (key === "epgUrl") { value = s.epgUrl; label = tr("epg"); }
   else if (key === "nightFrom") { value = hhmm(s.nightFrom); label = tr("nightFrom"); }
   else if (key === "nightTo") { value = hhmm(s.nightTo); label = tr("nightTo"); }
+  else if (key === "proxyUrl") { value = s.proxyUrl; label = tr("proxyUrl"); }
+  else if (key === "proxyPassword") { value = s.proxyPassword; label = tr("proxyPassword"); }
   else if (key === "addon") { value = ""; label = tr("addonHint"); }
   else if (key === "newUser") { value = ""; label = tr("userName"); }
   state.edit = { key, value, label };
@@ -611,6 +623,8 @@ async function saveEdit() {
   state.screen = "settings";
   if (key === "tmdbKey") state.settings.tmdbKey = value;
   else if (key === "epgUrl") state.settings.epgUrl = value;
+  else if (key === "proxyUrl") { state.settings.proxyUrl = value; forgetProxyKind(); }
+  else if (key === "proxyPassword") { state.settings.proxyPassword = value; forgetProxyKind(); }
   else if (key === "nightFrom" || key === "nightTo") {
     const mins = parseHHMM(value);
     if (mins == null) { render(); return; }

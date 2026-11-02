@@ -161,6 +161,11 @@ export function settingsHtml(state) {
   body += line("tmdb", "edit", t(lang, "tmdb"), s.tmdbKey ? "••••" : "", 'data-key="tmdbKey"');
   body += line("adult", "toggle", t(lang, "adult"), s.adult ? t(lang, "on") : t(lang, "off"), 'data-key="adult"');
   body += line("epg", "edit", t(lang, "epg"), s.epgUrl, 'data-key="epgUrl"');
+  body += "<h2>" + esc(t(lang, "proxy")) + "</h2>";
+  body += line("proxy-url", "edit", t(lang, "proxyUrl"), s.proxyUrl, 'data-key="proxyUrl"');
+  body += line("proxy-password", "edit", t(lang, "proxyPassword"), s.proxyPassword ? "••••" : "", 'data-key="proxyPassword"');
+  const proxyType = s.proxyType === "mediaflow" ? t(lang, "proxyMediaflow") : s.proxyType === "easyproxy" ? t(lang, "proxyEasy") : t(lang, "proxyAuto");
+  body += line("proxy-type", "cycle-proxy", t(lang, "proxyType"), proxyType);
   body += "<h2>" + esc(t(lang, "users")) + "</h2>";
   s.users.forEach((u) => {
     const mark = u.id === s.user ? " · " : "";

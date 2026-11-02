@@ -17,6 +17,8 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 - Zephyr TV has a webOS package in `webos/`. It runs on webOS TV 6 and newer.
 - The webOS package plays HTTP streams. It does not replace the LG home screen.
+- Set a MediaFlow or EasyProxy address. The webOS package sends a stream there when the TV cannot play it directly.
+- A DASH stream through MediaFlow asks for an HLS version 3 playlist.
 
 ## 4.0.0-beta.2
 

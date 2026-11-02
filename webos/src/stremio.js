@@ -176,10 +176,12 @@ export function parseStreams(page) {
     const name = text(s, "name") || "";
     const described = text(s, "title") || text(s, "description") || "";
     const title = [name, described.split("\n")[0]].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(" · ");
+    const clearkey = text(hints, "clearkey") || text(s, "clearkey");
     return {
       url,
       title,
       headers,
+      clearkey,
       group: hints.bingeGroup || null,
       audioOnly: hints.audioOnly === true || /\.(mp3|m4a|aac|ogg|opus)(\?|$)/i.test(url),
     };

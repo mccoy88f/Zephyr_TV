@@ -24,6 +24,9 @@ export function defaults() {
     user: "default",
     users: [{ id: "default", name: "" }],
     epgUrl: "",
+    proxyUrl: "",
+    proxyPassword: "",
+    proxyType: "auto",
   };
 }
 
