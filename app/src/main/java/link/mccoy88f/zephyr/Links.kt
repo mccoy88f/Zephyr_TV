@@ -33,7 +33,7 @@ internal fun MainActivity.handleLink(intent: Intent?): Boolean {
         Intent.ACTION_SEND -> {
             val text = intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
             val link = Regex("""(ztv|stremio|nuvio|https?)://\S+""").find(text)?.value?.trimEnd('.', ',', ')', ']')
-                ?: return true.also { Toast.makeText(this, getString(R.string.link_unknown), Toast.LENGTH_LONG).show() }
+                ?: return true.also { toast(R.string.link_unknown) }
             return openLink(Uri.parse(link))
         }
         Intent.ACTION_VIEW -> return intent.data?.let { openLink(it) } ?: false
@@ -114,7 +114,7 @@ private fun MainActivity.openNuvio(uri: Uri): Boolean {
             val (t, id) = if (type(path.getOrNull(0)) != null) path.getOrNull(0) to path.getOrNull(1) else uri.getQueryParameter("type") to path.getOrNull(0)
             title(t, id?.let { "tmdb:" + it.removePrefix("tmdb:") })
         }
-        host == "party" -> true.also { Toast.makeText(this, getString(R.string.link_party), Toast.LENGTH_LONG).show() }
+        host == "party" -> true.also { toast(R.string.link_party) }
         else -> false
     }
 }
@@ -134,7 +134,7 @@ private fun MainActivity.addExtension(address: String) = ui.post {
 
 /** A link's add-on, added only once the user says so: a link can come from anyone. */
 private fun MainActivity.confirmAddon(address: String) = ui.post {
-    val url = Stremio.manifestUrl(address) ?: return@post Toast.makeText(this, getString(R.string.phone_epg_bad), Toast.LENGTH_LONG).show()
+    val url = Stremio.manifestUrl(address) ?: return@post toast(R.string.phone_addon_bad)
     confirmLink(getString(R.string.link_addon_title), url) { addAddon(url) }
 }
 

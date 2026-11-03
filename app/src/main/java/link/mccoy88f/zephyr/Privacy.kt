@@ -43,21 +43,21 @@ internal fun MainActivity.warpAsk() {
     val ask = try {
         VpnService.prepare(this)
     } catch (e: Exception) {
-        return Toast.makeText(this, getString(R.string.warp_no_vpn), Toast.LENGTH_LONG).show()
+        return toast(R.string.warp_no_vpn)
     }
     if (ask == null) return warpUp(tell = true)
     try {
         @Suppress("DEPRECATION")
         startActivityForResult(ask, MainActivity.VPN_REQUEST)
     } catch (e: Exception) {
-        Toast.makeText(this, getString(R.string.warp_no_vpn), Toast.LENGTH_LONG).show()
+        toast(R.string.warp_no_vpn)
     }
 }
 
 /** Back from Android's VPN permission: on with it, nothing without. */
 internal fun MainActivity.vpnAnswer(allowed: Boolean) {
     if (allowed) warpUp(tell = true)
-    else Toast.makeText(this, getString(R.string.warp_not_allowed), Toast.LENGTH_LONG).show()
+    else toast(R.string.warp_not_allowed)
 }
 
 /**
@@ -71,11 +71,11 @@ internal fun MainActivity.warpUp(tell: Boolean) {
         ui.post {
             result.onSuccess { account ->
                 prefs.edit().putBoolean(K.WARP, true).putString(K.WARP_ACCOUNT, account).apply()
-                if (tell) Toast.makeText(this, getString(R.string.warp_on_toast), Toast.LENGTH_SHORT).show()
+                if (tell) toast(R.string.warp_on_toast, long = false)
             }.onFailure { e ->
                 warn("WARP up: $e")
                 if (saved != null && tell) prefs.edit().remove(K.WARP_ACCOUNT).apply() // a new account, next time
-                Toast.makeText(this, getString(R.string.warp_failed), Toast.LENGTH_LONG).show()
+                toast(R.string.warp_failed)
             }
             if (tell) warpBack?.let { privacyPage(it) }
         }

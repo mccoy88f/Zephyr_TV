@@ -107,7 +107,7 @@ internal fun MainActivity.adultMenuRow(back: () -> Unit) =
             prefs.edit().putLong(K.ADULT_UNTIL, 0L).apply()
             closeLauncherSettings() // back to the home screen, focus on its first app (see adultChanged)
             adultChanged()
-            Toast.makeText(this, getString(R.string.adult_locked_toast), Toast.LENGTH_SHORT).show()
+            toast(R.string.adult_locked_toast, long = false)
         } else askAdultPin(back) {
             val until = if (adultUntilLocked()) Long.MAX_VALUE else System.currentTimeMillis() + UNLOCK_MS
             prefs.edit().putLong(K.ADULT_UNTIL, until).putLong(K.ADULT_BOOT, bootTime()).apply()
@@ -135,35 +135,24 @@ internal fun MainActivity.adultSettingsRows(back: () -> Unit): List<Triple<Strin
 )
 
 /** A new PIN, typed twice; the lock on (locked) once they match. */
-private fun MainActivity.chooseAdultPin(back: () -> Unit): Unit = pinPage(getString(R.string.adult_pin_choose), back) { first ->
-    pinPage(getString(R.string.pin_enter_again_title), back) { again ->
-        if (again != first) {
-            Toast.makeText(this, getString(R.string.pin_mismatch), Toast.LENGTH_LONG).show()
-            chooseAdultPin(back)
-            return@pinPage null
-        }
-        prefs.edit().putString(K.ADULT_PIN, hashPin(first)).putLong(K.ADULT_UNTIL, 0L).apply()
-        adultChanged()
-        Toast.makeText(this, getString(R.string.adult_locked_toast), Toast.LENGTH_LONG).show()
-        back()
-        null
-    }
-    null
+private fun MainActivity.chooseAdultPin(back: () -> Unit) = choosePin(getString(R.string.adult_pin_choose), back) { hash ->
+    setAdultPin(hash, R.string.adult_locked_toast)
+    back()
+}
+
+/** [hash] is the 18+ PIN now, and the lock is on (locked). [message] says so. Remote access uses this PIN too. */
+internal fun MainActivity.setAdultPin(hash: String, message: Int) {
+    prefs.edit().putString(K.ADULT_PIN, hash).putLong(K.ADULT_UNTIL, 0L).apply()
+    adultChanged()
+    toast(message)
 }
 
 /** The 18+ PIN, then [then]; wrong ones a few times make it wait, as the layout lock does. */
 private fun MainActivity.askAdultPin(back: () -> Unit, then: () -> Unit) {
     if (settingsScrim.visibility != android.view.View.VISIBLE) showPanel()
     pinPage(getString(R.string.adult_pin_enter), back) { pin ->
-        val now = android.os.SystemClock.elapsedRealtime()
-        if (now < pinWaitUntil) return@pinPage getString(R.string.pin_too_many_tries_wait, (pinWaitUntil - now) / 1000 + 1)
-        if (!pinMatches(prefs.getString(K.ADULT_PIN, null) ?: return@pinPage null.also { then() }, pin)) {
-            if (++pinFails < MainActivity.PIN_TRIES) return@pinPage getString(R.string.pin_wrong)
-            pinFails = 0
-            pinWaitUntil = now + 30_000L
-            return@pinPage getString(R.string.pin_too_many_tries_wait, 30)
-        }
-        pinFails = 0
+        val stored = prefs.getString(K.ADULT_PIN, null) ?: return@pinPage null.also { then() }
+        pinMessage(pinGuard.check { pinMatches(stored, pin) })?.let { return@pinPage it }
         then()
         null
     }

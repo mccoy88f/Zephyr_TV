@@ -40,6 +40,7 @@ private var searchFiltersExpanded = false
 internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
     if (focus == null && text.isEmpty()) searchFiltersExpanded = searchFilter.any
     if (settingsScrim.visibility != View.VISIBLE) showPanel()
+    phonePanel.kind = PhonePanel.Kind.SEARCH
     // The keyboard's Search wants words or a filter; the Search row goes without (Cinemeta's popular ones).
     fun go(query: String, always: Boolean = false) {
         if (query.isBlank() && !searchFilter.any && !always) return
@@ -201,7 +202,7 @@ internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
     }
     if (focus == null) input.requestFocus()
     pageExit = { stopListening() }
-    remoteField = input // a phone on remote access can type the search into this box
+    phonePanel.field = input // a phone on remote access can type the search into this box
 }
 
 /**

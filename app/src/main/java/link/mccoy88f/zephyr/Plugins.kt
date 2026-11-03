@@ -322,7 +322,7 @@ private fun MainActivity.repoPage(url: String, focus: Int = 0) {
         },
     ) + moves + listOf(
         page(getString(R.string.addon_update)) {
-            Toast.makeText(this, getString(R.string.addon_checking), Toast.LENGTH_SHORT).show()
+            toast(R.string.addon_checking, long = false)
             netIo.execute {
                 val again = Nuvio.update(filesDir, url)
                 ui.post {
@@ -393,16 +393,16 @@ private fun MainActivity.optionsRows(url: String, s: Nuvio.Scraper, all: List<Nu
 
 /** Adds the repository at [input] once its manifest answers with plugins, telling how it went. */
 internal fun MainActivity.addRepo(input: String, adult: Boolean) {
-    val url = Nuvio.manifestUrl(input) ?: return Toast.makeText(this, getString(R.string.phone_epg_bad), Toast.LENGTH_LONG).show()
-    Toast.makeText(this, getString(R.string.addon_checking), Toast.LENGTH_SHORT).show()
+    val url = Nuvio.manifestUrl(input) ?: return toast(R.string.phone_addon_bad)
+    toast(R.string.addon_checking, long = false)
     netIo.execute {
         val r = Nuvio.update(filesDir, url)
         ui.post {
             when {
-                r == null -> Toast.makeText(this, getString(R.string.toast_addon_failed), Toast.LENGTH_LONG).show()
+                r == null -> toast(R.string.toast_addon_failed)
                 r.scrapers.isEmpty() -> {
                     Nuvio.forget(filesDir, url)
-                    Toast.makeText(this, getString(R.string.nuvio_empty), Toast.LENGTH_LONG).show()
+                    toast(R.string.nuvio_empty)
                 }
                 else -> {
                     prefs.edit().putString(K.NUVIO_REPOS, (nuvioRepoUrls(prefs) + url).distinct().joinToString("\n")).apply()
@@ -431,7 +431,7 @@ private fun MainActivity.nuvioFromPhone() {
     val page = PhonePages.addon(phoneTexts(R.string.nuvio_phone_title, R.string.nuvio_add_intro), getString(R.string.nuvio_hint), getString(R.string.addon_adult))
     showPhoneLink(getString(R.string.nuvio_add), PhoneTask(page, 1024L * 1024) { file ->
         val lines = file.readText().lines()
-        val url = Nuvio.manifestUrl(lines.firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_epg_bad)
+        val url = Nuvio.manifestUrl(lines.firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_addon_bad)
         val adult = lines.drop(1).any { it.trim() == "adult" }
         ui.post {
             status.text = getString(R.string.addon_checking)

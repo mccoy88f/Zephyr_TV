@@ -112,4 +112,22 @@ class RemoteTest {
         assertFalse(remotePageKey("Settings", listOf("Theme", "Clock")) == remotePageKey("Settings", listOf("Clock", "Theme")))
         assertFalse(remotePageKey("A", listOf("B")) == remotePageKey("AB", emptyList()))
     }
+
+    @Test fun eachRowSaysHowThePhoneDrawsIt() {
+        val on = remoteRowJson("Clock", MainActivity.TOGGLE_ON, "On", "Off")
+        assertEquals("switch", on.getString("type"))
+        assertTrue(on.getBoolean("on"))
+        assertFalse(remoteRowJson("Clock", MainActivity.TOGGLE_OFF, "On", "Off").getBoolean("on"))
+        assertEquals("page", remoteRowJson("Theme", MainActivity.SUBMENU, "On", "Off").getString("type"))
+        // A value that reads like the word for On is still a value, not a switch.
+        val word = remoteRowJson("Mode", "On", "On", "Off")
+        assertEquals("value", word.getString("type"))
+        assertEquals("On", word.getString("value"))
+    }
+
+    @Test fun textIsSafeInThePage() {
+        assertEquals("a &lt;b&gt; &amp; &quot;c&quot;", escHtml("a <b> & \"c\""))
+        assertEquals("it\\'s \\x3c/script> a b c d", escJs("it's </script>\na\rb\u2028c\u2029d"))
+    }
 }
+

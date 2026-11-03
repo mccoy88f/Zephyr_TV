@@ -61,7 +61,7 @@ internal fun MainActivity.turnOffHomeButton() {
             on.split(':').filter { ComponentName.unflattenFromString(it) != me }.joinToString(":"))
     }
     if (homeServiceOn()) {
-        Toast.makeText(this, getString(R.string.home_off_hint), Toast.LENGTH_LONG).show()
+        toast(R.string.home_off_hint)
         openSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS)
     }
     renderSettings(HOME_BUTTON_ROW)
@@ -74,7 +74,7 @@ internal fun MainActivity.turnOnHomeButton() {
     if (homeServiceOn()) return renderSettings(HOME_BUTTON_ROW)
     // The written path is the safety net: some Google TVs (a Xiaomi stick) answer the Accessibility link
     // with "You don't have an app that can do this", which we can't detect from here.
-    Toast.makeText(this, getString(R.string.home_on_hint), Toast.LENGTH_LONG).show()
+    toast(R.string.home_on_hint)
     openHomeServiceSettings()
 }
 

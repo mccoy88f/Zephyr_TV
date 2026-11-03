@@ -137,13 +137,13 @@ internal fun MainActivity.updateDot(index: Int) {
 internal fun MainActivity.installUpdate(ver: String) {
     if (updating) return
     if (android.os.Build.VERSION.SDK_INT >= 26 && !packageManager.canRequestPackageInstalls()) {
-        Toast.makeText(this, getString(R.string.toast_update_permission), Toast.LENGTH_LONG).show()
+        toast(R.string.toast_update_permission)
         return openSettings(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName"))
     }
     // Android 7: one switch for all apps, Unknown sources, in Security.
     @Suppress("DEPRECATION") val unknownSources = Settings.Secure.INSTALL_NON_MARKET_APPS
     if (android.os.Build.VERSION.SDK_INT < 26 && Settings.Secure.getInt(contentResolver, unknownSources, 0) != 1) {
-        Toast.makeText(this, getString(R.string.toast_update_permission), Toast.LENGTH_LONG).show()
+        toast(R.string.toast_update_permission)
         return openSettings(Settings.ACTION_SECURITY_SETTINGS, null)
     }
     updating = true
@@ -160,7 +160,7 @@ internal fun MainActivity.installUpdate(ver: String) {
         ui.post {
             if (!ok) {
                 updating = false
-                Toast.makeText(this, getString(R.string.toast_update_download_failed), Toast.LENGTH_LONG).show()
+                toast(R.string.toast_update_download_failed)
             }
             if (isShowingUpdates()) showUpdates()
             refreshSettings(UPDATE_ROW)
@@ -180,7 +180,7 @@ internal fun MainActivity.installStatus(intent: Intent) {
         val why = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
         warn("update install failed: $status $why")
         if (status != PackageInstaller.STATUS_FAILURE_ABORTED) {
-            Toast.makeText(this, getString(R.string.toast_update_install_failed), Toast.LENGTH_LONG).show()
+            toast(R.string.toast_update_install_failed)
         }
     }
     if (isShowingUpdates()) showUpdates()

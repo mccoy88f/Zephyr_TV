@@ -359,7 +359,7 @@ class MainActivity : Activity() {
             pageReturn = null
             if (settingsScrim.visibility == View.VISIBLE) again()
         }
-        remoteOpen?.let { remoteOpen = null; it() }
+        phonePanel.pending?.let { phonePanel.pending = null; it() }
         watchSessions() // once allowed (see NowPlaying): the Play queue follows what's playing
         refreshExtensions() // the preinstalled ones, and a newer version of each, once a day
         ui.post(playingTick)
@@ -407,13 +407,13 @@ class MainActivity : Activity() {
     override fun onRequestPermissionsResult(code: Int, perms: Array<out String>, results: IntArray) {
         if (code == MIC_REQUEST) {
             if (results.firstOrNull() == PackageManager.PERMISSION_GRANTED) afterMicAccess?.invoke()
-            else Toast.makeText(this, getString(R.string.toast_mic_needed), Toast.LENGTH_LONG).show()
+            else toast(R.string.toast_mic_needed)
             afterMicAccess = null
             return
         }
         if (code != MEDIA_REQUEST) return refreshWatchNext()
         if (results.firstOrNull() == PackageManager.PERMISSION_GRANTED) afterPhotoAccess?.invoke()
-        else Toast.makeText(this, getString(R.string.toast_photo_access_needed), Toast.LENGTH_LONG).show()
+        else toast(R.string.toast_photo_access_needed)
     }
 
     @Deprecated("Only used for the default-home role request")
@@ -822,7 +822,7 @@ class MainActivity : Activity() {
         }
         val folders = photoFolders()
         if (folders.isEmpty()) {
-            return Toast.makeText(this, getString(R.string.toast_no_photos_found), Toast.LENGTH_LONG).show()
+            return toast(R.string.toast_no_photos_found)
         }
         val rows = folders.map { (id, name, n) ->
             val countStr = if (n == 1) getString(R.string.photos_count_singular, n) else getString(R.string.photos_count_plural, n)
@@ -874,22 +874,15 @@ class MainActivity : Activity() {
     internal var goingBack = false // Back is drawing the page before: its row left from gets focus (see showPage)
     internal val pageFocus = HashMap<String, Int>() // each page's row last left from, by its title
     internal var pageExit: (() -> Unit)? = null // cleanup when the page goes away (stops the upload server)
-    // What the phone's remote-access page is showing (see Remote): the panel's current page, and a box or a PIN it can fill.
-    internal var remoteRows: List<Triple<String, String, () -> Unit>> = emptyList()
-    internal var remoteBack: (() -> Unit)? = null
-    internal var remoteTitle = ""
-    internal var remoteOpen: (() -> Unit)? = null // a panel the phone asked for while another screen was in front
-    internal var remoteField: EditText? = null
-    internal var remotePinSubmit: ((String) -> String?)? = null
+    internal val phonePanel = PhonePanel() // what the phone's remote-access page shows of the panel (see Remote)
     internal var pageSides: ((Int) -> Unit)? = null // Left/Right (-1, +1) on a page that has them: a series' seasons
     internal var pageReturn: (() -> Unit)? = null // the page to show again, as it was, back from the player it opened
 
     internal var unlockedUntil = 0L // one PIN covers a few minutes of changes, until the home screen is left
-    internal var pinFails = 0
+    internal val pinGuard = PinGuard(PIN_TRIES) { SystemClock.elapsedRealtime() } // the layout lock and the 18+ lock
     private val adultRelock = AdultRelock()
     internal var adultShown = true
     internal var focusFirstApp = false // the apps row built again: focus on its first app (18+ just locked) // whether the adult add-ons showed last time the rows were built (see checkAdultLock)
-    internal var pinWaitUntil = 0L // ponytail: in memory, so restarting Zephyr TV resets the wait; fine for kids at a remote
     internal var pinBox: View? = null
 
     internal fun showNet(caps: NetworkCapabilities?) {
@@ -926,7 +919,7 @@ class MainActivity : Activity() {
             } catch (e: Exception) {
             }
         }
-        Toast.makeText(this, getString(R.string.toast_no_voice_search), Toast.LENGTH_SHORT).show()
+        toast(R.string.toast_no_voice_search, long = false)
     }
 
     internal fun openSettings(action: String, data: Uri? = null) {
@@ -1164,7 +1157,7 @@ class MainActivity : Activity() {
         if (takeFocus) (tiles.firstOrNull { it.tag == focusedTag } ?: tiles[0]).requestFocus()
         if (!prefs.getBoolean(K.TIP_MOVE, false)) {
             prefs.edit().putBoolean(K.TIP_MOVE, true).apply()
-            Toast.makeText(this, getString(R.string.tip_rearrange_row), Toast.LENGTH_LONG).show()
+            toast(R.string.tip_rearrange_row)
         }
     }
 
@@ -1862,7 +1855,7 @@ class MainActivity : Activity() {
                     .putStringSet(K.INPUTS_PINNED, pinnedInputs() - pkg).apply()
                 renderApps()
                 appRow.getChildAt(minOf(i, appRow.childCount - 1))?.requestFocus()
-                Toast.makeText(this, getString(R.string.removed_from_row_toast), Toast.LENGTH_SHORT).show()
+                toast(R.string.removed_from_row_toast, long = false)
             },
             sectionCache?.takeIf { it.first == pkg && it.second.isNotEmpty() }?.let { (_, sections) ->
                 getString(R.string.menu_sections) to { pickSections(pkg, sections) }
@@ -1942,7 +1935,7 @@ class MainActivity : Activity() {
     internal fun openInputsMenu(anchor: View) {
         val inputs = hdmiInputs()
         if (inputs.isEmpty()) {
-            Toast.makeText(this, getString(R.string.toast_no_inputs), Toast.LENGTH_SHORT).show()
+            toast(R.string.toast_no_inputs, long = false)
             return
         }
         val on = connectedInputs()
@@ -2187,7 +2180,7 @@ class MainActivity : Activity() {
         if (galleryOn()) return
         if (checkSelfPermission(WRITE_SECURE) != PackageManager.PERMISSION_GRANTED) {
             // Without the adb permission Zephyr TV can't switch it itself; Android's own list has "Gallery".
-            Toast.makeText(this, getString(R.string.toast_screensaver_choose_gallery), Toast.LENGTH_LONG).show()
+            toast(R.string.toast_screensaver_choose_gallery)
             return openScreensaverSettings()
         }
         prefs.edit().putString(K.PREV_SCREENSAVER, currentScreensaver()).apply()
@@ -2238,7 +2231,7 @@ class MainActivity : Activity() {
             }
             ui.post {
                 downloading = false
-                if (ok) then() else Toast.makeText(this, getString(R.string.toast_screensaver_download_failed), Toast.LENGTH_LONG).show()
+                if (ok) then() else toast(R.string.toast_screensaver_download_failed)
                 refreshSettings(SCREENSAVER_ROW)
             }
         }.start()
@@ -2249,7 +2242,7 @@ class MainActivity : Activity() {
         try {
             startActivity(Intent(Intent.ACTION_MAIN).setClassName("com.android.systemui", "com.android.systemui.Somnambulator"))
         } catch (e: Exception) {
-            Toast.makeText(this, getString(R.string.toast_screensaver_cannot_start), Toast.LENGTH_SHORT).show()
+            toast(R.string.toast_screensaver_cannot_start, long = false)
         }
     }
 
@@ -2449,7 +2442,7 @@ class MainActivity : Activity() {
         const val TOGGLE_ON = "\u0000on" // row values drawn as a switch instead of text
         const val TOGGLE_OFF = "\u0000off"
         const val SUBMENU = "\u0000more" // a row that opens a page of its own: drawn as an arrow
-        const val PIN_TRIES = 5 // wrong PINs before a 30 s wait
+        const val PIN_TRIES = 5 // wrong PINs before a wait (see PinGuard)
         const val UNLOCKED_MS = 5 * 60_000L
         const val MEDIA_REQUEST = 3
         const val PER_APP = 3 // Continue Watching items per app

@@ -966,7 +966,7 @@ internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, epi
     val start = if (all.isEmpty()) 0 else picked - from
     val type = t?.type ?: ref.type
     val sources = streamSources(type, items[start].first).filter { only == null || it.first == only }
-    if (sources.isEmpty()) return Toast.makeText(this, getString(R.string.title_no_streams), Toast.LENGTH_LONG).show()
+    if (sources.isEmpty()) return toast(R.string.title_no_streams)
     val adultUrls = adultAddonUrls()
     val adultAddons = adultUrls.mapNotNull { Stremio.saved(filesDir, it)?.addon }
     val adultSourcesList = adultUrls + adultAddons.map { it.base } + adultAddons.map { it.name } + adultPluginSources(prefs, filesDir)

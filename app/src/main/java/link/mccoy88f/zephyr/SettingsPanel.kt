@@ -67,6 +67,7 @@ import link.mccoy88f.zephyr.MainActivity.Companion.WEATHER_UNITS_ROW
 /** Opens the panel on its list of sections, or straight on the section page holding [row]. */
 internal fun MainActivity.openLauncherSettings(row: Int? = null) {
     showPanel()
+    phonePanel.kind = PhonePanel.Kind.SETTINGS
     if (row == null) renderSettingsHome() else renderSettings(row)
 }
 
@@ -99,7 +100,7 @@ internal fun MainActivity.closeLauncherSettings() {
     homeFocusable(allApps.visibility != View.VISIBLE) // the PIN can open over All apps
     (panelFrom?.takeIf { it.isAttachedToWindow } ?: findViewById(R.id.launcherSettings)).requestFocus()
     panelFrom = null
-    noteRemotePage("", emptyList(), null) // the phone's page follows the panel: closed with it
+    phonePanel.close() // the phone's page follows the panel: closed with it
 }
 
 internal fun MainActivity.sectionTitle(section: Int) = getString(when (section) {
@@ -315,7 +316,7 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 lowRamTv() -> R.string.now_playing_low_ram_short
                 else -> R.string.now_playing_needs_access
             })) {
-                if (listenerAllowed()) Toast.makeText(this, getString(R.string.now_playing_on), Toast.LENGTH_SHORT).show()
+                if (listenerAllowed()) toast(R.string.now_playing_on, long = false)
                 else allowListener { renderSettings(WATCH_SECTION * SECTION) }
             },
             // Where films and series come from (Cinemeta, Nuvio, an added catalog), and TMDB completing them.
@@ -335,7 +336,7 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
             // Not with the highest quality: that one waits for every source (see quickStart).
             page(getString(R.string.setting_fast_start),
                 if (preferredQuality(prefs) == 0) getString(R.string.fast_start_not_highest) else toggle(prefs.getBoolean(K.FAST_START, true))) {
-                if (preferredQuality(prefs) == 0) return@page Toast.makeText(this, getString(R.string.fast_start_pick_quality), Toast.LENGTH_LONG).show()
+                if (preferredQuality(prefs) == 0) return@page toast(R.string.fast_start_pick_quality)
                 prefs.edit().putBoolean(K.FAST_START, !prefs.getBoolean(K.FAST_START, true)).apply()
                 renderSettings(WATCH_SECTION * SECTION + 6)
             },
@@ -383,7 +384,7 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
             renderSettings(CHANNEL_LOGOS_ROW)
         },
         page(getString(R.string.setting_channel_logos_update)) {
-            Toast.makeText(this, getString(R.string.searching), Toast.LENGTH_SHORT).show()
+            toast(R.string.searching, long = false)
             updateChannelLogos(null) { n ->
                 watchKey = null
                 Toast.makeText(this, if (n == null) getString(R.string.toast_channel_logos_failed)
@@ -581,7 +582,7 @@ internal fun MainActivity.textPage(title: String, value: String, hint: String, i
         intro?.let { addView(label(it, 12f).apply { alpha = 0.6f; maxLines = 4; setPadding(dp(4), dp(10), dp(4), 0) }) }
     }
     showPage(title, rows { input.text?.toString()?.trim().orEmpty() }, top = box, back = back)
-    remoteField = input // a phone on remote access can type into this box
+    phonePanel.field = input // a phone on remote access can type into this box
     downFrom(input)
 }
 
@@ -599,7 +600,7 @@ internal fun MainActivity.saveEpgUrl(url: String?) {
     prefs.edit().apply { if (clean == null) remove(K.EPG_URL) else putString(K.EPG_URL, clean) }.apply()
     watchKey = null
     if (clean == null) return
-    Toast.makeText(this, getString(R.string.epg_downloading), Toast.LENGTH_SHORT).show()
+    toast(R.string.epg_downloading, long = false)
     updateEpg(tmdbLastFocusApp) { n ->
         Toast.makeText(this, getString(when (n) {
             null -> R.string.toast_epg_failed
@@ -676,20 +677,11 @@ internal fun MainActivity.showPage(title: String, allRows: List<Triple<String, S
     }
     // Keep focus inside the panel: Up from the first row and Down from the last go nowhere.
     (settingsList.parent as View).scrollTo(0, 0)
-    if (rows.isEmpty()) return noteRemotePage(title, rows, back) // a page that's all [top], like the PIN boxes, focuses itself
+    if (rows.isEmpty()) return phonePanel.show(title, rows, back) // a page that's all [top], like the PIN boxes, focuses itself
     if (top == null) settingsList.getChildAt(first).let { it.nextFocusUpId = it.id }
     settingsList.getChildAt(first + rows.size - 1).let { it.nextFocusDownId = it.id }
     if (focus >= 0) settingsList.getChildAt(first + focus.coerceIn(0, rows.size - 1)).requestFocus()
-    noteRemotePage(title, rows, back)
-}
-
-/** The panel's page, for a phone on remote access (see Remote). A new page clears the box and the PIN of the last one. */
-internal fun MainActivity.noteRemotePage(title: String, rows: List<Triple<String, String, () -> Unit>>, back: (() -> Unit)?) {
-    remoteTitle = title
-    remoteRows = rows
-    remoteBack = back
-    remoteField = null
-    remotePinSubmit = null
+    phonePanel.show(title, rows, back)
 }
 
 // ---------- layout lock ----------
@@ -706,36 +698,39 @@ internal fun MainActivity.unlock(then: () -> Unit) {
     if (!locked()) return then()
     showPanel()
     pinPage(getString(R.string.pin_enter_title), back = null) { pin ->
-        val now = SystemClock.elapsedRealtime()
-        if (now < pinWaitUntil) return@pinPage getString(R.string.pin_too_many_tries_wait, (pinWaitUntil - now) / 1000 + 1)
-        if (!pinMatches(prefs.getString(K.LOCK_PIN, null)!!, pin)) {
-            if (++pinFails < PIN_TRIES) return@pinPage getString(R.string.pin_wrong)
-            pinFails = 0
-            pinWaitUntil = now + 30_000L
-            return@pinPage getString(R.string.pin_too_many_tries_wait, 30)
-        }
-        pinFails = 0
-        unlockedUntil = now + UNLOCKED_MS
+        val stored = prefs.getString(K.LOCK_PIN, null) ?: return@pinPage null.also { closeLauncherSettings(); then() }
+        pinMessage(pinGuard.check { pinMatches(stored, pin) })?.let { return@pinPage it }
+        unlockedUntil = SystemClock.elapsedRealtime() + UNLOCKED_MS
         closeLauncherSettings()
         then()
         null
     }
 }
 
-internal fun MainActivity.setLock(): Unit = pinPage(getString(R.string.pin_choose_title), { renderSettings(LOCK_ROW) }) { first ->
-    pinPage(getString(R.string.pin_enter_again_title), { renderSettings(LOCK_ROW) }) { again ->
-        if (again != first) {
-            Toast.makeText(this, getString(R.string.pin_mismatch), Toast.LENGTH_LONG).show()
-            setLock()
-            return@pinPage null
+internal fun MainActivity.setLock() = choosePin(getString(R.string.pin_choose_title), { renderSettings(LOCK_ROW) }) { hash ->
+    prefs.edit().putString(K.LOCK_PIN, hash).apply()
+    unlockedUntil = SystemClock.elapsedRealtime() + UNLOCKED_MS // no PIN straight away for the one who set it
+    renderSettings(LOCK_ROW)
+    toast(R.string.layout_locked_toast)
+}
+
+/**
+ * A new PIN, typed twice. [chosen] gets it hashed (see [hashPin]) once both match. When they don't match,
+ * the TV says so and asks for a new PIN again. [back] leaves either page.
+ */
+internal fun MainActivity.choosePin(title: String, back: () -> Unit, chosen: (String) -> Unit) {
+    pinPage(title, back) { first ->
+        pinPage(getString(R.string.pin_enter_again_title), back) { again ->
+            if (again != first) {
+                toast(R.string.pin_mismatch)
+                choosePin(title, back, chosen)
+                return@pinPage null
+            }
+            chosen(hashPin(first))
+            null
         }
-        prefs.edit().putString(K.LOCK_PIN, hashPin(first)).apply()
-        unlockedUntil = SystemClock.elapsedRealtime() + UNLOCKED_MS // no PIN straight away for the one who set it
-        renderSettings(LOCK_ROW)
-        Toast.makeText(this, getString(R.string.layout_locked_toast), Toast.LENGTH_LONG).show()
         null
     }
-    null
 }
 
 /**
@@ -763,13 +758,19 @@ internal fun MainActivity.pinPage(title: String, back: (() -> Unit)?, done: (Str
             setStroke(if (i == at) dp(2) else dp(1), if (i == at) fg else fieldEdge())
         }
     }
-    fun submit() {
-        val error = done(digits.joinToString("")) ?: return
+    // The PIN from the boxes or from the phone. A wrong one empties the boxes, shows why and shakes them, on
+    // the TV either way, so the TV shows what the phone sent.
+    fun enter(pin: String): String? {
+        val error = done(pin) ?: return null
         digits.fill(null)
         at = 0
         draw()
         status.text = error
         ObjectAnimator.ofFloat(row, View.TRANSLATION_X, 0f, -dp(12).toFloat(), dp(12).toFloat(), -dp(8).toFloat(), dp(8).toFloat(), 0f).setDuration(300).start()
+        return error
+    }
+    fun submit() {
+        enter(digits.joinToString(""))
     }
     row.setOnKeyListener { _, code, e ->
         val digit = when (code) {
@@ -840,7 +841,7 @@ internal fun MainActivity.pinPage(title: String, back: (() -> Unit)?, done: (Str
         row.setOnClickListener { showKeyboard(t) }
     }
     showPage(title, emptyList(), top = box, back = back)
-    remotePinSubmit = done // a phone on remote access can enter this PIN
+    phonePanel.pin = { enter(it) } // a phone on remote access can enter this PIN
     pinBox = row
     if (typed != null) showKeyboard(typed) else row.requestFocus()
 }

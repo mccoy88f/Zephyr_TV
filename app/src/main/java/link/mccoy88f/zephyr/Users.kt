@@ -45,6 +45,7 @@ internal fun MainActivity.vodDir(user: String = currentUser().id): File =
  */
 internal fun MainActivity.showUsers(focus: Int? = null) {
     if (settingsScrim.visibility != android.view.View.VISIBLE) showPanel()
+    phonePanel.kind = PhonePanel.Kind.USERS
     val current = currentUser()
     val list = users()
     showPage(getString(R.string.users_title), list.map { u ->
@@ -237,7 +238,7 @@ private val syncing = java.util.Collections.synchronizedSet(HashSet<String>())
 internal fun MainActivity.syncTrakt(user: String = currentUser().id, tell: Boolean = false) {
     val dir = vodDir(user)
     if (Trakt.account(dir) == null || !syncing.add(user)) return
-    if (tell) Toast.makeText(this, getString(R.string.trakt_syncing), Toast.LENGTH_SHORT).show()
+    if (tell) toast(R.string.trakt_syncing, long = false)
     longIo.execute { // the whole history: not on the threads pages wait for
         var signedOut = false
         val result = runCatching {

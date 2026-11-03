@@ -248,7 +248,7 @@ internal fun MainActivity.extensionsPage(focus: Int = 0) {
         repos.map { (url, r) -> page(getString(R.string.ext_repo_row, r?.name ?: url.substringAfter("://").substringBefore('/')), r?.items?.size?.toString() ?: "…") { repoPage(url) } } + listOf(
         page(getString(R.string.ext_add), SUBMENU) { extensionFromPhone() },
         page(getString(R.string.ext_check)) {
-            Toast.makeText(this, getString(R.string.ext_reading), Toast.LENGTH_SHORT).show()
+            toast(R.string.ext_reading, long = false)
             refreshExtensions(force = true) { n, failed ->
                 // One that couldn't be checked says so: "no updates" would be wrong for it.
                 Toast.makeText(this, when {
@@ -422,8 +422,8 @@ private fun MainActivity.updateExtensionNow(e: Extensions.Extension, url: String
 
 /** The extension published at [input] (a manifest-zephyrtv.json, or its folder): read, then shown before installing. */
 internal fun MainActivity.extensionFromAddress(input: String) {
-    val url = Extensions.publishedUrl(input) ?: return Toast.makeText(this, getString(R.string.ext_err_not), Toast.LENGTH_LONG).show()
-    Toast.makeText(this, getString(R.string.ext_reading), Toast.LENGTH_SHORT).show()
+    val url = Extensions.publishedUrl(input) ?: return toast(R.string.ext_err_not)
+    toast(R.string.ext_reading, long = false)
     netIo.execute {
         val m = runCatching { Http.json(url) }.getOrElse {
             ui.post { Toast.makeText(this, refusal(Extensions.Refused(Extensions.Why.UNREACHABLE, it.toString())), Toast.LENGTH_LONG).show() }
@@ -473,7 +473,7 @@ private fun MainActivity.repoPage(url: String, focus: Int = 0) {
     }
     val again = rows.size
     rows += page(getString(R.string.ext_repo_refresh)) {
-        Toast.makeText(this, getString(R.string.ext_reading), Toast.LENGTH_SHORT).show()
+        toast(R.string.ext_reading, long = false)
         netIo.execute {
             val read = runCatching { Repos.read(url) }
             ui.post {
@@ -492,7 +492,7 @@ private fun MainActivity.repoPage(url: String, focus: Int = 0) {
 
 /** The extension in the package [zip] (sent from a phone): shown before installing, then installed from it. */
 internal fun MainActivity.extensionFromZip(zip: File) {
-    val m = Extensions.manifestOf(zip) ?: return Toast.makeText(this, getString(R.string.ext_err_not), Toast.LENGTH_LONG).show()
+    val m = Extensions.manifestOf(zip) ?: return toast(R.string.ext_err_not)
     val types = m.optJSONArray("types")?.let { a -> (0 until a.length()).map { a.optString(it) } }.orEmpty()
     val resources = m.optJSONArray("resources")?.let { a -> (0 until a.length()).mapNotNull { (a.opt(it) as? String) ?: (a.opt(it) as? JSONObject)?.optString("name") } }.orEmpty()
     extensionPreview(m.optString("name").ifBlank { zip.name }, m.optString("author"), m.optString("description"), m.optString("version"),
@@ -572,7 +572,7 @@ internal fun MainActivity.refreshExtensionCatalogs(e: Extensions.Extension) {
 
 /** After cookies are pasted: check the session, reread every catalog, and rebuild the extension's rows. */
 internal fun MainActivity.checkExtensionCookies(e: Extensions.Extension) {
-    Toast.makeText(this, getString(R.string.ext_cookies_checking), Toast.LENGTH_SHORT).show()
+    toast(R.string.ext_cookies_checking, long = false)
     netIo.execute {
         val checked = runCatching { ExtensionCalls.verify(this, e) }.onFailure { warn("Extension verify failed: ${e.name} ($it)") }.getOrNull()
         val listing = rereadExtensionListing(e)

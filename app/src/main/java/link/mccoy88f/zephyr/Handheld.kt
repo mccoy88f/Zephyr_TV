@@ -177,7 +177,7 @@ private fun MainActivity.startForFile(intent: Intent, done: (Uri?) -> Unit) {
         startActivityForResult(intent, MainActivity.FILE_REQUEST)
     } catch (e: Exception) {
         fileDone = null
-        Toast.makeText(this, getString(R.string.toast_addon_failed), Toast.LENGTH_LONG).show()
+        toast(R.string.toast_addon_failed)
     }
 }
 

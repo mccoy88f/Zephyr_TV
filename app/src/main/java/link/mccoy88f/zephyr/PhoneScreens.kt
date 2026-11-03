@@ -32,8 +32,11 @@ internal fun MainActivity.uploadWallpaper(forDark: Boolean) {
     }, status, target = if (forDark) "wallpaper-dark" else "wallpaper-light") { pickWallpaper(forDark) }
 }
 
-internal fun MainActivity.phoneTexts(title: Int, intro: Int) = PhoneTexts(getString(title), getString(intro),
-    getString(R.string.phone_send), getString(R.string.phone_sending), getString(R.string.phone_unreachable), phoneFooter())
+internal fun MainActivity.phoneTexts(title: Int, intro: Int) = phoneTexts(getString(title), getString(intro))
+
+/** The texts of a phone page: [title], [intro] and the button's [send], with this TV's name and theme. */
+internal fun MainActivity.phoneTexts(title: String, intro: String, send: String = getString(R.string.phone_send)) = PhoneTexts(
+    title, intro, send, getString(R.string.phone_sending), getString(R.string.phone_unreachable), phoneFooter(), phoneTheme())
 
 /** The TV's name as set in Android settings, else its model. */
 internal fun MainActivity.tvName(): String =
@@ -70,8 +73,7 @@ internal fun MainActivity.fromPhoneText(
     target: String,
 ) {
     val status = label(waiting, 14f)
-    val texts = PhoneTexts(title, intro, getString(R.string.phone_send), getString(R.string.phone_sending),
-        getString(R.string.phone_unreachable), phoneFooter())
+    val texts = phoneTexts(title, intro)
     showPhoneLink(title, PhoneTask(PhonePages.text(texts, hint, secret), maxBytes) { file ->
         val text = file.readText().trim()
         refuse(text)?.let { return@PhoneTask 400 to it }
@@ -137,13 +139,8 @@ internal fun MainActivity.showProblems() {
 
 /** The recent problems as a page, read on a phone. Built when the page is asked for, so it stays current. */
 internal fun MainActivity.problemsHtml(): String {
-    val esc = { t: String -> t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") }
     val list = Problems.recent().ifEmpty { listOf(getString(R.string.problems_none)) }
-    return """<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>Zephyr TV</title><style>body{font:14px ui-monospace,monospace;margin:0;padding:20px;background:#f7f8fa;color:#111214}
-        @media (prefers-color-scheme:dark){body{background:#09090b;color:#f5f5f7}} li{margin:0 0 10px;word-break:break-word}</style></head>
-        <body><h1 style="font:600 20px system-ui,sans-serif">${esc(getString(R.string.setting_problems))}</h1><ol>${list.joinToString("") { "<li>${esc(it)}</li>" }}</ol>
-        <footer style="margin-top:32px;font:13px system-ui,sans-serif;opacity:.5;text-align:center">${esc(phoneFooter())}</footer></body></html>"""
+    return PhonePages.view(phoneTexts(getString(R.string.setting_problems), ""), "<ol>${list.joinToString("") { "<li>${escHtml(it)}</li>" }}</ol>").html
 }
 
 internal fun MainActivity.problemsOnPhone() {
@@ -207,10 +204,13 @@ internal fun MainActivity.showBackup() {
     )) { renderSettings(backupRow()) }
 }
 
+/** The phone page that saves a backup of this TV. */
+internal fun MainActivity.backupPage() = PhonePages.download(
+    phoneTexts(getString(R.string.phone_backup_title), getString(R.string.phone_backup_intro), getString(R.string.phone_backup_download)),
+    "zephyr-backup.json", Backup.export(prefs, filesDir, users().map { it.id }))
+
 internal fun MainActivity.backupToPhone() {
-    val page = PhonePages.download(getString(R.string.phone_backup_title), getString(R.string.phone_backup_intro),
-        getString(R.string.phone_backup_download), "zephyr-backup.json", Backup.export(prefs, filesDir, users().map { it.id }), phoneFooter())
-    showPhoneLink(getString(R.string.backup_save), PhoneTask(page, 0) { 405 to "" }, label("", 12f), target = "backup-save") { showBackup() }
+    showPhoneLink(getString(R.string.backup_save), PhoneTask(backupPage(), 0) { 405 to "" }, label("", 12f), target = "backup-save") { showBackup() }
 }
 
 internal fun MainActivity.restoreFromPhone() {

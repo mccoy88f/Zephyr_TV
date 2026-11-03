@@ -450,6 +450,7 @@
     <string name="remote_open_form">Open this setting</string>
     <string name="remote_not_open">Open this on the TV, then try again.</string>
     <string name="remote_off_no_pin">Remote access is off. It uses the 18+ PIN. Turn on Remote access to choose a new PIN.</string>
+    <string name="remote_pin_set">Remote access uses this PIN. It is also the 18+ PIN, and the 18+ lock is on.</string>
     <string name="warp_on_toast">WARP on: Zephyr TV goes through Cloudflare</string>
     <string name="warp_device">The whole device: the 1.1.1.1 app</string>
     <string name="warp_switch">WARP for Zephyr TV</string>

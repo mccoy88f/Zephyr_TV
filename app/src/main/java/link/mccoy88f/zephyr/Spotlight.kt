@@ -304,7 +304,7 @@ internal fun MainActivity.watchSpotlight(item: TmdbItem) {
     netIo.execute {
         val imdb = item.imdbId ?: key?.let { TmdbClient.imdbIdOf(it, item) }
         ui.post {
-            if (imdb == null) return@post Toast.makeText(this, getString(R.string.title_no_page), Toast.LENGTH_LONG).show()
+            if (imdb == null) return@post toast(R.string.title_no_page)
             openTitle(TitleRef(if (item.mediaType == "tv") "series" else "movie", imdb, item.title, null,
                 TmdbClient.cardUrl(item.backdropPath), source = cinemetaUrl(),
                 rating = item.voteAverage.takeIf { it > 0 }?.let { "%.1f".format(java.util.Locale.ROOT, it) }, about = item.overview.ifBlank { null }))

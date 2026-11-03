@@ -451,6 +451,7 @@
     <string name="remote_open_form">Ouvrir ce réglage</string>
     <string name="remote_not_open">Ouvrez ceci sur la TV, puis réessayez.</string>
     <string name="remote_off_no_pin">L\'accès à distance est désactivé. Il utilise le code 18+. Activez Accès à distance pour choisir un nouveau code.</string>
+    <string name="remote_pin_set">L\'accès à distance utilise ce code. C\'est aussi le code 18+, et le verrou 18+ est activé.</string>
     <string name="warp_on_toast">WARP activé : Zephyr TV passe par Cloudflare</string>
     <string name="warp_device">Tout l\'appareil : l\'appli 1.1.1.1</string>
     <string name="warp_switch">WARP pour Zephyr TV</string>

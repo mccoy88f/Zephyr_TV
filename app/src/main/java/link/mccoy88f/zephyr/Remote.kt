@@ -149,8 +149,8 @@ internal object Remote {
     private val done = ConcurrentHashMap<String, () -> Unit>()
     @Volatile var active: String? = null
 
-    private var pinFails = 0
-    private var pinWait = 0L
+    /** Wrong PINs from phones. It lives with the server, so a new home screen keeps the wait. */
+    private val pinGuard = PinGuard(MainActivity.PIN_TRIES) { SystemClock.elapsedRealtime() }
 
     /** Remote access is on, and its page is served. A restart keeps serving it. */
     fun attach(a: MainActivity) {
@@ -305,22 +305,9 @@ internal object Remote {
 
     /** Null when the PIN is right. */
     private fun checkPin(a: MainActivity, pin: String): String? {
-        val now = SystemClock.elapsedRealtime()
-        synchronized(this) {
-            if (now < pinWait) return a.getString(R.string.pin_too_many_tries_wait, ((pinWait - now) / 1000 + 1).toInt())
-            val stored = remotePinStored(a.prefs.getString(K.ADULT_PIN, null), a.prefs.getString(K.REMOTE_PIN, null))
-                ?: return a.getString(R.string.remote_not_open)
-            if (!isPinDigits(pin) || !pinMatches(stored, pin)) {
-                if (++pinFails >= MainActivity.PIN_TRIES) {
-                    pinFails = 0
-                    pinWait = now + 30_000
-                    return a.getString(R.string.pin_too_many_tries_wait, 30)
-                }
-                return a.getString(R.string.pin_wrong)
-            }
-            pinFails = 0
-            return null
-        }
+        val stored = remotePinStored(a.prefs.getString(K.ADULT_PIN, null), a.prefs.getString(K.REMOTE_PIN, null))
+            ?: return a.getString(R.string.remote_not_open)
+        return a.pinMessage(pinGuard.check { isPinDigits(pin) && pinMatches(stored, pin) })
     }
 
     private fun authed(headers: Map<String, String>): Boolean {
@@ -362,8 +349,8 @@ internal object Remote {
         val status = try {
             onMain {
                 if (settingsScrim.visibility != View.VISIBLE) return@onMain 409
-                val i = remotePressIndex(body.orEmpty(), remotePageKey(remoteTitle, remoteRows.map { it.first })) ?: return@onMain 409
-                val row = remoteRows.getOrNull(i) ?: return@onMain 409
+                val i = remotePressIndex(body.orEmpty(), phonePanel.key) ?: return@onMain 409
+                val row = phonePanel.rows.getOrNull(i) ?: return@onMain 409
                 row.third.invoke()
                 200
             }
@@ -476,7 +463,7 @@ internal fun MainActivity.remoteHasPin(tell: Boolean = false): Boolean {
     if (remoteOn()) {
         prefs.edit().putBoolean(K.REMOTE, false).apply()
         Remote.stop()
-        if (tell) Toast.makeText(this, getString(R.string.remote_off_no_pin), Toast.LENGTH_LONG).show()
+        if (tell) toast(R.string.remote_off_no_pin)
     }
     return false
 }
@@ -513,20 +500,9 @@ internal fun MainActivity.ensureRemote(back: () -> Unit, then: () -> Unit) {
         then()
     }
     if (remotePinStored(prefs.getString(K.ADULT_PIN, null), prefs.getString(K.REMOTE_PIN, null)) != null) return arm()
-    pinPage(getString(R.string.adult_pin_choose), back) { first ->
-        pinPage(getString(R.string.pin_enter_again_title), back) { again ->
-            if (again != first) {
-                Toast.makeText(this, getString(R.string.pin_mismatch), Toast.LENGTH_LONG).show()
-                ensureRemote(back, then)
-                return@pinPage null
-            }
-            prefs.edit().putString(K.ADULT_PIN, hashPin(first)).putLong(K.ADULT_UNTIL, 0L).apply()
-            adultChanged()
-            Toast.makeText(this, getString(R.string.adult_locked_toast), Toast.LENGTH_LONG).show()
-            arm()
-            null
-        }
-        null
+    choosePin(getString(R.string.adult_pin_choose), back) { hash ->
+        setAdultPin(hash, R.string.remote_pin_set)
+        arm()
     }
 }
 
@@ -548,8 +524,8 @@ internal fun MainActivity.showRemoteAddress() {
             showPage(getString(R.string.setting_remote), listOf(page(getString(R.string.dialog_done)) { back() }), top = warpQrNotice(), back = back)
             return@ensureRemote
         }
-        val ip = lanAddress() ?: return@ensureRemote Toast.makeText(this, getString(R.string.toast_connect_network), Toast.LENGTH_LONG).show().let { }
-        val url = Remote.url(ip) ?: return@ensureRemote Toast.makeText(this, getString(R.string.toast_upload_server_failed), Toast.LENGTH_LONG).show().let { }
+        val ip = lanAddress() ?: return@ensureRemote toast(R.string.toast_connect_network)
+        val url = Remote.url(ip) ?: return@ensureRemote toast(R.string.toast_upload_server_failed)
         showPage(getString(R.string.setting_remote), listOf(page(getString(R.string.dialog_done)) { back() }),
             top = qrBox(url, url, getString(R.string.remote_home_intro), label("", 12f)), back = back)
     }
@@ -566,8 +542,8 @@ internal fun MainActivity.presentRemote(title: String, target: String, task: Pho
             showPage(title, listOf(page(getString(R.string.dialog_done)) { back() }), top = warpQrNotice(), back = back)
             return@ensureRemote
         }
-        val ip = lanAddress() ?: return@ensureRemote Toast.makeText(this, getString(R.string.toast_connect_network), Toast.LENGTH_LONG).show().let { }
-        val root = Remote.url(ip) ?: return@ensureRemote Toast.makeText(this, getString(R.string.toast_upload_server_failed), Toast.LENGTH_LONG).show().let { }
+        val ip = lanAddress() ?: return@ensureRemote toast(R.string.toast_connect_network)
+        val root = Remote.url(ip) ?: return@ensureRemote toast(R.string.toast_upload_server_failed)
         val line = status ?: label(getString(R.string.remote_waiting), 14f)
         if (line.text.isNullOrBlank()) line.text = getString(R.string.remote_waiting)
         (line.parent as? android.view.ViewGroup)?.removeView(line)
@@ -585,7 +561,7 @@ internal fun MainActivity.presentRemote(title: String, target: String, task: Pho
 
 private fun MainActivity.goBack() {
     if (settingsScrim.visibility != View.VISIBLE) return
-    remoteBack?.invoke() ?: closeLauncherSettings()
+    phonePanel.back?.invoke() ?: closeLauncherSettings()
 }
 
 /** Brings the home screen forward when the player is in front, then opens [open] once that screen is up. */
@@ -594,7 +570,7 @@ private fun MainActivity.showOnTv(open: () -> Unit) {
         open()
         return
     }
-    remoteOpen = open
+    phonePanel.pending = open
     startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
 }
 
@@ -650,6 +626,8 @@ internal object PlayerKeys {
         c.sendOrderedBroadcast(intent, permission(c), result, null, 0, null, null)
     }
 
+    // Before Android 13 there is no flag for this. The signature permission keeps other apps out instead.
+    @android.annotation.SuppressLint("UnspecifiedRegisterReceiverFlag")
     fun register(a: Activity, r: BroadcastReceiver) {
         val filter = IntentFilter(ACTION)
         if (Build.VERSION.SDK_INT >= 33) a.registerReceiver(r, filter, permission(a), null, Context.RECEIVER_NOT_EXPORTED)
@@ -681,50 +659,53 @@ private fun MainActivity.openFromPhone() {
 
 private fun MainActivity.takeText(body: String): Pair<Int, String> {
     if (settingsScrim.visibility != View.VISIBLE) return 409 to ""
-    remotePinSubmit?.let { pin ->
+    phonePanel.pin?.let { pin ->
         val typed = body.trim()
         // The TV types only four digits. A shorter PIN or letters would make a PIN that the TV can never enter.
         if (!isPinDigits(typed)) return 400 to getString(R.string.pin_four_digits)
         val err = pin(typed)
         return if (err == null) 200 to "" else 400 to err
     }
-    val field = remoteField ?: return 409 to ""
+    val field = phonePanel.field ?: return 409 to ""
     field.setText(body.take(1024 * 1024))
     return 200 to ""
 }
 
+/** How the phone draws a row: a switch, a value, or a chevron to another page. */
+internal fun remoteRowJson(label: String, value: String, on: String, off: String): JSONObject {
+    val row = JSONObject().put("label", label)
+    return when (value) {
+        MainActivity.TOGGLE_ON -> row.put("type", "switch").put("on", true).put("value", on)
+        MainActivity.TOGGLE_OFF -> row.put("type", "switch").put("on", false).put("value", off)
+        MainActivity.SUBMENU -> row.put("type", "page").put("value", "")
+        else -> row.put("type", if (value.isEmpty()) "page" else "value").put("value", value)
+    }
+}
+
 /** What the phone shows: the panel's page, or that settings are closed. */
 internal fun MainActivity.remoteSnapshot(): JSONObject {
-    val open = settingsScrim.visibility == View.VISIBLE && remoteTitle.isNotEmpty()
+    val p = phonePanel
+    val open = settingsScrim.visibility == View.VISIBLE && p.title.isNotEmpty()
     val rows = JSONArray()
-    if (open) remoteRows.forEach { (name, value) ->
-        val shown = when (value) {
-            MainActivity.TOGGLE_ON -> getString(R.string.state_on)
-            MainActivity.TOGGLE_OFF -> getString(R.string.state_off)
-            MainActivity.SUBMENU -> ""
-            else -> value
-        }
-        rows.put(JSONObject().put("label", name).put("value", shown))
+    if (open) {
+        val on = getString(R.string.state_on)
+        val off = getString(R.string.state_off)
+        p.rows.forEach { (name, value) -> rows.put(remoteRowJson(name, value, on, off)) }
     }
     return JSONObject()
-        .put("title", if (open) remoteTitle else "")
+        .put("title", if (open) p.title else "")
         .put("closed", !open)
         .put("back", open)
         .put("input", when {
             !open -> ""
-            remotePinSubmit != null -> "pin"
-            remoteField != null -> "text"
+            p.pin != null -> "pin"
+            p.field != null -> "text"
             else -> ""
         })
         .put("rows", rows)
-        .put("page", if (open) remotePageKey(remoteTitle, remoteRows.map { it.first }) else 0)
+        .put("page", if (open) p.key else 0)
         .put("form", Remote.active.orEmpty())
-        .put("kind", when {
-            !open -> ""
-            remoteTitle == getString(R.string.users_title) || remoteTitle == getString(R.string.users_settings) -> "users"
-            remoteTitle == getString(R.string.search_title) -> "search"
-            else -> "settings"
-        })
+        .put("kind", if (open) p.kind.id else "")
 }
 
 /**
@@ -745,8 +726,7 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
     }
     "tmdb-key" -> {
         var unchecked = false
-        val texts = PhoneTexts(getString(R.string.setting_tmdb_api_key), getString(R.string.phone_tmdb_intro), getString(R.string.phone_send),
-            getString(R.string.phone_sending), getString(R.string.phone_unreachable), phoneFooter())
+        val texts = phoneTexts(getString(R.string.setting_tmdb_api_key), getString(R.string.phone_tmdb_intro))
         PhoneTask(PhonePages.text(texts, getString(R.string.phone_tmdb_hint), secret = true), 2048) { file ->
             val key = file.readText().trim()
             if (key.length < 16 || key.any { it.isWhitespace() }) return@PhoneTask 400 to getString(R.string.phone_tmdb_refused)
@@ -758,8 +738,7 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
         }
     }
     "epg" -> {
-        val texts = PhoneTexts(getString(R.string.setting_epg), getString(R.string.phone_epg_intro), getString(R.string.phone_send),
-            getString(R.string.phone_sending), getString(R.string.phone_unreachable), phoneFooter())
+        val texts = phoneTexts(getString(R.string.setting_epg), getString(R.string.phone_epg_intro))
         PhoneTask(PhonePages.text(texts, getString(R.string.epg_hint)), 1024L * 1024) { file ->
             val url = file.readText().trim()
             if (!url.startsWith("http://") && !url.startsWith("https://")) return@PhoneTask 400 to getString(R.string.phone_epg_bad)
@@ -768,8 +747,7 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
         }
     }
     "tmdb-list" -> {
-        val texts = PhoneTexts(getString(R.string.setting_tmdb_list), getString(R.string.phone_list_intro), getString(R.string.phone_send),
-            getString(R.string.phone_sending), getString(R.string.phone_unreachable), phoneFooter())
+        val texts = phoneTexts(getString(R.string.setting_tmdb_list), getString(R.string.phone_list_intro))
         PhoneTask(PhonePages.text(texts, getString(R.string.phone_list_hint)), 2048) { file ->
             val key = prefs.getString(K.TMDB_API_KEY, null) ?: return@PhoneTask 400 to getString(R.string.phone_list_bad)
             val list = TmdbClient.listId(file.readText()) ?: return@PhoneTask 400 to getString(R.string.phone_list_bad)
@@ -784,8 +762,7 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
         }
     }
     "problems" -> PhoneTask(problemsHtml(), 0) { 405 to "" }
-    "backup-save" -> PhoneTask(PhonePages.download(getString(R.string.phone_backup_title), getString(R.string.phone_backup_intro),
-        getString(R.string.phone_backup_download), "zephyr-backup.json", Backup.export(prefs, filesDir, users().map { it.id }), phoneFooter()).html, 0) { 405 to "" }
+    "backup-save" -> PhoneTask(backupPage(), 0) { 405 to "" }
     "backup-restore" -> {
         val page = PhonePages.file(phoneTexts(R.string.phone_restore_title, R.string.phone_restore_intro), getString(R.string.phone_choose_file), ".json,application/json")
         PhoneTask(page, 16L * 1024 * 1024) { file ->
@@ -866,18 +843,8 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
     else -> null
 }
 
-private fun js(s: String) = s.replace("\\", "\\\\").replace("'", "\\'").replace("<", "\\x3c").replace("\n", " ")
 
-/** Light, dark or glass, as the TV is set. Auto follows the same hours as the home screen. */
-private fun MainActivity.remoteTheme() = when (prefs.getString(K.THEME, "light")) {
-    "dark" -> "dark"
-    "glass" -> "glass"
-    "auto" -> if (prefersDark(prefs)) "dark" else "light"
-    else -> "light"
-}
 
-/** The mark from the app icon: a TV, without the word under it. */
-private const val LOGO = """<svg class="logo" viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0F172A"/><stop offset="1" stop-color="#020617"/></linearGradient><linearGradient id="lf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38BDF8"/><stop offset="1" stop-color="#2563EB"/></linearGradient></defs><rect width="72" height="72" rx="16" fill="url(#lg)"/><circle cx="36" cy="12" r="1.7" fill="#38BDF8"/><path d="M36 13.8 V18" stroke="#38BDF8" stroke-width="1.6" stroke-linecap="round"/><rect x="14" y="18" width="44" height="28" rx="5" fill="none" stroke="url(#lf)" stroke-width="3"/><polygon points="31,25 31,39 45,32" fill="#fff"/></svg>"""
 
 /** The settings button on the home screen (ic_tune). */
 private const val TUNE = """<svg class="tune" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3,17v2h6v-2H3zM3,5v2h10V5H3zM13,21v-2h8v-2h-8v-2h-2v6h2zM7,9v2H3v2h4v2h2V9H7zM21,13v-2H11v2h10zM15,9h2V7h4V5h-4V3h-2v6z"/></svg>"""
@@ -898,9 +865,7 @@ private const val HANDSET = """<svg viewBox="0 0 24 24" aria-hidden="true"><rect
 private fun MainActivity.remotePage(body: String, dock: String, script: String) = """
     <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>${escHtml(getString(R.string.app_name))}</title><style>
-      :root{--panel:#f7f8fa;--ground:#f3f5f7;--fg:#111214;--on:#fff;--muted:rgba(17,18,20,.6);--line:rgba(17,18,20,.12);--field:#e5e7eb;--fill:#111214}
-      body.dark{--panel:#09090b;--ground:#000;--fg:#f5f5f7;--on:#111214;--muted:rgba(245,245,247,.6);--line:rgba(245,245,247,.16);--field:#2a2a32;--fill:#f5f5f7}
-      body.glass{--panel:transparent;--ground:#000;--fg:#fff;--on:#111214;--muted:rgba(255,255,255,.6);--line:rgba(255,255,255,.16);--field:rgba(255,255,255,.08);--fill:#fff}
+      ${PhoneStyle.THEMES}
       *{box-sizing:border-box} body{margin:0;background:var(--ground);color:var(--fg);font:17px system-ui,sans-serif}
       .sheet{max-width:420px;min-height:100vh;margin:0 auto;display:flex;flex-direction:column;background:var(--panel)}
       body.glass .sheet{background:linear-gradient(180deg,rgba(42,42,50,.85),rgba(16,16,20,.9))}
@@ -949,9 +914,9 @@ private fun MainActivity.remotePage(body: String, dock: String, script: String) 
       .dock button{flex:none;width:44px;height:44px;padding:10px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--fg)}
       .dock button svg{width:100%;height:100%;display:block}
       .dock button.on{background:var(--fill);color:var(--on);border-color:transparent}
-    </style></head><body class="${remoteTheme()}">
+    </style></head><body class="${phoneTheme()}">
     <div class="sheet">
-    <header>$LOGO<h1>${escHtml(getString(R.string.app_name))}</h1></header>
+    <header>${PhoneStyle.LOGO}<h1>${escHtml(getString(R.string.app_name))}</h1></header>
     <main>$body</main>
     $dock
     </div>
@@ -959,7 +924,7 @@ private fun MainActivity.remotePage(body: String, dock: String, script: String) 
 """.trimIndent()
 
 private fun MainActivity.pinHtml(): String {
-    val lost = js(getString(R.string.phone_unreachable))
+    val lost = escJs(getString(R.string.phone_unreachable))
     return remotePage("""
         <h2>$TUNE<span>${escHtml(getString(R.string.remote_menu_title))}</span></h2>
         <p class="note">${escHtml(remotePinPrompt())}</p>
@@ -969,7 +934,9 @@ private fun MainActivity.pinHtml(): String {
     """.trimIndent(), "", """
         const root=location.pathname.replace(/\/go\/[^/]*$/, '').replace(/\/?$/, '/');
         const e=document.getElementById('e'), p=document.getElementById('p');
-        document.getElementById('b').onclick=async()=>{
+        const b=document.getElementById('b');
+        p.addEventListener('keydown', function(ev){if(ev.key==='Enter'){ev.preventDefault(); b.click();}});
+        b.onclick=async()=>{
           e.textContent='';
           try{
             const r=await fetch(root+'api/pin',{method:'POST',body:p.value});
@@ -979,14 +946,11 @@ private fun MainActivity.pinHtml(): String {
     """.trimIndent())
 }
 
-private fun escHtml(s: String) = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
 
 private fun MainActivity.menuHtml(): String {
-    val send = js(getString(R.string.phone_send))
-    val form = js(getString(R.string.remote_open_form))
-    val lost = js(getString(R.string.phone_unreachable))
-    val on = js(getString(R.string.state_on))
-    val off = js(getString(R.string.state_off))
+    val send = escJs(getString(R.string.phone_send))
+    val form = escJs(getString(R.string.remote_open_form))
+    val lost = escJs(getString(R.string.phone_unreachable))
     val up = escHtml(getString(R.string.remote_up))
     val down = escHtml(getString(R.string.remote_down))
     val left = escHtml(getString(R.string.remote_left))
@@ -1063,9 +1027,10 @@ private fun MainActivity.menuHtml(): String {
             const b=document.createElement('button');
             b.type='button'; b.className='row';
             const n=document.createElement('span'); n.className='name'; n.textContent=row.label; b.appendChild(n);
-            if(row.value==='$on'||row.value==='$off'){
-              const s=document.createElement('span'); s.className='sw'+(row.value==='$on'?' on':''); b.appendChild(s);
-            }else if(row.value){
+            if(row.type==='switch'){
+              const s=document.createElement('span'); s.className='sw'+(row.on?' on':''); b.appendChild(s);
+              b.setAttribute('aria-pressed', row.on?'true':'false');
+            }else if(row.type==='value'){
               const v=document.createElement('span'); v.className='val'; v.textContent=row.value; b.appendChild(v);
             }else{
               const c=document.createElement('span'); c.className='chev'; b.appendChild(c);
@@ -1080,7 +1045,8 @@ private fun MainActivity.menuHtml(): String {
               const x=document.createElement(p.input==='pin'?'input':'textarea');
               if(p.input==='pin'){x.type='password'; x.inputMode='numeric'; x.maxLength=4;}
               const s=document.createElement('button'); s.className='send'; s.type='button'; s.textContent='$send';
-              s.onclick=function(){act('api/text', x.value);};
+              s.onclick=function(){const v=x.value; if(p.input==='pin') x.value=''; act('api/text', v);};
+              if(p.input==='pin') x.addEventListener('keydown', function(ev){if(ev.key==='Enter'){ev.preventDefault(); s.click();}});
               extra.appendChild(x); extra.appendChild(s);
             }
           }
@@ -1099,7 +1065,11 @@ private fun MainActivity.menuHtml(): String {
         dock('users', function(){showPanel(); act('api/panel','users');});
         dock('search', function(){showPanel(); act('api/panel','search');});
         dock('open', function(){showPanel(); act('api/open');});
-        dock('remote', function(){panel.hidden=true; pad.hidden=false; choose('remote');});
+        // The remote again closes the remote and shows the panel. It sends no key: the TV stays where it is.
+        document.getElementById('remote').onclick=function(){
+          if(!pad.hidden){showPanel(); last=''; draw(); return;}
+          panel.hidden=true; pad.hidden=false; choose('remote');
+        };
         pad.querySelectorAll('button').forEach(function(b){b.onclick=function(){act('api/key', b.dataset.k);};});
         back.onclick=function(){act('api/back');};
         // One request at a time, and none while the page is hidden or the remote is open: requests that pile up

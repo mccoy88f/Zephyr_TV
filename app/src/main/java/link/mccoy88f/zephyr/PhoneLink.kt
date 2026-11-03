@@ -142,35 +142,48 @@ internal class PhoneLink(private val tempDir: File, private val task: PhoneTask)
     }
 }
 
-/** The texts of a phone page, in the TV's language. */
-/** [footer] goes at the bottom: which TV the page belongs to ("Zephyr TV - TV del salotto"). */
-internal class PhoneTexts(val title: String, val intro: String, val send: String, val sending: String, val unreachable: String, val footer: String = "")
+/**
+ * The texts of a phone page, in the TV's language. [footer] goes at the bottom: which TV the page belongs to
+ * ("Zephyr TV - TV del salotto"). [theme] is the TV's theme (see phoneTheme); empty follows the phone's.
+ */
+internal class PhoneTexts(
+    val title: String, val intro: String, val send: String, val sending: String, val unreachable: String,
+    val footer: String = "", val theme: String = "",
+)
 
 /** The pages the phone opens. They post to their own address, so the token never has to be in the page itself. */
 internal object PhonePages {
-    private fun esc(s: String) = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
-    private fun js(s: String) = s.replace("\\", "\\\\").replace("'", "\\'").replace("<", "\\x3c").replace("\n", " ")
+    private fun esc(s: String) = escHtml(s)
+    private fun js(s: String) = escJs(s)
 
+    /** The page around [body], in the TV's theme, with the app's mark at the top as on the remote page. */
     private fun frame(t: PhoneTexts, body: String, script: String) = """
         <!doctype html>
         <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>Zephyr TV</title>
+        <title>${esc(t.title)}</title>
         <style>
-          body{font:17px system-ui,sans-serif;margin:0;padding:32px 20px;background:#f7f8fa;color:#111214}
-          @media (prefers-color-scheme:dark){body{background:#09090b;color:#f5f5f7}}
-          h1{font-size:24px;margin:0 0 8px} p{opacity:.7;margin:0 0 24px}
-          label,button,textarea{display:block;width:100%;box-sizing:border-box;padding:16px;border-radius:12px;font:inherit;margin-bottom:12px}
-          label{border:1.5px dashed currentColor;cursor:pointer;text-align:center} button{border:0;background:#111214;color:#fff}
-          textarea{border:1.5px solid currentColor;background:transparent;color:inherit;min-height:6em;font-family:ui-monospace,monospace}
-          @media (prefers-color-scheme:dark){button{background:#f5f5f7;color:#111214}}
+          ${PhoneStyle.THEMES}
+          *{box-sizing:border-box}
+          body{font:17px system-ui,sans-serif;margin:0;background:var(--ground);color:var(--fg)}
+          .sheet{max-width:420px;min-height:100vh;margin:0 auto;padding:28px 20px 32px;background:var(--panel)}
+          body.glass .sheet{background:linear-gradient(180deg,rgba(42,42,50,.85),rgba(16,16,20,.9))}
+          .logo{width:56px;height:56px;display:block;margin:0 auto 16px}
+          h1{font:500 22px system-ui,sans-serif;margin:0 0 8px;text-align:center} p{color:var(--muted);margin:0 0 24px}
+          label,button,textarea{display:block;width:100%;padding:16px;border-radius:8px;font:inherit;margin-bottom:12px}
+          label{border:1.5px dashed var(--line);cursor:pointer;text-align:center}
+          button{border:0;background:var(--fill);color:var(--on);font-weight:500}
+          textarea{border:0;background:var(--field);color:inherit;min-height:6em;font-family:ui-monospace,monospace}
           button:disabled{opacity:.35} input{display:none} #s{min-height:1.5em}
-          footer{margin-top:40px;font-size:13px;opacity:.5;text-align:center}
-        </style></head><body>
+          ol{padding-left:20px;font:14px ui-monospace,monospace} li{margin:0 0 10px;word-break:break-word}
+          footer{margin-top:40px;font-size:13px;color:var(--muted);text-align:center}
+        </style></head><body class="${if (t.theme.isEmpty()) "auto" else esc(t.theme)}"><div class="sheet">
+        ${PhoneStyle.LOGO}
         <h1>${esc(t.title)}</h1>
-        <p>${esc(t.intro)}</p>
+        ${if (t.intro.isEmpty()) "" else "<p>${esc(t.intro)}</p>"}
         $body
         <div id="s"></div>
         ${if (t.footer.isEmpty()) "" else "<footer>${esc(t.footer)}</footer>"}
+        </div>
         <script>
           const b=document.getElementById('b'),s=document.getElementById('s');
           async function send(data){
@@ -183,6 +196,9 @@ internal object PhonePages {
         </script></body></html>
     """.trimIndent()
 
+    /** Something to read only: [body] is its HTML, already escaped. */
+    fun view(t: PhoneTexts, body: String) = PhonePage(frame(t, body, ""), PhoneLocal.View, t)
+
     /** Pick a file (of [accept] types) and send it. */
     fun file(t: PhoneTexts, choose: String, accept: String) = PhonePage(frame(t,
         """<label><input id="f" type="file" accept="${esc(accept)}"><span id="n">${esc(choose)}</span></label>
@@ -192,14 +208,15 @@ internal object PhonePages {
         b.onclick=()=>send(f.files[0]);"""), PhoneLocal.File(accept), t)
 
     /** Shows a button that saves [content] on the phone as [fileName]; nothing goes back to the TV. */
-    fun download(title: String, intro: String, button: String, fileName: String, content: String, footer: String = ""): PhonePage {
+    /** [t].send is the button's text. */
+    fun download(t: PhoneTexts, fileName: String, content: String): PhonePage {
         val data = content.replace("\\", "\\\\").replace("'", "\\'").replace("<", "\\x3c").replace("\n", "\\n")
-        val texts = PhoneTexts(title, intro, button, "", "", footer)
-        return PhonePage(frame(texts,
-            """<button id="b">${esc(button)}</button>""",
+            .replace("\r", "\\r").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
+        return PhonePage(frame(t,
+            """<button id="b">${esc(t.send)}</button>""",
             """b.onclick=()=>{const u=URL.createObjectURL(new Blob(['$data'],{type:'application/json'}));
             const a=document.createElement('a');a.href=u;a.download='${js(fileName)}';document.body.appendChild(a);a.click();a.remove();};"""),
-            PhoneLocal.Download(fileName, content), texts)
+            PhoneLocal.Download(fileName, content), t)
     }
 
     /** Type or paste some text and send it. [secret]: hide it (a cookie, a key). */

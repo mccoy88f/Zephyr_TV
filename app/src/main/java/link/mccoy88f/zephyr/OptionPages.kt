@@ -132,8 +132,7 @@ private fun MainActivity.itemPage(f: Nuvio.Field, items: () -> JSONArray, save: 
 /** All the text fields of an item of [f] typed on a phone at once; [got] gets them. */
 private fun MainActivity.itemFromPhone(f: Nuvio.Field, got: (JSONObject) -> Unit) {
     val status = label(getString(R.string.from_phone_waiting), 14f)
-    val texts = PhoneTexts(f.label, f.description.ifBlank { getString(R.string.nuvio_option_phone_intro) }, getString(R.string.phone_send),
-        getString(R.string.phone_sending), getString(R.string.phone_unreachable), phoneFooter())
+    val texts = phoneTexts(f.label, f.description.ifBlank { getString(R.string.nuvio_option_phone_intro) })
     val inputs = f.item.filter { it.type == "text" }.map { Triple(it.key, it.label, it.placeholder to it.secret) }
     var received: JSONObject? = null
     showPhoneLink(f.label, PhoneTask(PhonePages.form(texts, inputs), 1024L * 1024) { file ->

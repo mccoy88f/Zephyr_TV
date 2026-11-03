@@ -107,7 +107,7 @@ internal fun MainActivity.watchSources(): List<App> = apps.filter { a ->
 internal fun MainActivity.pickWatchSources() {
     val sources = watchSources()
     if (sources.isEmpty()) {
-        Toast.makeText(this, getString(R.string.toast_no_cw_apps), Toast.LENGTH_SHORT).show()
+        toast(R.string.toast_no_cw_apps, long = false)
         return
     }
     toggles(getString(R.string.setting_cw_apps), sources.map { it.label to it.pkg }, K.CW_OFF, getString(R.string.state_on), getString(R.string.state_off)) {
@@ -168,7 +168,7 @@ internal fun MainActivity.hideKey(pkg: String?, title: String) = "$pkg/$title"
 internal fun MainActivity.hideWatch(p: Prog) {
     val hidden = prefs.getStringSet(K.HIDDEN_WATCH, emptySet())!! + hideKey(p.pkg, p.title)
     prefs.edit().putStringSet(K.HIDDEN_WATCH, hidden).apply()
-    Toast.makeText(this, getString(R.string.toast_hidden_from_cw), Toast.LENGTH_SHORT).show()
+    toast(R.string.toast_hidden_from_cw, long = false)
     watchKey = null
     val app = watchApp
     if (app == null || app == CW_PKG || app == SEARCH_PKG) refreshWatchNext() else queryAppChannels(app)

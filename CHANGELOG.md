@@ -22,6 +22,13 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - The phone page asks the TV for one update at a time. It stops while the page is hidden or the remote is open.
 - The remote on the phone shows when the TV does not answer.
 - A wrong add-on address on the phone shows its own message.
+- After many wrong PINs, each wait is twice as long as the one before it. The longest wait is 15 minutes.
+- A PIN that you send from the phone shows on the TV. A wrong PIN shakes the boxes on the TV too.
+- Press Enter on the phone to send the PIN.
+- Select Remote again on the phone to close the remote. The TV stays on the same screen.
+- When you choose a PIN for Remote access, the TV says that it is also the 18+ PIN.
+- The pages for one setting on the phone use the TV theme and show the Zephyr TV logo.
+- A switch on the phone shows as a switch, also when its value has the same name as On or Off.
 
 ## 4.0.0-beta.7
 

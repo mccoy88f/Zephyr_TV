@@ -250,16 +250,16 @@ internal fun MainActivity.updateAddon(url: String, pkg: String?, done: ((Stremio
 
 /** Adds the add-on at [input] (typed or sent from a phone) once it answers, telling how it went. */
 internal fun MainActivity.addAddon(input: String, adult: Boolean = false, done: () -> Unit = {}) {
-    val url = Stremio.manifestUrl(input) ?: return Toast.makeText(this, getString(R.string.phone_epg_bad), Toast.LENGTH_LONG).show()
-    Toast.makeText(this, getString(R.string.addon_checking), Toast.LENGTH_SHORT).show()
+    val url = Stremio.manifestUrl(input) ?: return toast(R.string.phone_addon_bad)
+    toast(R.string.addon_checking, long = false)
     updateAddon(url, null) { listing ->
         val a = listing?.addon
         when {
-            listing == null || a == null -> Toast.makeText(this, getString(R.string.toast_addon_failed), Toast.LENGTH_LONG).show()
+            listing == null || a == null -> toast(R.string.toast_addon_failed)
             // Neither channels nor films and series (catalogs or streams of them): nothing Zephyr TV can show.
             listing.rows.isEmpty() && !a.streamsVod && a.vod.isEmpty() -> {
                 Stremio.forget(filesDir, url)
-                Toast.makeText(this, getString(R.string.toast_addon_no_tv), Toast.LENGTH_LONG).show()
+                toast(R.string.toast_addon_no_tv)
             }
             else -> {
                 saveAddonUrls(addonUrls() + url)
@@ -284,7 +284,7 @@ internal fun MainActivity.removeAddon(url: String) {
     setAdultAddon(url, false)
     Stremio.forget(filesDir, url)
     addonsChanged()
-    Toast.makeText(this, getString(R.string.toast_addon_removed), Toast.LENGTH_SHORT).show()
+    toast(R.string.toast_addon_removed, long = false)
 }
 
 /** Add-ons, or where they show, changed: their tiles and the rows under the tile in focus come again. */
@@ -579,7 +579,7 @@ internal fun MainActivity.catalogFromPhone() {
     val page = PhonePages.text(phoneTexts(R.string.catalog_add, R.string.catalog_add_intro), getString(R.string.addon_hint))
     showPhoneLink(getString(R.string.catalog_new_address), PhoneTask(page, 1024L * 1024) { file ->
         val url = Stremio.manifestUrl(file.readText().lines().firstOrNull().orEmpty())
-            ?: return@PhoneTask 400 to getString(R.string.phone_epg_bad)
+            ?: return@PhoneTask 400 to getString(R.string.phone_addon_bad)
         ui.post {
             status.text = getString(R.string.addon_checking)
             addCatalogUrl(url)
@@ -592,7 +592,7 @@ internal fun MainActivity.catalogFromPhone() {
 private fun MainActivity.addCatalog() {
     textPage(getString(R.string.catalog_new_address), "", getString(R.string.addon_hint), getString(R.string.catalog_add_intro), back = { catalogFromPhone() }) { typed ->
         listOf(page(getString(R.string.dialog_save)) {
-            val url = Stremio.manifestUrl(typed()) ?: return@page Toast.makeText(this, getString(R.string.phone_epg_bad), Toast.LENGTH_LONG).show()
+            val url = Stremio.manifestUrl(typed()) ?: return@page toast(R.string.phone_addon_bad)
             addCatalogUrl(url)
         })
     }
@@ -600,14 +600,14 @@ private fun MainActivity.addCatalog() {
 
 internal fun MainActivity.addCatalogUrl(url: String) {
     if (url == Stremio.CINEMETA) return configureCinemeta()
-    Toast.makeText(this, getString(R.string.addon_checking), Toast.LENGTH_SHORT).show()
+    toast(R.string.addon_checking, long = false)
     updateAddon(url, null) { listing ->
         val a = listing?.addon
         when {
-            a == null -> Toast.makeText(this, getString(R.string.toast_addon_failed), Toast.LENGTH_LONG).show()
+            a == null -> toast(R.string.toast_addon_failed)
             a.vod.isEmpty() -> {
                 if (url !in addonUrls()) Stremio.forget(filesDir, url)
-                Toast.makeText(this, getString(R.string.toast_catalog_no_vod), Toast.LENGTH_LONG).show()
+                toast(R.string.toast_catalog_no_vod)
             }
             else -> {
                 saveCatalogUrls(catalogUrls() + url)
@@ -700,7 +700,7 @@ internal fun MainActivity.addonFromPhone() {
     val page = PhonePages.addon(phoneTexts(R.string.phone_addon_title, R.string.phone_addon_intro), getString(R.string.addon_hint), getString(R.string.addon_adult))
     showPhoneLink(getString(R.string.setting_addon_add), PhoneTask(page, 1024L * 1024) { file ->
         val lines = file.readText().lines()
-        val url = Stremio.manifestUrl(lines.firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_epg_bad)
+        val url = Stremio.manifestUrl(lines.firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_addon_bad)
         val adult = lines.drop(1).any { it.trim() == "adult" }
         ui.post {
             status.text = getString(R.string.addon_checking)
@@ -744,7 +744,7 @@ internal fun MainActivity.addonPage(url: String, focus: Int? = null) {
             addonPage(url, R.string.addon_on)
         },
         page(getString(R.string.addon_update)) {
-            Toast.makeText(this, getString(R.string.addon_checking), Toast.LENGTH_SHORT).show()
+            toast(R.string.addon_checking, long = false)
             updateAddon(url, null) { listing ->
                 val a = listing?.addon
                 val channels = listing?.rows?.filter { it.genre == null }?.sumOf { it.items.size } ?: 0
@@ -761,7 +761,7 @@ internal fun MainActivity.addonPage(url: String, focus: Int? = null) {
             }
         },
         page(getString(R.string.addon_adult), toggle(isAdultAddon(url))) {
-            if (saysAdult(url)) return@page Toast.makeText(this, getString(R.string.addon_says_adult), Toast.LENGTH_LONG).show()
+            if (saysAdult(url)) return@page toast(R.string.addon_says_adult)
             setAdultAddon(url, !isAdultAddon(url))
             addonsChanged()
             addonPage(url, R.string.addon_adult)
