@@ -80,7 +80,7 @@ Dall'alto in basso:
 | **Posizione dei Preferiti** | A sinistra o al centro |
 | **Nomi delle app** | Sempre, solo al focus o mai |
 | **Stile icone** | Monocromatiche o a colori |
-| **Blocco layout** | Un PIN di 4 cifre protegge impostazioni e layout. Le app si aprono comunque |
+| **Blocco layout** | Il PIN protegge impostazioni e layout. Le app si aprono comunque. Zephyr TV ha un solo PIN di 4 cifre, per il blocco layout, il blocco VM18 e l'accesso remoto |
 
 Le **app virtuali** di Zephyr TV (TV, Film, Serie TV, Contenuti per adulti, o un'app per ogni add-on) si comportano come le altre app: si spostano, si nascondono e si rimettono.
 
@@ -309,7 +309,7 @@ Il pulsante **Utenti** nella barra in alto (mostra l'iniziale dell'utente in uso
 ## 18. Contenuti per adulti e blocco VM18
 
 - **Add-on e plugin V.M. 18**: segnati a mano, oppure dichiarati tali da loro stessi.
-- **Blocco VM18** (menu **Utenti → Impostazioni**, facoltativo): scegli un PIN. Quando è bloccato, i contenuti per adulti non compaiono da nessuna parte: app, righe, ricerca, stream.
+- **Blocco VM18** (menu **Utenti → Impostazioni**, facoltativo): usa il PIN di Zephyr TV. Se non c'è ancora, scegline uno. Quando è bloccato, i contenuti per adulti non compaiono da nessuna parte: app, righe, ricerca, stream.
 - **Sblocca VM18** (menu **Utenti**): con il PIN, i contenuti compaiono per **2 ore** oppure, con **Sblocco per → Fino al riblocco**, finché scegli **Blocca VM18**.
 - Il blocco torna attivo da solo quando il TV va in **standby**, si spegne o si riavvia.
 - **Dove compaiono**: vedi la voce **Contenuti per Adulti** nel [capitolo 13](#13-dove-compaiono-canali-film-e-contenuti-per-adulti).
@@ -352,9 +352,9 @@ La pagina funziona solo mentre quella schermata è aperta sul TV, e quello che i
 | **Tasto Home** | Il servizio che fa aprire Zephyr TV con il tasto Home |
 | **Launcher predefinito** | Imposta Zephyr TV come Home di Android |
 | **Aggiornamenti** | Cerca e installa le nuove versioni. Si possono ricevere anche le **beta** |
-| **Accesso remoto** | Un telefono nella rete di casa cambia le impostazioni, dopo il PIN VM18 |
+| **Accesso remoto** | Un telefono nella rete di casa cambia le impostazioni, dopo il PIN |
 | **Mostra indirizzo accesso** | Il codice da salvare. Compare quando l'accesso remoto è acceso |
-| **Backup e ripristino** | Salva le impostazioni sul telefono e le ripristina: anche add-on, plugin Nuvio ed estensioni, con il loro stato e le loro impostazioni. Dopo il ripristino il TV scarica di nuovo le estensioni e i plugin che hanno un indirizzo. Le estensioni installate da un file sono nel backup. Il file contiene la chiave TMDB, gli indirizzi degli add-on e gli accessi delle estensioni: tienilo privato |
+| **Backup e ripristino** | Salva le impostazioni sul telefono e le ripristina: anche add-on, plugin Nuvio ed estensioni, con il loro stato e le loro impostazioni. Dopo il ripristino il TV scarica di nuovo le estensioni e i plugin che hanno un indirizzo. Le estensioni installate da un file sono nel backup. Il PIN non è mai nel backup: se il TV aveva un PIN, il ripristino chiede di sceglierne uno nuovo. Il file contiene la chiave TMDB, gli indirizzi degli add-on e gli accessi delle estensioni: tienilo privato |
 | **Problemi recenti** | Cosa non ha funzionato di recente. Per uno stream che fallisce: fonte, server e cosa ha risposto |
 | **Guida** | Questa guida, sul TV, capitolo per capitolo |
 | **Informazioni** | Versione, licenze, fonti dei dati |

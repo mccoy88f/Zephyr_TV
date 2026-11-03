@@ -294,7 +294,8 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
             },
             page(getString(R.string.setting_lock_layout), toggle(lockOn())) {
                 if (!lockOn()) return@page setLock()
-                prefs.edit().remove(K.LOCK_PIN).apply()
+                prefs.edit().remove(K.LOCK_ON).apply()
+                dropUnusedPin() // the 18+ lock or remote access may still use it
                 renderSettings(LOCK_ROW)
             },
         )
@@ -689,7 +690,7 @@ internal fun MainActivity.showPage(title: String, allRows: List<Triple<String, S
 // It keeps the layout safe from small hands, it doesn't keep apps from kids: voice search and Android
 // settings get past it, so it's called a layout lock, not parental controls.
 
-internal fun MainActivity.lockOn() = prefs.contains(K.LOCK_PIN)
+internal fun MainActivity.lockOn() = prefs.getBoolean(K.LOCK_ON, false) && pinSet()
 
 internal fun MainActivity.locked() = lockOn() && SystemClock.elapsedRealtime() > unlockedUntil
 
@@ -697,18 +698,15 @@ internal fun MainActivity.locked() = lockOn() && SystemClock.elapsedRealtime() >
 internal fun MainActivity.unlock(then: () -> Unit) {
     if (!locked()) return then()
     showPanel()
-    pinPage(getString(R.string.pin_enter_title), back = null) { pin ->
-        val stored = prefs.getString(K.LOCK_PIN, null) ?: return@pinPage null.also { closeLauncherSettings(); then() }
-        pinMessage(pinGuard.check { pinMatches(stored, pin) })?.let { return@pinPage it }
+    askPin(back = null) {
         unlockedUntil = SystemClock.elapsedRealtime() + UNLOCKED_MS
         closeLauncherSettings()
         then()
-        null
     }
 }
 
-internal fun MainActivity.setLock() = choosePin(getString(R.string.pin_choose_title), { renderSettings(LOCK_ROW) }) { hash ->
-    prefs.edit().putString(K.LOCK_PIN, hash).apply()
+internal fun MainActivity.setLock() = withPin({ renderSettings(LOCK_ROW) }) {
+    prefs.edit().putBoolean(K.LOCK_ON, true).apply()
     unlockedUntil = SystemClock.elapsedRealtime() + UNLOCKED_MS // no PIN straight away for the one who set it
     renderSettings(LOCK_ROW)
     toast(R.string.layout_locked_toast)
@@ -809,7 +807,7 @@ internal fun MainActivity.pinPage(title: String, back: (() -> Unit)?, done: (Str
             alpha = 0.6f
             setPadding(0, dp(8), 0, 0)
         })
-        if (lockOn()) addView(label(getString(R.string.pin_forgot_notice), 12f).apply {
+        if (pinSet()) addView(label(getString(R.string.pin_forgot_notice), 12f).apply {
             gravity = Gravity.CENTER
             alpha = 0.6f
             maxLines = 3

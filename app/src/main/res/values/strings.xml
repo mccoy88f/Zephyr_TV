@@ -160,6 +160,10 @@
     <string name="pin_instructions">▲ ▼ change  ·  ◀ ▶ move  ·  OK enter. Number keys work too.</string>
     <string name="pin_forgot_notice">Forgot it? Android Settings → Apps → Zephyr TV → Clear data removes the lock, along with your layout and settings.</string>
     <string name="pin_mismatch">Those PINs didn\'t match. Choose one again.</string>
+    <string name="pin_one_toast">Zephyr TV uses this PIN for everything: the layout lock, 18+ content and remote access.</string>
+    <string name="pin_merged_toast">Zephyr TV now uses one PIN for everything. The layout lock uses the 18+ PIN.</string>
+    <string name="restore_pin_title">Choose a new PIN to restore the backup</string>
+    <string name="phone_restore_pin">The backup had a PIN. Choose a new PIN on the TV to finish the restore.</string>
     <string name="pin_four_digits">The PIN has 4 digits.</string>
     <string name="layout_locked_toast">Layout locked. Zephyr TV settings and home screen changes now need the PIN.</string>
     <string name="unlock_to_edit">Unlock to edit…</string>
@@ -449,8 +453,7 @@
     <string name="remote_pin_enter">Enter the PIN</string>
     <string name="remote_open_form">Open this setting</string>
     <string name="remote_not_open">Open this on the TV, then try again.</string>
-    <string name="remote_off_no_pin">Remote access is off. It uses the 18+ PIN. Turn on Remote access to choose a new PIN.</string>
-    <string name="remote_pin_set">Remote access uses this PIN. It is also the 18+ PIN, and the 18+ lock is on.</string>
+    <string name="remote_off_no_pin">Remote access is off: no PIN is set. Turn on Remote access to choose a new PIN.</string>
     <string name="warp_on_toast">WARP on: Zephyr TV goes through Cloudflare</string>
     <string name="warp_device">The whole device: the 1.1.1.1 app</string>
     <string name="warp_switch">WARP for Zephyr TV</string>
@@ -680,8 +683,6 @@
     <string name="adult_unlock_for">Unlock for</string>
     <string name="adult_two_hours">2 hours</string>
     <string name="adult_until_locked">Until you lock it</string>
-    <string name="adult_pin_choose">Choose the 18+ PIN</string>
-    <string name="adult_pin_enter">18+ PIN</string>
     <string name="adult_locked_toast">18+ content is hidden. Use the PIN in the users menu to show it.</string>
     <string name="addon_says_adult">This add-on says it has adult content. It always counts as 18+.</string>
     <string name="adult_app">Adult Content</string>

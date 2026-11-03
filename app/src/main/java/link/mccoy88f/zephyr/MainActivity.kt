@@ -233,6 +233,8 @@ class MainActivity : Activity() {
         Safety.watch(applicationContext)
         val calmed = Safety.calm(this)
         Problems.init(File(filesDir, "problems.log"))
+        if (migratePins(prefs)) toast(R.string.pin_merged_toast) // one PIN for everything now (see Pins)
+        dropUnusedPin() // after a restore, say: nothing may use it any more
         Images.use(this) // images on disk (see Images): every part of Zephyr TV goes through it
         Js.useAssets(applicationContext) // the modules plugins and extensions require()
         Nuvio.process = ScriptProcess.plugins(this) // plugins run in a process of their own

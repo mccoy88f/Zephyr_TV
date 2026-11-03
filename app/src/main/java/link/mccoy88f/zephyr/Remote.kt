@@ -155,7 +155,7 @@ internal object Remote {
     /** Remote access is on, and its page is served. A restart keeps serving it. */
     fun attach(a: MainActivity) {
         home = a
-        if (a.remoteOn() && a.remoteHasPin()) listen()
+        if (a.remoteOn() && a.remoteHasPin(tell = true)) listen()
     }
 
     /** The home screen went away. The page keeps its port across a recreate; [stop] is turning the setting off. */
@@ -305,8 +305,7 @@ internal object Remote {
 
     /** Null when the PIN is right. */
     private fun checkPin(a: MainActivity, pin: String): String? {
-        val stored = remotePinStored(a.prefs.getString(K.ADULT_PIN, null), a.prefs.getString(K.REMOTE_PIN, null))
-            ?: return a.getString(R.string.remote_not_open)
+        val stored = pinStored(a.prefs) ?: return a.getString(R.string.remote_not_open)
         return a.pinMessage(pinGuard.check { isPinDigits(pin) && pinMatches(stored, pin) })
     }
 
@@ -455,11 +454,11 @@ internal object Remote {
 internal fun MainActivity.remoteOn() = prefs.getBoolean(K.REMOTE, false)
 
 /**
- * Remote access has a PIN to ask for. Without one (the 18+ lock was turned off, or a backup had none) no phone
- * can open it, so remote access turns off, and the TV says so when [tell].
+ * Remote access has the PIN to ask for. Without one (cleared data, or a restore) no phone can open it, so remote
+ * access turns off, and the TV says so when [tell].
  */
 internal fun MainActivity.remoteHasPin(tell: Boolean = false): Boolean {
-    if (remotePinStored(prefs.getString(K.ADULT_PIN, null), prefs.getString(K.REMOTE_PIN, null)) != null) return true
+    if (pinSet()) return true
     if (remoteOn()) {
         prefs.edit().putBoolean(K.REMOTE, false).apply()
         Remote.stop()
@@ -480,18 +479,12 @@ internal fun MainActivity.problemsRow() = backupRow() + 1
 internal fun MainActivity.guideRow() = backupRow() + 2
 internal fun MainActivity.aboutRow() = backupRow() + 3
 
-/**
- * The PIN the phone must match. The 18+ PIN wins when it is set, including while that lock is already on.
- * An older remote PIN still works until a 18+ PIN exists.
- */
-internal fun remotePinStored(adult: String?, legacy: String?) = adult ?: legacy
-
-/** What the phone asks for. The digits are the 18+ PIN when that lock has one. */
+/** What the phone asks for: the one PIN (see Pins). */
 private fun MainActivity.remotePinPrompt() = getString(R.string.remote_pin_enter)
 
 /**
- * Remote access on, with the 18+ PIN. A PIN that is already set is used as it is. A new PIN is the 18+ PIN and turns
- * that lock on. [back] leaves the PIN page. [then] runs once remote access is on.
+ * Remote access on, with the one PIN. Turning it on asks for the PIN when one is set, or has a new one chosen
+ * (see withPin); once on, it doesn't ask again. [back] leaves the PIN page. [then] runs once remote access is on.
  */
 internal fun MainActivity.ensureRemote(back: () -> Unit, then: () -> Unit) {
     fun arm() {
@@ -499,17 +492,15 @@ internal fun MainActivity.ensureRemote(back: () -> Unit, then: () -> Unit) {
         Remote.attach(this)
         then()
     }
-    if (remotePinStored(prefs.getString(K.ADULT_PIN, null), prefs.getString(K.REMOTE_PIN, null)) != null) return arm()
-    choosePin(getString(R.string.adult_pin_choose), back) { hash ->
-        setAdultPin(hash, R.string.remote_pin_set)
-        arm()
-    }
+    if (remoteOn() && pinSet()) return arm()
+    withPin(back) { arm() }
 }
 
 internal fun MainActivity.toggleRemote() {
     if (remoteOn()) {
         prefs.edit().putBoolean(K.REMOTE, false).apply()
         Remote.stop()
+        dropUnusedPin() // a lock may still use it
         renderSettings(MainActivity.REMOTE_ROW)
         return
     }
@@ -765,19 +756,7 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
     "backup-save" -> PhoneTask(backupPage(), 0) { 405 to "" }
     "backup-restore" -> {
         val page = PhonePages.file(phoneTexts(R.string.phone_restore_title, R.string.phone_restore_intro), getString(R.string.phone_choose_file), ".json,application/json")
-        PhoneTask(page, 16L * 1024 * 1024) { file ->
-            val n = try {
-                Backup.restore(prefs, file.readText(), filesDir)
-            } catch (e: Exception) {
-                warn("restore failed ($e)")
-                return@PhoneTask 400 to getString(R.string.phone_restore_bad)
-            }
-            ui.postDelayed({
-                prefs.edit().putInt(K.REOPEN_ROW, backupRow()).apply()
-                recreate()
-            }, 2000)
-            200 to getString(R.string.phone_restore_done, n)
-        }
+        PhoneTask(page, 16L * 1024 * 1024) { file -> restoreBackup(file.readText()) }
     }
     "ext-add" -> {
         val page = PhonePages.text(phoneTexts(R.string.ext_phone_title, R.string.ext_add_intro), getString(R.string.ext_hint))

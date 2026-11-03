@@ -218,20 +218,58 @@ internal fun MainActivity.restoreFromPhone() {
     val page = PhonePages.file(phoneTexts(R.string.phone_restore_title, R.string.phone_restore_intro), getString(R.string.phone_choose_file), ".json,application/json")
     // Up to a few MB: the users' watched titles and progress come with the settings.
     showPhoneLink(getString(R.string.backup_restore), PhoneTask(page, 16L * 1024 * 1024) { file ->
-        val n = try {
-            Backup.restore(prefs, file.readText(), filesDir)
-        } catch (e: Exception) {
-            warn("restore failed ($e)")
-            return@PhoneTask 400 to getString(R.string.phone_restore_bad)
-        }
-        // Restart the home screen with the restored settings once the phone has its answer, back on this row.
-        ui.post { status.text = getString(R.string.phone_restore_done, n) }
-        ui.postDelayed({
-            prefs.edit().putInt(K.REOPEN_ROW, backupRow()).apply()
-            recreate()
-        }, 2000)
-        200 to getString(R.string.phone_restore_done, n)
+        restoreBackup(file.readText(), status)
     }, status, target = "backup-restore") { showBackup() }
+}
+
+/**
+ * [text], a backup sent from a phone, put back: at once, or once a new PIN is chosen on the TV when the TV that
+ * made it had a PIN (the PIN never goes in a backup). Runs on a server thread; the answer is for the phone.
+ * [status] is the line on the TV's restore screen, when it is open.
+ */
+internal fun MainActivity.restoreBackup(text: String, status: TextView? = null): Pair<Int, String> {
+    val needsPin = try {
+        Backup.needsPin(text)
+    } catch (e: Exception) {
+        warn("restore failed ($e)")
+        return 400 to getString(R.string.phone_restore_bad)
+    }
+    if (needsPin) {
+        // After the phone has its answer: the PIN page takes the place of the restore screen and its server.
+        ui.postDelayed({ restoreWithNewPin(text) }, 1500)
+        return 200 to getString(R.string.phone_restore_pin)
+    }
+    val n = try {
+        Backup.restore(prefs, text, filesDir)
+    } catch (e: Exception) {
+        warn("restore failed ($e)")
+        return 400 to getString(R.string.phone_restore_bad)
+    }
+    ui.post { status?.text = getString(R.string.phone_restore_done, n) }
+    restartAfterRestore(2000)
+    return 200 to getString(R.string.phone_restore_done, n)
+}
+
+/** The home screen again with the restored settings, back on the backup row, after [delayMs]. */
+private fun MainActivity.restartAfterRestore(delayMs: Long) = ui.postDelayed({
+    prefs.edit().putInt(K.REOPEN_ROW, backupRow()).apply()
+    recreate()
+}, delayMs)
+
+/** A new PIN chosen on the TV (or from the phone), then the backup in [text] put back with it. */
+private fun MainActivity.restoreWithNewPin(text: String) {
+    if (settingsScrim.visibility != android.view.View.VISIBLE) showPanel()
+    choosePin(getString(R.string.restore_pin_title), { showBackup() }) { hash ->
+        netIo.execute {
+            val n = runCatching { Backup.restore(prefs, text, filesDir, hash) }
+                .onFailure { warn("restore failed ($it)") }.getOrNull()
+            ui.post {
+                if (n == null) return@post toast(R.string.phone_restore_bad)
+                android.widget.Toast.makeText(this, getString(R.string.phone_restore_done, n), android.widget.Toast.LENGTH_LONG).show()
+                restartAfterRestore(1500)
+            }
+        }
+    }
 }
 
 /** The user's public TMDB list, pasted on the phone (its link or number); checked by loading it, then shown. */

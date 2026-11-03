@@ -80,7 +80,7 @@ From top to bottom:
 | **Favourites position** | Left or centre |
 | **App names** | Always, on focus only, or never |
 | **Icon style** | Monochrome or colour |
-| **Lock layout** | A 4-digit PIN protects the settings and the layout. Apps still open |
+| **Lock layout** | The PIN protects the settings and the layout. Apps still open. Zephyr TV has one 4-digit PIN, for the layout lock, the 18+ lock and remote access |
 
 Zephyr TV's **virtual apps** (TV, Films, TV Series, Adult Content, or one app per add-on) work like any other app: you can move them, hide them and put them back.
 
@@ -309,7 +309,7 @@ The **Users** button in the top bar (it shows the initial of the user in use):
 ## 18. Adult content and the 18+ lock
 
 - **Adult add-ons and plugins**: marked by you, or saying so themselves.
-- **18+ lock** (**Users → Settings**, optional): choose a PIN. While it's locked, adult content shows nowhere: apps, rows, search, streams.
+- **18+ lock** (**Users → Settings**, optional): it uses the Zephyr TV PIN. If there is none yet, choose one. While it's locked, adult content shows nowhere: apps, rows, search, streams.
 - **Unlock 18+** (**Users** menu): with the PIN, the content shows for **2 hours** or, with **Unlock for → Until you lock it**, until you choose **Lock 18+**.
 - The lock comes back by itself when the TV goes to **standby**, turns off or restarts.
 - **Where it shows**: see **Adult Content** in [chapter 13](#13-where-channels-films-and-adult-content-show).
@@ -352,9 +352,9 @@ The page works only while that screen is open on the TV, and what you send goes 
 | **Home button** | The service that makes the Home button open Zephyr TV |
 | **Default launcher** | Sets Zephyr TV as Android's Home |
 | **Updates** | Looks for and installs new versions. You can get the **betas** too |
-| **Remote access** | A phone on the home network changes settings, after the 18+ PIN |
+| **Remote access** | A phone on the home network changes settings, after the PIN |
 | **Show the access address** | The code to save. It appears while remote access is on |
-| **Backup and restore** | Saves the settings to your phone and restores them: also the add-ons, Nuvio plugins and extensions, with their state and settings. After a restore, the TV downloads again the extensions and plugins that have an address. Extensions installed from a file are in the backup. The file holds the TMDB key, the add-ons' addresses and the extensions' sign-ins: keep it private |
+| **Backup and restore** | Saves the settings to your phone and restores them: also the add-ons, Nuvio plugins and extensions, with their state and settings. After a restore, the TV downloads again the extensions and plugins that have an address. Extensions installed from a file are in the backup. The PIN is never in the backup: if the TV had a PIN, the restore asks you to choose a new one. The file holds the TMDB key, the add-ons' addresses and the extensions' sign-ins: keep it private |
 | **Recent problems** | What went wrong lately. For a stream that fails: its source, its server and what the server sent |
 | **Guide** | This guide, on the TV, chapter by chapter |
 | **About** | Version, licences, data sources |

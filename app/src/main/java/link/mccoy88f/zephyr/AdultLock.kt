@@ -10,8 +10,12 @@ import android.widget.Toast
 
 private const val UNLOCK_MS = 2 * 3600_000L
 
-/** Whether the 18+ lock is on (a PIN set for it). */
-internal fun MainActivity.adultLockOn() = prefs.contains(K.ADULT_PIN)
+/** Whether the 18+ lock is on (it asks for the one PIN: see Pins). */
+internal fun MainActivity.adultLockOn() = adultLockOn(prefs)
+
+/** [adultLockOn] from the preferences alone. An older 18+ PIN not yet moved (see migratePins) counts as on. */
+internal fun adultLockOn(p: android.content.SharedPreferences) =
+    (p.getBoolean(K.ADULT_ON, false) && p.contains(K.PIN)) || p.contains(K.ADULT_PIN)
 
 /**
  * Whether 18+ content shows now: the lock off, or unlocked, not yet run out, and since the TV last started (an unlock
@@ -20,7 +24,7 @@ internal fun MainActivity.adultLockOn() = prefs.contains(K.ADULT_PIN)
 internal fun MainActivity.adultUnlocked() = adultShows(prefs)
 
 /** [adultUnlocked] from the preferences alone, for the player (which isn't the home screen). */
-internal fun adultShows(p: android.content.SharedPreferences) = !p.contains(K.ADULT_PIN) ||
+internal fun adultShows(p: android.content.SharedPreferences) = !adultLockOn(p) ||
     (System.currentTimeMillis() < p.getLong(K.ADULT_UNTIL, 0L) && kotlin.math.abs(bootTime() - p.getLong(K.ADULT_BOOT, 0L)) < BOOT_SLACK_MS)
 
 /** When the TV last started, on the wall clock: the same while it runs, give or take a clock correction. */
@@ -121,11 +125,16 @@ internal fun MainActivity.adultMenuRow(back: () -> Unit) =
 internal fun MainActivity.adultSettingsRows(back: () -> Unit): List<Triple<String, String, () -> Unit>> = listOfNotNull(
     page(getString(R.string.adult_lock), toggle(adultLockOn())) {
         if (adultLockOn()) askAdultPin(back) {
-            prefs.edit().remove(K.ADULT_PIN).remove(K.ADULT_UNTIL).apply()
+            prefs.edit().remove(K.ADULT_ON).remove(K.ADULT_UNTIL).apply()
             adultChanged()
-            remoteHasPin(tell = true) // remote access used this PIN: without it, no phone can open it
+            dropUnusedPin() // the layout lock or remote access may still use it
             back()
-        } else chooseAdultPin(back)
+        } else withPin(back) {
+            prefs.edit().putBoolean(K.ADULT_ON, true).putLong(K.ADULT_UNTIL, 0L).apply()
+            adultChanged()
+            toast(R.string.adult_locked_toast)
+            back()
+        }
     },
     if (!adultLockOn()) null else page(getString(R.string.adult_unlock_for),
         getString(if (adultUntilLocked()) R.string.adult_until_locked else R.string.adult_two_hours)) {
@@ -134,28 +143,10 @@ internal fun MainActivity.adultSettingsRows(back: () -> Unit): List<Triple<Strin
     },
 )
 
-/** A new PIN, typed twice; the lock on (locked) once they match. */
-private fun MainActivity.chooseAdultPin(back: () -> Unit) = choosePin(getString(R.string.adult_pin_choose), back) { hash ->
-    setAdultPin(hash, R.string.adult_locked_toast)
-    back()
-}
-
-/** [hash] is the 18+ PIN now, and the lock is on (locked). [message] says so. Remote access uses this PIN too. */
-internal fun MainActivity.setAdultPin(hash: String, message: Int) {
-    prefs.edit().putString(K.ADULT_PIN, hash).putLong(K.ADULT_UNTIL, 0L).apply()
-    adultChanged()
-    toast(message)
-}
-
-/** The 18+ PIN, then [then]; wrong ones a few times make it wait, as the layout lock does. */
+/** The PIN, then [then]; wrong ones a few times make it wait, as the layout lock does. */
 private fun MainActivity.askAdultPin(back: () -> Unit, then: () -> Unit) {
     if (settingsScrim.visibility != android.view.View.VISIBLE) showPanel()
-    pinPage(getString(R.string.adult_pin_enter), back) { pin ->
-        val stored = prefs.getString(K.ADULT_PIN, null) ?: return@pinPage null.also { then() }
-        pinMessage(pinGuard.check { pinMatches(stored, pin) })?.let { return@pinPage it }
-        then()
-        null
-    }
+    askPin(back, then)
 }
 
 /** Locked or unlocked: what shows the add-ons again (the apps row, its rows, the search). */

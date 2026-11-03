@@ -66,11 +66,6 @@ class RemoteTest {
         assertEquals(0, remoteGridIndex(null, 0, 6, android.view.KeyEvent.KEYCODE_DPAD_DOWN))
     }
 
-    @Test fun thePhoneUsesTheAdultPin() {
-        assertEquals("adult", remotePinStored("adult", "remote"))
-        assertEquals("remote", remotePinStored(null, "remote"))
-        assertNull(remotePinStored(null, null))
-    }
 
     @Test fun showAddressMovesTheRowsUnderIt() {
         assertEquals(1, rowsAfterRemote(false))

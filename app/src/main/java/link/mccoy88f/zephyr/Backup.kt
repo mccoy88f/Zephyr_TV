@@ -14,9 +14,9 @@ import org.json.JSONObject
  * from (packages). Extensions and repositories with an address are downloaded again after a restore (see
  * refreshExtensions and refreshRepos).
  *
- * Not in it: passing state (the last weather reading, update checks); the layout lock PIN, which could lock
- * someone out of a TV whose PIN they no longer remember; remote access and WARP (their address, token and account
- * belong to one TV); photos used as wallpapers. With each user's data too ("data": what they watched, where they
+ * Not in it: passing state (the last weather reading, update checks); the PIN, never ("pin" only says that the TV
+ * had one: a restore then asks for a new PIN, see needsPin); remote access and WARP (their address, token and
+ * account belong to one TV); photos used as wallpapers. The locks' switches are in it, so they come back on. With each user's data too ("data": what they watched, where they
  * got to), not their Trakt account (its keys: they sign in again from a phone).
  */
 internal object Backup {
@@ -26,7 +26,7 @@ internal object Backup {
     private val KEYS = setOf(
         K.THEME, K.WP_LIGHT, K.WP_DARK, K.WP_FADE, K.WP_EVERY, K.COLOUR_ICONS,
         K.UPD_BETA, K.SORT, K.ORDER, K.ROW_HIDDEN, K.ROW_ALIGN, K.NAMES,
-        K.HIDDEN_WATCH, K.CW_OFF, K.SECTIONS_OFF, K.ADDONS, K.ADDONS_TV, K.ADDONS_VOD, K.ADDONS_MOVIES, K.ADDONS_SERIES, K.ADDONS_VIDEOS, K.ADDONS_COURSES, K.ADDONS_PODCASTS, K.ADDONS_AUDIOBOOKS, K.ADDONS_EVENTS, K.RADIO_PLACE, K.ADULT_ADDONS, K.ADULT_PIN, K.ADULT_FOREVER, K.ADULT_APP, K.ADULT_PLACE, K.STREAM_MANUAL, K.STREAM_LANG_ONLY, K.STREAM_QUALITY, K.FAST_START, K.HIDE_UNKNOWN_LANG, K.SUBTITLES_ON, K.HIDE_UNRELEASED, K.ADDONS_OFF, K.NUVIO_REPOS_OFF, K.NUVIO_REPOS, K.NUVIO_ON, K.NUVIO_OFF, K.NUVIO_ADULT, K.NUVIO_OPTIONS, K.NUVIO_ORDER, K.EXT_ORDER, K.EXT_OFF, K.EXT_ADULT, K.EXT_SOURCES, K.EXT_REPOS, K.EXT_COLLECT, K.EXT_OWN, K.EXT_APP, K.EXT_OPTIONS, K.CINEMETA_URL, K.CATALOG_SOURCES, K.CATALOGS, K.SECTION_NAMES, K.SHELVES_OFF, K.USERS, K.USER,
+        K.HIDDEN_WATCH, K.CW_OFF, K.SECTIONS_OFF, K.ADDONS, K.ADDONS_TV, K.ADDONS_VOD, K.ADDONS_MOVIES, K.ADDONS_SERIES, K.ADDONS_VIDEOS, K.ADDONS_COURSES, K.ADDONS_PODCASTS, K.ADDONS_AUDIOBOOKS, K.ADDONS_EVENTS, K.RADIO_PLACE, K.ADULT_ADDONS, K.ADULT_ON, K.LOCK_ON, K.ADULT_FOREVER, K.ADULT_APP, K.ADULT_PLACE, K.STREAM_MANUAL, K.STREAM_LANG_ONLY, K.STREAM_QUALITY, K.FAST_START, K.HIDE_UNKNOWN_LANG, K.SUBTITLES_ON, K.HIDE_UNRELEASED, K.ADDONS_OFF, K.NUVIO_REPOS_OFF, K.NUVIO_REPOS, K.NUVIO_ON, K.NUVIO_OFF, K.NUVIO_ADULT, K.NUVIO_OPTIONS, K.NUVIO_ORDER, K.EXT_ORDER, K.EXT_OFF, K.EXT_ADULT, K.EXT_SOURCES, K.EXT_REPOS, K.EXT_COLLECT, K.EXT_OWN, K.EXT_APP, K.EXT_OPTIONS, K.CINEMETA_URL, K.CATALOG_SOURCES, K.CATALOGS, K.SECTION_NAMES, K.SHELVES_OFF, K.USERS, K.USER,
         K.TMDB_API_KEY, K.TMDB_LANG, K.TMDB_TYPE, K.TMDB_DEFAULT_APPS, K.TMDB_ENRICH, K.TMDB_CYCLE, K.TMDB_PROVIDERS, K.TMDB_SOURCE, K.TMDB_LIST,
         K.WEATHER, K.WX_UNIT, K.GEO_MANUAL, K.GEO_CITY, K.GEO_LAT, K.GEO_LON,
         K.SS_FOLDER, K.CLOCK_24, K.STATUS_BAR, K.NIGHT, K.NIGHT_FROM, K.NIGHT_TO,
@@ -181,17 +181,13 @@ internal object Backup {
                 else -> continue
             })
         }
-        val root = JSONObject().put("app", "zephyr").put("format", FORMAT).put("prefs", values)
+        val root = JSONObject().put("app", "zephyr").put("format", FORMAT).put("prefs", values).put("pin", prefs.contains(K.PIN))
         if (files != null) root.put("data", exportData(files, users)).put("extras", exportExtras(files, withSource(prefs)))
         return root.toString(2)
     }
 
-    /**
-     * Puts the settings in [json] back, replacing the current ones a backup covers (a setting missing from the
-     * file goes back to its default), and with [files] the users' data it carries. Returns how many settings it set;
-     * throws [IllegalArgumentException] for a file that isn't a Zephyr TV backup.
-     */
-    fun restore(prefs: SharedPreferences, json: String, files: File? = null): Int {
+    /** [json] read as a backup. Throws [IllegalArgumentException] for a file that isn't a Zephyr TV backup. */
+    private fun read(json: String): JSONObject {
         val root = try {
             JSONObject(json)
         } catch (e: org.json.JSONException) {
@@ -199,9 +195,34 @@ internal object Backup {
         }
         // Piume's backups too: Zephyr TV is what Piume became, with the same settings.
         require(root.optString("app") in setOf("zephyr", "piume") && root.optInt("format") in 1..FORMAT) { "not a Zephyr TV backup" }
+        require(root.optJSONObject("prefs") != null) { "no settings" }
+        return root
+    }
+
+    /**
+     * Whether the TV that made [json] had a PIN: then the restore asks for a new one first. An older backup
+     * says so with its 18+ PIN, which isn't put back. Throws [IllegalArgumentException] like [restore].
+     */
+    fun needsPin(json: String): Boolean = needsPin(read(json))
+
+    private fun needsPin(root: JSONObject) = root.optBoolean("pin") || root.getJSONObject("prefs").has(K.ADULT_PIN)
+
+    /**
+     * Puts the settings in [json] back, replacing the current ones a backup covers (a setting missing from the
+     * file goes back to its default), and with [files] the users' data it carries. A backup that had a PIN (see
+     * [needsPin]) needs [newPin], the new one already hashed; it replaces the TV's PIN. Returns how many settings it
+     * set; throws [IllegalArgumentException] for a file that isn't a Zephyr TV backup.
+     */
+    fun restore(prefs: SharedPreferences, json: String, files: File? = null, newPin: String? = null): Int {
+        val root = read(json)
+        val pin = needsPin(root)
+        require(!pin || newPin != null) { "a new PIN first" }
         val values = root.getJSONObject("prefs")
         val edit = prefs.edit()
         KEYS.forEach { edit.remove(it) }
+        if (pin) edit.putString(K.PIN, newPin)
+        // An older backup: its 18+ PIN meant the 18+ lock was on. The PIN itself stays out.
+        if (values.has(K.ADULT_PIN) && !values.has(K.ADULT_ON)) edit.putBoolean(K.ADULT_ON, true)
         var n = 0
         for (key in values.keys()) {
             if (key !in KEYS) continue // a newer Zephyr TV's setting, or something added by hand

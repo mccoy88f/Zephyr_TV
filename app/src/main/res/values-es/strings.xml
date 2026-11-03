@@ -160,6 +160,10 @@
     <string name="pin_instructions">▲ ▼ cambiar  ·  ◀ ▶ mover  ·  OK confirmar. También sirven las teclas numéricas.</string>
     <string name="pin_forgot_notice">¿Lo has olvidado? Ajustes de Android → Apps → Zephyr TV → Borrar datos quita el bloqueo, junto con tu diseño y tus ajustes.</string>
     <string name="pin_mismatch">Los PIN no coinciden. Elige uno otra vez.</string>
+    <string name="pin_one_toast">Zephyr TV usa este PIN para todo: el bloqueo del diseño, el contenido 18+ y el acceso remoto.</string>
+    <string name="pin_merged_toast">Ahora Zephyr TV usa un solo PIN para todo. El bloqueo del diseño usa el PIN 18+.</string>
+    <string name="restore_pin_title">Elige un PIN nuevo para restaurar la copia</string>
+    <string name="phone_restore_pin">La copia tenía un PIN. Elige un PIN nuevo en la TV para terminar la restauración.</string>
     <string name="pin_four_digits">El PIN tiene 4 cifras.</string>
     <string name="layout_locked_toast">Diseño bloqueado. Los ajustes de Zephyr TV y los cambios en la pantalla de inicio piden ahora el PIN.</string>
     <string name="unlock_to_edit">Desbloquear para editar…</string>
@@ -450,8 +454,7 @@
     <string name="remote_pin_enter">Introduce el PIN</string>
     <string name="remote_open_form">Abrir este ajuste</string>
     <string name="remote_not_open">Abre esto en la TV y vuelve a intentarlo.</string>
-    <string name="remote_off_no_pin">El acceso remoto está apagado. Usa el PIN 18+. Activa Acceso remoto para elegir un PIN nuevo.</string>
-    <string name="remote_pin_set">El acceso remoto usa este PIN. También es el PIN 18+, y el bloqueo 18+ está activado.</string>
+    <string name="remote_off_no_pin">El acceso remoto está apagado: no hay un PIN. Activa Acceso remoto para elegir un PIN nuevo.</string>
     <string name="warp_on_toast">WARP activo: Zephyr TV pasa por Cloudflare</string>
     <string name="warp_device">Todo el dispositivo: la app 1.1.1.1</string>
     <string name="warp_switch">WARP para Zephyr TV</string>
@@ -683,8 +686,6 @@
     <string name="adult_unlock_for">Desbloquear durante</string>
     <string name="adult_two_hours">2 horas</string>
     <string name="adult_until_locked">Hasta que lo bloquees</string>
-    <string name="adult_pin_choose">Elige el PIN +18</string>
-    <string name="adult_pin_enter">PIN +18</string>
     <string name="adult_locked_toast">El contenido +18 está oculto. Usa el PIN en el menú de usuarios para mostrarlo.</string>
     <string name="addon_says_adult">Este add-on dice que tiene contenido para adultos. Siempre cuenta como +18.</string>
     <string name="adult_app">Contenido para adultos</string>

@@ -160,6 +160,10 @@
     <string name="pin_instructions">▲ ▼ changer  ·  ◀ ▶ déplacer  ·  OK valider. Les touches numériques fonctionnent aussi.</string>
     <string name="pin_forgot_notice">Oublié ? Paramètres Android → Applis → Zephyr TV → Effacer les données supprime le verrou, avec votre disposition et vos paramètres.</string>
     <string name="pin_mismatch">Les codes ne correspondent pas. Choisissez-en un à nouveau.</string>
+    <string name="pin_one_toast">Zephyr TV utilise ce code pour tout : le verrou de la disposition, le contenu 18+ et l\'accès à distance.</string>
+    <string name="pin_merged_toast">Zephyr TV utilise maintenant un seul code pour tout. Le verrou de la disposition utilise le code 18+.</string>
+    <string name="restore_pin_title">Choisissez un nouveau code pour restaurer la sauvegarde</string>
+    <string name="phone_restore_pin">La sauvegarde avait un code. Choisissez un nouveau code sur la TV pour terminer la restauration.</string>
     <string name="pin_four_digits">Le code a 4 chiffres.</string>
     <string name="layout_locked_toast">Disposition verrouillée. Les paramètres de Zephyr TV et les modifications de l\'écran d\'accueil demandent désormais le code.</string>
     <string name="unlock_to_edit">Déverrouiller pour modifier…</string>
@@ -450,8 +454,7 @@
     <string name="remote_pin_enter">Entrez le PIN</string>
     <string name="remote_open_form">Ouvrir ce réglage</string>
     <string name="remote_not_open">Ouvrez ceci sur la TV, puis réessayez.</string>
-    <string name="remote_off_no_pin">L\'accès à distance est désactivé. Il utilise le code 18+. Activez Accès à distance pour choisir un nouveau code.</string>
-    <string name="remote_pin_set">L\'accès à distance utilise ce code. C\'est aussi le code 18+, et le verrou 18+ est activé.</string>
+    <string name="remote_off_no_pin">L\'accès à distance est désactivé : aucun code n\'est défini. Activez Accès à distance pour choisir un nouveau code.</string>
     <string name="warp_on_toast">WARP activé : Zephyr TV passe par Cloudflare</string>
     <string name="warp_device">Tout l\'appareil : l\'appli 1.1.1.1</string>
     <string name="warp_switch">WARP pour Zephyr TV</string>
@@ -683,8 +686,6 @@
     <string name="adult_unlock_for">Déverrouiller pendant</string>
     <string name="adult_two_hours">2 heures</string>
     <string name="adult_until_locked">Jusqu\'au verrouillage</string>
-    <string name="adult_pin_choose">Choisissez le PIN -18</string>
-    <string name="adult_pin_enter">PIN -18</string>
     <string name="adult_locked_toast">Le contenu -18 est masqué. Utilisez le PIN dans le menu des utilisateurs pour l\'afficher.</string>
     <string name="addon_says_adult">Cet add-on indique du contenu pour adultes. Il compte toujours comme -18.</string>
     <string name="adult_app">Contenu pour adultes</string>

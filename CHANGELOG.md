@@ -17,7 +17,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 - The phone remote moves the player. The arrows, OK, Back and Program plus and minus reach it.
 - The phone accepts only a PIN of 4 digits.
-- When you turn off the 18+ lock, Remote access turns off too. The TV shows a message.
+- When the TV has no PIN, Remote access turns off. The TV shows a message.
 - A row on the phone opens only on the page that you see. On a new page, the phone shows that page again.
 - The phone page asks the TV for one update at a time. It stops while the page is hidden or the remote is open.
 - The remote on the phone shows when the TV does not answer.
@@ -26,11 +26,17 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - A PIN that you send from the phone shows on the TV. A wrong PIN shakes the boxes on the TV too.
 - Press Enter on the phone to send the PIN.
 - Select Remote again on the phone to close the remote. The TV stays on the same screen.
-- When you choose a PIN for Remote access, the TV says that it is also the 18+ PIN.
+- When you choose a new PIN, the TV says that it is the PIN for everything.
 - The pages for one setting on the phone use the TV theme and show the Zephyr TV logo.
 - A switch on the phone shows as a switch, also when its value has the same name as On or Off.
 - The backup keeps what the extensions and the Nuvio plugins save for themselves, such as a sign-in.
 - The backup keeps the extensions that you installed from a file. A restore installs them again.
+- Zephyr TV has one PIN for everything: the layout lock, the 18+ lock and remote access.
+- If both locks had a PIN, the layout lock now uses the 18+ PIN. The TV shows a message.
+- To turn on a lock or Remote access, enter the PIN. If there is no PIN, choose one.
+- The PIN stays while a lock or Remote access uses it.
+- The backup never keeps the PIN.
+- If the TV had a PIN, the restore asks you to choose a new PIN first.
 
 ## 4.0.0-beta.7
 
