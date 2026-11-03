@@ -29,6 +29,8 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - When you choose a PIN for Remote access, the TV says that it is also the 18+ PIN.
 - The pages for one setting on the phone use the TV theme and show the Zephyr TV logo.
 - A switch on the phone shows as a switch, also when its value has the same name as On or Off.
+- The backup keeps what the extensions and the Nuvio plugins save for themselves, such as a sign-in.
+- The backup keeps the extensions that you installed from a file. A restore installs them again.
 
 ## 4.0.0-beta.7
 

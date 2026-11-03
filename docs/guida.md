@@ -354,7 +354,7 @@ La pagina funziona solo mentre quella schermata è aperta sul TV, e quello che i
 | **Aggiornamenti** | Cerca e installa le nuove versioni. Si possono ricevere anche le **beta** |
 | **Accesso remoto** | Un telefono nella rete di casa cambia le impostazioni, dopo il PIN VM18 |
 | **Mostra indirizzo accesso** | Il codice da salvare. Compare quando l'accesso remoto è acceso |
-| **Backup e ripristino** | Salva le impostazioni sul telefono e le ripristina. Il file contiene la chiave TMDB e gli indirizzi degli add-on: tienilo privato |
+| **Backup e ripristino** | Salva le impostazioni sul telefono e le ripristina: anche add-on, plugin Nuvio ed estensioni, con il loro stato e le loro impostazioni. Dopo il ripristino il TV scarica di nuovo le estensioni e i plugin che hanno un indirizzo. Le estensioni installate da un file sono nel backup. Il file contiene la chiave TMDB, gli indirizzi degli add-on e gli accessi delle estensioni: tienilo privato |
 | **Problemi recenti** | Cosa non ha funzionato di recente. Per uno stream che fallisce: fonte, server e cosa ha risposto |
 | **Guida** | Questa guida, sul TV, capitolo per capitolo |
 | **Informazioni** | Versione, licenze, fonti dei dati |
