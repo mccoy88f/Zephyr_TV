@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(256, 256) scale(1.2) translate(-256, -256)">
+    <rect x="120" y="160" width="272" height="160" rx="16" fill="#18181B" stroke="url(#grad)" stroke-width="12"/>
+    <rect x="140" y="175" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <rect x="180" y="175" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <rect x="220" y="175" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <rect x="260" y="175" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <rect x="300" y="175" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <rect x="340" y="175" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <rect x="140" y="291" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <rect x="180" y="291" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <rect x="220" y="291" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <rect x="260" y="291" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <rect x="300" y="291" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <rect x="340" y="291" width="20" height="14" rx="3" fill="#FBBF24"/>
+    <polygon points="230,220 230,260 270,240" fill="#FBBF24"/>
+    <text x="256" y="390" font-family="system-ui, sans-serif" font-size="42" font-weight="900" fill="#FBBF24" text-anchor="middle" letter-spacing="4">FILM</text>
+  </g>
+</svg>

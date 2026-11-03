@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(256, 256) scale(1.2) translate(-256, -256)">
+    <rect x="120" y="150" width="272" height="170" rx="24" fill="#064E3B" stroke="url(#grad)" stroke-width="12"/>
+    <line x1="220" y1="150" x2="200" y2="110" stroke="#34D399" stroke-width="6" stroke-linecap="round"/>
+    <line x1="292" y1="150" x2="312" y2="110" stroke="#34D399" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="200" cy="110" r="6" fill="#34D399"/>
+    <circle cx="312" cy="110" r="6" fill="#34D399"/>
+    <rect x="150" y="175" width="40" height="30" rx="4" fill="#34D399" opacity="0.8"/>
+    <rect x="200" y="175" width="40" height="30" rx="4" fill="#10B981" opacity="0.6"/>
+    <rect x="250" y="175" width="40" height="30" rx="4" fill="#34D399" opacity="0.8"/>
+    <rect x="300" y="175" width="40" height="30" rx="4" fill="#10B981" opacity="0.6"/>
+    <rect x="150" y="215" width="40" height="30" rx="4" fill="#10B981" opacity="0.6"/>
+    <rect x="200" y="215" width="40" height="30" rx="4" fill="#34D399" opacity="0.8"/>
+    <rect x="250" y="215" width="40" height="30" rx="4" fill="#10B981" opacity="0.6"/>
+    <rect x="300" y="215" width="40" height="30" rx="4" fill="#34D399" opacity="0.8"/>
+    <text x="256" y="390" font-family="system-ui, sans-serif" font-size="28" font-weight="900" fill="#34D399" text-anchor="middle" letter-spacing="0.5">TV CHANNELS</text>
+  </g>
+</svg>

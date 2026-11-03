@@ -43,6 +43,7 @@ import android.provider.Settings
 import android.text.TextUtils
 import android.util.LruCache
 import android.view.Gravity
+import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewConfiguration
@@ -113,7 +114,7 @@ internal const val SEARCH_PKG = "piume:search" // the search results tile, after
 
 class MainActivity : Activity() {
 
-    // picture: the tile image for Zephyr TV's own apps (Films, Series, TV channels), centered in the card; the
+    // picture: the tile image for Zephyr TV's own apps (one logo for each kind of content), centered in the card; the
     // icon stays the small mark on cards.
     internal class App(val pkg: String, val label: String, val launch: Intent, val icon: Drawable, val offline: Boolean = false,
                        val picture: Drawable? = null, val sublabel: String? = null)
@@ -1459,7 +1460,7 @@ class MainActivity : Activity() {
             }
         }
         // The settings panel is a vertical list: don't let Left/Right leak focus to the home screen behind it.
-        if (settingsScrim.visibility == View.VISIBLE && currentFocus !== pinBox && currentFocus !is EditText) {
+        if (settingsScrim.visibility == View.VISIBLE && currentFocus !== pinBox) {
             val arrow = e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
                 e.keyCode == KeyEvent.KEYCODE_DPAD_UP || e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN
             val (inLeftCol, inRightCol) = detailColumns()
@@ -1475,8 +1476,48 @@ class MainActivity : Activity() {
 
     /** Focus from the phone's remote. A finger's screen ignores a focus that is not allowed in touch mode. */
     private fun View.steer(): Boolean {
-        if (isInTouchMode) isFocusableInTouchMode = true
-        return requestFocus()
+        if (isInTouchMode) {
+            isFocusableInTouchMode = true
+            // A scroll view takes the finger's focus and the row behind it never lights.
+            var p = parent
+            while (p is View) {
+                if (p is android.widget.ScrollView || p is android.widget.HorizontalScrollView) {
+                    p.isFocusable = false
+                    p.isFocusableInTouchMode = false
+                }
+                p = p.parent
+            }
+        }
+        if (requestFocus()) return true
+        if (requestFocusFromTouch()) return true
+        return false
+    }
+
+    /** Brings [v] into the panel's list. A row past the bottom would take focus and stay unseen. */
+    private fun reveal(v: View) {
+        v.requestRectangleOnScreen(android.graphics.Rect(0, 0, v.width.coerceAtLeast(1), v.height.coerceAtLeast(1)), false)
+    }
+
+    /** The first focusable view in [v], itself when it can take focus. */
+    private fun focusableIn(v: View): View? {
+        if (v.visibility != View.VISIBLE) return null
+        if (v.isFocusable) return v
+        if (v is ViewGroup) {
+            for (i in 0 until v.childCount) focusableIn(v.getChildAt(i))?.let { return it }
+        }
+        return null
+    }
+
+    /** One focusable target for each row of the panel, in the order they are shown. */
+    private fun panelRows(): List<View> =
+        (0 until settingsList.childCount).mapNotNull { focusableIn(settingsList.getChildAt(it)) }
+
+    /** Where [v] sits in [panelRows], or null when the focus is not in that list. */
+    private fun panelIndex(v: View?): Int? {
+        if (v == null) return null
+        val rows = panelRows()
+        val i = rows.indexOfFirst { it === v || isDescendantOf(v, it) }
+        return i.takeIf { it >= 0 }
     }
 
     /** The first focusable item, when a remote key arrives and nothing has focus. True when one took it. */
@@ -1492,13 +1533,13 @@ class MainActivity : Activity() {
 
     /** An arrow from the phone. With nothing focused, start on the first item and take the step in the same press. */
     internal fun remoteArrow(key: Int) {
+        if (settingsScrim.visibility == View.VISIBLE) {
+            settingsKey(key)
+            return
+        }
         if (currentFocus == null) seedRemoteFocus()
         val v = currentFocus ?: return
-        when {
-            settingsScrim.visibility == View.VISIBLE && v !== pinBox && v !is EditText -> settingsKey(key)
-            allApps.visibility == View.VISIBLE -> allAppsStep(key)
-            else -> homeNav(v, key)?.steer()
-        }
+        if (allApps.visibility == View.VISIBLE) allAppsStep(key) else homeNav(v, key)?.steer()
     }
 
     /** OK from the phone: activate what is focused. With nothing focused, only land on the first item. */
@@ -1524,6 +1565,21 @@ class MainActivity : Activity() {
      * The same function serves the TV remote and the phone.
      */
     private fun settingsKey(key: Int): Boolean {
+        val inside = currentFocus?.let { isDescendantOf(it, settingsScrim) } == true
+        if (!inside) {
+            val first = panelRows().firstOrNull() ?: return false
+            if (!first.steer()) return false
+            reveal(first)
+            return true
+        }
+        val focused = currentFocus
+        if (focused is EditText && (key == KeyEvent.KEYCODE_DPAD_LEFT || key == KeyEvent.KEYCODE_DPAD_RIGHT)) {
+            val pos = focused.selectionStart.coerceAtLeast(0)
+            val dir = if (key == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1
+            focused.setSelection((pos + dir).coerceIn(0, focused.length()))
+            return true
+        }
+        if (focused?.tag == "pin-digits" && offerKey(focused, key)) return true
         val leftScroll = detailLeftScroll
         val (inLeftCol, inRightCol) = detailColumns()
         val firstRightRow = if (inLeftCol || inRightCol) (0 until settingsList.childCount).map { settingsList.getChildAt(it) }.firstOrNull { it.isFocusable } else null
@@ -1573,10 +1629,12 @@ class MainActivity : Activity() {
             val id = if (down) currentFocus?.nextFocusDownId else currentFocus?.nextFocusUpId
             if (id != null && id != View.NO_ID && id != currentFocus?.id) {
                 val target = findViewById<View>(id)
-                if (target != null && target.steer()) return true
+                if (target != null && isDescendantOf(target, settingsScrim) && target.steer()) {
+                    reveal(target)
+                    return true
+                }
             }
-            val stepped = currentFocus?.let { settingsList.rowStep(it, down) }
-            if (stepped != null && stepped !== currentFocus && stepped.steer()) return true
+            if (panelStep(down)) return true
             if (!down && currentFocus != null && currentFocus === detailDescView) {
                 var p = currentFocus?.parent
                 while (p != null && p !is android.widget.ScrollView) p = p.parent
@@ -1590,6 +1648,30 @@ class MainActivity : Activity() {
             return true
         }
         return false
+    }
+
+    /** Up or down one row of the panel. True when the list took the key, including a stay at either end. */
+    private fun panelStep(down: Boolean): Boolean {
+        val rows = panelRows()
+        val at = panelIndex(currentFocus) ?: return false
+        val next = rows[remoteRowIndex(at, rows.size, down)]
+        if (next === currentFocus) return true
+        if (!next.steer()) return false
+        reveal(next)
+        return true
+    }
+
+    /**
+     * The view's own key, for a PIN box or a text field. True when that view took it.
+     * A plain row takes none, and the panel then moves.
+     */
+    private fun offerKey(v: View, key: Int): Boolean {
+        val t = SystemClock.uptimeMillis()
+        val down = KeyEvent(t, t, KeyEvent.ACTION_DOWN, key, 0, 0, -1, 0, 0, InputDevice.SOURCE_DPAD)
+        if (!v.dispatchKeyEvent(down)) return false
+        val up = KeyEvent(t, t + 30, KeyEvent.ACTION_UP, key, 0, 0, -1, 0, 0, InputDevice.SOURCE_DPAD)
+        v.dispatchKeyEvent(up)
+        return true
     }
 
     /** Left or right in a panel: the link the page set, else the next item in the horizontal row, else the page's own step. */

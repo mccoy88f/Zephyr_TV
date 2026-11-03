@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F472B6" />
+      <stop offset="100%" stop-color="#DB2777" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(256, 256) scale(1.2) translate(-256, -256)">
+    <!-- Book with headphones -->
+    <rect x="150" y="160" width="212" height="150" rx="14" fill="#4A044E" stroke="url(#grad)" stroke-width="10"/>
+    <rect x="170" y="180" width="172" height="16" rx="4" fill="#F472B6"/>
+    <rect x="170" y="208" width="140" height="10" rx="3" fill="#F9A8D4" opacity="0.7"/>
+    <rect x="170" y="228" width="150" height="10" rx="3" fill="#F9A8D4" opacity="0.7"/>
+    <!-- Headphones -->
+    <path d="M200 140 Q256 100 312 140" fill="none" stroke="#F472B6" stroke-width="8" stroke-linecap="round"/>
+    <rect x="188" y="140" width="20" height="30" rx="10" fill="#F472B6"/>
+    <rect x="304" y="140" width="20" height="30" rx="10" fill="#F472B6"/>
+    <text x="256" y="390" font-family="system-ui, sans-serif" font-size="30" font-weight="900" fill="#F472B6" text-anchor="middle" letter-spacing="1">AUDIOBOOKS</text>
+  </g>
+</svg>

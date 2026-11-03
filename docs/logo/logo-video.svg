@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F87171" />
+      <stop offset="100%" stop-color="#DC2626" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(256, 256) scale(1.2) translate(-256, -256)">
+    <circle cx="256" cy="220" r="90" fill="#1C1917" stroke="url(#grad)" stroke-width="12"/>
+    <polygon points="230,190 230,250 290,220" fill="#F87171"/>
+    <text x="256" y="390" font-family="system-ui, sans-serif" font-size="42" font-weight="900" fill="#F87171" text-anchor="middle" letter-spacing="4">VIDEO</text>
+  </g>
+</svg>

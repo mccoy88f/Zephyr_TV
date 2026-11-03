@@ -13,6 +13,13 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.0.0-beta.7
+
+- Each kind of content has its own logo on its tile.
+- Courses shows the Italian logo when the language is Italian.
+- The arrows move down the rows of a panel.
+- Program plus and Program minus change the channel in the player.
+
 ## 4.0.0-beta.6
 
 - The phone page asks you to enter the PIN.

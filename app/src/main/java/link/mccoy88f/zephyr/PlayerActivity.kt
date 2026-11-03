@@ -1034,15 +1034,21 @@ class PlayerActivity : Activity() {
     override fun onResume() {
         super.onResume()
         Screen.activity = this
+        current = this
     }
 
     override fun onPause() {
         if (Screen.activity === this) Screen.activity = null
+        if (current === this) current = null
         super.onPause()
     }
 
     /** A key from the phone's remote. OK confirms. The other keys are the player's own. */
     internal fun remotePress(code: Int) {
+        when (code) {
+            KeyEvent.KEYCODE_CHANNEL_UP -> { remoteChannel(1); return }
+            KeyEvent.KEYCODE_CHANNEL_DOWN -> { remoteChannel(-1); return }
+        }
         val confirm = code == KeyEvent.KEYCODE_DPAD_CENTER || code == KeyEvent.KEYCODE_ENTER
         if (confirm) {
             when {
@@ -1053,6 +1059,12 @@ class PlayerActivity : Activity() {
         }
         val t = android.os.SystemClock.uptimeMillis()
         onKeyDown(code, KeyEvent(t, t, KeyEvent.ACTION_DOWN, code, 0))
+    }
+
+    /** Program plus or minus. The channel changes here, not through a key the picture can swallow. */
+    internal fun remoteChannel(step: Int) {
+        if (tracksPanel.visibility == View.VISIBLE) closeTracks()
+        zap(step)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -2119,6 +2131,9 @@ class PlayerActivity : Activity() {
     }
 
     companion object {
+        /** The player on screen, including while the home screen is still the resumed activity under it. */
+        internal var current: PlayerActivity? = null
+
         const val ADDON = "addon" // the add-on's manifest address
         const val BASE = "base" // the add-on's address, without /manifest.json
         const val INDEX = "index" // the channel picked, in the lists below

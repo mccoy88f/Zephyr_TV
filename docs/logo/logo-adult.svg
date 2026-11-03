@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F43F5E" />
+      <stop offset="100%" stop-color="#BE123C" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(256, 256) scale(1.2) translate(-256, -256)">
+    <!-- Adult / 18+ style -->
+    <circle cx="256" cy="210" r="100" fill="#1C0A0A" stroke="url(#grad)" stroke-width="12"/>
+    <text x="256" y="230" font-family="system-ui, sans-serif" font-size="72" font-weight="900" fill="#F43F5E" text-anchor="middle">18+</text>
+    <text x="256" y="400" font-family="system-ui, sans-serif" font-size="28" font-weight="900" fill="#F43F5E" text-anchor="middle" letter-spacing="1">ADULT</text>
+  </g>
+</svg>

@@ -754,8 +754,17 @@ internal fun MainActivity.collectorApps(): List<MainActivity.App> {
             "videos" -> R.drawable.ic_play
             else -> R.drawable.ic_movie
         }
+        val picture = when (kind) {
+            "radio" -> R.drawable.tile_radio
+            "videos" -> R.drawable.tile_videos
+            "courses" -> R.drawable.tile_courses
+            "podcasts" -> R.drawable.tile_podcast
+            "audiobooks" -> R.drawable.tile_audiobooks
+            "events" -> R.drawable.tile_events
+            else -> R.drawable.tile_videos
+        }
         MainActivity.App(pkg, kindName(when (kind) { "videos" -> "video"; "courses" -> "course"; "podcasts" -> "podcast"; "audiobooks" -> "audiobook"; "events" -> "event"; else -> kind }),
-            android.content.Intent(), getDrawable(icon)!!)
+            android.content.Intent(), getDrawable(icon)!!, picture = getDrawable(picture))
     }
 }
 

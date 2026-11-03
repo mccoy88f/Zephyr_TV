@@ -571,10 +571,7 @@ private fun MainActivity.remoteCommand(name: String) {
             null -> if (HomeOverride.running?.goBack() != true) onBackPressed()
             else -> front.remoteTap(KeyEvent.KEYCODE_BACK)
         }
-        "ch+", "ch-" -> {
-            val front = Screen.activity
-            if (front is PlayerActivity) front.remotePress(remoteKeyCode(name) ?: return)
-        }
+        "ch+", "ch-" -> playerFront()?.remoteChannel(if (name == "ch+") 1 else -1)
         "up", "down", "left", "right" -> {
             val code = remoteKeyCode(name) ?: return
             when (val front = Screen.activity ?: this) {
@@ -588,6 +585,15 @@ private fun MainActivity.remoteCommand(name: String) {
         }
         else -> (Screen.activity ?: this).remoteTap(remoteKeyCode(name) ?: return)
     }
+}
+
+/** The player that is on screen. Program plus and minus reach it even when the home screen is the resumed activity. */
+private fun playerFront(): PlayerActivity? {
+    val front = Screen.activity
+    if (front is PlayerActivity) return front
+    val live = PlayerActivity.current
+    if (live != null && !live.isFinishing && live.hasWindowFocus()) return live
+    return null
 }
 
 /** Zephyr TV to the front, still on the screen it had open. A Home press is a different path. */

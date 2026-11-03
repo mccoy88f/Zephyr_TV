@@ -90,7 +90,7 @@ internal fun MainActivity.ownAppUrl(pkg: String): String? =
 /** Adult content's tile, when it has an app and an adult add-on shows (unlocked, or no 18+ lock). */
 internal fun MainActivity.adultTile(): List<MainActivity.App> =
     if (!adultApp() || shownAddonUrls().none { isAdultAddon(it) }) emptyList()
-    else listOf(MainActivity.App(ADULT_PKG, getString(R.string.adult_app), android.content.Intent(), getDrawable(R.drawable.ic_adult)!!))
+    else listOf(MainActivity.App(ADULT_PKG, getString(R.string.adult_app), android.content.Intent(), getDrawable(R.drawable.ic_adult)!!, picture = getDrawable(R.drawable.tile_adult)))
 
 /** What the users' menu says of the lock: locked, or unlocked (until when). */
 internal fun MainActivity.adultState(): String {

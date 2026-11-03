@@ -751,6 +751,7 @@ internal fun MainActivity.pinPage(title: String, back: (() -> Unit)?, done: (Str
         id = View.generateViewId()
         gravity = Gravity.CENTER
         isFocusable = true
+        tag = "pin-digits"
         boxes.forEach { addView(it, LinearLayout.LayoutParams(dp(48), dp(56)).apply { marginStart = dp(6); marginEnd = dp(6) }) }
     }
     fun draw() = boxes.forEachIndexed { i, b ->
