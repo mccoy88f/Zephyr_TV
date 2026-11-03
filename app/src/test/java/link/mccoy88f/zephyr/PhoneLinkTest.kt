@@ -59,10 +59,15 @@ class PhoneLinkTest {
 
 class PhonePagesTest {
     @Test fun downloadContentCantBreakOutOfThePage() {
-        val page = PhonePages.download("T", "I", "Save", "b.json", "{\"a\":\"</script><b>'x'\\n\"}\nline2").html
+        val page = PhonePages.download(PhoneTexts("T", "I", "Save", "", ""), "b.json", "{\"a\":\"</script><b>'x'\\n\"}\nline2").html
         assertTrue(page.contains("\\x3c/script>"))
         assertTrue(!page.contains("</script><b>"))
         assertTrue(page.contains("\\'x\\'"))
         assertTrue(page.contains("\\nline2"))
+    }
+
+    @Test fun aPageFollowsTheTvTheme() {
+        assertTrue(PhonePages.view(PhoneTexts("T", "", "", "", "", theme = "glass"), "").html.contains("<body class=\"glass\">"))
+        assertTrue(PhonePages.view(PhoneTexts("T", "", "", "", ""), "").html.contains("<body class=\"auto\">"))
     }
 }
