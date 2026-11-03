@@ -452,6 +452,8 @@ class MainActivity : Activity() {
         // Back out of an app: Zephyr TV covering Google TV, not the Home key. Everything stays as it was left.
         if (intent.getBooleanExtra(HomeOverride.COVER, false)) return
         if (editing) endEdit()
+        if (movingChannelId != null) endChannelCardMove()
+        channelOrderGrabId = null
         if (settingsScrim.visibility == View.VISIBLE) closeLauncherSettings()
         if (allApps.visibility == View.VISIBLE) closeAllApps()
         watchScroll.scrollTo(0, 0)

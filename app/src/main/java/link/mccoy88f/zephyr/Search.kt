@@ -396,20 +396,20 @@ internal fun MainActivity.showSearchResults() {
     val tvChannels = regularChannels.filter { !isRadioChannel(it) }.takeIf { it.isNotEmpty() }?.let { list ->
         Section("channels", query, getString(R.string.search_channels_for, query), list.map { d ->
             Prog(d.name, listOfNotNull(d.number, d.now?.title).filter { it.isNotEmpty() }.joinToString(" · "), d.now?.let { Epg.progress(it) } ?: 0,
-                d.logo, d.intent, d.pkg, badge = d.number, channelPage = d)
+                d.logo, d.intent, d.pkg, badge = d.number.takeIf { it.isNotEmpty() }, channelPage = d)
         })
     }
     val radioChannels = (regularChannels + adultChannels).filter { isRadioChannel(it) }.takeIf { it.isNotEmpty() }?.let { list ->
         val heading = "${getString(R.string.ext_kind_radio)} · $query"
         Section("radio", query, heading, list.map { d ->
             Prog(d.name, listOfNotNull(d.number, d.now?.title).filter { it.isNotEmpty() }.joinToString(" · "), d.now?.let { Epg.progress(it) } ?: 0,
-                d.logo, d.intent, d.pkg, badge = d.number, channelPage = d)
+                d.logo, d.intent, d.pkg, badge = d.number.takeIf { it.isNotEmpty() }, channelPage = d)
         })
     }
     val adultChannelsSection = adultChannels.filter { !isRadioChannel(it) }.takeIf { it.isNotEmpty() }?.let { list ->
         Section("adult-channels", query, "${getString(R.string.adult_app)} · ${getString(R.string.search_type_channels)}", list.map { d ->
             Prog(d.name, listOfNotNull(d.number, d.now?.title).filter { it.isNotEmpty() }.joinToString(" · "), d.now?.let { Epg.progress(it) } ?: 0,
-                d.logo, d.intent, d.pkg, badge = d.number, channelPage = d)
+                d.logo, d.intent, d.pkg, badge = d.number.takeIf { it.isNotEmpty() }, channelPage = d)
         })
     }
 
@@ -471,7 +471,7 @@ internal fun MainActivity.channelDetails(channels: List<TunerChannel>): List<Cha
     return channels.map { ch ->
         val epg = guide?.let { Epg.nowAndNext(it, ch.name) }
         val now = epg?.first ?: onNow[ch.id]?.let { Epg.Show(0, 0, it.title) }
-        ChannelDetail(ch.name, ch.number.trimStart('0').ifEmpty { ch.number }, channelLogo(ch, logos),
+        ChannelDetail(ch.name, channelNumberBadge(ch.number).orEmpty(), channelLogo(ch, logos),
             android.content.Intent(android.content.Intent.ACTION_VIEW, android.media.tv.TvContract.buildChannelUri(ch.id)).toUri(android.content.Intent.URI_INTENT_SCHEME),
             tvApp, now, epg?.second)
     }

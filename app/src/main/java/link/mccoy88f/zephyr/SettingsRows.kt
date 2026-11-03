@@ -41,6 +41,8 @@ internal object SettingsRows {
     const val CHANNEL_LOGOS_ROW = TV_SECTION * SECTION + 2
     const val EPG_ROW = TV_SECTION * SECTION + 4
     const val PLAY_CHANNELS_ROW = TV_SECTION * SECTION + 5
+    const val CHANNEL_NUMBERS_ROW = TV_SECTION * SECTION + 6
+    const val CHANNEL_ORDER_ROW = TV_SECTION * SECTION + 7 // Philips only
     const val ADDON_ADD_ROW = ADDONS_SECTION * SECTION // the Stremio add-ons' section: Add, then one row per add-on
     const val ADDON_ROWS = ADDON_ADD_ROW + 1
     const val CINEMETA_ROW = WATCH_SECTION * SECTION + 3 // the content catalog, last of Content

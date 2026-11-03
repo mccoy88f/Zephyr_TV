@@ -376,6 +376,9 @@ internal fun MainActivity.handleKey(e: KeyEvent): Boolean {
             }
         }
     }
+    // Channel reorder (settings list ▲▼, or home strip ◀▶) before panel/home navigation.
+    if (channelOrderGrabId != null && channelOrderListKey(e, confirm)) return true
+    if (movingChannelId != null && channelCardMoveKey(e, confirm)) return true
     // The settings panel is a vertical list: don't let Left/Right leak focus to the home screen behind it.
     if (settingsScrim.visibility == View.VISIBLE && currentFocus !== pinBox) {
         val arrow = e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||

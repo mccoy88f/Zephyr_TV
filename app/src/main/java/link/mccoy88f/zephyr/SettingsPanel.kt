@@ -28,6 +28,8 @@ import link.mccoy88f.zephyr.SettingsRows.HIDDEN_ROW
 import link.mccoy88f.zephyr.SettingsRows.UPDATE_ROW
 import link.mccoy88f.zephyr.SettingsRows.EPG_ROW
 import link.mccoy88f.zephyr.SettingsRows.PLAY_CHANNELS_ROW
+import link.mccoy88f.zephyr.SettingsRows.CHANNEL_NUMBERS_ROW
+import link.mccoy88f.zephyr.SettingsRows.CHANNEL_ORDER_ROW
 import link.mccoy88f.zephyr.SettingsRows.CHANNEL_LOGOS_ROW
 import link.mccoy88f.zephyr.SettingsRows.ICONS_ROW
 import link.mccoy88f.zephyr.SettingsRows.INPUTS_MODE_ROW
@@ -92,6 +94,7 @@ internal fun MainActivity.showPanel() {
 internal fun MainActivity.closeLauncherSettings() {
     // A box on the page (search, city, API key) may have the keyboard up: it would stay over the home screen.
     getSystemService(android.view.inputmethod.InputMethodManager::class.java).hideSoftInputFromWindow(window.decorView.windowToken, 0)
+    channelOrderGrabId = null
     pageExit?.invoke()
     pageExit = null
     pageBack = null
@@ -400,6 +403,16 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
         page(getString(R.string.setting_play_channels), toggle(playChannelsOnOpen())) {
             prefs.edit().putBoolean(K.PLAY_CHANNELS, !playChannelsOnOpen()).apply()
             renderSettings(PLAY_CHANNELS_ROW)
+        },
+        page(getString(R.string.setting_channel_numbers), toggle(channelNumbersOn())) {
+            prefs.edit().putBoolean(K.CHANNEL_NUMBERS, !channelNumbersOn()).apply()
+            watchKey = null
+            renderSettings(CHANNEL_NUMBERS_ROW)
+        },
+    ) + listOfNotNull(
+        if (!isPhilipsTv()) null else page(getString(R.string.setting_channel_order),
+            channelOrderIds().let { if (it.isEmpty()) getString(R.string.channel_order_default) else getString(R.string.channel_order_custom, it.size) }) {
+            showChannelOrderPage()
         },
     )
     ADDONS_SECTION -> addonRows()

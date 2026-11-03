@@ -18,6 +18,8 @@
     <string name="edit_apps_row">Modifica Preferiti</string>
     <string name="editing_row_instructions">Modifica Preferiti:  OK prendi / rilascia  ·  ◀ ▶ sposta  ·  Indietro fatto</string>
     <string name="moving_app_instructions">Spostamento:  ◀ ▶ sposta  ·  OK posiziona</string>
+    <string name="moving_channel_instructions">Sposta canale:  ◀ ▶ sposta  ·  OK posiziona</string>
+    <string name="moving_channel_list_instructions">Sposta canale:  ▲ ▼ sposta  ·  OK posiziona  ·  Indietro fine</string>
     <string name="tip_rearrange_row">Suggerimento: tieni premuto OK su un\'app per riordinare i Preferiti</string>
 
     <!-- Settings menu labels -->
@@ -59,6 +61,13 @@
     <string name="toast_channel_logos_failed">Impossibile scaricare i loghi dei canali. Riprova più tardi.</string>
     <string name="setting_epg">Guida TV (XMLTV)</string>
     <string name="setting_play_channels">Riproduci all\'apertura i canali TV</string>
+    <string name="setting_channel_numbers">Mostra i numeri dei canali</string>
+    <string name="setting_channel_order">Riordina i canali…</string>
+    <string name="channel_order_default">Ordine della TV</string>
+    <string name="channel_order_custom">Personalizzato · %1$d</string>
+    <string name="channel_order_reset">Ripristina ordine TV</string>
+    <string name="channel_order_empty">Nessun canale trovato</string>
+    <string name="channel_order_open">Apri canale</string>
     <string name="setting_epg_phone">Incolla l\'indirizzo dal telefono</string>
     <string name="epg_hint">https://…/guida.xml.gz</string>
     <string name="epg_intro">L\'indirizzo di una guida TV in formato XMLTV, per il programma in onda sotto ogni canale. Zephyr TV la scarica una volta al giorno.</string>

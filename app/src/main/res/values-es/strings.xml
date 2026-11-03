@@ -18,6 +18,8 @@
     <string name="edit_apps_row">Editar Favoritos</string>
     <string name="editing_row_instructions">Editando Favoritos:  OK coger / soltar  ·  ◀ ▶ mover  ·  Atrás terminar</string>
     <string name="moving_app_instructions">Moviendo:  ◀ ▶ mover  ·  OK colocar</string>
+    <string name="moving_channel_instructions">Mover canal:  ◀ ▶ mover  ·  OK colocar</string>
+    <string name="moving_channel_list_instructions">Mover canal:  ▲ ▼ mover  ·  OK colocar  ·  Atrás listo</string>
     <string name="tip_rearrange_row">Consejo: mantén pulsado OK en una app para reordenar tus Favoritos</string>
 
     <!-- Settings menu labels -->
@@ -59,6 +61,13 @@
     <string name="toast_channel_logos_failed">No se han podido descargar los logos de los canales. Inténtalo más tarde.</string>
     <string name="setting_epg">Guía de TV (XMLTV)</string>
     <string name="setting_play_channels">Reproducir los canales de TV al abrirlos</string>
+    <string name="setting_channel_numbers">Mostrar los números de canal</string>
+    <string name="setting_channel_order">Reordenar canales…</string>
+    <string name="channel_order_default">Orden de la TV</string>
+    <string name="channel_order_custom">Personalizado · %1$d</string>
+    <string name="channel_order_reset">Volver al orden de la TV</string>
+    <string name="channel_order_empty">No se han encontrado canales</string>
+    <string name="channel_order_open">Abrir canal</string>
     <string name="setting_epg_phone">Pegar la dirección desde el móvil</string>
     <string name="epg_hint">https://…/guia.xml.gz</string>
     <string name="epg_intro">La dirección de una guía de TV en formato XMLTV, para ver lo que se emite bajo cada canal. Zephyr TV la descarga una vez al día.</string>

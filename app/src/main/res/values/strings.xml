@@ -18,6 +18,8 @@
     <string name="edit_apps_row">Edit Favourites</string>
     <string name="editing_row_instructions">Editing Favourites:  OK pick up / drop  ·  ◀ ▶ move  ·  Back done</string>
     <string name="moving_app_instructions">Moving:  ◀ ▶ move  ·  OK place</string>
+    <string name="moving_channel_instructions">Moving channel:  ◀ ▶ move  ·  OK place</string>
+    <string name="moving_channel_list_instructions">Moving channel:  ▲ ▼ move  ·  OK place  ·  Back done</string>
     <string name="tip_rearrange_row">Tip: hold OK on an app to rearrange your Favourites</string>
 
     <!-- Settings menu labels -->
@@ -59,6 +61,13 @@
     <string name="toast_channel_logos_failed">Couldn\'t download the channel logos. Try again later.</string>
     <string name="setting_epg">TV guide (XMLTV)</string>
     <string name="setting_play_channels">Play TV channels when you open them</string>
+    <string name="setting_channel_numbers">Show channel numbers</string>
+    <string name="setting_channel_order">Reorder channels…</string>
+    <string name="channel_order_default">TV order</string>
+    <string name="channel_order_custom">Custom · %1$d</string>
+    <string name="channel_order_reset">Reset to TV order</string>
+    <string name="channel_order_empty">No channels found</string>
+    <string name="channel_order_open">Open channel</string>
     <string name="setting_epg_phone">Paste the address on your phone</string>
     <string name="epg_hint">https://…/guide.xml.gz</string>
     <string name="epg_intro">The address of a TV guide in XMLTV format, for what\'s on under each channel. Zephyr TV downloads it once a day.</string>

@@ -90,6 +90,9 @@ internal fun MainActivity.watchMenu(v: View, p: Prog) {
     ))
     holdMenu(v, listOfNotNull(
         p.channelId?.let { id -> getString(R.string.menu_details) to { showChannelDetails(id) } },
+        p.channelId?.takeIf { isPhilipsTv() && !locked() }?.let { id ->
+            getString(R.string.menu_move) to { startChannelCardMove(v, id) }
+        },
         p.addon?.let { c -> getString(R.string.menu_details) to { showAddonChannelDetails(c); Unit } },
         if (locked()) null else getString(R.string.menu_remove_from_cw) to { hideWatch(p) },
         if (!locked()) null else getString(R.string.unlock_to_edit) to { unlock { v.requestFocus(); watchMenu(v, p) } },

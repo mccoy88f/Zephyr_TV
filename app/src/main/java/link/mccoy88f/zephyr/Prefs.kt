@@ -55,6 +55,8 @@ internal object K {
     const val CHANNEL_LOGOS = "channel_logos" // logos from iptv-org for channels the TV has none for
     const val PLAY_CHANNELS = "play_channels" // open an add-on TV channel straight into play (off: its page first)
     const val EPG_URL = "epg_url" // an XMLTV guide's address, for what's on (see Epg)
+    const val CHANNEL_ORDER = "channel_order" // JSON array of TvContract channel _id in Zephyr order (Philips)
+    const val CHANNEL_NUMBERS = "channel_numbers" // show LCN on channel cards; default off when CHANNEL_ORDER is set
 
     // Stremio add-ons
     const val ADDONS = "addons" // the add-ons' manifest addresses, in order, one per line (see Addons)
