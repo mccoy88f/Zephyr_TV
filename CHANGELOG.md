@@ -37,6 +37,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - The PIN stays while a lock or Remote access uses it.
 - The backup never keeps the PIN.
 - If the TV had a PIN, the restore asks you to choose a new PIN first.
+- Select **Change the PIN** in Favourites settings. Enter the PIN, then the new PIN two times.
 
 ## 4.0.0-beta.7
 

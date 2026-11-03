@@ -80,7 +80,7 @@ From top to bottom:
 | **Favourites position** | Left or centre |
 | **App names** | Always, on focus only, or never |
 | **Icon style** | Monochrome or colour |
-| **Lock layout** | The PIN protects the settings and the layout. Apps still open. Zephyr TV has one 4-digit PIN, for the layout lock, the 18+ lock and remote access |
+| **Lock layout** | The PIN protects the settings and the layout. Apps still open. Zephyr TV has one 4-digit PIN, for the layout lock, the 18+ lock and remote access. **Change the PIN** asks for the current PIN, then the new one twice |
 
 Zephyr TV's **virtual apps** (TV, Films, TV Series, Adult Content, or one app per add-on) work like any other app: you can move them, hide them and put them back.
 

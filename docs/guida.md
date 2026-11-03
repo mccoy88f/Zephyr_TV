@@ -80,7 +80,7 @@ Dall'alto in basso:
 | **Posizione dei Preferiti** | A sinistra o al centro |
 | **Nomi delle app** | Sempre, solo al focus o mai |
 | **Stile icone** | Monocromatiche o a colori |
-| **Blocco layout** | Il PIN protegge impostazioni e layout. Le app si aprono comunque. Zephyr TV ha un solo PIN di 4 cifre, per il blocco layout, il blocco VM18 e l'accesso remoto |
+| **Blocco layout** | Il PIN protegge impostazioni e layout. Le app si aprono comunque. Zephyr TV ha un solo PIN di 4 cifre, per il blocco layout, il blocco VM18 e l'accesso remoto. **Cambia il PIN** chiede il PIN attuale, poi quello nuovo due volte |
 
 Le **app virtuali** di Zephyr TV (TV, Film, Serie TV, Contenuti per adulti, o un'app per ogni add-on) si comportano come le altre app: si spostano, si nascondono e si rimettono.
 

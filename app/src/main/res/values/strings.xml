@@ -160,6 +160,8 @@
     <string name="pin_instructions">▲ ▼ change  ·  ◀ ▶ move  ·  OK enter. Number keys work too.</string>
     <string name="pin_forgot_notice">Forgot it? Android Settings → Apps → Zephyr TV → Clear data removes the lock, along with your layout and settings.</string>
     <string name="pin_mismatch">Those PINs didn\'t match. Choose one again.</string>
+    <string name="setting_change_pin">Change the PIN</string>
+    <string name="pin_changed_toast">PIN changed. Use the new PIN for everything.</string>
     <string name="pin_one_toast">Zephyr TV uses this PIN for everything: the layout lock, 18+ content and remote access.</string>
     <string name="pin_merged_toast">Zephyr TV now uses one PIN for everything. The layout lock uses the 18+ PIN.</string>
     <string name="restore_pin_title">Choose a new PIN to restore the backup</string>

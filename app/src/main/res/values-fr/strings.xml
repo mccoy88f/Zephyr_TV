@@ -160,6 +160,8 @@
     <string name="pin_instructions">▲ ▼ changer  ·  ◀ ▶ déplacer  ·  OK valider. Les touches numériques fonctionnent aussi.</string>
     <string name="pin_forgot_notice">Oublié ? Paramètres Android → Applis → Zephyr TV → Effacer les données supprime le verrou, avec votre disposition et vos paramètres.</string>
     <string name="pin_mismatch">Les codes ne correspondent pas. Choisissez-en un à nouveau.</string>
+    <string name="setting_change_pin">Changer le code</string>
+    <string name="pin_changed_toast">Code changé. Utilisez le nouveau code pour tout.</string>
     <string name="pin_one_toast">Zephyr TV utilise ce code pour tout : le verrou de la disposition, le contenu 18+ et l\'accès à distance.</string>
     <string name="pin_merged_toast">Zephyr TV utilise maintenant un seul code pour tout. Le verrou de la disposition utilise le code 18+.</string>
     <string name="restore_pin_title">Choisissez un nouveau code pour restaurer la sauvegarde</string>

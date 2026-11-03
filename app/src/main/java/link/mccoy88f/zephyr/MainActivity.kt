@@ -2411,6 +2411,7 @@ class MainActivity : Activity() {
         const val NAMES_ROW = APPS_SECTION * SECTION + 4
         const val ICONS_ROW = APPS_SECTION * SECTION + 5
         const val LOCK_ROW = APPS_SECTION * SECTION + 6
+        const val PIN_ROW = APPS_SECTION * SECTION + 7 // only while a PIN is set
         const val CW_APPS_ROW = WATCH_SECTION * SECTION
         const val HIDDEN_ROW = WATCH_SECTION * SECTION + 1
         const val INPUTS_MODE_ROW = TV_SECTION * SECTION

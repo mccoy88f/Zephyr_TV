@@ -33,6 +33,7 @@ import link.mccoy88f.zephyr.MainActivity.Companion.ICONS_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.INPUTS_MODE_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.INPUTS_IN_APPS_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.LOCK_ROW
+import link.mccoy88f.zephyr.MainActivity.Companion.PIN_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.LOOK_SECTION
 import link.mccoy88f.zephyr.MainActivity.Companion.NAMES_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.NIGHT_FROM_ROW
@@ -298,6 +299,9 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 dropUnusedPin() // the 18+ lock or remote access may still use it
                 renderSettings(LOCK_ROW)
             },
+        ) + listOfNotNull(
+            // The one PIN (see Pins), while something uses it: the old one first, then the new one twice.
+            if (!pinSet()) null else page(getString(R.string.setting_change_pin)) { changePin { renderSettings(PIN_ROW) } },
         )
     }
     WATCH_SECTION -> {

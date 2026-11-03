@@ -160,6 +160,8 @@
     <string name="pin_instructions">▲ ▼ cambia  ·  ◀ ▶ sposta  ·  OK conferma. Funzionano anche i tasti numerici.</string>
     <string name="pin_forgot_notice">Dimenticato? Impostazioni Android → App → Zephyr TV → Cancella dati rimuove il blocco, insieme al layout e alle impostazioni.</string>
     <string name="pin_mismatch">I PIN non corrispondono. Scegline uno di nuovo.</string>
+    <string name="setting_change_pin">Cambia il PIN</string>
+    <string name="pin_changed_toast">PIN cambiato. Usa il nuovo PIN per tutto.</string>
     <string name="pin_one_toast">Zephyr TV usa questo PIN per tutto: blocco della disposizione, contenuti 18+ e accesso remoto.</string>
     <string name="pin_merged_toast">Ora Zephyr TV usa un solo PIN per tutto. Il blocco della disposizione usa il PIN 18+.</string>
     <string name="restore_pin_title">Scegli un nuovo PIN per ripristinare il backup</string>

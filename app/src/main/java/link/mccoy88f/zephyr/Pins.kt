@@ -116,3 +116,14 @@ internal fun MainActivity.withPin(back: () -> Unit, then: () -> Unit) {
         then()
     }
 }
+
+/** A new PIN in place of the old one: the old one first, then the new one twice. [back] leaves, and comes after. */
+internal fun MainActivity.changePin(back: () -> Unit) {
+    askPin(back) {
+        choosePin(getString(R.string.pin_choose_title), back) { hash ->
+            prefs.edit().putString(K.PIN, hash).apply()
+            toast(R.string.pin_changed_toast)
+            back()
+        }
+    }
+}
