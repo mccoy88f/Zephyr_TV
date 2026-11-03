@@ -382,16 +382,26 @@ internal fun MainActivity.tunerSections(pkg: String, hidden: Set<String>): List<
     // channelArt), and what's on comes after (fillGuide). The logo table and the guide are fetched when due.
     if (channelLogosOn() && ChannelLogos.due(filesDir, channelCountry())) updateChannelLogos(pkg)
     epgUrl()?.let { if (Epg.due(filesDir, it)) updateEpg(pkg) }
+    fun card(ch: TunerChannel): Prog {
+        val num = channelNumberBadge(ch.number)
+        return Prog(ch.name, num.orEmpty(), 0, null,
+            Intent(Intent.ACTION_VIEW, TvContract.buildChannelUri(ch.id)).toUri(Intent.URI_INTENT_SCHEME), pkg, badge = num, channelId = ch.id)
+    }
+    // Philips: one row in the user's order when they set one (see ChannelOrder).
+    if (isPhilipsTv() && channelOrderIds().isNotEmpty()) {
+        val visible = orderedTunerChannels(all).filter { hideKey(pkg, it.name) !in hidden }
+        if (visible.isNotEmpty()) {
+            val name = getString(R.string.section_channels)
+            return listOf(Section("channel_order", name, getString(R.string.app_section, label, name), visible.map { card(it) }))
+        }
+    }
     return all.filter { hideKey(pkg, it.name) !in hidden }.groupBy { it.input }.values
         .map { it.sortedBy { ch -> channelKey(ch.number) } }.sortedBy { channelKey(it.first().number) }
         .map { channels ->
             val input = channels.first().input
             val name = runCatching { tvInputs?.getTvInputInfo(input)?.loadLabel(this)?.toString() }.getOrNull()
                 ?.takeIf { it.isNotBlank() } ?: getString(R.string.section_channels)
-            Section(input, name, getString(R.string.app_section, label, name), channels.map {
-                Prog(it.name, it.number.trimStart('0').ifEmpty { it.number }, 0, null,
-                    Intent(Intent.ACTION_VIEW, TvContract.buildChannelUri(it.id)).toUri(Intent.URI_INTENT_SCHEME), pkg, badge = it.number, channelId = it.id)
-            })
+            Section(input, name, getString(R.string.app_section, label, name), channels.map { card(it) })
         }
 }
 
@@ -618,12 +628,22 @@ internal fun MainActivity.showSections(sections: List<Section>) {
         return
     }
     watchKey = key
+    val pendingId = pendingChannelFocusId
+    val pendingRow = pendingId?.let { id -> sections.indexOfFirst { s -> s.items.any { it.channelId == id } } }?.takeIf { it >= 0 }
+    val pendingAt = pendingId?.let { id ->
+        pendingRow?.let { sections[it].items.indexOfFirst { p -> p.channelId == id } }?.takeIf { it >= 0 }
+    }
     val focused = currentFocus?.takeIf { it.getTag(R.id.watchRow) is Prog }
     val focusedRow = cardRows().indexOf(focused?.parent?.parent)
     val focusedAt = (focused?.parent?.parent as? ViewGroup)?.indexOfChild(focused.parent as View) ?: -1
     val scrolled = (focused?.parent?.parent?.parent as? HorizontalScrollView)?.scrollX ?: 0
     // The row that had focus, as far as the new list goes; it and the rows next to it get their cards at once.
-    val at = if (focusedRow >= 0) focusedRow.coerceAtMost(sections.size - 1) else -1
+    val at = when {
+        pendingRow != null -> pendingRow.coerceAtMost(sections.size - 1)
+        focusedRow >= 0 -> focusedRow.coerceAtMost(sections.size - 1)
+        else -> -1
+    }
+    val needAt = pendingAt ?: focusedAt
     watchRow.removeAllViews()
     moreSections.removeAllViews()
     val visible = if (sections.isEmpty()) View.GONE else View.VISIBLE
@@ -639,10 +659,12 @@ internal fun MainActivity.showSections(sections: List<Section>) {
         // its card, and the rows either side, now. Built later, focus would find no card there and jump to the apps.
         if (at >= 0 && i in at - 1..at + ROWS_AHEAD) {
             val cards = row.getTag(R.id.watchScroll) as RowCards
-            do moreCards(row, now = true) while (i == at && cards.built <= focusedAt && cards.built < cards.items.size)
+            do moreCards(row, now = true) while (i == at && needAt >= 0 && cards.built <= needAt && cards.built < cards.items.size)
         } else if (i < if (handheld()) 12 else ROWS_AHEAD + 1) moreCards(row)
     }
-    if (at >= 0) {
+    if (pendingChannelFocusId != null) {
+        focusPendingChannelCard()
+    } else if (at >= 0 && pendingId == null) {
         val row = cardRows()[at]
         ((row.getChildAt(focusedAt.coerceAtMost(row.childCount - 1)) as? LinearLayout)?.getChildAt(0)
             ?: appRow.getChildAt(0))?.requestFocus()
@@ -773,9 +795,9 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
     frame.addView(img, MATCH_PARENT, MATCH_PARENT)
     // A TV channel: the same card on every TV, whatever the TV app's own look. Its logo fills it, large in the
     // middle on a blur of itself (its name and number are under the card); with no logo, or until it's in, the
-    // number and name instead.
+    // number and name instead. Number may be hidden (badge null) — still use channelArt so the logo loads.
     // The logos to try in turn: the card's own (an add-on's), the TV's, then Zephyr TV's own by name.
-    if (p.badge != null) channelArt(frame, w, cardHeight, p.badge, p.title) {
+    if (p.channelId != null || p.badge != null) channelArt(frame, w, cardHeight, p.badge.orEmpty(), p.title) {
         listOfNotNull(p.image, p.channelId?.let { id -> logo(id) }, ChannelLogos.match(channelLogoTable(), p.title)).distinct()
     }
     if (p.vod != null) fillArt(frame, w, cardHeight, p.image, p.logo, p.poster, p.title, p.vod.fallback)
@@ -831,7 +853,7 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
             }
         })
     }
-    if (p.badge == null && p.vod == null) loadPoster(img, p.image)
+    if (p.badge == null && p.channelId == null && p.vod == null) loadPoster(img, p.image)
     // An add-on's channel: what's on as the player shows it (its times, so its bar), once the add-on tells.
     p.addon?.let { c ->
         addonOnNow(c) { now, progress ->

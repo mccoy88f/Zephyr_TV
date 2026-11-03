@@ -493,6 +493,8 @@ class MainActivity : Activity() {
         // Back out of an app: Zephyr TV covering Google TV, not the Home key. Everything stays as it was left.
         if (intent.getBooleanExtra(HomeOverride.COVER, false)) return
         if (editing) endEdit()
+        if (movingChannelId != null) endChannelCardMove()
+        channelOrderGrabId = null
         if (settingsScrim.visibility == View.VISIBLE) closeLauncherSettings()
         if (allApps.visibility == View.VISIBLE) closeAllApps()
         watchScroll.scrollTo(0, 0)
@@ -1459,6 +1461,9 @@ class MainActivity : Activity() {
                 }
             }
         }
+        // Channel reorder (settings list ▲▼, or home strip ◀▶) before panel/home navigation.
+        if (channelOrderGrabId != null && channelOrderListKey(e, confirm)) return true
+        if (movingChannelId != null && channelCardMoveKey(e, confirm)) return true
         // The settings panel is a vertical list: don't let Left/Right leak focus to the home screen behind it.
         if (settingsScrim.visibility == View.VISIBLE && currentFocus !== pinBox) {
             val arrow = e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
@@ -1886,6 +1891,9 @@ class MainActivity : Activity() {
         ))
         holdMenu(v, listOfNotNull(
             p.channelId?.let { id -> getString(R.string.menu_details) to { showChannelDetails(id) } },
+            p.channelId?.takeIf { isPhilipsTv() && !locked() }?.let { id ->
+                getString(R.string.menu_move) to { startChannelCardMove(v, id) }
+            },
             p.addon?.let { c -> getString(R.string.menu_details) to { showAddonChannelDetails(c); Unit } },
             if (locked()) null else getString(R.string.menu_remove_from_cw) to { hideWatch(p) },
             if (!locked()) null else getString(R.string.unlock_to_edit) to { unlock { v.requestFocus(); watchMenu(v, p) } },
@@ -2423,6 +2431,8 @@ class MainActivity : Activity() {
         const val CHANNEL_LOGOS_ROW = TV_SECTION * SECTION + 2
         const val EPG_ROW = TV_SECTION * SECTION + 4
         const val PLAY_CHANNELS_ROW = TV_SECTION * SECTION + 5
+        const val CHANNEL_NUMBERS_ROW = TV_SECTION * SECTION + 6
+        const val CHANNEL_ORDER_ROW = TV_SECTION * SECTION + 7
         const val ADDON_ADD_ROW = ADDONS_SECTION * SECTION // the Stremio add-ons' section: Add, then one row per add-on
         const val ADDON_ROWS = ADDON_ADD_ROW + 1
         const val CINEMETA_ROW = WATCH_SECTION * SECTION + 3 // the content catalog, last of Content

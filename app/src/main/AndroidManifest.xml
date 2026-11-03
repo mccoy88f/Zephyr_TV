@@ -49,6 +49,8 @@
         <package android:name="dev.piume" />
         <!-- Sony TVs: which external inputs have a device connected (see connectedInputs). -->
         <provider android:authorities="com.sony.dtv.tvinput.external.provider" />
+        <!-- Philips: detect the channels app for manual channel order (see ChannelOrder). -->
+        <package android:name="org.droidtv.channels" />
     </queries>
 
     <!-- Cleartext stays allowed: Continue Watching posters come from other apps' listings, and some give

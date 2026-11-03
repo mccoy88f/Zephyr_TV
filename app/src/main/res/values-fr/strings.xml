@@ -18,6 +18,8 @@
     <string name="edit_apps_row">Modifier les Favoris</string>
     <string name="editing_row_instructions">Modification des Favoris :  OK prendre / poser  ·  ◀ ▶ déplacer  ·  Retour terminé</string>
     <string name="moving_app_instructions">Déplacement :  ◀ ▶ déplacer  ·  OK placer</string>
+    <string name="moving_channel_instructions">Déplacer la chaîne :  ◀ ▶ déplacer  ·  OK placer</string>
+    <string name="moving_channel_list_instructions">Déplacer la chaîne :  ▲ ▼ déplacer  ·  OK placer  ·  Retour terminé</string>
     <string name="tip_rearrange_row">Astuce : maintenez OK sur une appli pour réorganiser vos Favoris</string>
 
     <!-- Settings menu labels -->
@@ -59,6 +61,13 @@
     <string name="toast_channel_logos_failed">Impossible de télécharger les logos des chaînes. Réessayez plus tard.</string>
     <string name="setting_epg">Guide TV (XMLTV)</string>
     <string name="setting_play_channels">Lire les chaînes TV à l\'ouverture</string>
+    <string name="setting_channel_numbers">Afficher les numéros de chaîne</string>
+    <string name="setting_channel_order">Réordonner les chaînes…</string>
+    <string name="channel_order_default">Ordre de la TV</string>
+    <string name="channel_order_custom">Personnalisé · %1$d</string>
+    <string name="channel_order_reset">Rétablir l\'ordre de la TV</string>
+    <string name="channel_order_empty">Aucune chaîne trouvée</string>
+    <string name="channel_order_open">Ouvrir la chaîne</string>
     <string name="setting_epg_phone">Coller l\'adresse depuis le téléphone</string>
     <string name="epg_hint">https://…/guide.xml.gz</string>
     <string name="epg_intro">L\'adresse d\'un guide TV au format XMLTV, pour afficher le programme en cours sous chaque chaîne. Zephyr TV le télécharge une fois par jour.</string>
