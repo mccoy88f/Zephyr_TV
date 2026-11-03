@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.0.0-beta.8
 
 - The phone remote moves the player. The arrows, OK, Back and Program plus and minus reach it.
 - The phone accepts only a PIN of 4 digits.
