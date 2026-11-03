@@ -431,7 +431,7 @@
     <string name="remote_use">Utiliser l\'accès à distance</string>
     <string name="remote_show">Afficher l\'adresse d\'accès</string>
     <string name="remote_qr_intro">Scannez le code. Il ouvre ce réglage. Enregistrez l\'adresse pour le rouvrir.</string>
-    <string name="remote_home_intro">Scannez le code et enregistrez l\'adresse. Le téléphone ouvre les réglages après le PIN -18.</string>
+    <string name="remote_home_intro">Scannez le code et enregistrez l\'adresse. Le téléphone ouvre les réglages après le PIN.</string>
     <string name="remote_waiting">En attente de la modification depuis le téléphone…</string>
     <string name="remote_menu_title">Accès à distance</string>
     <string name="remote_open">Paramètres</string>
@@ -447,7 +447,6 @@
     <string name="remote_volume">Volume</string>
     <string name="remote_program">Chaîne</string>
     <string name="remote_pin_enter">Entrez le PIN</string>
-    <string name="remote_pin_adult">Entrez le PIN -18</string>
     <string name="remote_open_form">Ouvrir ce réglage</string>
     <string name="remote_not_open">Ouvrez ceci sur la TV, puis réessayez.</string>
     <string name="warp_on_toast">WARP activé : Zephyr TV passe par Cloudflare</string>

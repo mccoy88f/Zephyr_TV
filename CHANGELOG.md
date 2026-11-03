@@ -13,6 +13,16 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.0.0-beta.6
+
+- The phone page asks you to enter the PIN.
+- The arrows move inside each row.
+- The arrows move inside the details.
+- The first arrow moves from Play queue.
+- Program plus and minus leave the home screen as it is.
+- Settings is an icon on the right of the bottom bar.
+- The device name sits in the center of that bar.
+
 ## 4.0.0-beta.5
 
 - Remote access uses the 18+ PIN.

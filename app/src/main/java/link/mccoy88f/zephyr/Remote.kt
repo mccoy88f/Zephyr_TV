@@ -53,6 +53,31 @@ internal fun remoteKeyCode(name: String): Int? = when (name) {
     else -> null
 }
 
+/**
+ * Where a sideways move lands in a row of [count] items. [index] null means nothing is focused yet: start at the
+ * first item, then take the step. At either end the move stays there.
+ */
+internal fun remoteRowIndex(index: Int?, count: Int, forward: Boolean): Int {
+    if (count <= 0) return 0
+    val start = (index ?: 0).coerceIn(0, count - 1)
+    return (start + if (forward) 1 else -1).coerceIn(0, count - 1)
+}
+
+/** Where an arrow lands in a grid of [columns]. Left and right stay inside the row. Up and down stay inside the grid. */
+internal fun remoteGridIndex(index: Int?, count: Int, columns: Int, key: Int): Int {
+    if (count <= 0) return 0
+    val cols = columns.coerceAtLeast(1)
+    val start = (index ?: 0).coerceIn(0, count - 1)
+    val rowEnd = minOf(count - 1, start - start % cols + cols - 1)
+    return when (key) {
+        KeyEvent.KEYCODE_DPAD_LEFT -> if (start % cols == 0) start else start - 1
+        KeyEvent.KEYCODE_DPAD_RIGHT -> if (start == rowEnd) start else start + 1
+        KeyEvent.KEYCODE_DPAD_UP -> if (start < cols) start else start - cols
+        KeyEvent.KEYCODE_DPAD_DOWN -> if (start + cols >= count) start else start + cols
+        else -> start
+    }
+}
+
 private const val PORT = 8765
 private const val SESSION_MS = 12 * 3600_000L
 private val ID = Regex("[A-Za-z0-9_-]{1,64}")
@@ -432,9 +457,8 @@ internal fun MainActivity.aboutRow() = backupRow() + 3
  */
 internal fun remotePinStored(adult: String?, legacy: String?) = adult ?: legacy
 
-/** What the phone asks for: the 18+ PIN when that lock has one, otherwise the older remote PIN. */
-private fun MainActivity.remotePinPrompt() =
-    getString(if (prefs.contains(K.ADULT_PIN)) R.string.remote_pin_adult else R.string.remote_pin_enter)
+/** What the phone asks for. The digits are the 18+ PIN when that lock has one. */
+private fun MainActivity.remotePinPrompt() = getString(R.string.remote_pin_enter)
 
 /**
  * Remote access on, with the 18+ PIN. A PIN that is already set is used as it is. A new PIN is the 18+ PIN and turns
@@ -547,12 +571,20 @@ private fun MainActivity.remoteCommand(name: String) {
             null -> if (HomeOverride.running?.goBack() != true) onBackPressed()
             else -> front.remoteTap(KeyEvent.KEYCODE_BACK)
         }
-        // Arrows and channel keys on the player: the picture's view can swallow them, so the player handles them itself.
-        "up", "down", "left", "right", "ch+", "ch-" -> {
+        "ch+", "ch-" -> {
+            val front = Screen.activity
+            if (front is PlayerActivity) front.remotePress(remoteKeyCode(name) ?: return)
+        }
+        "up", "down", "left", "right" -> {
             val code = remoteKeyCode(name) ?: return
-            val front = Screen.activity ?: this
-            if (front is PlayerActivity) front.onKeyDown(code, KeyEvent(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), KeyEvent.ACTION_DOWN, code, 0))
-            else front.remoteTap(code)
+            when (val front = Screen.activity ?: this) {
+                is PlayerActivity -> front.remotePress(code)
+                is MainActivity -> front.remoteArrow(code)
+            }
+        }
+        "ok" -> when (val front = Screen.activity ?: this) {
+            is PlayerActivity -> front.remotePress(KeyEvent.KEYCODE_DPAD_CENTER)
+            is MainActivity -> front.remoteOk()
         }
         else -> (Screen.activity ?: this).remoteTap(remoteKeyCode(name) ?: return)
     }
@@ -789,8 +821,8 @@ private const val SEARCH = """<svg viewBox="0 0 24 24" aria-hidden="true"><path 
 private const val HANDSET = """<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7.5" r="1.3" fill="currentColor"/><circle cx="12" cy="13" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>"""
 
 /**
- * The phone page in the TV's theme. [body] is the page. [dock] is the bar at the bottom. The logo, the app name
- * and the TV's name stay at the top.
+ * The phone page in the TV's theme. [body] is the page. [dock] is the bar at the bottom. The logo and the app name
+ * stay at the top. The device name sits in the center of the bar.
  */
 private fun MainActivity.remotePage(body: String, dock: String, script: String) = """
     <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -839,13 +871,15 @@ private fun MainActivity.remotePage(body: String, dock: String, script: String) 
       .dpad button:active,.pair button:active{background:var(--fg);color:var(--on)}
       .dock{position:sticky;bottom:0;display:flex;align-items:center;gap:8px;margin-top:auto;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
       body.glass .dock{background:rgba(16,16,20,.92)}
-      .dock button{flex:1;padding:14px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--fg);font:500 15px system-ui,sans-serif}
-      .dock button.ico{flex:none;width:44px;height:44px;padding:10px}
-      .dock button.ico svg{width:100%;height:100%;display:block}
+      .dock .side{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+      .dock .side.end{justify-content:flex-end}
+      .dock .device{flex:none;max-width:42%;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-size:14px;color:var(--muted)}
+      .dock button{flex:none;width:44px;height:44px;padding:10px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--fg)}
+      .dock button svg{width:100%;height:100%;display:block}
       .dock button.on{background:var(--fill);color:var(--on);border-color:transparent}
     </style></head><body class="${remoteTheme()}">
     <div class="sheet">
-    <header>$LOGO<h1>${escHtml(getString(R.string.app_name))}</h1><p class="tv">${escHtml(tvName())}</p></header>
+    <header>$LOGO<h1>${escHtml(getString(R.string.app_name))}</h1></header>
     <main>$body</main>
     $dock
     </div>
@@ -885,7 +919,7 @@ private fun MainActivity.menuHtml(): String {
     val down = escHtml(getString(R.string.remote_down))
     val left = escHtml(getString(R.string.remote_left))
     val right = escHtml(getString(R.string.remote_right))
-    val dock = """<nav class="dock"><button id="users" class="ico" type="button" aria-label="${escHtml(getString(R.string.users_title))}">$PROFILE</button><button id="search" class="ico" type="button" aria-label="${escHtml(getString(R.string.search_title))}">$SEARCH</button><button id="open" type="button">${escHtml(getString(R.string.remote_open))}</button><button id="remote" class="ico" type="button" aria-label="${escHtml(getString(R.string.remote_pad))}">$HANDSET</button></nav>"""
+    val dock = """<nav class="dock"><div class="side"><button id="users" class="ico" type="button" aria-label="${escHtml(getString(R.string.users_title))}">$PROFILE</button><button id="search" class="ico" type="button" aria-label="${escHtml(getString(R.string.search_title))}">$SEARCH</button></div><p class="device">${escHtml(tvName())}</p><div class="side end"><button id="open" class="ico" type="button" aria-label="${escHtml(getString(R.string.remote_open))}">$TUNE</button><button id="remote" class="ico" type="button" aria-label="${escHtml(getString(R.string.remote_pad))}">$HANDSET</button></div></nav>"""
     return remotePage("""
         <div id="panel">
         <h2 id="heading">$TUNE<span id="title"></span></h2>

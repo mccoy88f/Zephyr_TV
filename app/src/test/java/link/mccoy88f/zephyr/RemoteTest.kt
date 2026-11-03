@@ -41,6 +41,31 @@ class RemoteTest {
         assertEquals(null, remotePanelName("home"))
     }
 
+    @Test fun aRowStepsAndStopsAtItsEnds() {
+        assertEquals(1, remoteRowIndex(0, 4, true))
+        assertEquals(2, remoteRowIndex(1, 4, true))
+        assertEquals(3, remoteRowIndex(3, 4, true))
+        assertEquals(0, remoteRowIndex(0, 4, false))
+        assertEquals(2, remoteRowIndex(3, 4, false))
+        assertEquals(0, remoteRowIndex(null, 4, false))
+        assertEquals(1, remoteRowIndex(null, 4, true))
+        assertEquals(0, remoteRowIndex(null, 1, true))
+        assertEquals(0, remoteRowIndex(5, 0, true))
+    }
+
+    @Test fun aGridStaysInsideItsRows() {
+        assertEquals(0, remoteGridIndex(null, 8, 6, android.view.KeyEvent.KEYCODE_DPAD_LEFT))
+        assertEquals(1, remoteGridIndex(null, 8, 6, android.view.KeyEvent.KEYCODE_DPAD_RIGHT))
+        assertEquals(0, remoteGridIndex(0, 8, 6, android.view.KeyEvent.KEYCODE_DPAD_UP))
+        assertEquals(6, remoteGridIndex(0, 8, 6, android.view.KeyEvent.KEYCODE_DPAD_DOWN))
+        assertEquals(5, remoteGridIndex(5, 8, 6, android.view.KeyEvent.KEYCODE_DPAD_RIGHT))
+        assertEquals(6, remoteGridIndex(6, 8, 6, android.view.KeyEvent.KEYCODE_DPAD_LEFT))
+        assertEquals(7, remoteGridIndex(7, 8, 6, android.view.KeyEvent.KEYCODE_DPAD_RIGHT))
+        assertEquals(1, remoteGridIndex(7, 8, 6, android.view.KeyEvent.KEYCODE_DPAD_UP))
+        assertEquals(7, remoteGridIndex(7, 8, 6, android.view.KeyEvent.KEYCODE_DPAD_DOWN))
+        assertEquals(0, remoteGridIndex(null, 0, 6, android.view.KeyEvent.KEYCODE_DPAD_DOWN))
+    }
+
     @Test fun thePhoneUsesTheAdultPin() {
         assertEquals("adult", remotePinStored("adult", "remote"))
         assertEquals("remote", remotePinStored(null, "remote"))

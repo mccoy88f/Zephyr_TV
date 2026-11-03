@@ -1440,8 +1440,6 @@ class MainActivity : Activity() {
             spotlightIdle = false
             restartSpotlightTick()
         }
-        // A key from the phone, on a touch screen that has nothing focused yet: land on the first item. The next key moves.
-        if (e.deviceId == -1 && e.action == KeyEvent.ACTION_DOWN && currentFocus == null && seedRemoteFocus()) return true
         val confirm = e.keyCode == KeyEvent.KEYCODE_DPAD_CENTER || e.keyCode == KeyEvent.KEYCODE_ENTER ||
             e.keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
         if (confirm) {
@@ -1461,107 +1459,12 @@ class MainActivity : Activity() {
             }
         }
         // The settings panel is a vertical list: don't let Left/Right leak focus to the home screen behind it.
-        // Horizontal scroll views (like the app icons bar in details), the PIN boxes and text fields use them.
-        val inHorizontal = currentFocus?.let { v ->
-            var p = v.parent
-            while (p != null && p !== settingsList) {
-                if (p is android.widget.HorizontalScrollView) return@let true
-                p = p.parent
-            }
-            false
-        } ?: false
         if (settingsScrim.visibility == View.VISIBLE && currentFocus !== pinBox && currentFocus !is EditText) {
-            val leftScroll = detailLeftScroll
-            val inLeftCol = leftScroll != null && (currentFocus === detailDescView || isDescendantOf(currentFocus, leftScroll))
-            val inRightCol = leftScroll != null && isDescendantOf(currentFocus, findViewById(R.id.settingsPanel))
-            val firstRightRow = if (inLeftCol || inRightCol) (0 until settingsList.childCount).map { settingsList.getChildAt(it) }.firstOrNull { it.isFocusable } else null
-            val leftTitleView = leftScroll?.findViewWithTag<View>("leftTitle")?.takeIf { it.visibility == View.VISIBLE && it.isFocusable }
-            val leftTop = if (inLeftCol || inRightCol) (leftTitleView ?: detailDescView) else null
-
-            if (inLeftCol) {
-                if (e.action == KeyEvent.ACTION_DOWN) {
-                    when (e.keyCode) {
-                        KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                            val inCards = inHorizontal && currentFocus in detailLastLeftFocusables
-                            val nextCard = if (inCards) currentFocus?.focusSearch(View.FOCUS_RIGHT)?.takeIf { isDescendantOf(it, leftScroll!!) } else null
-                            if (nextCard != null && nextCard !== currentFocus) {
-                                nextCard.steer()
-                                return true
-                            }
-                            if (firstRightRow != null && firstRightRow.steer()) return true
-                            return true
-                        }
-                        KeyEvent.KEYCODE_DPAD_DOWN -> {
-                            val inCards = currentFocus in detailLastLeftFocusables
-                            if (inCards || (detailLastLeftFocusables.isEmpty() && currentFocus === detailDescView)) {
-                                if (firstRightRow != null && firstRightRow.steer()) return true
-                                return true
-                            }
-                            if (currentFocus === leftTitleView) {
-                                if (detailDescView != null && detailDescView!!.steer()) return true
-                            } else if (currentFocus === detailDescView && detailLastLeftFocusables.isNotEmpty()) {
-                                if (detailLastLeftFocusables[0].steer()) return true
-                            }
-                        }
-                        KeyEvent.KEYCODE_DPAD_UP -> {
-                            if (currentFocus in detailLastLeftFocusables) {
-                                if (detailDescView != null && detailDescView!!.steer()) return true
-                            } else if (currentFocus === detailDescView) {
-                                leftScroll?.smoothScrollTo(0, 0)
-                                if (leftTitleView != null && leftTitleView.steer()) return true
-                                return true
-                            } else if (currentFocus === leftTitleView) {
-                                leftScroll?.smoothScrollTo(0, 0)
-                                return true
-                            }
-                        }
-                    }
-                } else if (e.action == KeyEvent.ACTION_UP && (e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT || e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || e.keyCode == KeyEvent.KEYCODE_DPAD_UP || e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN)) {
-                    return true
-                }
-            } else if (inRightCol) {
-                if (e.action == KeyEvent.ACTION_DOWN && e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                    leftScroll?.smoothScrollTo(0, 0)
-                    if (leftTop != null && leftTop.steer()) return true
-                    return true
-                } else if (e.action == KeyEvent.ACTION_UP && e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                    return true
-                }
-            }
-
-            if (e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN || e.keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-                if (e.action == KeyEvent.ACTION_DOWN) {
-                    val targetId = if (e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN) currentFocus?.nextFocusDownId else currentFocus?.nextFocusUpId
-                    if (targetId != null && targetId != View.NO_ID && targetId != currentFocus?.id) {
-                        val target = findViewById<View>(targetId)
-                        if (target != null && target.steer()) return true
-                    }
-                    if (e.keyCode == KeyEvent.KEYCODE_DPAD_UP && currentFocus != null && currentFocus === detailDescView) {
-                        var p = currentFocus?.parent
-                        while (p != null && p !is android.widget.ScrollView) p = p.parent
-                        (p as? android.widget.ScrollView)?.smoothScrollTo(0, 0)
-                        return true
-                    }
-                }
-            } else if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                if (e.action == KeyEvent.ACTION_DOWN) {
-                    if (inHorizontal) {
-                        val dir = if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) View.FOCUS_LEFT else View.FOCUS_RIGHT
-                        val next = currentFocus?.focusSearch(dir)
-                        if (next != null && next !== currentFocus) {
-                            next.steer()
-                            return true
-                        }
-                    }
-                    val targetId = if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) currentFocus?.nextFocusLeftId else currentFocus?.nextFocusRightId
-                    if (targetId != null && targetId != View.NO_ID && targetId != currentFocus?.id) {
-                        val target = findViewById<View>(targetId)
-                        if (target != null && target.steer()) return true
-                    }
-                    if (!inHorizontal) pageSides?.invoke(if (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) -1 else 1)
-                }
-                return true
-            }
+            val arrow = e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
+                e.keyCode == KeyEvent.KEYCODE_DPAD_UP || e.keyCode == KeyEvent.KEYCODE_DPAD_DOWN
+            val (inLeftCol, inRightCol) = detailColumns()
+            if (arrow && e.action == KeyEvent.ACTION_DOWN && settingsKey(e.keyCode)) return true
+            if (arrow && e.action == KeyEvent.ACTION_UP && (e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT || inLeftCol || (inRightCol && e.keyCode == KeyEvent.KEYCODE_DPAD_LEFT))) return true
         }
         if (editing && editKey(e, confirm)) return true
         if (e.action == KeyEvent.ACTION_DOWN && settingsScrim.visibility != View.VISIBLE && allApps.visibility != View.VISIBLE) {
@@ -1581,9 +1484,171 @@ class MainActivity : Activity() {
         val start = when {
             settingsScrim.visibility == View.VISIBLE ->
                 (0 until settingsList.childCount).firstNotNullOfOrNull { settingsList.getChildAt(it).takeIf { v -> v.isFocusable && v.visibility == View.VISIBLE } }
+            allApps.visibility == View.VISIBLE -> allAppsGrid.getChildAt(0)
             else -> appRow.getChildAt(0) ?: findViewById(R.id.usersButton)
         } ?: return false
         return start.steer()
+    }
+
+    /** An arrow from the phone. With nothing focused, start on the first item and take the step in the same press. */
+    internal fun remoteArrow(key: Int) {
+        if (currentFocus == null) seedRemoteFocus()
+        val v = currentFocus ?: return
+        when {
+            settingsScrim.visibility == View.VISIBLE && v !== pinBox && v !is EditText -> settingsKey(key)
+            allApps.visibility == View.VISIBLE -> allAppsStep(key)
+            else -> homeNav(v, key)?.steer()
+        }
+    }
+
+    /** OK from the phone: activate what is focused. With nothing focused, only land on the first item. */
+    internal fun remoteOk() {
+        val v = currentFocus
+        if (v == null) {
+            seedRemoteFocus()
+            return
+        }
+        v.performClick()
+    }
+
+    /** Left column and right column of a details page, when that page is open. */
+    private fun detailColumns(): Pair<Boolean, Boolean> {
+        val leftScroll = detailLeftScroll ?: return false to false
+        val inLeft = currentFocus === detailDescView || isDescendantOf(currentFocus, leftScroll)
+        val inRight = isDescendantOf(currentFocus, findViewById(R.id.settingsPanel))
+        return inLeft to inRight
+    }
+
+    /**
+     * One arrow inside the panel. True when the panel took it. Left and right always stay in the panel.
+     * The same function serves the TV remote and the phone.
+     */
+    private fun settingsKey(key: Int): Boolean {
+        val leftScroll = detailLeftScroll
+        val (inLeftCol, inRightCol) = detailColumns()
+        val firstRightRow = if (inLeftCol || inRightCol) (0 until settingsList.childCount).map { settingsList.getChildAt(it) }.firstOrNull { it.isFocusable } else null
+        val leftTitleView = leftScroll?.findViewWithTag<View>("leftTitle")?.takeIf { it.visibility == View.VISIBLE && it.isFocusable }
+        val leftTop = if (inLeftCol || inRightCol) (leftTitleView ?: detailDescView) else null
+        if (inLeftCol) {
+            when (key) {
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    val nextCard = currentFocus?.takeIf { it in detailLastLeftFocusables && it.inHorizontalScroll() }
+                        ?.horizontalNeighbor(true)?.takeIf { it !== currentFocus && isDescendantOf(it, leftScroll!!) }
+                    if (nextCard != null && nextCard.steer()) return true
+                    if (firstRightRow != null && firstRightRow.steer()) return true
+                    return true
+                }
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    val inCards = currentFocus in detailLastLeftFocusables
+                    if (inCards || (detailLastLeftFocusables.isEmpty() && currentFocus === detailDescView)) {
+                        if (firstRightRow != null && firstRightRow.steer()) return true
+                        return true
+                    }
+                    if (currentFocus === leftTitleView) {
+                        if (detailDescView != null && detailDescView!!.steer()) return true
+                    } else if (currentFocus === detailDescView && detailLastLeftFocusables.isNotEmpty()) {
+                        if (detailLastLeftFocusables[0].steer()) return true
+                    }
+                }
+                KeyEvent.KEYCODE_DPAD_UP -> {
+                    if (currentFocus in detailLastLeftFocusables) {
+                        if (detailDescView != null && detailDescView!!.steer()) return true
+                    } else if (currentFocus === detailDescView) {
+                        leftScroll?.smoothScrollTo(0, 0)
+                        if (leftTitleView != null && leftTitleView.steer()) return true
+                        return true
+                    } else if (currentFocus === leftTitleView) {
+                        leftScroll?.smoothScrollTo(0, 0)
+                        return true
+                    }
+                }
+            }
+        } else if (inRightCol && key == KeyEvent.KEYCODE_DPAD_LEFT) {
+            leftScroll?.smoothScrollTo(0, 0)
+            if (leftTop != null && leftTop.steer()) return true
+            return true
+        }
+        if (key == KeyEvent.KEYCODE_DPAD_DOWN || key == KeyEvent.KEYCODE_DPAD_UP) {
+            val down = key == KeyEvent.KEYCODE_DPAD_DOWN
+            val id = if (down) currentFocus?.nextFocusDownId else currentFocus?.nextFocusUpId
+            if (id != null && id != View.NO_ID && id != currentFocus?.id) {
+                val target = findViewById<View>(id)
+                if (target != null && target.steer()) return true
+            }
+            val stepped = currentFocus?.let { settingsList.rowStep(it, down) }
+            if (stepped != null && stepped !== currentFocus && stepped.steer()) return true
+            if (!down && currentFocus != null && currentFocus === detailDescView) {
+                var p = currentFocus?.parent
+                while (p != null && p !is android.widget.ScrollView) p = p.parent
+                (p as? android.widget.ScrollView)?.smoothScrollTo(0, 0)
+                return true
+            }
+            return false
+        }
+        if (key == KeyEvent.KEYCODE_DPAD_LEFT || key == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            settingsSide(key)
+            return true
+        }
+        return false
+    }
+
+    /** Left or right in a panel: the link the page set, else the next item in the horizontal row, else the page's own step. */
+    private fun settingsSide(key: Int) {
+        val v = currentFocus ?: return
+        val forward = key == KeyEvent.KEYCODE_DPAD_RIGHT
+        val id = if (forward) v.nextFocusRightId else v.nextFocusLeftId
+        if (id != View.NO_ID && id != v.id) {
+            val target = findViewById<View>(id)
+            if (target != null && target !== v && target.steer()) return
+        }
+        val beside = v.horizontalNeighbor(forward)
+        if (beside != null && beside !== v && beside.steer()) return
+        if (!v.inHorizontalScroll()) pageSides?.invoke(if (forward) 1 else -1)
+    }
+
+    private fun allAppsStep(key: Int) {
+        val items = (0 until allAppsGrid.childCount).map { allAppsGrid.getChildAt(it) }.filter { it.isFocusable && it.visibility == View.VISIBLE }
+        val at = items.indexOf(currentFocus).takeIf { it >= 0 }
+        items.getOrNull(remoteGridIndex(at, items.size, 6, key))?.steer()
+    }
+
+    /** The next focusable child, or this view when it is not in the row or the row is at its end. */
+    private fun ViewGroup.rowStep(from: View, forward: Boolean): View {
+        val items = (0 until childCount).map { getChildAt(it) }.filter { it.isFocusable && it.visibility == View.VISIBLE }
+        val i = items.indexOf(from)
+        if (i < 0) return from
+        return items[remoteRowIndex(i, items.size, forward)]
+    }
+
+    private fun View.inHorizontalScroll(): Boolean {
+        var p = parent
+        while (p != null) {
+            if (p is android.widget.HorizontalScrollView) return true
+            p = p.parent
+        }
+        return false
+    }
+
+    /** The next focusable item in the same horizontal scroller, already chosen by the page when it set a link. */
+    private fun View.horizontalNeighbor(forward: Boolean): View? {
+        var p = parent
+        while (p != null && p !is android.widget.HorizontalScrollView) p = p.parent
+        val scroller = p as? android.widget.HorizontalScrollView ?: return null
+        val row = scroller.getChildAt(0) as? ViewGroup ?: return null
+        val items = (0 until row.childCount).map { row.getChildAt(it) }
+        val start = this
+        val i = items.indexOfFirst { item ->
+            var node: View? = start
+            while (node != null && node !== row) {
+                if (node === item) return@indexOfFirst true
+                node = node.parent as? View
+            }
+            false
+        }
+        if (i < 0) return null
+        val dest = items[remoteRowIndex(i, items.size, forward)]
+        if (dest.isFocusable) return dest
+        return if (dest is ViewGroup) (0 until dest.childCount).map { dest.getChildAt(it) }.firstOrNull { it.isFocusable } else null
     }
 
     /**
@@ -1603,8 +1668,7 @@ class MainActivity : Activity() {
             v.parent === wifi.parent -> when (key) { // top bar
                 KeyEvent.KEYCODE_DPAD_DOWN -> if (spotVis) spotlightInfoBox else apps ?: cards ?: v
                 KeyEvent.KEYCODE_DPAD_UP -> v
-                KeyEvent.KEYCODE_DPAD_LEFT -> if (v.id == R.id.usersButton) v else null
-                KeyEvent.KEYCODE_DPAD_RIGHT -> if (v.id == R.id.launcherSettings) v else null
+                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> (v.parent as ViewGroup).rowStep(v, key == KeyEvent.KEYCODE_DPAD_RIGHT)
                 else -> null
             }
             v === spotlightInfoBox -> when (key) {
@@ -1640,8 +1704,7 @@ class MainActivity : Activity() {
                 // Up climbs Spotlight from the bottom: its buttons (shown only while it has focus), the title, the top bar.
                 KeyEvent.KEYCODE_DPAD_UP -> if (spotVis) spotlightAction(-1, 1)?.also { spotlightActions.visibility = View.VISIBLE } ?: spotlightInfoBox else top
                 KeyEvent.KEYCODE_DPAD_DOWN -> cards ?: v
-                KeyEvent.KEYCODE_DPAD_LEFT -> if (appRow.indexOfChild(v) == 0) v else null
-                KeyEvent.KEYCODE_DPAD_RIGHT -> if (appRow.indexOfChild(v) == appRow.childCount - 1) v else null
+                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> appRow.rowStep(v, key == KeyEvent.KEYCODE_DPAD_RIGHT)
                 else -> null
             }
             v.getTag(R.id.watchRow) is Prog -> { // a card: Up and Down go between sections, to the nearest card
@@ -1652,8 +1715,10 @@ class MainActivity : Activity() {
                 when (key) {
                     KeyEvent.KEYCODE_DPAD_UP -> if (r <= 0) apps ?: top else nearestCard(rows[r - 1], v) ?: v
                     KeyEvent.KEYCODE_DPAD_DOWN -> rows.getOrNull(r + 1)?.let { nearestCard(it, v) } ?: v
-                    KeyEvent.KEYCODE_DPAD_LEFT -> if (i == 0) v else null
-                    KeyEvent.KEYCODE_DPAD_RIGHT -> if (i == row.childCount - 1) v else null
+                    KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                        val ni = remoteRowIndex(i, row.childCount, key == KeyEvent.KEYCODE_DPAD_RIGHT)
+                        ((row.getChildAt(ni) as? ViewGroup)?.getChildAt(0))?.takeIf { it.isFocusable } ?: v
+                    }
                     else -> null
                 }
             }

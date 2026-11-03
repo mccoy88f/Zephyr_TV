@@ -1041,6 +1041,20 @@ class PlayerActivity : Activity() {
         super.onPause()
     }
 
+    /** A key from the phone's remote. OK confirms. The other keys are the player's own. */
+    internal fun remotePress(code: Int) {
+        val confirm = code == KeyEvent.KEYCODE_DPAD_CENTER || code == KeyEvent.KEYCODE_ENTER
+        if (confirm) {
+            when {
+                tracksPanel.visibility == View.VISIBLE || bannerFocused() -> currentFocus?.performClick()
+                else -> okPressed()
+            }
+            return
+        }
+        val t = android.os.SystemClock.uptimeMillis()
+        onKeyDown(code, KeyEvent(t, t, KeyEvent.ACTION_DOWN, code, 0))
+    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         // Audio and subtitles open: its rows take the arrows and OK; Back closes it.
         if (tracksPanel.visibility == View.VISIBLE) {

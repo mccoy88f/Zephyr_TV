@@ -431,7 +431,7 @@
     <string name="remote_use">Usar acceso remoto</string>
     <string name="remote_show">Mostrar la dirección de acceso</string>
     <string name="remote_qr_intro">Escanea el código. Abre este ajuste. Guarda la dirección para usarla de nuevo.</string>
-    <string name="remote_home_intro">Escanea el código y guarda la dirección. El teléfono abre los ajustes tras el PIN +18.</string>
+    <string name="remote_home_intro">Escanea el código y guarda la dirección. El teléfono abre los ajustes tras el PIN.</string>
     <string name="remote_waiting">Esperando el cambio desde el teléfono…</string>
     <string name="remote_menu_title">Acceso remoto</string>
     <string name="remote_open">Ajustes</string>
@@ -447,7 +447,6 @@
     <string name="remote_volume">Volumen</string>
     <string name="remote_program">Canal</string>
     <string name="remote_pin_enter">Introduce el PIN</string>
-    <string name="remote_pin_adult">Introduce el PIN +18</string>
     <string name="remote_open_form">Abrir este ajuste</string>
     <string name="remote_not_open">Abre esto en la TV y vuelve a intentarlo.</string>
     <string name="warp_on_toast">WARP activo: Zephyr TV pasa por Cloudflare</string>
