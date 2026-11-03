@@ -84,4 +84,32 @@ class RemoteTest {
         assertEquals("---", remoteId("///"))
         assertEquals("x", remoteId(""))
     }
+
+    @Test fun aPinFromThePhoneHasFourDigits() {
+        assertTrue(isPinDigits("0427"))
+        assertFalse(isPinDigits("12"))
+        assertFalse(isPinDigits("12345"))
+        assertFalse(isPinDigits("12a4"))
+        assertFalse(isPinDigits("12 4"))
+        assertFalse(isPinDigits("١٢٣٤")) // other scripts' digits: the TV can't type them
+        assertFalse(isPinDigits(""))
+    }
+
+    @Test fun aPressFromAnOlderPageIsRefused() {
+        val page = remotePageKey("Settings", listOf("Theme", "Remote access"))
+        assertEquals(1, remotePressIndex("$page:1", page))
+        assertEquals(0, remotePressIndex(" $page:0\n", page))
+        assertNull(remotePressIndex("${page + 1}:1", page))
+        assertNull(remotePressIndex("1", page))
+        assertNull(remotePressIndex("$page:-1", page))
+        assertNull(remotePressIndex("$page:x", page))
+        assertNull(remotePressIndex("", page))
+    }
+
+    @Test fun thePageKeyFollowsTheRowsNotTheirValues() {
+        assertEquals(remotePageKey("Settings", listOf("Theme")), remotePageKey("Settings", listOf("Theme")))
+        assertFalse(remotePageKey("Settings", listOf("Theme")) == remotePageKey("Users", listOf("Theme")))
+        assertFalse(remotePageKey("Settings", listOf("Theme", "Clock")) == remotePageKey("Settings", listOf("Clock", "Theme")))
+        assertFalse(remotePageKey("A", listOf("B")) == remotePageKey("AB", emptyList()))
+    }
 }

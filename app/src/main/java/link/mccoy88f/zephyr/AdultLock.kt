@@ -123,6 +123,7 @@ internal fun MainActivity.adultSettingsRows(back: () -> Unit): List<Triple<Strin
         if (adultLockOn()) askAdultPin(back) {
             prefs.edit().remove(K.ADULT_PIN).remove(K.ADULT_UNTIL).apply()
             adultChanged()
+            remoteHasPin(tell = true) // remote access used this PIN: without it, no phone can open it
             back()
         } else chooseAdultPin(back)
     },

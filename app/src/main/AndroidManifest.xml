@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Remote access sends the phone's TV keys to the player, which has a process of its own (see PlayerKeys).
+         Only this app may send them or receive them. -->
+    <permission android:name="${applicationId}.permission.REMOTE_KEYS" android:protectionLevel="signature" />
+    <uses-permission android:name="${applicationId}.permission.REMOTE_KEYS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- In-app updates from GitHub releases. -->

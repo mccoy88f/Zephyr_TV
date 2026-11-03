@@ -160,6 +160,7 @@
     <string name="pin_instructions">▲ ▼ change  ·  ◀ ▶ move  ·  OK enter. Number keys work too.</string>
     <string name="pin_forgot_notice">Forgot it? Android Settings → Apps → Zephyr TV → Clear data removes the lock, along with your layout and settings.</string>
     <string name="pin_mismatch">Those PINs didn\'t match. Choose one again.</string>
+    <string name="pin_four_digits">The PIN has 4 digits.</string>
     <string name="layout_locked_toast">Layout locked. Zephyr TV settings and home screen changes now need the PIN.</string>
     <string name="unlock_to_edit">Unlock to edit…</string>
 
@@ -448,6 +449,7 @@
     <string name="remote_pin_enter">Enter the PIN</string>
     <string name="remote_open_form">Open this setting</string>
     <string name="remote_not_open">Open this on the TV, then try again.</string>
+    <string name="remote_off_no_pin">Remote access is off. It uses the 18+ PIN. Turn on Remote access to choose a new PIN.</string>
     <string name="warp_on_toast">WARP on: Zephyr TV goes through Cloudflare</string>
     <string name="warp_device">The whole device: the 1.1.1.1 app</string>
     <string name="warp_switch">WARP for Zephyr TV</string>
@@ -543,6 +545,7 @@
     <string name="phone_addon_title">Stremio add-on address</string>
     <string name="phone_addon_intro">Paste the address of a Stremio add-on (its manifest.json).</string>
     <string name="phone_addon_saved">Address received. The device is adding the add-on.</string>
+    <string name="phone_addon_bad">That isn\'t an add-on address.</string>
     <string name="player_loading">Loading…</string>
     <string name="player_no_streams">No stream available</string>
     <string name="player_no_audio">The device can\'t play this channel\'s sound: picture only</string>

@@ -1,7 +1,11 @@
 package link.mccoy88f.zephyr
 
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.media.AudioManager
 import android.os.SystemClock
 import android.view.InputDevice
@@ -31,7 +35,10 @@ import java.util.concurrent.atomic.AtomicReference
 // change it, and its remote sends the TV's keys. A code on a single setting opens that setting; saving it closes
 // the screen. WARP hides the codes: the phone cannot reach the TV while Zephyr TV's traffic goes through the tunnel.
 
-/** The Zephyr TV screen in front, so a key from the phone reaches the player or the home screen. */
+/**
+ * The home screen while it is in front. Only this process: the player has a process of its own, and its keys
+ * go there as a broadcast (see PlayerKeys).
+ */
 internal object Screen {
     var activity: Activity? = null
 }
@@ -76,6 +83,25 @@ internal fun remoteGridIndex(index: Int?, count: Int, columns: Int, key: Int): I
         KeyEvent.KEYCODE_DPAD_DOWN -> if (start + cols >= count) start else start + cols
         else -> start
     }
+}
+
+/** Four digits 0-9: the only PIN the TV can type. Anything else from the phone is refused. */
+internal fun isPinDigits(pin: String) = pin.length == 4 && pin.all { it in '0'..'9' }
+
+/**
+ * The page the phone saw: its title and its row names. The values are left out, so a switch that changes
+ * keeps the same page.
+ */
+internal fun remotePageKey(title: String, labels: List<String>) = (listOf(title) + labels).joinToString("\u0000").hashCode()
+
+/**
+ * The row the phone pressed, from "page:index". Null when the TV shows another page now: the phone saw an
+ * older one, and the same index is another row there.
+ */
+internal fun remotePressIndex(body: String, page: Int): Int? {
+    val parts = body.trim().split(':')
+    if (parts.size != 2 || parts[0].toIntOrNull() != page) return null
+    return parts[1].toIntOrNull()?.takeIf { it >= 0 }
 }
 
 private const val PORT = 8765
@@ -129,7 +155,7 @@ internal object Remote {
     /** Remote access is on, and its page is served. A restart keeps serving it. */
     fun attach(a: MainActivity) {
         home = a
-        if (a.remoteOn()) listen()
+        if (a.remoteOn() && a.remoteHasPin()) listen()
     }
 
     /** The home screen went away. The page keeps its port across a recreate; [stop] is turning the setting off. */
@@ -253,10 +279,7 @@ internal object Remote {
             rest == "api/pin" && method == "POST" -> pin(a, out, readBody(input, headers, 32))
             !authed && rest.startsWith("api/") -> reply(out, 401, "text/plain; charset=utf-8", a.remotePinPrompt())
             rest == "api/page" && method == "GET" -> reply(out, 200, "application/json; charset=utf-8", onMain { remoteSnapshot().toString() })
-            rest == "api/press" && method == "POST" -> {
-                press(readBody(input, headers, 16))
-                reply(out, 200, "text/plain; charset=utf-8", "")
-            }
+            rest == "api/press" && method == "POST" -> press(out, readBody(input, headers, 32))
             rest == "api/back" && method == "POST" -> { onMain { goBack() }; reply(out, 200, "text/plain; charset=utf-8", "") }
             rest == "api/open" && method == "POST" -> { onMain { showOnTv { openFromPhone() } }; reply(out, 200, "text/plain; charset=utf-8", "") }
             rest == "api/panel" && method == "POST" -> panel(out, readBody(input, headers, 16))
@@ -287,7 +310,7 @@ internal object Remote {
             if (now < pinWait) return a.getString(R.string.pin_too_many_tries_wait, ((pinWait - now) / 1000 + 1).toInt())
             val stored = remotePinStored(a.prefs.getString(K.ADULT_PIN, null), a.prefs.getString(K.REMOTE_PIN, null))
                 ?: return a.getString(R.string.remote_not_open)
-            if (pin.length != 4 || pin.any { !it.isDigit() } || !pinMatches(stored, pin)) {
+            if (!isPinDigits(pin) || !pinMatches(stored, pin)) {
                 if (++pinFails >= MainActivity.PIN_TRIES) {
                     pinFails = 0
                     pinWait = now + 30_000
@@ -334,16 +357,21 @@ internal object Remote {
         reply(out, 200, "text/plain; charset=utf-8", "")
     }
 
-    private fun press(body: String?) {
-        val i = body?.trim()?.toIntOrNull() ?: return
-        try {
+    /** A row from the phone. 409 when the TV shows another page now: the phone draws the page again. */
+    private fun press(out: OutputStream, body: String?) {
+        val status = try {
             onMain {
-                if (settingsScrim.visibility != View.VISIBLE) return@onMain
-                remoteRows.getOrNull(i)?.third?.invoke()
+                if (settingsScrim.visibility != View.VISIBLE) return@onMain 409
+                val i = remotePressIndex(body.orEmpty(), remotePageKey(remoteTitle, remoteRows.map { it.first })) ?: return@onMain 409
+                val row = remoteRows.getOrNull(i) ?: return@onMain 409
+                row.third.invoke()
+                200
             }
         } catch (e: Exception) {
             warn("remote press ($e)")
+            503
         }
+        reply(out, status, "text/plain; charset=utf-8", "")
     }
 
     private fun text(out: OutputStream, body: String?) {
@@ -438,6 +466,20 @@ internal object Remote {
 
 /** Remote access is switched on. */
 internal fun MainActivity.remoteOn() = prefs.getBoolean(K.REMOTE, false)
+
+/**
+ * Remote access has a PIN to ask for. Without one (the 18+ lock was turned off, or a backup had none) no phone
+ * can open it, so remote access turns off, and the TV says so when [tell].
+ */
+internal fun MainActivity.remoteHasPin(tell: Boolean = false): Boolean {
+    if (remotePinStored(prefs.getString(K.ADULT_PIN, null), prefs.getString(K.REMOTE_PIN, null)) != null) return true
+    if (remoteOn()) {
+        prefs.edit().putBoolean(K.REMOTE, false).apply()
+        Remote.stop()
+        if (tell) Toast.makeText(this, getString(R.string.remote_off_no_pin), Toast.LENGTH_LONG).show()
+    }
+    return false
+}
 
 /**
  * Rows from Remote access to the next fixed row. Show the address sits under the switch while remote access is on,
@@ -556,44 +598,63 @@ private fun MainActivity.showOnTv(open: () -> Unit) {
     startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
 }
 
-/** One key from the phone's remote. Volume changes the TV's volume. Home brings Zephyr TV forward. */
+/**
+ * One key from the phone's remote. Volume changes the TV's volume. Home brings Zephyr TV forward.
+ * The player runs in a process of its own (":player"), so this process never sees it: while the home screen is
+ * not in front, a TV key goes to the player first (see [PlayerKeys]). When no player takes it, the home screen does.
+ */
 private fun MainActivity.remoteCommand(name: String) {
+    val code = remoteKeyCode(name)
+    if (code != null && Screen.activity !is MainActivity) {
+        PlayerKeys.send(this, code) { taken -> if (!taken) homeCommand(name) }
+        return
+    }
+    homeCommand(name)
+}
+
+/** A key for the home screen, or for the app in front when Zephyr TV isn't. */
+private fun MainActivity.homeCommand(name: String) {
     comeForward()
     when (name) {
         "home" -> startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP))
         "vol+", "vol-" -> {
-            val host = Screen.activity ?: this
             val dir = if (name == "vol+") AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER
-            host.getSystemService(AudioManager::class.java).adjustStreamVolume(AudioManager.STREAM_MUSIC, dir, AudioManager.FLAG_SHOW_UI)
+            getSystemService(AudioManager::class.java).adjustStreamVolume(AudioManager.STREAM_MUSIC, dir, AudioManager.FLAG_SHOW_UI)
         }
-        "back" -> when (val front = Screen.activity) {
-            is MainActivity -> front.onBackPressed()
-            null -> if (HomeOverride.running?.goBack() != true) onBackPressed()
-            else -> front.remoteTap(KeyEvent.KEYCODE_BACK)
-        }
-        "ch+", "ch-" -> playerFront()?.remoteChannel(if (name == "ch+") 1 else -1)
-        "up", "down", "left", "right" -> {
-            val code = remoteKeyCode(name) ?: return
-            when (val front = Screen.activity ?: this) {
-                is PlayerActivity -> front.remotePress(code)
-                is MainActivity -> front.remoteArrow(code)
-            }
-        }
-        "ok" -> when (val front = Screen.activity ?: this) {
-            is PlayerActivity -> front.remotePress(KeyEvent.KEYCODE_DPAD_CENTER)
-            is MainActivity -> front.remoteOk()
-        }
-        else -> (Screen.activity ?: this).remoteTap(remoteKeyCode(name) ?: return)
+        "back" -> if (Screen.activity is MainActivity) onBackPressed() else if (HomeOverride.running?.goBack() != true) onBackPressed()
+        "ch+", "ch-" -> Unit // no player in front: the home screen has no channel to change
+        "up", "down", "left", "right" -> remoteArrow(remoteKeyCode(name) ?: return)
+        "ok" -> remoteOk()
+        else -> remoteTap(remoteKeyCode(name) ?: return)
     }
 }
 
-/** The player that is on screen. Program plus and minus reach it even when the home screen is the resumed activity. */
-private fun playerFront(): PlayerActivity? {
-    val front = Screen.activity
-    if (front is PlayerActivity) return front
-    val live = PlayerActivity.current
-    if (live != null && !live.isFinishing && live.hasWindowFocus()) return live
-    return null
+/**
+ * TV keys from the phone to the player, across processes. The broadcast stays inside this app: it names the
+ * package, the player registers its receiver only while it is in front and not exported, and older Android
+ * versions also need a signature permission. The player sets [TAKEN] as the result.
+ */
+internal object PlayerKeys {
+    const val ACTION = "link.mccoy88f.zephyr.action.PLAYER_KEY"
+    const val CODE = "code"
+    const val TAKEN = 1
+
+    fun permission(c: Context) = "${c.packageName}.permission.REMOTE_KEYS"
+
+    /** [then] runs on this process's main thread: true when the player took [code]. */
+    fun send(c: Context, code: Int, then: (Boolean) -> Unit) {
+        val intent = Intent(ACTION).setPackage(c.packageName).putExtra(CODE, code)
+        val result = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, i: Intent) = then(resultCode == TAKEN)
+        }
+        c.sendOrderedBroadcast(intent, permission(c), result, null, 0, null, null)
+    }
+
+    fun register(a: Activity, r: BroadcastReceiver) {
+        val filter = IntentFilter(ACTION)
+        if (Build.VERSION.SDK_INT >= 33) a.registerReceiver(r, filter, permission(a), null, Context.RECEIVER_NOT_EXPORTED)
+        else a.registerReceiver(r, filter, permission(a), null)
+    }
 }
 
 /** Zephyr TV to the front, still on the screen it had open. A Home press is a different path. */
@@ -606,7 +667,7 @@ private fun MainActivity.comeForward() {
 }
 
 /** A press and a release, as the TV's own remote sends them. */
-private fun Activity.remoteTap(code: Int) {
+internal fun Activity.remoteTap(code: Int) {
     val t = SystemClock.uptimeMillis()
     fun event(action: Int, at: Long) = KeyEvent(t, at, action, code, 0, 0, -1, 0, 0, InputDevice.SOURCE_DPAD)
     dispatchKeyEvent(event(KeyEvent.ACTION_DOWN, t))
@@ -621,7 +682,10 @@ private fun MainActivity.openFromPhone() {
 private fun MainActivity.takeText(body: String): Pair<Int, String> {
     if (settingsScrim.visibility != View.VISIBLE) return 409 to ""
     remotePinSubmit?.let { pin ->
-        val err = pin(body.trim())
+        val typed = body.trim()
+        // The TV types only four digits. A shorter PIN or letters would make a PIN that the TV can never enter.
+        if (!isPinDigits(typed)) return 400 to getString(R.string.pin_four_digits)
+        val err = pin(typed)
         return if (err == null) 200 to "" else 400 to err
     }
     val field = remoteField ?: return 409 to ""
@@ -653,6 +717,7 @@ internal fun MainActivity.remoteSnapshot(): JSONObject {
             else -> ""
         })
         .put("rows", rows)
+        .put("page", if (open) remotePageKey(remoteTitle, remoteRows.map { it.first }) else 0)
         .put("form", Remote.active.orEmpty())
         .put("kind", when {
             !open -> ""
@@ -761,7 +826,7 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
     "catalog-add" -> {
         val page = PhonePages.text(phoneTexts(R.string.catalog_add, R.string.catalog_add_intro), getString(R.string.addon_hint))
         PhoneTask(page, 1024L * 1024) { file ->
-            val url = Stremio.manifestUrl(file.readText().lines().firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_epg_bad)
+            val url = Stremio.manifestUrl(file.readText().lines().firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_addon_bad)
             ui.post { addCatalogUrl(url) }
             200 to getString(R.string.phone_addon_saved)
         }
@@ -770,7 +835,7 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
         val page = PhonePages.addon(phoneTexts(R.string.phone_addon_title, R.string.phone_addon_intro), getString(R.string.addon_hint), getString(R.string.addon_adult))
         PhoneTask(page, 1024L * 1024) { file ->
             val lines = file.readText().lines()
-            val url = Stremio.manifestUrl(lines.firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_epg_bad)
+            val url = Stremio.manifestUrl(lines.firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_addon_bad)
             val adult = lines.drop(1).any { it.trim() == "adult" }
             ui.post { addAddon(url, adult) }
             200 to getString(R.string.phone_addon_saved)
@@ -780,7 +845,7 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
         val page = PhonePages.addon(phoneTexts(R.string.nuvio_phone_title, R.string.nuvio_add_intro), getString(R.string.nuvio_hint), getString(R.string.addon_adult))
         PhoneTask(page, 1024L * 1024) { file ->
             val lines = file.readText().lines()
-            val url = Nuvio.manifestUrl(lines.firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_epg_bad)
+            val url = Nuvio.manifestUrl(lines.firstOrNull().orEmpty()) ?: return@PhoneTask 400 to getString(R.string.phone_addon_bad)
             val adult = lines.drop(1).any { it.trim() == "adult" }
             ui.post { addRepo(url, adult) }
             200 to getString(R.string.phone_addon_saved)
@@ -875,6 +940,7 @@ private fun MainActivity.remotePage(body: String, dock: String, script: String) 
       .pair{display:flex;gap:8px} .pair button{flex:1;min-height:52px;font-size:16px}
       .group{margin:10px 0 0;font-size:13px;color:var(--muted);text-align:center}
       .dpad button:active,.pair button:active{background:var(--fg);color:var(--on)}
+      .padError{min-height:1.4em;margin:8px 0 0;font-size:14px;text-align:center}
       .dock{position:sticky;bottom:0;display:flex;align-items:center;gap:8px;margin-top:auto;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
       body.glass .dock{background:rgba(16,16,20,.92)}
       .dock .side{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
@@ -913,7 +979,7 @@ private fun MainActivity.pinHtml(): String {
     """.trimIndent())
 }
 
-private fun escHtml(s: String) = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+private fun escHtml(s: String) = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
 
 private fun MainActivity.menuHtml(): String {
     val send = js(getString(R.string.phone_send))
@@ -952,12 +1018,15 @@ private fun MainActivity.menuHtml(): String {
         <div class="pair"><button type="button" data-k="vol-">−</button><button type="button" data-k="vol+">+</button></div>
         <p class="group">${escHtml(getString(R.string.remote_program))}</p>
         <div class="pair"><button type="button" data-k="ch-">−</button><button type="button" data-k="ch+">+</button></div>
+        <div id="pe" class="padError"></div>
         </div>
     """.trimIndent(), dock, """
         const root=location.pathname.replace(/\/go\/[^/]*$/, '').replace(/\/?$/, '/');
         const title=document.getElementById('title'), heading=document.getElementById('heading'), rows=document.getElementById('rows'), back=document.getElementById('back');
         const closed=document.getElementById('closed'), extra=document.getElementById('extra'), form=document.getElementById('form'), e=document.getElementById('e');
-        let last='', err='', kind='';
+        const pe=document.getElementById('pe');
+        let last='', err='', kind='', page=0;
+        function lost(){e.textContent='$lost'; pe.textContent='$lost';}
         async function api(path, body){
           const r=await fetch(root+path,{method:body==null?'GET':'POST',body:body==null?undefined:body});
           if(r.status==401){location.reload();return null;}
@@ -965,13 +1034,20 @@ private fun MainActivity.menuHtml(): String {
         }
         async function act(path, body){
           e.textContent='';
-          try{const r=await api(path, body==null?'':body); if(!r)return; err=r.ok?'':await r.text(); last=''; await draw();}
-          catch(x){e.textContent='$lost';}
+          try{
+            const r=await api(path, body==null?'':body); if(!r)return;
+            pe.textContent='';
+            err=(r.ok||r.status==409)?'':await r.text(); last=''; await draw();
+          }
+          catch(x){lost();}
         }
         async function draw(){
-          let r; try{r=await api('api/page');}catch(x){e.textContent='$lost';return;}
+          let r; try{r=await api('api/page');}catch(x){lost();return;}
           if(!r)return;
+          if(!r.ok){lost();return;}
+          pe.textContent='';
           const p=await r.json();
+          page=p.page||0;
           const raw=JSON.stringify(p);
           if(raw===last){if(err)e.textContent=err; return;}
           last=raw;
@@ -994,7 +1070,7 @@ private fun MainActivity.menuHtml(): String {
             }else{
               const c=document.createElement('span'); c.className='chev'; b.appendChild(c);
             }
-            b.onclick=function(){act('api/press', String(i));};
+            b.onclick=function(){act('api/press', page+':'+i);};
             rows.appendChild(b);
           });
           const mark=(p.input||'')+'\n'+(p.title||'');
@@ -1026,6 +1102,13 @@ private fun MainActivity.menuHtml(): String {
         dock('remote', function(){panel.hidden=true; pad.hidden=false; choose('remote');});
         pad.querySelectorAll('button').forEach(function(b){b.onclick=function(){act('api/key', b.dataset.k);};});
         back.onclick=function(){act('api/back');};
-        draw(); setInterval(draw, 800);
+        // One request at a time, and none while the page is hidden or the remote is open: requests that pile up
+        // hold the TV's few workers, and the keys then wait behind them.
+        async function tick(){
+          if(!document.hidden && pad.hidden){try{await draw();}catch(x){}}
+          setTimeout(tick, 800);
+        }
+        document.addEventListener('visibilitychange', function(){if(!document.hidden){last=''; draw();}});
+        tick();
     """.trimIndent())
 }

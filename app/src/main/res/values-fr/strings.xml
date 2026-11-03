@@ -160,6 +160,7 @@
     <string name="pin_instructions">▲ ▼ changer  ·  ◀ ▶ déplacer  ·  OK valider. Les touches numériques fonctionnent aussi.</string>
     <string name="pin_forgot_notice">Oublié ? Paramètres Android → Applis → Zephyr TV → Effacer les données supprime le verrou, avec votre disposition et vos paramètres.</string>
     <string name="pin_mismatch">Les codes ne correspondent pas. Choisissez-en un à nouveau.</string>
+    <string name="pin_four_digits">Le code a 4 chiffres.</string>
     <string name="layout_locked_toast">Disposition verrouillée. Les paramètres de Zephyr TV et les modifications de l\'écran d\'accueil demandent désormais le code.</string>
     <string name="unlock_to_edit">Déverrouiller pour modifier…</string>
 
@@ -449,6 +450,7 @@
     <string name="remote_pin_enter">Entrez le PIN</string>
     <string name="remote_open_form">Ouvrir ce réglage</string>
     <string name="remote_not_open">Ouvrez ceci sur la TV, puis réessayez.</string>
+    <string name="remote_off_no_pin">L\'accès à distance est désactivé. Il utilise le code 18+. Activez Accès à distance pour choisir un nouveau code.</string>
     <string name="warp_on_toast">WARP activé : Zephyr TV passe par Cloudflare</string>
     <string name="warp_device">Tout l\'appareil : l\'appli 1.1.1.1</string>
     <string name="warp_switch">WARP pour Zephyr TV</string>
@@ -544,6 +546,7 @@
     <string name="phone_addon_title">Adresse de l\'extension Stremio</string>
     <string name="phone_addon_intro">Collez l\'adresse d\'une extension Stremio (son manifest.json).</string>
     <string name="phone_addon_saved">Adresse reçue. L\'appareil ajoute l\'extension.</string>
+    <string name="phone_addon_bad">Ce n\'est pas l\'adresse d\'une extension.</string>
     <string name="player_loading">Chargement…</string>
     <string name="player_no_streams">Aucun flux disponible</string>
     <string name="player_no_audio">L\'appareil ne peut pas lire le son de cette chaîne : image seule</string>

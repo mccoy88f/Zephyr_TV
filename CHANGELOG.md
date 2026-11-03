@@ -13,6 +13,16 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- The phone remote moves the player. The arrows, OK, Back and Program plus and minus reach it.
+- The phone accepts only a PIN of 4 digits.
+- When you turn off the 18+ lock, Remote access turns off too. The TV shows a message.
+- A row on the phone opens only on the page that you see. On a new page, the phone shows that page again.
+- The phone page asks the TV for one update at a time. It stops while the page is hidden or the remote is open.
+- The remote on the phone shows when the TV does not answer.
+- A wrong add-on address on the phone shows its own message.
+
 ## 4.0.0-beta.7
 
 - Each kind of content has its own logo on its tile.

@@ -160,6 +160,7 @@
     <string name="pin_instructions">▲ ▼ cambia  ·  ◀ ▶ sposta  ·  OK conferma. Funzionano anche i tasti numerici.</string>
     <string name="pin_forgot_notice">Dimenticato? Impostazioni Android → App → Zephyr TV → Cancella dati rimuove il blocco, insieme al layout e alle impostazioni.</string>
     <string name="pin_mismatch">I PIN non corrispondono. Scegline uno di nuovo.</string>
+    <string name="pin_four_digits">Il PIN ha 4 cifre.</string>
     <string name="layout_locked_toast">Layout bloccato. Le modifiche al layout e alle impostazioni richiedono il PIN.</string>
     <string name="unlock_to_edit">Sblocca per modificare…</string>
 
@@ -449,6 +450,7 @@
     <string name="remote_pin_enter">Inserisci il PIN</string>
     <string name="remote_open_form">Apri questa impostazione</string>
     <string name="remote_not_open">Apri questa voce sulla TV, poi riprova.</string>
+    <string name="remote_off_no_pin">L\'accesso remoto è spento. Usa il PIN 18+. Attiva Accesso remoto per scegliere un nuovo PIN.</string>
     <string name="warp_on_toast">WARP attivo: Zephyr TV passa da Cloudflare</string>
     <string name="warp_device">Tutto il dispositivo: l\'app 1.1.1.1</string>
     <string name="warp_switch">WARP per Zephyr TV</string>
@@ -544,6 +546,7 @@
     <string name="phone_addon_title">Indirizzo dell\'addon Stremio</string>
     <string name="phone_addon_intro">Incolla l\'indirizzo di un addon Stremio (il suo manifest.json).</string>
     <string name="phone_addon_saved">Indirizzo ricevuto. Il dispositivo sta aggiungendo l\'addon.</string>
+    <string name="phone_addon_bad">Questo non è l\'indirizzo di un addon.</string>
     <string name="player_loading">Caricamento…</string>
     <string name="player_no_streams">Nessuno streaming disponibile</string>
     <string name="player_no_audio">Il dispositivo non riesce a riprodurre l\'audio di questo canale: solo video</string>

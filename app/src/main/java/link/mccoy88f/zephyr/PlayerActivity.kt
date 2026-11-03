@@ -1031,15 +1031,24 @@ class PlayerActivity : Activity() {
 
     // ---------- remote ----------
 
+    // The player has a process of its own, so remote access (in the main process) can't call it: its keys come
+    // as a broadcast (see PlayerKeys), taken only while the player is in front.
+    private val remoteKeys = object : android.content.BroadcastReceiver() {
+        override fun onReceive(c: android.content.Context, i: android.content.Intent) {
+            if (isFinishing) return
+            val code = i.getIntExtra(PlayerKeys.CODE, 0)
+            if (code == KeyEvent.KEYCODE_BACK) remoteTap(code) else remotePress(code)
+            resultCode = PlayerKeys.TAKEN
+        }
+    }
+
     override fun onResume() {
         super.onResume()
-        Screen.activity = this
-        current = this
+        PlayerKeys.register(this, remoteKeys)
     }
 
     override fun onPause() {
-        if (Screen.activity === this) Screen.activity = null
-        if (current === this) current = null
+        runCatching { unregisterReceiver(remoteKeys) }
         super.onPause()
     }
 
@@ -2131,9 +2140,6 @@ class PlayerActivity : Activity() {
     }
 
     companion object {
-        /** The player on screen, including while the home screen is still the resumed activity under it. */
-        internal var current: PlayerActivity? = null
-
         const val ADDON = "addon" // the add-on's manifest address
         const val BASE = "base" // the add-on's address, without /manifest.json
         const val INDEX = "index" // the channel picked, in the lists below
