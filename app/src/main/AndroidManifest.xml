@@ -107,6 +107,14 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="mccoy88f.github.io" android:pathPrefix="/Zephyr_TV/open" />
             </intent-filter>
+            <!-- The site's shared titles (/t/) and extensions, add-ons and plugins (/o/): see siteToZtv. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="ztv.mccoy88f.link" android:pathPrefix="/t/" />
+                <data android:scheme="https" android:host="ztv.mccoy88f.link" android:pathPrefix="/o/" />
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />

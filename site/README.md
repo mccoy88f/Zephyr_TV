@@ -43,7 +43,7 @@ The app's health check is `GET /healthz` (200 when the database answers).
 | Phase | What |
 |---|---|
 | F0 | This: Docker Compose, PostgreSQL, the languages, presentation, downloads, licences, superadmin sign-in |
-| F1 | Shared links with each title's poster as their preview (`/t/<type>/<id>`) |
+| F1 | Shared links with each title's poster as their preview (`/t/<type>/<id>`, `/o/<kind>?u=`): done |
 | F2 | Trakt's sign-in moved here |
 | F3 | Accounts (email and password, email verified), Zephyr TV users and avatars, TVs linked with a code, the extensions' catalogue (published after review) |
 | F4 | Sync between TVs (add-ons and keys end-to-end encrypted) |

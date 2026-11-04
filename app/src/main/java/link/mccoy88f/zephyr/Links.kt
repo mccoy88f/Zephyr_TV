@@ -12,14 +12,31 @@ import android.widget.Toast
 //   ztv://ext?u=<address of manifest-zephyrtv.json>              an extension, shown before it's installed
 //   ztv://addon?u=<address of manifest.json>                     a Stremio add-on, added once confirmed
 //   ztv://nuvio?u=<address of a Nuvio repository>                a Nuvio plugin repository, added once confirmed
-// Shared as an https address (chats only make those clickable): SHARE_PAGE#<the same after ztv://>, a page that opens
+// Shared as an https address (chats only make those clickable): SITE/t/<type>/<id>?… for a title (see siteToZtv), a page
+// with the title's poster as its preview; before the site, SHARE_PAGE#<the same after ztv://>. Either page opens
 // Zephyr TV, or says where to get it; Zephyr TV takes that address too. Also: stremio:// links (an add-on's
 // installation, a title's page), Nuvio's nuvio:// links (a title's page, an add-on: see NuvioTV's DeepLinkParser), an
 // add-on's manifest.json address, and text shared from other apps with any of them.
 // Functions of MainActivity, kept here by topic; their state lives in MainActivity.
 
-/** The page shared links go to (docs/open/index.html, on the repository's GitHub Pages). */
+/** Zephyr TV's site: a shared title's page there (SITE/t/<type>/<id>?…) shows the title's poster as its preview. */
+internal const val SITE = "https://ztv.mccoy88f.link"
+
+/** The page shared links went to before the site (docs/open/index.html, on GitHub Pages): its links still open. */
 internal const val SHARE_PAGE = "https://mccoy88f.github.io/Zephyr_TV/open/"
+
+/**
+ * A site's link as the ztv: link it stands for: SITE/t/<type>/<id>?… a title (ztv://title/<type>/<id>?…), SITE/o/<kind>?u=…
+ * an extension, add-on or plugin repository (ztv://<kind>?u=…). Null for anything else.
+ */
+internal fun siteToZtv(link: String): String? {
+    val rest = link.removePrefix("$SITE/").takeIf { it != link } ?: return null
+    return when {
+        rest.startsWith("t/") && rest.length > 2 -> "ztv://title/" + rest.removePrefix("t/")
+        rest.startsWith("o/") && rest.length > 2 -> "ztv://" + rest.removePrefix("o/")
+        else -> null
+    }
+}
 
 private const val ACTION_SEARCH = "link.mccoy88f.zephyr.action.SEARCH"
 private const val ACTION_PLAY_QUEUE = "link.mccoy88f.zephyr.action.PLAY_QUEUE"
@@ -46,6 +63,7 @@ internal fun MainActivity.openLink(uri: Uri): Boolean {
     val s = uri.toString()
     val ztv = when {
         uri.scheme == "ztv" -> uri
+        siteToZtv(s) != null -> Uri.parse(siteToZtv(s))
         s.startsWith(SHARE_PAGE) -> uri.fragment?.takeIf { it.isNotBlank() }?.let { Uri.parse("ztv://$it") }
         else -> null
     }
@@ -162,7 +180,7 @@ private fun MainActivity.confirmLink(title: String, url: String, add: () -> Unit
  */
 internal fun MainActivity.shareTitle(type: String, id: String, name: String, season: Int? = null, episode: Int? = null, image: String? = null) {
     val query = "?n=" + Uri.encode(name) + if (season != null && episode != null) "&s=$season&e=$episode" else ""
-    val link = SHARE_PAGE + "#title/$type/" + Uri.encode(id) + query
+    val link = "$SITE/t/$type/" + Uri.encode(id) + query
     val what = if (season != null && episode != null) getString(R.string.player_episode, name, season, episode) else name
     val text = getString(R.string.share_text, what, link)
     fun send(picture: Uri?) {

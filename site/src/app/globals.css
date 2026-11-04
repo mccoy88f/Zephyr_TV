@@ -110,6 +110,16 @@ h3 { font-size: 19px; margin: 0 0 8px; }
 .form input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 .error { color: var(--error); margin: 0; }
 
+/* A shared title, extension or add-on (/t/, /o/): its poster beside what it is. */
+.share { max-width: 900px; }
+.shared { display: grid; grid-template-columns: minmax(160px, 260px) 1fr; gap: 32px; align-items: start; padding-top: 24px; }
+.shared .poster { width: 100%; border-radius: var(--radius); box-shadow: 0 20px 60px rgb(0 0 0 / 0.3); }
+.shared .poster.logo { max-width: 160px; box-shadow: none; }
+.shared .actions { justify-content: flex-start; }
+.overview { color: var(--muted); }
+.small { font-size: 14px; }
+@media (max-width: 600px) { .shared { grid-template-columns: 1fr; } .shared .poster { max-width: 240px; } }
+
 .footer { border-top: 1px solid var(--line); padding: 24px; text-align: center; font-size: 14px; }
 .footer p { margin: 4px 0; }
 

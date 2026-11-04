@@ -101,5 +101,15 @@
     "superadmins": "超级管理员",
     "sessions": "活动会话",
     "soon": "用户、电视、同步和扩展将在后续阶段推出。"
+  },
+  "share": {
+    "watch": "在 Zephyr TV 上观看",
+    "ext": "Zephyr TV 扩展",
+    "addon": "Zephyr TV 的 Stremio 插件",
+    "nuvio": "Zephyr TV 的 Nuvio 插件",
+    "open": "在 Zephyr TV 中打开",
+    "get": "下载 Zephyr TV",
+    "hint": "如果没有 Zephyr TV，请先下载，然后再次打开此链接。",
+    "episode": "第 {s} 季 · 第 {e} 集"
   }
 }

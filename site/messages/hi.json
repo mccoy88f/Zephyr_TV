@@ -101,5 +101,15 @@
     "superadmins": "सुपरएडमिन",
     "sessions": "सक्रिय सत्र",
     "soon": "यूज़र, टीवी, सिंक और एक्सटेंशन अगले चरणों में आएँगे।"
+  },
+  "share": {
+    "watch": "Zephyr TV पर देखने के लिए",
+    "ext": "Zephyr TV के लिए एक एक्सटेंशन",
+    "addon": "Zephyr TV के लिए एक Stremio ऐड-ऑन",
+    "nuvio": "Zephyr TV के लिए Nuvio प्लगइन",
+    "open": "Zephyr TV में खोलें",
+    "get": "Zephyr TV डाउनलोड करें",
+    "hint": "Zephyr TV न हो तो उसे डाउनलोड करें, फिर यह लिंक दोबारा खोलें।",
+    "episode": "सीज़न {s} · एपिसोड {e}"
   }
 }

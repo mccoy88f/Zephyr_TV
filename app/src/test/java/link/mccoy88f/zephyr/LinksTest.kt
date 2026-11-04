@@ -29,4 +29,14 @@ class LinksTest {
         assertEquals("res:Rockies (day)", chooseWallpaper(null, false, false))
         assertEquals("res:Rockies (dusk)", chooseWallpaper(null, false, true))
     }
+
+    // The site's links stand for ztv: links: a title, an extension; anything else on the site isn't one.
+    @Test fun siteLinks() {
+        assertEquals("ztv://title/movie/tt0118799?n=La%20vita", siteToZtv("https://ztv.mccoy88f.link/t/movie/tt0118799?n=La%20vita"))
+        assertEquals("ztv://title/series/tt0903747?n=X&s=1&e=3", siteToZtv("https://ztv.mccoy88f.link/t/series/tt0903747?n=X&s=1&e=3"))
+        assertEquals("ztv://ext?u=https%3A%2F%2Fa.b%2Fm.json", siteToZtv("https://ztv.mccoy88f.link/o/ext?u=https%3A%2F%2Fa.b%2Fm.json"))
+        assertEquals(null, siteToZtv("https://ztv.mccoy88f.link/it/download"))
+        assertEquals(null, siteToZtv("https://ztv.mccoy88f.link/t/"))
+        assertEquals(null, siteToZtv("https://example.com/t/movie/tt1"))
+    }
 }

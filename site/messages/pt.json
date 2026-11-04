@@ -101,5 +101,15 @@
     "superadmins": "Superadmins",
     "sessions": "Sessões ativas",
     "soon": "Usuários, TVs, sincronização e extensões chegam nas próximas fases."
+  },
+  "share": {
+    "watch": "Para assistir no Zephyr TV",
+    "ext": "Uma extensão para o Zephyr TV",
+    "addon": "Um add-on do Stremio para o Zephyr TV",
+    "nuvio": "Plugins do Nuvio para o Zephyr TV",
+    "open": "Abrir no Zephyr TV",
+    "get": "Baixar o Zephyr TV",
+    "hint": "Sem o Zephyr TV, baixe-o e abra este link de novo.",
+    "episode": "T{s} · E{e}"
   }
 }

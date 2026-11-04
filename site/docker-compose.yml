@@ -12,6 +12,7 @@ services:
       SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:?set SUPERADMIN_PASSWORD}
       GITHUB_REPO: ${GITHUB_REPO:-mccoy88f/Zephyr_TV}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      TMDB_API_KEY: ${TMDB_API_KEY:-}
     ports:
       - "3000"
     depends_on:

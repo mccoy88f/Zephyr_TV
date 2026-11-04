@@ -36,6 +36,15 @@
 <a class="b get" id="g" href="https://github.com/mccoy88f/Zephyr_TV/releases/latest">Get Zephyr TV</a>
 <p><code id="l"></code></p>
 <script>
+  // The links now go to Zephyr TV's site, which shows a title's poster as the link's preview: this page sends its
+  // older links there (a title to /t/<type>/<id>?…, an extension, add-on or repository to /o/<kind>?u=…).
+  (function () {
+    const what = location.hash.slice(1);
+    if (!what) return;
+    const site = "https://ztv.mccoy88f.link";
+    const to = what.startsWith("title/") ? site + "/t/" + what.slice(6) : /^(ext|addon|nuvio)\?/.test(what) ? site + "/o/" + what : null;
+    if (to) location.replace(to);
+  })();
   const it = (navigator.language || "").toLowerCase().startsWith("it");
   const what = location.hash.slice(1);
   const link = "ztv://" + what;
