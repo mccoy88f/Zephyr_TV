@@ -304,6 +304,8 @@ internal object Remote {
         if (!authed) return if (r.method == "GET") r.reply(200, HTML, a.pinHtml()) else r.reply(401, TEXT, a.remotePinPrompt())
         if (!ID.matches(id)) return r.reply(404, TEXT, "Not found.")
         val task = held[id] ?: a.remoteTask(id) ?: return r.reply(404, TEXT, a.getString(R.string.remote_not_open))
+        // Its page with the remote page's bar at the bottom, as everywhere on the phone (see docked).
+        if (r.method == "GET") return r.reply(200, HTML, onMain { docked(task.page.html, id) })
         val status = r.serve(task, a.cacheDir)
         if (r.method == "POST" && status in 200..299) succeed(id)
     }
@@ -715,6 +717,44 @@ private const val SEARCH = """<svg viewBox="0 0 24 24" aria-hidden="true"><path 
 /** A handset, for the remote page. */
 private const val HANDSET = """<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7.5" r="1.3" fill="currentColor"/><circle cx="12" cy="13" r="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>"""
 
+/** The bottom bar's look, on the remote page and on the pages it opens (see docked). */
+private const val DOCK_CSS = """
+      .dock{position:sticky;bottom:0;display:flex;align-items:center;gap:8px;margin-top:auto;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
+      body.glass .dock{background:rgba(16,16,20,.92)}
+      .dock .side{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+      .dock .side.end{justify-content:flex-end}
+      .dock .device{flex:none;max-width:42%;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-size:14px;color:var(--muted)}
+      .dock .ico{display:block;flex:none;width:44px;height:44px;margin:0;padding:10px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--fg)}
+      .dock .ico svg{width:100%;height:100%;display:block}
+      .dock .ico.on{background:var(--fill);color:var(--on);border-color:transparent}
+"""
+
+/**
+ * The bar at the bottom of the remote page: users and search, the TV's name, the menu and the remote. [link]: as
+ * links back to the remote page, which opens what was picked (from a page of its own, see docked); [on] is lit.
+ */
+private fun MainActivity.remoteDock(link: Boolean = false, on: String? = null): String {
+    fun item(id: String, label: Int, icon: String): String {
+        val cls = if (id == on) "ico on" else "ico"
+        val name = escHtml(getString(label))
+        return if (link) """<a id="$id" class="$cls" href="../#$id" aria-label="$name">$icon</a>"""
+        else """<button id="$id" class="$cls" type="button" aria-label="$name">$icon</button>"""
+    }
+    return """<nav class="dock"><div class="side">${item("users", R.string.users_title, PROFILE)}${item("search", R.string.search_title, SEARCH)}</div>""" +
+        """<p class="device">${escHtml(tvName())}</p><div class="side end">${item("open", R.string.remote_open, TUNE)}${item("remote", R.string.remote_pad, HANDSET)}</div></nav>"""
+}
+
+/**
+ * [html], a page the remote page opens (the search's, a key's, a form's: see Remote.go), with the remote page's bar at
+ * the bottom, as on the remote page: its buttons go back there. [id] is the page's screen: the search lights search.
+ */
+internal fun MainActivity.docked(html: String, id: String): String {
+    val at = html.lastIndexOf("</body>")
+    if (at < 0) return html
+    val style = "<style>$DOCK_CSS .dock{position:fixed;left:0;right:0;max-width:420px;margin:0 auto} .sheet{padding-bottom:96px}</style>"
+    return html.substring(0, at) + style + remoteDock(link = true, on = if (id == "search") "search" else "open") + html.substring(at)
+}
+
 /**
  * The phone page in the TV's theme. [body] is the page. [dock] is the bar at the bottom. The logo and the app name
  * stay at the top. The device name sits in the center of the bar.
@@ -763,14 +803,7 @@ private fun MainActivity.remotePage(body: String, dock: String, script: String) 
       .group{margin:10px 0 0;font-size:13px;color:var(--muted);text-align:center}
       .dpad button:active,.pair button:active{background:var(--fg);color:var(--on)}
       .padError{min-height:1.4em;margin:8px 0 0;font-size:14px;text-align:center}
-      .dock{position:sticky;bottom:0;display:flex;align-items:center;gap:8px;margin-top:auto;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
-      body.glass .dock{background:rgba(16,16,20,.92)}
-      .dock .side{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
-      .dock .side.end{justify-content:flex-end}
-      .dock .device{flex:none;max-width:42%;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;font-size:14px;color:var(--muted)}
-      .dock button{flex:none;width:44px;height:44px;padding:10px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--fg)}
-      .dock button svg{width:100%;height:100%;display:block}
-      .dock button.on{background:var(--fill);color:var(--on);border-color:transparent}
+      $DOCK_CSS
     </style></head><body class="${phoneTheme()}">
     <div class="sheet">
     <header>${PhoneStyle.LOGO}<h1>${escHtml(getString(R.string.app_name))}</h1></header>
@@ -812,7 +845,7 @@ private fun MainActivity.menuHtml(): String {
     val down = escHtml(getString(R.string.remote_down))
     val left = escHtml(getString(R.string.remote_left))
     val right = escHtml(getString(R.string.remote_right))
-    val dock = """<nav class="dock"><div class="side"><button id="users" class="ico" type="button" aria-label="${escHtml(getString(R.string.users_title))}">$PROFILE</button><button id="search" class="ico" type="button" aria-label="${escHtml(getString(R.string.search_title))}">$SEARCH</button></div><p class="device">${escHtml(tvName())}</p><div class="side end"><button id="open" class="ico" type="button" aria-label="${escHtml(getString(R.string.remote_open))}">$TUNE</button><button id="remote" class="ico" type="button" aria-label="${escHtml(getString(R.string.remote_pad))}">$HANDSET</button></div></nav>"""
+    val dock = remoteDock()
     return remotePage("""
         <div id="panel">
         <h2 id="heading">$TUNE<span id="title"></span></h2>
@@ -936,6 +969,9 @@ private fun MainActivity.menuHtml(): String {
           setTimeout(tick, 800);
         }
         document.addEventListener('visibilitychange', function(){if(!document.hidden){last=''; draw();}});
+        // Back from a page of its own (the search's, a form's): what its bar's button asked for, opened here.
+        const asked=location.hash.slice(1);
+        if(['users','search','open','remote'].indexOf(asked)>=0){history.replaceState(null,'',location.pathname+location.search); document.getElementById(asked).click();}
         tick();
     """.trimIndent())
 }

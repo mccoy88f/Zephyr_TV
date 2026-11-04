@@ -187,6 +187,9 @@ internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
     clear.nextFocusDownId = first.id
     clear.nextFocusUpId = clear.id
     input.nextFocusDownId = first.id
+    // Left at the start of the words: the microphone; Right at the end: the cross, while it's shown (see settingsKey).
+    input.nextFocusLeftId = mic.id
+    input.nextFocusRightId = clear.id
     // The TV keyboard keeps Down for itself while the box has focus, even with the keyboard put away.
     // Left at the start of the words goes to the microphone; Right at the end goes to the cross.
     input.setOnKeyListener { _, key, e ->

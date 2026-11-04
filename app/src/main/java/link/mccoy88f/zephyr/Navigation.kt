@@ -112,8 +112,16 @@ internal fun MainActivity.settingsKey(key: Int): Boolean {
     val focused = currentFocus
     if (focused is EditText && (key == KeyEvent.KEYCODE_DPAD_LEFT || key == KeyEvent.KEYCODE_DPAD_RIGHT)) {
         val pos = focused.selectionStart.coerceAtLeast(0)
-        val dir = if (key == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1
-        focused.setSelection((pos + dir).coerceIn(0, focused.length()))
+        val right = key == KeyEvent.KEYCODE_DPAD_RIGHT
+        // At the start (Left) or the end (Right) of the words: on to the box's neighbour there, when it has one in the
+        // panel and it's shown (the search's microphone and cross); else the cursor stays.
+        if (if (right) pos >= focused.length() else pos == 0) {
+            val id = if (right) focused.nextFocusRightId else focused.nextFocusLeftId
+            val next = id.takeIf { it != View.NO_ID }?.let { findViewById<View>(it) }
+            if (next != null && next.isShown && isDescendantOf(next, settingsScrim) && next.steer()) return true
+            return true
+        }
+        focused.setSelection((pos + if (right) 1 else -1).coerceIn(0, focused.length()))
         return true
     }
     if (focused?.tag == "pin-digits" && offerKey(focused, key)) return true
