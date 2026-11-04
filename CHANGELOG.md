@@ -13,6 +13,16 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.0.0-beta.13
+
+- Select **Settings → Player mpv** to install the mpv player. It is an app of its own, so Zephyr TV stays small.
+- The mpv player plays almost all files: Blu-ray discs (.m2ts), AVI, DTS-HD and TrueHD sound, ASS subtitles.
+- When the built-in player cannot read a stream, the stream plays in mpv. Select **Use the mpv player** to change this.
+- In mpv, press OK to pause. Press ◀ ▶ to go back or forward. Press ▲ ▼ to change the audio or the subtitles.
+- If no stream plays and the mpv player is not installed, the player offers to install it.
+- Blu-ray files (.m2ts) play with their DTS and DTS-HD sound in the built-in player. Before, they had no sound.
+- In Blu-ray files you can go forward and back, and continue from where you stopped.
+
 ## 4.0.0-beta.12
 
 - Zephyr TV is in German, Portuguese (Brazil), Chinese (Simplified) and Hindi.
