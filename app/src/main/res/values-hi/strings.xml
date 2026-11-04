@@ -342,6 +342,8 @@
     <string name="setting_problems">हाल की समस्याएँ</string>
     <string name="problems_none">कोई नहीं</string>
     <string name="problems_on_phone">अपने फ़ोन पर पढ़ें…</string>
+    <string name="problem_copy">कॉपी करें</string>
+    <string name="problem_copied">कॉपी हो गया</string>
     <!-- Backup and restore -->
     <string name="setting_backup">बैकअप और वापस लाना</string>
     <string name="backup_save">अपने फ़ोन पर बैकअप सेव करें…</string>

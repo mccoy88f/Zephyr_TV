@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.net.ConnectivityManager
 import android.view.Gravity
+import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -133,8 +134,49 @@ internal fun MainActivity.showProblems() {
     val rows = listOf(
         page(getString(R.string.problems_on_phone)) { problemsOnPhone() },
         page(getString(R.string.dialog_clear)) { Problems.clear(); showProblems() },
-    ) + recent.map { page(it) {} }
+    ) + recent.map { line -> page(line) { textPopup(getString(R.string.setting_problems), line) } }
     showPage(getString(R.string.setting_problems), rows) { renderSettings(problemsRow()) }
+}
+
+/**
+ * [content] whole, in a window over the page: a row of the list shows only its start. The text can be selected
+ * (on a phone or tablet, or with a keyboard), and Copy puts it all on the clipboard. Back or Close closes it.
+ */
+internal fun MainActivity.textPopup(title: String, content: String) {
+    val box = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(16), dp(14), dp(16), dp(10))
+        background = menuBackground()
+        elevation = dp(8).toFloat()
+    }
+    val width = (resources.displayMetrics.widthPixels * 0.7f).toInt()
+    val maxText = (resources.displayMetrics.heightPixels * 0.55f).toInt()
+    val popup = android.widget.PopupWindow(box, width, LinearLayout.LayoutParams.WRAP_CONTENT, true).apply {
+        setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0))
+        elevation = dp(8).toFloat()
+    }
+    box.addView(label(title, 16f).apply { setPadding(0, 0, 0, dp(8)) })
+    val body = TextView(this).apply {
+        text = content
+        textSize = 14f
+        setTextColor(fg)
+        setTextIsSelectable(true)
+        setLineSpacing(0f, 1.15f)
+        isFocusable = true
+    }
+    val scroll = android.widget.ScrollView(this).apply { addView(body) }
+    body.measure(View.MeasureSpec.makeMeasureSpec(width - dp(32), View.MeasureSpec.EXACTLY), View.MeasureSpec.UNSPECIFIED)
+    box.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, minOf(body.measuredHeight, maxText)))
+    val buttons = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; setPadding(0, dp(10), 0, 0) }
+    buttons.addView(settingsRow(getString(R.string.problem_copy), "") {
+        getSystemService(android.content.ClipboardManager::class.java)
+            ?.setPrimaryClip(android.content.ClipData.newPlainText(title, content))
+        toast(R.string.problem_copied, long = false)
+    }, LinearLayout.LayoutParams(0, dp(40), 1f).apply { marginEnd = dp(6) })
+    buttons.addView(settingsRow(getString(R.string.setup_close), "") { popup.dismiss() }, LinearLayout.LayoutParams(0, dp(40), 1f))
+    box.addView(buttons)
+    popup.showAtLocation(window.decorView, Gravity.CENTER, 0, 0)
+    body.requestFocus()
 }
 
 /** The recent problems as a page, read on a phone. Built when the page is asked for, so it stays current. */

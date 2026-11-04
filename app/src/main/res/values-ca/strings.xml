@@ -342,6 +342,8 @@
     <string name="setting_problems">Problemes recents</string>
     <string name="problems_none">Cap</string>
     <string name="problems_on_phone">Llegeix-los al mòbil…</string>
+    <string name="problem_copy">Copia</string>
+    <string name="problem_copied">Copiat</string>
     <!-- Backup and restore -->
     <string name="setting_backup">Còpia de seguretat i restauració</string>
     <string name="backup_save">Desa una còpia de seguretat al mòbil…</string>

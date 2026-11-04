@@ -342,6 +342,8 @@
     <string name="setting_problems">Recent problems</string>
     <string name="problems_none">None</string>
     <string name="problems_on_phone">Read them on your phone…</string>
+    <string name="problem_copy">Copy</string>
+    <string name="problem_copied">Copied</string>
     <!-- Backup and restore -->
     <string name="setting_backup">Backup and restore</string>
     <string name="backup_save">Save a backup on your phone…</string>

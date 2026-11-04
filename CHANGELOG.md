@@ -17,6 +17,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 - A film or episode from a debrid service (TorBox, Real-Debrid…) gets up to 15 seconds to answer. Before, the player gave up after 6 seconds.
 - The player checks a stream as the same player that plays it. A server that refuses one check gets a second one as VLC.
+- In **Recent problems**, select a problem to read all of its text. Select **Copy** to put it on the clipboard.
 
 ## 4.0.0-beta.12
 
