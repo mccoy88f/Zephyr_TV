@@ -66,13 +66,14 @@ internal fun MainActivity.setupSpotlight() {
 /**
  * Focus down in the rows under the apps: Spotlight folds away (the apps go up), its carousel stops on the title it
  * shows, and the backdrop softens under the apps (see RowsVeil). Back on the apps or above: it opens again on the same
- * title, which gets its full time again. Not on a phone or tablet, nor without Spotlight.
+ * title, which gets its full time again. With the arrows on a phone or tablet too (a finger moves no focus); not without
+ * Spotlight.
  */
 internal fun MainActivity.foldSpotlight(v: View?) {
     val content = findViewById<View>(R.id.content)
     if (v == null || !isDescendantOf(v, content)) return // the panel, a menu: as it is
     val below = isDescendantOf(v, bottomSection) && !isDescendantOf(v, findViewById(R.id.appScroll))
-    val fold = below && spotlightContainer.visibility == View.VISIBLE && !handheld()
+    val fold = below && spotlightContainer.visibility == View.VISIBLE
     if (fold == spotlightFolded) return
     spotlightFolded = fold
     foldAnimation(fold)
@@ -91,6 +92,13 @@ private fun MainActivity.foldAnimation(fold: Boolean) {
             View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
         c.measuredHeight
     }
+    // The room under Spotlight, which keeps the apps low: from its height to none (folding), back to the height it had.
+    val gap = findViewById<View>(R.id.spotlightGap)
+    val gapLp = gap.layoutParams as android.widget.LinearLayout.LayoutParams
+    if (fold && gapLp.weight > 0f) gap.setTag(R.id.spotlightGap, gap.height)
+    val gapFrom = gap.height
+    val gapTo = if (fold) 0 else (gap.getTag(R.id.spotlightGap) as? Int ?: 0)
+    gapLp.weight = 0f
     val start = rowsVeil.folded
     val anim = ValueAnimator.ofFloat(0f, 1f).setDuration(FOLD_MS)
     anim.interpolator = DECELERATE
@@ -102,6 +110,8 @@ private fun MainActivity.foldAnimation(fold: Boolean) {
         lp.bottomMargin = (dp(12) * (1f - f)).toInt()
         c.layoutParams = lp
         c.alpha = 1f - f
+        gapLp.height = gapFrom + ((gapTo - gapFrom) * t).toInt()
+        gap.layoutParams = gapLp
         rowsVeil.folded = f
     }
     anim.addListener(object : android.animation.AnimatorListenerAdapter() {
@@ -112,6 +122,9 @@ private fun MainActivity.foldAnimation(fold: Boolean) {
             if (!fold) {
                 lp.height = ViewGroup.LayoutParams.WRAP_CONTENT
                 c.layoutParams = lp
+                gapLp.height = 0 // the room elastic again, as the layout has it
+                gapLp.weight = 1f
+                gap.layoutParams = gapLp
             }
             keepInView(currentFocus) // the page where it should be, now the apps have moved
         }
@@ -166,7 +179,9 @@ internal class RowsVeil(private val host: MainActivity) : View(host) {
 internal fun MainActivity.keepInView(v: View?) {
     val content = findViewById<View>(R.id.content)
     if (v == null || !isDescendantOf(v, content)) return
-    val target = if (v.getTag(R.id.watchRow) is Prog) v.parent as View else v
+    // A card: its whole row (as tall as its tallest card), so moving along it doesn't move the page up and down as
+    // cards with a line of details under them and cards without one take turns.
+    val target = if (v.getTag(R.id.watchRow) is Prog) (v.parent as View).parent as? View ?: v.parent as View else v
     val under = if (v.parent === appRow) dp(28) else 0
     content.post {
         var shift = 0f

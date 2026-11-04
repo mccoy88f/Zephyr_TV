@@ -245,7 +245,10 @@
                 android:visibility="gone" />
         </LinearLayout>
 
+        <!-- The room between Spotlight and the apps, which keeps the apps low; closed while Spotlight is folded away
+             (see foldSpotlight), so the apps go up under the top bar. -->
         <View
+            android:id="@+id/spotlightGap"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />

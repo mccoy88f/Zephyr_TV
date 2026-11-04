@@ -15,6 +15,8 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 ## Unreleased
 
+- When Spotlight folds away, the apps row goes up under the top bar. It folds on phones too, with the arrows.
+- Moving along a row with the arrows no longer moves the page up and down.
 - A backup tells which users had a Trakt account, but never its keys. After a restore, each of them signs in to Trakt again with a code, as the PIN is chosen again. Select **Skip** to do it later.
 
 ## 4.0.0-beta.19
