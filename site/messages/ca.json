@@ -9,7 +9,8 @@
     "admin": "Admin",
     "login": "Inicia la sessió",
     "logout": "Tanca la sessió",
-    "language": "Idioma"
+    "language": "Idioma",
+    "account": "Compte"
   },
   "footer": {
     "source": "Codi font",
@@ -91,7 +92,9 @@
     "error_limited": "Massa intents. Espera uns minuts i torna-ho a provar.",
     "error_unverified": "Primer confirma el teu correu: obre l'enllaç que t'hem enviat.",
     "error_invalid": "Escriu un correu vàlid i la teva contrasenya.",
-    "signup_soon": "Aviat hi haurà comptes per a tothom, per sincronitzar els teus televisors."
+    "register": "Crea un compte",
+    "forgot": "Has oblidat la contrasenya?",
+    "resend": "Torna a enviar el correu de confirmació"
   },
   "admin": {
     "title": "Admin",
@@ -100,7 +103,9 @@
     "verified": "Verificats",
     "superadmins": "Superadmins",
     "sessions": "Sessions actives",
-    "soon": "Usuaris, televisors, sincronització i extensions arriben a les properes fases."
+    "soon": "Usuaris de Zephyr TV, televisors, sincronització i extensions arriben després.",
+    "manage_accounts": "Gestiona els comptes",
+    "no_mail": "El correu no està configurat (SMTP_PASSWORD): els comptes nous no poden confirmar el correu."
   },
   "share": {
     "watch": "Per mirar a Zephyr TV",
@@ -119,5 +124,109 @@
     "refused_text": "Zephyr TV no s'ha autoritzat a Trakt. Torna-ho a provar des del televisor quan vulguis.",
     "error_title": "Alguna cosa ha anat malament",
     "error_text": "L'inici de sessió ha caducat o ja s'ha fet servir. Torna a començar des del televisor."
+  },
+  "fields": {
+    "email": "Correu",
+    "new_password": "Contrasenya nova",
+    "repeat_password": "Repeteix la contrasenya",
+    "current_password": "Contrasenya actual",
+    "new_email": "Correu nou"
+  },
+  "forms": {
+    "limited": "Massa intents. Espera una mica i torna-ho a provar.",
+    "email_invalid": "Escriu un correu vàlid.",
+    "pw_mismatch": "Les dues contrasenyes són diferents.",
+    "pw_short": "La contrasenya necessita almenys 10 caràcters.",
+    "pw_long": "La contrasenya pot tenir com a màxim 256 caràcters.",
+    "pw_leaked": "Aquesta contrasenya surt en filtracions de dades: tria'n una altra.",
+    "pw_wrong": "La contrasenya és incorrecta.",
+    "mail": "No s'ha pogut enviar el correu. Torna-ho a provar més tard.",
+    "link_bad": "Aquest enllaç ha caducat o ja s'ha fet servir. Demana'n un de nou.",
+    "email_taken": "Aquest correu ja té un compte.",
+    "superadmin": "El compte del superadmin no es pot eliminar des d'aquí."
+  },
+  "register": {
+    "title": "Crea un compte",
+    "intro": "Amb un compte vincules els teus televisors, mantens sincronitzats els usuaris de Zephyr TV i publiques extensions.",
+    "submit": "Crea el compte",
+    "done": "Gairebé fet: obre l'enllaç que hem enviat al teu correu per confirmar-lo. Mira també el correu brossa.",
+    "rules": "Almenys 10 caràcters. No s'accepten contrasenyes filtrades.",
+    "have_account": "Ja tinc un compte",
+    "resend": "Torna a enviar el correu de confirmació"
+  },
+  "verify": {
+    "title": "Confirma el teu correu",
+    "intro": "Prem Confirma per acabar.",
+    "submit": "Confirma"
+  },
+  "resend": {
+    "title": "Torna a enviar el correu de confirmació",
+    "intro": "Escriu el correu del teu compte: si encara no està confirmat, et tornem a enviar l'enllaç.",
+    "submit": "Envia",
+    "done": "Si el compte existeix i no està confirmat, l'enllaç és en camí."
+  },
+  "forgot": {
+    "title": "Has oblidat la contrasenya?",
+    "intro": "Escriu el correu del teu compte: t'enviem un enllaç per triar una contrasenya nova, vàlid una hora.",
+    "submit": "Envia l'enllaç",
+    "done": "Si un compte té aquest correu, l'enllaç és en camí. Mira també el correu brossa."
+  },
+  "reset": {
+    "title": "Tria una contrasenya nova",
+    "submit": "Desa la contrasenya",
+    "rules": "Almenys 10 caràcters. Es tanca la sessió a tots els dispositius del compte."
+  },
+  "account": {
+    "title": "El teu compte",
+    "done_email": "Correu confirmat.",
+    "done_password": "Contrasenya desada.",
+    "done_sessions": "Sessió tancada als altres dispositius.",
+    "signed_in": "Sessió iniciada com a {email}",
+    "since": "compte des del {date}",
+    "language_title": "Idioma",
+    "language_text": "L'idioma dels correus que t'enviem.",
+    "save": "Desa",
+    "password_title": "Contrasenya",
+    "password_submit": "Canvia la contrasenya",
+    "password_done": "Contrasenya canviada. S'ha tancat la sessió als altres dispositius.",
+    "email_title": "Correu",
+    "email_text": "T'enviem un enllaç al correu nou: el compte s'hi mou quan l'obres.",
+    "email_submit": "Canvia el correu",
+    "email_done": "Obre l'enllaç que hem enviat al correu nou.",
+    "sessions_title": "On has iniciat la sessió",
+    "this_browser": "Aquest navegador",
+    "sessions_others": "Tanca la sessió als altres dispositius",
+    "delete_title": "Elimina el compte",
+    "delete_text": "Tot el que pertany al compte s'elimina i no es pot recuperar.",
+    "delete_submit": "Elimina el compte"
+  },
+  "adminAccounts": {
+    "title": "Comptes",
+    "back": "Admin",
+    "search": "Cerca per correu",
+    "email": "Correu",
+    "state": "Estat",
+    "created": "Creat",
+    "blocked": "Bloquejat",
+    "verified": "Confirmat",
+    "unverified": "Sense confirmar",
+    "verify": "Confirma",
+    "block": "Bloqueja",
+    "unblock": "Desbloqueja",
+    "delete": "Elimina",
+    "none": "Cap compte."
+  },
+  "email": {
+    "hello": "Hola,",
+    "ignore": "Si no ho has demanat, ignora aquest correu.",
+    "verify_subject": "Confirma el teu compte de Zephyr TV",
+    "verify_text": "Confirma el teu correu per començar a fer servir el teu compte de Zephyr TV. L'enllaç val {hours} hores.",
+    "verify_button": "Confirma el correu",
+    "reset_subject": "La teva contrasenya nova de Zephyr TV",
+    "reset_text": "Tria una contrasenya nova per al teu compte de Zephyr TV. L'enllaç val {hours} hora.",
+    "reset_button": "Tria una contrasenya nova",
+    "change_subject": "Confirma el teu correu nou",
+    "change_text": "Confirma aquest correu per moure-hi el teu compte de Zephyr TV. L'enllaç val {hours} hores.",
+    "change_button": "Confirma el correu nou"
   }
 }

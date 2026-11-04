@@ -24,6 +24,12 @@
     "url": "https://next-intl.dev"
   },
   {
+    "name": "nodemailer",
+    "version": "10.2.1",
+    "license": "MIT-0",
+    "url": "https://nodemailer.com/"
+  },
+  {
     "name": "pg",
     "version": "8.23.1",
     "license": "MIT",

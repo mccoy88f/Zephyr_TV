@@ -9,7 +9,8 @@
     "admin": "Admin",
     "login": "Accedi",
     "logout": "Esci",
-    "language": "Lingua"
+    "language": "Lingua",
+    "account": "Account"
   },
   "footer": {
     "source": "Codice sorgente",
@@ -91,7 +92,9 @@
     "error_limited": "Troppi tentativi. Aspetta qualche minuto e riprova.",
     "error_unverified": "Prima conferma la tua email: apri il link che ti abbiamo mandato.",
     "error_invalid": "Inserisci un'email valida e la tua password.",
-    "signup_soon": "Gli account per tutti, per sincronizzare i tuoi TV, arrivano presto."
+    "register": "Crea un account",
+    "forgot": "Password dimenticata?",
+    "resend": "Rimanda l'email di conferma"
   },
   "admin": {
     "title": "Admin",
@@ -100,7 +103,9 @@
     "verified": "Verificati",
     "superadmins": "Superadmin",
     "sessions": "Sessioni attive",
-    "soon": "Utenti, TV, sincronizzazione ed estensioni arrivano nelle prossime fasi."
+    "soon": "Utenti Zephyr TV, TV, sincronizzazione ed estensioni arrivano dopo.",
+    "manage_accounts": "Gestisci gli account",
+    "no_mail": "L'email non è configurata (SMTP_PASSWORD): i nuovi account non possono confermare l'email."
   },
   "share": {
     "watch": "Da guardare su Zephyr TV",
@@ -119,5 +124,109 @@
     "refused_text": "Zephyr TV non è stato autorizzato su Trakt. Riprova dal TV quando vuoi.",
     "error_title": "Qualcosa è andato storto",
     "error_text": "L'accesso è scaduto o è già stato usato. Ricomincia dal TV."
+  },
+  "fields": {
+    "email": "Email",
+    "new_password": "Nuova password",
+    "repeat_password": "Ripeti la password",
+    "current_password": "Password attuale",
+    "new_email": "Nuova email"
+  },
+  "forms": {
+    "limited": "Troppi tentativi. Aspetta un po' e riprova.",
+    "email_invalid": "Inserisci un'email valida.",
+    "pw_mismatch": "Le due password sono diverse.",
+    "pw_short": "La password deve avere almeno 10 caratteri.",
+    "pw_long": "La password può avere al massimo 256 caratteri.",
+    "pw_leaked": "Questa password compare in furti di dati noti: scegline un'altra.",
+    "pw_wrong": "La password è sbagliata.",
+    "mail": "Non è stato possibile mandare l'email. Riprova più tardi.",
+    "link_bad": "Questo link è scaduto o è già stato usato. Chiedine uno nuovo.",
+    "email_taken": "Questa email ha già un account.",
+    "superadmin": "L'account del superadmin non si può eliminare da qui."
+  },
+  "register": {
+    "title": "Crea un account",
+    "intro": "Con un account colleghi i tuoi TV, tieni sincronizzati gli utenti di Zephyr TV e pubblichi estensioni.",
+    "submit": "Crea l'account",
+    "done": "Quasi fatto: apri il link che abbiamo mandato alla tua email per confermarla. Controlla anche lo spam.",
+    "rules": "Almeno 10 caratteri. Le password trovate in furti di dati non sono accettate.",
+    "have_account": "Ho già un account",
+    "resend": "Rimanda l'email di conferma"
+  },
+  "verify": {
+    "title": "Conferma la tua email",
+    "intro": "Premi Conferma per finire.",
+    "submit": "Conferma"
+  },
+  "resend": {
+    "title": "Rimanda l'email di conferma",
+    "intro": "Inserisci l'email del tuo account: se non è ancora confermata, ti rimandiamo il link.",
+    "submit": "Manda",
+    "done": "Se l'account esiste e non è confermato, il link è in arrivo."
+  },
+  "forgot": {
+    "title": "Password dimenticata?",
+    "intro": "Inserisci l'email del tuo account: ti mandiamo un link per scegliere una nuova password, valido un'ora.",
+    "submit": "Manda il link",
+    "done": "Se un account ha questa email, il link è in arrivo. Controlla anche lo spam."
+  },
+  "reset": {
+    "title": "Scegli una nuova password",
+    "submit": "Salva la password",
+    "rules": "Almeno 10 caratteri. Tutti i dispositivi collegati all'account vengono scollegati."
+  },
+  "account": {
+    "title": "Il tuo account",
+    "done_email": "Email confermata.",
+    "done_password": "Password salvata.",
+    "done_sessions": "Scollegato dagli altri dispositivi.",
+    "signed_in": "Accesso come {email}",
+    "since": "account dal {date}",
+    "language_title": "Lingua",
+    "language_text": "La lingua delle email che ti mandiamo.",
+    "save": "Salva",
+    "password_title": "Password",
+    "password_submit": "Cambia la password",
+    "password_done": "Password cambiata. Gli altri dispositivi sono stati scollegati.",
+    "email_title": "Email",
+    "email_text": "Ti mandiamo un link alla nuova email: l'account si sposta lì quando lo apri.",
+    "email_submit": "Cambia l'email",
+    "email_done": "Apri il link che abbiamo mandato alla nuova email.",
+    "sessions_title": "Dove hai fatto l'accesso",
+    "this_browser": "Questo browser",
+    "sessions_others": "Esci dagli altri dispositivi",
+    "delete_title": "Elimina l'account",
+    "delete_text": "Tutto quello che appartiene all'account viene eliminato e non si può recuperare.",
+    "delete_submit": "Elimina l'account"
+  },
+  "adminAccounts": {
+    "title": "Account",
+    "back": "Admin",
+    "search": "Cerca per email",
+    "email": "Email",
+    "state": "Stato",
+    "created": "Creato",
+    "blocked": "Bloccato",
+    "verified": "Confermato",
+    "unverified": "Non confermato",
+    "verify": "Conferma",
+    "block": "Blocca",
+    "unblock": "Sblocca",
+    "delete": "Elimina",
+    "none": "Nessun account."
+  },
+  "email": {
+    "hello": "Ciao,",
+    "ignore": "Se non l'hai chiesto tu, ignora questa email.",
+    "verify_subject": "Conferma il tuo account Zephyr TV",
+    "verify_text": "Conferma la tua email per iniziare a usare il tuo account Zephyr TV. Il link vale {hours} ore.",
+    "verify_button": "Conferma l'email",
+    "reset_subject": "La tua nuova password Zephyr TV",
+    "reset_text": "Scegli una nuova password per il tuo account Zephyr TV. Il link vale {hours} ora.",
+    "reset_button": "Scegli una nuova password",
+    "change_subject": "Conferma la tua nuova email",
+    "change_text": "Conferma questa email per spostare qui il tuo account Zephyr TV. Il link vale {hours} ore.",
+    "change_button": "Conferma la nuova email"
   }
 }

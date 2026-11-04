@@ -2,7 +2,8 @@ import { count, eq, gt, isNotNull } from "drizzle-orm";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { db } from "@/db";
 import { accounts, sessions } from "@/db/schema";
-import { redirect } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
+import { mailReady } from "@/server/mail";
 import { currentAccount } from "@/server/session";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -33,6 +34,8 @@ export default async function Admin({ params }: { params: Promise<{ locale: stri
         <article className="card stat"><strong>{admins.n}</strong><span>{t("superadmins")}</span></article>
         <article className="card stat"><strong>{live.n}</strong><span>{t("sessions")}</span></article>
       </div>
+      <p><Link className="button" href="/admin/accounts">{t("manage_accounts")}</Link></p>
+      {!mailReady() && <p className="error">{t("no_mail")}</p>}
       <p className="muted">{t("soon")}</p>
     </section>
   );

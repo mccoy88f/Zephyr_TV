@@ -36,6 +36,26 @@ export const sessions = pgTable(
 
 export type Account = typeof accounts.$inferSelect;
 
+/** What a link sent by email does: confirm an account's email, set a new password, or move to a new email. */
+export const emailPurpose = pgEnum("email_purpose", ["verify", "reset", "change"]);
+
+/**
+ * A link sent by email: its random token's SHA-256 only (the token is in the email), what it does, for which account,
+ * until when. Used once. [newEmail]: where an email change goes.
+ */
+export const emailTokens = pgTable(
+  "email_tokens",
+  {
+    tokenHash: text("token_hash").primaryKey(),
+    accountId: uuid("account_id").notNull().references(() => accounts.id, { onDelete: "cascade" }),
+    purpose: emailPurpose("purpose").notNull(),
+    newEmail: text("new_email"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [index("email_tokens_account").on(t.accountId)],
+);
+
 /** Where a Trakt sign-in is: the phone on Trakt's page, done (its code waiting for the TV), or refused. */
 export const traktStatus = pgEnum("trakt_status", ["waiting", "done", "refused"]);
 

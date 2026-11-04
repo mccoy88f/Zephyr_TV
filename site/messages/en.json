@@ -9,7 +9,8 @@
     "admin": "Admin",
     "login": "Sign in",
     "logout": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "account": "Account"
   },
   "footer": {
     "source": "Source code",
@@ -91,7 +92,9 @@
     "error_limited": "Too many tries. Wait a few minutes and try again.",
     "error_unverified": "Confirm your email first: open the link we sent you.",
     "error_invalid": "Enter a valid email and your password.",
-    "signup_soon": "Accounts for everyone, to sync your TVs, are coming soon."
+    "register": "Create an account",
+    "forgot": "Forgot your password?",
+    "resend": "Confirmation email again"
   },
   "admin": {
     "title": "Admin",
@@ -100,7 +103,9 @@
     "verified": "Verified",
     "superadmins": "Superadmins",
     "sessions": "Active sessions",
-    "soon": "Users, TVs, sync and extensions come in the next phases."
+    "soon": "Zephyr TV users, TVs, sync and extensions come next.",
+    "manage_accounts": "Manage accounts",
+    "no_mail": "Email isn't set up (SMTP_PASSWORD): new accounts can't confirm their email."
   },
   "share": {
     "watch": "To watch on Zephyr TV",
@@ -119,5 +124,109 @@
     "refused_text": "Zephyr TV wasn't allowed on Trakt. Try again from the TV when you like.",
     "error_title": "Something went wrong",
     "error_text": "The sign-in is too old or was already used. Start it again from the TV."
+  },
+  "fields": {
+    "email": "Email",
+    "new_password": "New password",
+    "repeat_password": "Repeat the password",
+    "current_password": "Current password",
+    "new_email": "New email"
+  },
+  "forms": {
+    "limited": "Too many tries. Wait a little and try again.",
+    "email_invalid": "Enter a valid email.",
+    "pw_mismatch": "The two passwords are different.",
+    "pw_short": "The password needs at least 10 characters.",
+    "pw_long": "The password can have at most 256 characters.",
+    "pw_leaked": "This password appears in leaked data breaches: choose another one.",
+    "pw_wrong": "The password is wrong.",
+    "mail": "The email couldn't be sent. Try again later.",
+    "link_bad": "This link is too old or was already used. Ask for a new one.",
+    "email_taken": "This email already has an account.",
+    "superadmin": "The superadmin's account can't be deleted here."
+  },
+  "register": {
+    "title": "Create an account",
+    "intro": "With an account you'll link your TVs, keep your Zephyr TV users in sync and publish extensions.",
+    "submit": "Create the account",
+    "done": "Almost done: open the link we sent to your email to confirm it. Check the spam folder too.",
+    "rules": "At least 10 characters. Passwords found in data breaches aren't accepted.",
+    "have_account": "I have an account",
+    "resend": "Confirmation email again"
+  },
+  "verify": {
+    "title": "Confirm your email",
+    "intro": "Select Confirm to finish.",
+    "submit": "Confirm"
+  },
+  "resend": {
+    "title": "Confirmation email again",
+    "intro": "Enter your account's email: if it isn't confirmed yet, we'll send the link again.",
+    "submit": "Send",
+    "done": "If the account exists and isn't confirmed, the link is on its way."
+  },
+  "forgot": {
+    "title": "Forgot your password?",
+    "intro": "Enter your account's email: we'll send a link to choose a new password, valid one hour.",
+    "submit": "Send the link",
+    "done": "If an account has this email, the link is on its way. Check the spam folder too."
+  },
+  "reset": {
+    "title": "Choose a new password",
+    "submit": "Save the password",
+    "rules": "At least 10 characters. Every device signed in to the account is signed out."
+  },
+  "account": {
+    "title": "Your account",
+    "done_email": "Email confirmed.",
+    "done_password": "Password saved.",
+    "done_sessions": "Signed out on the other devices.",
+    "signed_in": "Signed in as {email}",
+    "since": "account since {date}",
+    "language_title": "Language",
+    "language_text": "The language of the emails we send you.",
+    "save": "Save",
+    "password_title": "Password",
+    "password_submit": "Change the password",
+    "password_done": "Password changed. The other devices were signed out.",
+    "email_title": "Email",
+    "email_text": "We'll send a link to the new email: the account moves there once you open it.",
+    "email_submit": "Change the email",
+    "email_done": "Open the link we sent to the new email.",
+    "sessions_title": "Where you're signed in",
+    "this_browser": "This browser",
+    "sessions_others": "Sign out of the other devices",
+    "delete_title": "Delete the account",
+    "delete_text": "Everything that belongs to the account goes, and can't be brought back.",
+    "delete_submit": "Delete the account"
+  },
+  "adminAccounts": {
+    "title": "Accounts",
+    "back": "Admin",
+    "search": "Search by email",
+    "email": "Email",
+    "state": "State",
+    "created": "Created",
+    "blocked": "Blocked",
+    "verified": "Confirmed",
+    "unverified": "Not confirmed",
+    "verify": "Confirm",
+    "block": "Block",
+    "unblock": "Unblock",
+    "delete": "Delete",
+    "none": "No account."
+  },
+  "email": {
+    "hello": "Hello,",
+    "ignore": "If you didn't ask for this, ignore this email.",
+    "verify_subject": "Confirm your Zephyr TV account",
+    "verify_text": "Confirm your email to start using your Zephyr TV account. The link works for {hours} hours.",
+    "verify_button": "Confirm the email",
+    "reset_subject": "Your new Zephyr TV password",
+    "reset_text": "Choose a new password for your Zephyr TV account. The link works for {hours} hour.",
+    "reset_button": "Choose a new password",
+    "change_subject": "Confirm your new email",
+    "change_text": "Confirm this email to move your Zephyr TV account here. The link works for {hours} hours.",
+    "change_button": "Confirm the new email"
   }
 }

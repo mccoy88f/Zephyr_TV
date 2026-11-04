@@ -9,7 +9,7 @@ const config: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   // Native or Node-only: left to Node, not bundled.
-  serverExternalPackages: ["@node-rs/argon2", "pg"],
+  serverExternalPackages: ["@node-rs/argon2", "pg", "nodemailer"],
   images: { unoptimized: true },
 };
 

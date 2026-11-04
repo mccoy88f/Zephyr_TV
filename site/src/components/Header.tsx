@@ -18,6 +18,7 @@ export async function Header() {
         <Link href="/download">{t("download")}</Link>
         <Link href="/credits">{t("credits")}</Link>
         {account?.role === "superadmin" && <Link href="/admin">{t("admin")}</Link>}
+        {account && <Link href="/account">{t("account")}</Link>}
         {account ? (
           <form action={signOut}>
             <button className="linkish" type="submit">{t("logout")}</button>

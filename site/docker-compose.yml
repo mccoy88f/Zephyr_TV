@@ -14,6 +14,11 @@ services:
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       TMDB_API_KEY: ${TMDB_API_KEY:-}
       TRAKT_CLIENT_ID: ${TRAKT_CLIENT_ID:-}
+      SMTP_HOST: ${SMTP_HOST:-ssl0.ovh.net}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-noreply@mccoy88f.link}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-Zephyr TV <noreply@mccoy88f.link>}
     ports:
       - "3000"
     depends_on:

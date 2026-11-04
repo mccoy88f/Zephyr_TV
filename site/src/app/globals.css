@@ -120,6 +120,27 @@ h3 { font-size: 19px; margin: 0 0 8px; }
 .small { font-size: 14px; }
 @media (max-width: 600px) { .shared { grid-template-columns: 1fr; } .shared .poster { max-width: 240px; } }
 
+/* Forms' outcomes, the account's page, the admin's table. */
+.okmsg { color: #1b7f3b; margin: 0; }
+@media (prefers-color-scheme: dark) { .okmsg { color: #5fd38a; } }
+.button.danger { background: var(--error); border-color: transparent; color: #fff; }
+.danger-zone { margin-top: 24px; border-color: color-mix(in srgb, var(--error) 50%, var(--line)); }
+.card h2 { margin-top: 0; font-size: 20px; }
+.card .form { margin: 12px 0 0; }
+.sessions { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 8px; }
+.sessions li { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.sessions .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.search { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
+.search input { flex: 1; min-width: 200px; font: inherit; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--panel); color: var(--fg); }
+.table { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.row-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.row-actions form { margin: 0; }
+.linkish.danger-text { color: var(--error); }
+.tag.bad { background: color-mix(in srgb, var(--error) 18%, transparent); color: var(--error); }
+.tag.warn { background: color-mix(in srgb, #d97706 18%, transparent); color: #d97706; }
+
 .footer { border-top: 1px solid var(--line); padding: 24px; text-align: center; font-size: 14px; }
 .footer p { margin: 4px 0; }
 

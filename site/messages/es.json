@@ -9,7 +9,8 @@
     "admin": "Admin",
     "login": "Iniciar sesión",
     "logout": "Cerrar sesión",
-    "language": "Idioma"
+    "language": "Idioma",
+    "account": "Cuenta"
   },
   "footer": {
     "source": "Código fuente",
@@ -91,7 +92,9 @@
     "error_limited": "Demasiados intentos. Espera unos minutos y vuelve a intentarlo.",
     "error_unverified": "Primero confirma tu correo: abre el enlace que te enviamos.",
     "error_invalid": "Escribe un correo válido y tu contraseña.",
-    "signup_soon": "Pronto habrá cuentas para todos, para sincronizar tus TV."
+    "register": "Crear una cuenta",
+    "forgot": "¿Olvidaste tu contraseña?",
+    "resend": "Reenviar el correo de confirmación"
   },
   "admin": {
     "title": "Admin",
@@ -100,7 +103,9 @@
     "verified": "Verificadas",
     "superadmins": "Superadmins",
     "sessions": "Sesiones activas",
-    "soon": "Usuarios, TV, sincronización y extensiones llegan en las próximas fases."
+    "soon": "Los usuarios de Zephyr TV, las TV, la sincronización y las extensiones llegan después.",
+    "manage_accounts": "Gestionar cuentas",
+    "no_mail": "El correo no está configurado (SMTP_PASSWORD): las cuentas nuevas no pueden confirmar su correo."
   },
   "share": {
     "watch": "Para ver en Zephyr TV",
@@ -119,5 +124,109 @@
     "refused_text": "Zephyr TV no fue autorizado en Trakt. Vuelve a intentarlo desde la TV cuando quieras.",
     "error_title": "Algo salió mal",
     "error_text": "El inicio de sesión caducó o ya se usó. Empieza de nuevo desde la TV."
+  },
+  "fields": {
+    "email": "Correo",
+    "new_password": "Nueva contraseña",
+    "repeat_password": "Repite la contraseña",
+    "current_password": "Contraseña actual",
+    "new_email": "Nuevo correo"
+  },
+  "forms": {
+    "limited": "Demasiados intentos. Espera un poco y vuelve a intentarlo.",
+    "email_invalid": "Escribe un correo válido.",
+    "pw_mismatch": "Las dos contraseñas son distintas.",
+    "pw_short": "La contraseña necesita al menos 10 caracteres.",
+    "pw_long": "La contraseña puede tener como máximo 256 caracteres.",
+    "pw_leaked": "Esta contraseña aparece en filtraciones de datos: elige otra.",
+    "pw_wrong": "La contraseña es incorrecta.",
+    "mail": "No se pudo enviar el correo. Vuelve a intentarlo más tarde.",
+    "link_bad": "Este enlace caducó o ya se usó. Pide uno nuevo.",
+    "email_taken": "Este correo ya tiene una cuenta.",
+    "superadmin": "La cuenta del superadmin no se puede eliminar desde aquí."
+  },
+  "register": {
+    "title": "Crear una cuenta",
+    "intro": "Con una cuenta vinculas tus TV, mantienes sincronizados los usuarios de Zephyr TV y publicas extensiones.",
+    "submit": "Crear la cuenta",
+    "done": "Casi listo: abre el enlace que enviamos a tu correo para confirmarlo. Revisa también el spam.",
+    "rules": "Al menos 10 caracteres. No se aceptan contraseñas filtradas.",
+    "have_account": "Ya tengo una cuenta",
+    "resend": "Reenviar el correo de confirmación"
+  },
+  "verify": {
+    "title": "Confirma tu correo",
+    "intro": "Pulsa Confirmar para terminar.",
+    "submit": "Confirmar"
+  },
+  "resend": {
+    "title": "Reenviar el correo de confirmación",
+    "intro": "Escribe el correo de tu cuenta: si aún no está confirmado, te reenviamos el enlace.",
+    "submit": "Enviar",
+    "done": "Si la cuenta existe y no está confirmada, el enlace va en camino."
+  },
+  "forgot": {
+    "title": "¿Olvidaste tu contraseña?",
+    "intro": "Escribe el correo de tu cuenta: te enviamos un enlace para elegir una contraseña nueva, válido una hora.",
+    "submit": "Enviar el enlace",
+    "done": "Si una cuenta tiene este correo, el enlace va en camino. Revisa también el spam."
+  },
+  "reset": {
+    "title": "Elige una contraseña nueva",
+    "submit": "Guardar la contraseña",
+    "rules": "Al menos 10 caracteres. Se cierra la sesión en todos los dispositivos de la cuenta."
+  },
+  "account": {
+    "title": "Tu cuenta",
+    "done_email": "Correo confirmado.",
+    "done_password": "Contraseña guardada.",
+    "done_sessions": "Sesión cerrada en los demás dispositivos.",
+    "signed_in": "Sesión iniciada como {email}",
+    "since": "cuenta desde el {date}",
+    "language_title": "Idioma",
+    "language_text": "El idioma de los correos que te enviamos.",
+    "save": "Guardar",
+    "password_title": "Contraseña",
+    "password_submit": "Cambiar la contraseña",
+    "password_done": "Contraseña cambiada. Se cerró la sesión en los demás dispositivos.",
+    "email_title": "Correo",
+    "email_text": "Te enviamos un enlace al correo nuevo: la cuenta se mueve allí cuando lo abras.",
+    "email_submit": "Cambiar el correo",
+    "email_done": "Abre el enlace que enviamos al correo nuevo.",
+    "sessions_title": "Dónde iniciaste sesión",
+    "this_browser": "Este navegador",
+    "sessions_others": "Cerrar sesión en los demás dispositivos",
+    "delete_title": "Eliminar la cuenta",
+    "delete_text": "Todo lo que pertenece a la cuenta se elimina y no se puede recuperar.",
+    "delete_submit": "Eliminar la cuenta"
+  },
+  "adminAccounts": {
+    "title": "Cuentas",
+    "back": "Admin",
+    "search": "Buscar por correo",
+    "email": "Correo",
+    "state": "Estado",
+    "created": "Creada",
+    "blocked": "Bloqueada",
+    "verified": "Confirmada",
+    "unverified": "Sin confirmar",
+    "verify": "Confirmar",
+    "block": "Bloquear",
+    "unblock": "Desbloquear",
+    "delete": "Eliminar",
+    "none": "Ninguna cuenta."
+  },
+  "email": {
+    "hello": "Hola:",
+    "ignore": "Si no lo pediste, ignora este correo.",
+    "verify_subject": "Confirma tu cuenta de Zephyr TV",
+    "verify_text": "Confirma tu correo para empezar a usar tu cuenta de Zephyr TV. El enlace vale {hours} horas.",
+    "verify_button": "Confirmar el correo",
+    "reset_subject": "Tu nueva contraseña de Zephyr TV",
+    "reset_text": "Elige una contraseña nueva para tu cuenta de Zephyr TV. El enlace vale {hours} hora.",
+    "reset_button": "Elegir una contraseña nueva",
+    "change_subject": "Confirma tu nuevo correo",
+    "change_text": "Confirma este correo para mover aquí tu cuenta de Zephyr TV. El enlace vale {hours} horas.",
+    "change_button": "Confirmar el nuevo correo"
   }
 }

@@ -1,8 +1,8 @@
 import path from "node:path";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull, lt } from "drizzle-orm";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { db } from "@/db";
-import { accounts } from "@/db/schema";
+import { accounts, emailTokens, sessions } from "@/db/schema";
 import { hashPassword, verifyPassword } from "./password";
 
 /**
@@ -26,3 +26,23 @@ export async function setup() {
     .where(eq(accounts.id, found.id));
   if (!same) console.log(`superadmin ${email}: password updated from the environment`);
 }
+
+/**
+ * Once an hour: accounts never verified gone after 7 days (their email may not be theirs), and sessions and email
+ * links past their time.
+ */
+export function tidyEveryHour() {
+  const tidy = async () => {
+    try {
+      const now = new Date();
+      await db.delete(accounts).where(and(isNull(accounts.emailVerifiedAt), lt(accounts.createdAt, new Date(now.getTime() - 7 * 86_400_000))));
+      await db.delete(sessions).where(lt(sessions.expiresAt, now));
+      await db.delete(emailTokens).where(lt(emailTokens.expiresAt, now));
+    } catch (e) {
+      console.warn("tidy failed", e);
+    }
+  };
+  void tidy();
+  setInterval(tidy, 3_600_000).unref();
+}
+

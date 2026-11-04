@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, ne } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { db } from "@/db";
 import { type Account, accounts, sessions } from "@/db/schema";
@@ -44,3 +44,28 @@ export async function endSession() {
   if (token) await db.delete(sessions).where(eq(sessions.tokenHash, sha256(token)));
   jar.delete(COOKIE);
 }
+
+/** This browser's session, as the database keys it (its token's hash), or null. */
+export async function currentSessionHash() {
+  const token = (await cookies()).get(COOKIE)?.value;
+  return token ? sha256(token) : null;
+}
+
+/** Every session of [accountId] ended but this browser's (a password changed: the others sign in again). */
+export async function endOtherSessions(accountId: string) {
+  const mine = await currentSessionHash();
+  await db.delete(sessions).where(mine ? and(eq(sessions.accountId, accountId), ne(sessions.tokenHash, mine)) : eq(sessions.accountId, accountId));
+}
+
+/** Every session of [accountId] ended, this browser's too (an account blocked or deleted, a password reset). */
+export async function endAllSessions(accountId: string) {
+  await db.delete(sessions).where(eq(sessions.accountId, accountId));
+}
+
+/** The sessions of [accountId], newest first, and which one is this browser's. */
+export async function sessionsOf(accountId: string) {
+  const mine = await currentSessionHash();
+  const rows = await db.select().from(sessions).where(and(eq(sessions.accountId, accountId), gt(sessions.expiresAt, new Date())));
+  return rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).map((s) => ({ ...s, mine: s.tokenHash === mine }));
+}
+

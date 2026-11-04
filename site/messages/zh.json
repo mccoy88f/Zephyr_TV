@@ -9,7 +9,8 @@
     "admin": "管理",
     "login": "登录",
     "logout": "退出",
-    "language": "语言"
+    "language": "语言",
+    "account": "账号"
   },
   "footer": {
     "source": "源代码",
@@ -91,7 +92,9 @@
     "error_limited": "尝试次数过多。请等待几分钟后重试。",
     "error_unverified": "请先确认你的电子邮件：打开我们发送给你的链接。",
     "error_invalid": "请输入有效的电子邮件和密码。",
-    "signup_soon": "面向所有人的账号即将推出，用于同步你的电视。"
+    "register": "创建账号",
+    "forgot": "忘记密码？",
+    "resend": "重新发送确认邮件"
   },
   "admin": {
     "title": "管理",
@@ -100,7 +103,9 @@
     "verified": "已验证",
     "superadmins": "超级管理员",
     "sessions": "活动会话",
-    "soon": "用户、电视、同步和扩展将在后续阶段推出。"
+    "soon": "Zephyr TV 用户、电视、同步和扩展随后推出。",
+    "manage_accounts": "管理账号",
+    "no_mail": "电子邮件未配置（SMTP_PASSWORD）：新账号无法确认电子邮件。"
   },
   "share": {
     "watch": "在 Zephyr TV 上观看",
@@ -119,5 +124,109 @@
     "refused_text": "Zephyr TV 未在 Trakt 上获得授权。随时可以从电视上重试。",
     "error_title": "出了点问题",
     "error_text": "此次登录已过期或已被使用。请从电视上重新开始。"
+  },
+  "fields": {
+    "email": "电子邮件",
+    "new_password": "新密码",
+    "repeat_password": "再次输入密码",
+    "current_password": "当前密码",
+    "new_email": "新电子邮件"
+  },
+  "forms": {
+    "limited": "尝试次数过多。请稍等后重试。",
+    "email_invalid": "请输入有效的电子邮件。",
+    "pw_mismatch": "两次输入的密码不一致。",
+    "pw_short": "密码至少需要 10 个字符。",
+    "pw_long": "密码最多 256 个字符。",
+    "pw_leaked": "此密码出现在已泄露的数据中：请换一个。",
+    "pw_wrong": "密码错误。",
+    "mail": "无法发送电子邮件。请稍后重试。",
+    "link_bad": "此链接已过期或已被使用。请重新申请。",
+    "email_taken": "此电子邮件已有账号。",
+    "superadmin": "无法在这里删除超级管理员账号。"
+  },
+  "register": {
+    "title": "创建账号",
+    "intro": "有了账号，你可以连接电视、同步 Zephyr TV 用户并发布扩展。",
+    "submit": "创建账号",
+    "done": "快完成了：打开我们发送到你邮箱的链接以确认。也请检查垃圾邮件。",
+    "rules": "至少 10 个字符。不接受已泄露的密码。",
+    "have_account": "我已有账号",
+    "resend": "重新发送确认邮件"
+  },
+  "verify": {
+    "title": "确认你的电子邮件",
+    "intro": "点击确认即可完成。",
+    "submit": "确认"
+  },
+  "resend": {
+    "title": "重新发送确认邮件",
+    "intro": "输入你账号的电子邮件：如果尚未确认，我们会重新发送链接。",
+    "submit": "发送",
+    "done": "如果该账号存在且未确认，链接已在路上。"
+  },
+  "forgot": {
+    "title": "忘记密码？",
+    "intro": "输入你账号的电子邮件：我们会发送一个用于设置新密码的链接，一小时内有效。",
+    "submit": "发送链接",
+    "done": "如果有账号使用此电子邮件，链接已在路上。也请检查垃圾邮件。"
+  },
+  "reset": {
+    "title": "设置新密码",
+    "submit": "保存密码",
+    "rules": "至少 10 个字符。所有登录此账号的设备都会退出。"
+  },
+  "account": {
+    "title": "你的账号",
+    "done_email": "电子邮件已确认。",
+    "done_password": "密码已保存。",
+    "done_sessions": "已在其他设备上退出。",
+    "signed_in": "已登录为 {email}",
+    "since": "账号创建于 {date}",
+    "language_title": "语言",
+    "language_text": "我们发给你的邮件所用的语言。",
+    "save": "保存",
+    "password_title": "密码",
+    "password_submit": "修改密码",
+    "password_done": "密码已修改。其他设备已退出。",
+    "email_title": "电子邮件",
+    "email_text": "我们会向新邮箱发送链接：打开后账号即迁移过去。",
+    "email_submit": "修改电子邮件",
+    "email_done": "请打开我们发送到新邮箱的链接。",
+    "sessions_title": "你登录的位置",
+    "this_browser": "此浏览器",
+    "sessions_others": "在其他设备上退出",
+    "delete_title": "删除账号",
+    "delete_text": "属于该账号的一切都会被删除，且无法恢复。",
+    "delete_submit": "删除账号"
+  },
+  "adminAccounts": {
+    "title": "账号",
+    "back": "管理",
+    "search": "按电子邮件搜索",
+    "email": "电子邮件",
+    "state": "状态",
+    "created": "创建时间",
+    "blocked": "已封禁",
+    "verified": "已确认",
+    "unverified": "未确认",
+    "verify": "确认",
+    "block": "封禁",
+    "unblock": "解封",
+    "delete": "删除",
+    "none": "没有账号。"
+  },
+  "email": {
+    "hello": "你好，",
+    "ignore": "如果不是你本人操作，请忽略此邮件。",
+    "verify_subject": "确认你的 Zephyr TV 账号",
+    "verify_text": "确认你的电子邮件以开始使用 Zephyr TV 账号。链接 {hours} 小时内有效。",
+    "verify_button": "确认电子邮件",
+    "reset_subject": "你的 Zephyr TV 新密码",
+    "reset_text": "为你的 Zephyr TV 账号设置新密码。链接 {hours} 小时内有效。",
+    "reset_button": "设置新密码",
+    "change_subject": "确认你的新电子邮件",
+    "change_text": "确认此电子邮件以将 Zephyr TV 账号迁移到这里。链接 {hours} 小时内有效。",
+    "change_button": "确认新电子邮件"
   }
 }
