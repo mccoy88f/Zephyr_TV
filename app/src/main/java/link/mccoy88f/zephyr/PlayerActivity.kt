@@ -2187,7 +2187,7 @@ class PlayerActivity : Activity() {
         private const val VOD_ALL_MS = 30_000L // ...or, to pick the best of them all, every one up to this long
         private const val VOD_LATE_MS = 40_000L // ...and those that didn't, waited for this long while it plays
         private const val VOD_SOME_MS = 12_000L // ...or this long, once one has given streams
-        private const val VOD_STUCK_MS = 45_000L // a film's stream buffering longer than this: the next (a debrid link resolves first)
+        private const val VOD_STUCK_MS = 30_000L // a film's stream buffering longer than this: the next
         private const val CHOICES_FILE = "player" // not K.FILE: the home screen's process writes that one whole
         private const val TEXT_LANG = "text_lang" // "" for off; none for the stream's own choice
         private const val BANNER_MS = 5000L

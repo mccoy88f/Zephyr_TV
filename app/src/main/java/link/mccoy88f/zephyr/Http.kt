@@ -39,10 +39,11 @@ internal object Http {
 
     /**
      * A film's or episode's stream: a debrid service's link goes through the add-on's resolver first, which asks
-     * the service for the file and can take tens of seconds. Stremio waits that long: so do the check and the player.
+     * the service for the file before it answers, often past the 6 s a channel gets. At most this long: a stream
+     * that answers sooner starts at once, and one that doesn't answer at all costs no more than this.
      */
-    const val VOD_STREAM_TIMEOUT_MS = 30_000
-    const val STREAM_CONNECT_MS = 15_000
+    const val VOD_STREAM_TIMEOUT_MS = 15_000
+    const val STREAM_CONNECT_MS = 10_000
 
     /** The body of [url]; throws on a network error or a non-2xx answer. */
     fun open(url: String, headers: Map<String, String> = emptyMap(), timeout: Int = TIMEOUT_MS): InputStream = connect(url, headers, timeout).inputStream
