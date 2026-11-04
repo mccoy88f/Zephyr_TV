@@ -13,10 +13,13 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.0.0-beta.10
 
 - If the TV has a PIN, Save a backup asks for the PIN first.
 - With a PIN, the saved address does not open Save a backup alone. Open it on the TV.
+- Zephyr TV has one web server for the phone. Remote access and every phone page use it.
+- If extensions are too large for the backup, the TV and the phone name them. Install them again from their file after a restore.
+- The TV makes the backup in the background. The screen does not stop while it works.
 
 ## 4.0.0-beta.8
 
