@@ -371,6 +371,14 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 watchKey = null
                 renderSettings(WATCH_SECTION * SECTION + 10)
             },
+            // Zephyr MPV, the mpv player for what the built-in one can't play: an app of its own, installed (or
+            // updated) from here, so Zephyr TV's APK stays small (see Mpv).
+            page(getString(R.string.setting_mpv), mpvValue()) { installMpv() },
+            // When it plays: when the built-in player can't, always, or never.
+            page(getString(R.string.setting_mpv_use), mpvModeName()) {
+                prefs.edit().putString(K.MPV_MODE, Mpv.MODES[(Mpv.MODES.indexOf(Mpv.mode(prefs)) + 1) % Mpv.MODES.size]).apply()
+                renderSettings(SettingsRows.MPV_MODE_ROW)
+            },
         )
     }
     // The TV's own side: its inputs (HDMI and the like) and its channels, with their logos and guide.
@@ -1059,3 +1067,21 @@ internal fun MainActivity.twoLineRow(info: String, source: String, action: () ->
         }
     }
 }
+
+/** Zephyr MPV's row: whether it's there (and its version), being installed, or why it can't be. */
+internal fun MainActivity.mpvValue(): String {
+    val info = Mpv.installed(this)
+    return when {
+        !Mpv.supported() -> getString(R.string.mpv_needs_android8)
+        mpvInstalling -> getString(R.string.mpv_installing)
+        info == null -> getString(R.string.mpv_not_installed)
+        !Mpv.trusted(this) -> getString(R.string.mpv_other_key)
+        else -> getString(R.string.mpv_installed, info.versionName.orEmpty())
+    }
+}
+
+internal fun MainActivity.mpvModeName() = getString(when (Mpv.mode(prefs)) {
+    Mpv.ALWAYS -> R.string.mpv_use_always
+    Mpv.OFF -> R.string.mpv_use_off
+    else -> R.string.mpv_use_fallback
+})

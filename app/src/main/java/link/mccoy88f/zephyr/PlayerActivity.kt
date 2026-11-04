@@ -90,6 +90,8 @@ class PlayerActivity : Activity() {
     private var lateLeft = 0 // a film's sources still looking after the first streams came (slow Nuvio plugins)
     private var waitingLate = false // all the streams so far failed: waiting for theirs rather than saying none works
     private var searchIfChosenFails = false // a resumed film's kept stream failing: look for others (see next)
+    private var mpvOpen = false // Zephyr MPV playing over this player, which waits for its answer (see toMpv)
+    private var mpvCouldHelp = false // a stream failed as one the built-in player can't read: Zephyr MPV could
     private var holdForLanguage = false // none in the TV's language so far: waiting for the sources still looking
     private var expanded = false // the banner shows all of what's on, not just its first line
     private var tune = 0 // counts tunings, so an answer for a channel left meanwhile is dropped
@@ -1614,6 +1616,7 @@ class PlayerActivity : Activity() {
         tried = -1
         attempts = 0
         why = null
+        mpvCouldHelp = false
         release()
         pendingSeek = if (vod && !isAdult()) VodProgress.position(userDir, c.id) ?: -1L else -1L
         // A film's or episode's: its streams looked for, then checked, then each tried ("stream 1 of 5").
@@ -1649,7 +1652,7 @@ class PlayerActivity : Activity() {
                 }
         } catch (e: Exception) {
                 warn("streams not found: $e")
-                ui.post { if (!isFinishing && tuning == tune) say(noStreams(), busy = false) }
+                ui.post { if (!isFinishing && tuning == tune) noneWorks() }
             }
         }
     }
@@ -1794,7 +1797,7 @@ class PlayerActivity : Activity() {
             next()
         } else if (lateLeft == 0) {
             waitingLate = false
-            say(noStreams(), busy = false)
+            noneWorks()
         }
     }
 
@@ -1830,7 +1833,7 @@ class PlayerActivity : Activity() {
                 waitingLate = true
                 return say(getString(R.string.player_finding_more))
             }
-            return say(noStreams(), busy = false)
+            return noneWorks()
         }
         tried = Math.floorMod(tried + 1, streams.size)
         val s = streams[tried]
@@ -1860,6 +1863,8 @@ class PlayerActivity : Activity() {
             warn("stream ${tried + 1}: no app opens ${s.url.substringBefore(':')}")
             return next()
         }
+        // Zephyr MPV for every stream, when the user wants it so (see Mpv).
+        if (Mpv.mode(prefs) == Mpv.ALWAYS && Mpv.takes(s) && Mpv.usable(this)) return toMpv(s)
         release()
         val http = DefaultHttpDataSource.Factory()
             .setAllowCrossProtocolRedirects(true) // some add-ons' addresses go from https to a proxy's http, and back
@@ -1939,6 +1944,14 @@ class PlayerActivity : Activity() {
                 val a = playing
                 // Sound the TV can't decode (MP2, AC3… on a device without them): the same with the picture alone.
                 val renderer = (error as? androidx.media3.exoplayer.ExoPlaybackException)?.takeIf { it.type == androidx.media3.exoplayer.ExoPlaybackException.TYPE_RENDERER }
+                // What the built-in player can't read (a container, a picture or sound it has no decoder for):
+                // Zephyr MPV plays it, when it's there (see Mpv); when it isn't, it's offered if none plays.
+                val unreadable = renderer != null || error.errorCode in FORMAT_ERRORS
+                if (a != null && unreadable && Mpv.mode(prefs) == Mpv.FALLBACK && Mpv.takes(a.s) && Mpv.usable(this@PlayerActivity)) {
+                    warn("stream ${tried + 1}: ${error.errorCodeName}, played by mpv")
+                    return toMpv(a.s)
+                }
+                if (unreadable) mpvCouldHelp = true
                 if (a != null && !a.noAudio && renderer?.rendererFormat?.sampleMimeType?.startsWith("audio/") == true) {
                     warn("stream ${tried + 1}: sound ${renderer.rendererFormat?.sampleMimeType} not decoded here, picture alone")
                     android.widget.Toast.makeText(this@PlayerActivity, getString(R.string.player_no_audio), android.widget.Toast.LENGTH_LONG).show()
@@ -2003,8 +2016,8 @@ class PlayerActivity : Activity() {
         // HLS read so that audio timed hours off its video is moved onto it (see HlsAlign): else the player waits for it.
         if (format == "hls") p.setMediaSource(androidx.media3.exoplayer.hls.HlsMediaSource.Factory(DefaultDataSource.Factory(this, http))
             .setExtractorFactory(HlsAlign()).apply { drm?.let { m -> setDrmSessionManagerProvider { m } } }.createMediaSource(item))
-        // A Blu-ray's MPEG-TS read as plain MPEG-TS, its packets' times left out (see M2ts).
-        else if (format == "m2ts") p.setMediaSource(DefaultMediaSourceFactory(M2ts.Factory(DefaultDataSource.Factory(this, http))).createMediaSource(item))
+        // A Blu-ray's MPEG-TS read as plain MPEG-TS, its packets' times left out, its DTS sound read too (see M2ts).
+        else if (format == "m2ts") p.setMediaSource(DefaultMediaSourceFactory(M2ts.Factory(DefaultDataSource.Factory(this, http)), M2ts.extractors()).createMediaSource(item))
         // Video-only plus a second audio address (YouTube adaptive): play them together, as ffmpeg would merge them.
         else if (pairAudio) {
             val data = DefaultDataSource.Factory(this, http)
@@ -2032,6 +2045,69 @@ class PlayerActivity : Activity() {
             null -> null
         }
         return getString(R.string.player_no_streams) + (reason?.let { "\n" + getString(it) } ?: "")
+    }
+
+    /** That none plays; when one couldn't be read and Zephyr MPV isn't there to read it, the way to install it. */
+    private fun noneWorks() {
+        say(noStreams(), busy = false)
+        if (!mpvCouldHelp || Mpv.mode(prefs) == Mpv.OFF || !Mpv.supported() || Mpv.usable(this)) return
+        mpvCouldHelp = false // offered once a title or channel
+        openPanel(getString(R.string.mpv_offer)) { row ->
+            row(getString(R.string.mpv_offer_install), false, 2) {
+                // The settings, on Zephyr MPV's row (see Links): this player is left.
+                startActivity(android.content.Intent(this, MainActivity::class.java).setAction(ACTION_MPV_SETTINGS))
+                finish()
+            }
+            row(getString(R.string.player_leave), false, 1) { finish() }
+        }
+    }
+
+    /**
+     * [s] played by Zephyr MPV (see Mpv), from where this player got to (or where the film was left): this one waits
+     * behind it, playing nothing, for how far it got (see onActivityResult).
+     */
+    private fun toMpv(s: Stremio.Stream) {
+        val from = player?.currentPosition?.takeIf { vod && it > 5000 } ?: pendingSeek.coerceAtLeast(0L)
+        release()
+        val c = channels[at]
+        val title = if (vod) listOf(c.name, c.now.orEmpty()).filter { it.isNotBlank() }.joinToString(" · ") else c.name
+        try {
+            @Suppress("DEPRECATION") startActivityForResult(Mpv.intent(s, title, from), MPV_REQUEST)
+        } catch (e: Exception) { // gone since it was checked
+            warn("mpv didn't open ($e)")
+            return next()
+        }
+        mpvOpen = true
+        say(getString(R.string.mpv_playing), busy = false)
+    }
+
+    @Deprecated("Another app's activity answers this way only")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        @Suppress("DEPRECATION") super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != MPV_REQUEST) return
+        mpvOpen = false
+        if (isFinishing) return
+        when (resultCode) {
+            // It couldn't open it either: the next stream, as when the built-in player fails.
+            Mpv.FAILED -> {
+                warn("stream ${tried + 1} failed in mpv: ${data?.getStringExtra(Mpv.ERROR)}")
+                why = Stremio.Why.FORMAT
+                next()
+            }
+            RESULT_OK -> fromMpv(data?.getLongExtra(Mpv.POSITION, 0L) ?: 0L, data?.getLongExtra(Mpv.DURATION, 0L) ?: 0L,
+                data?.getBooleanExtra(Mpv.ENDED, false) == true)
+            else -> finish() // Back before it played: the user leaves
+        }
+    }
+
+    /** Back from Zephyr MPV: where the film got to kept (or it's watched); played to its end, what comes next. */
+    private fun fromMpv(position: Long, duration: Long, toEnd: Boolean) {
+        if (vod && !isAdult() && at in channels.indices && duration > 0 && !toEnd) {
+            if (VodProgress.finished(position, duration)) watched(at)
+            else entry(at, position, duration).let { e -> ahead.execute { runCatching { VodProgress.put(userDir, e) } } }
+        }
+        if (toEnd && vod) return ended() // watched, then the next episode's countdown, or the player closes
+        finish()
     }
 
     private fun release() {
@@ -2124,6 +2200,7 @@ class PlayerActivity : Activity() {
     // Live TV: nothing to come back to, so leaving the player closes it; a film is kept where it got to.
     override fun onStop() {
         super.onStop()
+        if (mpvOpen) return // Zephyr MPV over it: this one waits for its answer (see onActivityResult)
         saveProgress()
         scrobble("stop")
         finish()
@@ -2197,6 +2274,7 @@ class PlayerActivity : Activity() {
         private const val STUCK_MS = 15_000L // buffering longer than this: the next stream
         private const val RESTARTS = 2 // a stream that played and stalls, started again at most this many times
         private const val VLC_AGENT = "VLC/3.0.20 LibVLC/3.0.20" // what servers that take only players' User-Agent take
+        private const val MPV_REQUEST = 7 // Zephyr MPV's answer (see toMpv)
         private val NETWORK_ERRORS = listOf(PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
             PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT, PlaybackException.ERROR_CODE_IO_UNSPECIFIED)
         private val FORMAT_ERRORS = listOf(PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED,

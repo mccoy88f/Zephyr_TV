@@ -1,4 +1,5 @@
-# Builds the signed ZephyrTV.apk and publishes it as a GitHub release, which the in-app updater reads.
+# Builds the signed ZephyrTV.apk and publishes it as a GitHub release, which the in-app updater reads; with it
+# ZephyrMPV.apk (the mpv player, mpv/), signed with the same key, which Zephyr TV installs from its settings.
 # Runs when a v* tag is pushed, or by hand from the Actions tab (it then tags the commit itself).
 # The release version is versionName in app/build.gradle.kts; its notes are that version's CHANGELOG.md section.
 #
@@ -67,8 +68,11 @@ jobs:
           VER: ${{ steps.version.outputs.ver }}
         run: |
           cp app/build/outputs/apk/release/app-release.apk ZephyrTV.apk
+          mpv=$(ls mpv/build/outputs/apk/release/*.apk | head -n 1)
+          [ -n "$mpv" ] || { echo "::error::No ZephyrMPV APK built"; exit 1; }
+          cp "$mpv" ZephyrMPV.apk
           # This version's CHANGELOG section, up to the next heading of any level.
           awk -v v="## $VER" '$0 == v {on = 1; next} on && /^#/ {exit} on' CHANGELOG.md > notes.md
           # A beta ("4.0.0-beta.1") is a pre-release: the in-app updater reads releases/latest, which leaves those out.
           pre=""; case "$VER" in *-*) pre="--prerelease";; esac
-          gh release create "v$VER" ZephyrTV.apk --title "Zephyr TV $VER" --notes-file notes.md --target "$GITHUB_SHA" $pre
+          gh release create "v$VER" ZephyrTV.apk ZephyrMPV.apk --title "Zephyr TV $VER" --notes-file notes.md --target "$GITHUB_SHA" $pre

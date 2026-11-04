@@ -24,12 +24,17 @@ internal const val SHARE_PAGE = "https://mccoy88f.github.io/Zephyr_TV/open/"
 private const val ACTION_SEARCH = "link.mccoy88f.zephyr.action.SEARCH"
 private const val ACTION_PLAY_QUEUE = "link.mccoy88f.zephyr.action.PLAY_QUEUE"
 
+/** The player, when a stream needs Zephyr MPV and it isn't there: the settings, on its row (see installMpv). */
+internal const val ACTION_MPV_SETTINGS = "link.mccoy88f.zephyr.action.MPV_SETTINGS"
+
 /** What [intent] asks for, when it's a link, shared text or a shortcut: done, and true; false for anything else. */
 internal fun MainActivity.handleLink(intent: Intent?): Boolean {
     intent ?: return false
     when (intent.action) {
         ACTION_SEARCH -> return true.also { ui.post { openSearch() } }
         ACTION_PLAY_QUEUE -> return true.also { ui.post { appRow.getChildAt(0)?.requestFocus() } }
+        // Only ever that row, behind the layout lock's PIN as the settings always are: any app can send this.
+        ACTION_MPV_SETTINGS -> return true.also { ui.post { unlock { openLauncherSettings(SettingsRows.MPV_ROW) } } }
         Intent.ACTION_SEND -> {
             val text = intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
             val link = Regex("""(ztv|stremio|nuvio|https?)://\S+""").find(text)?.value?.trimEnd('.', ',', ')', ']')

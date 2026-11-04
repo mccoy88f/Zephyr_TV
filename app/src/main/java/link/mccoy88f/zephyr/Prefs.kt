@@ -83,6 +83,7 @@ internal object K {
     const val STREAM_QUALITY = "stream_quality" // the quality streams are preferred in, by height; none: the highest
     const val STREAM_LANG_ONLY = "stream_lang_only" // films' and episodes' streams in the TV's language only (see streamLanguage)
     const val STREAM_MANUAL = "stream_manual" // films' and episodes' streams picked by hand from one list (see pickStream)
+    const val MPV_MODE = "mpv_mode" // when Zephyr MPV plays a stream: "fallback" (Media3 can't), "always", "off" (see Mpv)
     const val ADDONS_OFF = "addons_off" // add-ons switched off: kept, with their settings, but not shown nor asked
     const val ADDONS_MOVIES = "addons_movies" // where films show (VodPlace); none: as ADDONS_VOD, set before films and series were apart
     const val ADDONS_SERIES = "addons_series" // where series show, the same way

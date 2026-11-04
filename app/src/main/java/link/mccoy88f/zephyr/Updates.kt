@@ -134,18 +134,26 @@ internal fun MainActivity.updateDot(index: Int) {
     }, 1, LinearLayout.LayoutParams(dp(9), dp(9)).apply { marginStart = dp(8); marginEnd = dp(8) })
 }
 
-internal fun MainActivity.installUpdate(ver: String) {
-    if (updating) return
+/** Whether Zephyr TV may install apps; when not, the screen that allows it opens (and false). */
+internal fun MainActivity.installsAllowed(): Boolean {
     if (android.os.Build.VERSION.SDK_INT >= 26 && !packageManager.canRequestPackageInstalls()) {
         toast(R.string.toast_update_permission)
-        return openSettings(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName"))
+        openSettings(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName"))
+        return false
     }
     // Android 7: one switch for all apps, Unknown sources, in Security.
     @Suppress("DEPRECATION") val unknownSources = Settings.Secure.INSTALL_NON_MARKET_APPS
     if (android.os.Build.VERSION.SDK_INT < 26 && Settings.Secure.getInt(contentResolver, unknownSources, 0) != 1) {
         toast(R.string.toast_update_permission)
-        return openSettings(Settings.ACTION_SECURITY_SETTINGS, null)
+        openSettings(Settings.ACTION_SECURITY_SETTINGS, null)
+        return false
     }
+    return true
+}
+
+internal fun MainActivity.installUpdate(ver: String) {
+    if (updating) return
+    if (!installsAllowed()) return
     updating = true
     if (isShowingUpdates()) showUpdates()
     refreshSettings(UPDATE_ROW)
@@ -175,6 +183,7 @@ internal fun MainActivity.installUpdate(ver: String) {
 internal fun MainActivity.installStatus(intent: Intent) {
     val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
     if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) return
+    if (intent.getStringExtra(WHAT) == Mpv.PACKAGE) return mpvStatus(status, intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE))
     updating = false
     if (status != PackageInstaller.STATUS_SUCCESS) {
         val why = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
@@ -185,4 +194,44 @@ internal fun MainActivity.installStatus(intent: Intent) {
     }
     if (isShowingUpdates()) showUpdates()
     refreshSettings(UPDATE_ROW)
+}
+
+/**
+ * Zephyr MPV (see Mpv) downloaded from the newest release that has it and installed: Android asks the user to
+ * confirm the first time. Its row says how it goes.
+ */
+internal fun MainActivity.installMpv() {
+    if (mpvInstalling) return
+    if (!Mpv.supported()) return toast(R.string.mpv_needs_android8)
+    if (!installsAllowed()) return
+    mpvInstalling = true
+    refreshSettings(SettingsRows.MPV_ROW)
+    longIo.execute { // some 20 MB
+        val ok = try {
+            Updater.install(this, Mpv.latestApk(REPO), Mpv.PACKAGE, Mpv.PACKAGE)
+            true
+        } catch (e: Exception) {
+            warn("mpv download failed ($e)")
+            false
+        }
+        ui.post {
+            if (!ok) {
+                mpvInstalling = false
+                toast(R.string.mpv_download_failed)
+            }
+            refreshSettings(SettingsRows.MPV_ROW)
+        }
+    }
+}
+
+/** Zephyr MPV's install's outcome (see installStatus): its row again, and a word when it failed. */
+private fun MainActivity.mpvStatus(status: Int, why: String?) {
+    mpvInstalling = false
+    if (status != PackageInstaller.STATUS_SUCCESS) {
+        warn("mpv install failed: $status $why")
+        if (status != PackageInstaller.STATUS_FAILURE_ABORTED) toast(R.string.mpv_install_failed)
+    } else {
+        toast(R.string.mpv_install_done)
+    }
+    refreshSettings(SettingsRows.MPV_ROW)
 }
