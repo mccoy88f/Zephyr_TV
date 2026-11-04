@@ -13,6 +13,14 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- Zephyr TV is in Catalan. Thanks to oscarsanchezdm.
+- On a Philips TV, select **Settings → TV → Reorder channels** to put the channels in your order. Thanks to oscarsanchezdm.
+- On a Philips TV, hold OK on a channel card and select **Move**. Press ◀ ▶ to move it.
+- Turn off **Show channel numbers** to hide the numbers on the channel cards.
+- The backup keeps the channel order and the numbers setting.
+
 ## 4.0.0-beta.10
 
 - If the TV has a PIN, Save a backup asks for the PIN first.

@@ -67,7 +67,6 @@
     <string name="channel_order_custom">Custom · %1$d</string>
     <string name="channel_order_reset">Reset to TV order</string>
     <string name="channel_order_empty">No channels found</string>
-    <string name="channel_order_open">Open channel</string>
     <string name="setting_epg_phone">Paste the address on your phone</string>
     <string name="epg_hint">https://…/guide.xml.gz</string>
     <string name="epg_intro">The address of a TV guide in XMLTV format, for what\'s on under each channel. Zephyr TV downloads it once a day.</string>

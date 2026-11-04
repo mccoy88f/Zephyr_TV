@@ -18,6 +18,8 @@
     <string name="edit_apps_row">Editar els Preferits</string>
     <string name="editing_row_instructions">Edició dels Preferits:  OK agafa / deixa  ·  ◀ ▶ mou  ·  Enrere acaba</string>
     <string name="moving_app_instructions">Moviment:  ◀ ▶ mou  ·  OK col·loca</string>
+    <string name="moving_channel_instructions">Moure el canal:  ◀ ▶ mou  ·  OK col·loca</string>
+    <string name="moving_channel_list_instructions">Moure el canal:  ▲ ▼ mou  ·  OK col·loca  ·  Enrere fet</string>
     <string name="tip_rearrange_row">Consell: mantén premut OK sobre una app per reordenar els Preferits</string>
 
     <!-- Settings menu labels -->
@@ -59,6 +61,12 @@
     <string name="toast_channel_logos_failed">No s\'han pogut baixar els logotips dels canals. Torna-ho a provar més tard.</string>
     <string name="setting_epg">Guia de TV (XMLTV)</string>
     <string name="setting_play_channels">Reprodueix els canals de TV en obrir-los</string>
+    <string name="setting_channel_numbers">Mostra els números dels canals</string>
+    <string name="setting_channel_order">Reordena els canals…</string>
+    <string name="channel_order_default">Ordre de la TV</string>
+    <string name="channel_order_custom">Personalitzat · %1$d</string>
+    <string name="channel_order_reset">Torna a l\'ordre de la TV</string>
+    <string name="channel_order_empty">No s\'ha trobat cap canal</string>
     <string name="setting_epg_phone">Enganxa l\'adreça des del mòbil</string>
     <string name="epg_hint">https://…/guide.xml.gz</string>
     <string name="epg_intro">L\'adreça d\'una guia de TV en format XMLTV, per mostrar què hi ha a sota de cada canal. Zephyr TV la baixa un cop al dia.</string>
@@ -160,6 +168,13 @@
     <string name="pin_instructions">▲ ▼ canvia  ·  ◀ ▶ mou  ·  OK introdueix. Les tecles numèriques també funcionen.</string>
     <string name="pin_forgot_notice">L\'has oblidat? A Ajustos d\'Android → Apps → Zephyr TV → Esborra les dades s\'elimina el bloqueig, juntament amb la teva disposició i els teus ajustos.</string>
     <string name="pin_mismatch">Els PIN no coincideixen. Tria\'n un altre.</string>
+    <string name="setting_change_pin">Canvia el PIN</string>
+    <string name="pin_changed_toast">PIN canviat. Utilitza el PIN nou per a tot.</string>
+    <string name="pin_four_digits">El PIN té 4 xifres.</string>
+    <string name="pin_one_toast">Zephyr TV utilitza aquest PIN per a tot: el bloqueig de la disposició, el contingut 18+ i l\'accés remot.</string>
+    <string name="pin_merged_toast">Ara Zephyr TV utilitza un sol PIN per a tot. El bloqueig de la disposició utilitza el PIN 18+.</string>
+    <string name="restore_pin_title">Tria un PIN nou per restaurar la còpia</string>
+    <string name="phone_restore_pin">La còpia tenia un PIN. Tria un PIN nou a la TV per acabar la restauració.</string>
     <string name="layout_locked_toast">Disposició bloquejada. Els ajustos de Zephyr TV i els canvis a la pantalla d\'inici ara requereixen el PIN.</string>
     <string name="unlock_to_edit">Desbloqueja per editar…</string>
 
@@ -320,6 +335,8 @@
     <!-- Backup and restore -->
     <string name="setting_backup">Còpia de seguretat i restauració</string>
     <string name="backup_save">Desa una còpia de seguretat al mòbil…</string>
+    <string name="backup_failed">No s\'ha pogut crear la còpia de seguretat. Torna-ho a provar.</string>
+    <string name="backup_skipped">Massa grans per a la còpia: %1$s. Després de restaurar, torna-les a instal·lar des del seu fitxer.</string>
     <string name="backup_restore">Restaura des del mòbil…</string>
     <string name="backup_waiting">Esperant el fitxer de la còpia de seguretat…</string>
     <string name="phone_backup_title">Còpia de seguretat de Zephyr TV</string>
@@ -449,6 +466,7 @@
     <string name="remote_pin_enter">Introdueix el PIN</string>
     <string name="remote_open_form">Obre aquest ajust</string>
     <string name="remote_not_open">Obre això a la TV i torna-ho a provar.</string>
+    <string name="remote_off_no_pin">L\'accés remot està desactivat: no hi ha cap PIN. Activa l\'accés remot per triar un PIN nou.</string>
     <string name="warp_on_toast">WARP activat: Zephyr TV passa per Cloudflare</string>
     <string name="warp_device">Tot el dispositiu: l\'app 1.1.1.1</string>
     <string name="warp_switch">WARP per a Zephyr TV</string>
@@ -544,6 +562,7 @@
     <string name="phone_addon_title">Adreça del complement de Stremio</string>
     <string name="phone_addon_intro">Enganxa l\'adreça d\'un complement de Stremio (el seu manifest.json).</string>
     <string name="phone_addon_saved">Adreça rebuda. El dispositiu està afegint el complement.</string>
+    <string name="phone_addon_bad">Aquesta no és l\'adreça d\'un complement.</string>
     <string name="player_loading">Carregant…</string>
     <string name="player_no_streams">Cap stream disponible</string>
     <string name="player_no_audio">El dispositiu no pot reproduir el so d\'aquest canal: només imatge</string>
@@ -679,8 +698,6 @@
     <string name="adult_unlock_for">Desbloqueja durant</string>
     <string name="adult_two_hours">2 hores</string>
     <string name="adult_until_locked">Fins que el bloquegis</string>
-    <string name="adult_pin_choose">Tria el PIN 18+</string>
-    <string name="adult_pin_enter">PIN 18+</string>
     <string name="adult_locked_toast">El contingut 18+ està ocult. Utilitza el PIN al menú d\'usuaris per mostrar-lo.</string>
     <string name="addon_says_adult">Aquest complement indica que té contingut per a adults. Sempre es considera 18+.</string>
     <string name="adult_app">Contingut per a adults</string>
