@@ -311,7 +311,7 @@ The **Users** button in the top bar (it shows the avatar of the user in use, or 
 - **Pick a user**: each has their own history, watched marks and Continue Playing.
 - **Settings** (behind the layout lock, when it's on):
   - **Add user**, and for each user **Avatar**, **Rename** and **Remove**.
-  - **Avatar**: pick one of a few avatars by [DiceBear](https://www.dicebear.com) (Left and Right, then OK). **Style** goes to another style, **Other avatars** shows new ones, **No avatar** goes back to the initial. DiceBear gets only a random code, never the user's name.
+  - **Avatar**: first pick a style among [DiceBear](https://www.dicebear.com)'s, each with an example and its name (Left and Right, then OK); then the avatar among a few of that style. **Other avatars** shows new ones, **No avatar** goes back to the initial, Back goes to the styles. DiceBear gets only a random code, never the user's name.
   - **Connect Trakt**: keeps watched titles and progress in step with your Trakt account.
 
 ## 18. Adult content and the 18+ lock

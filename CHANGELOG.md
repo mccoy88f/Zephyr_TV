@@ -19,6 +19,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - In the Glass theme, the icon of the first settings row can be read as soon as Settings opens.
 - In the **Users** menu the users are in the middle. Hold OK on a user to open their settings.
 - **Users → Settings** shows each user's avatar before the name. On a user's page, **Avatar** comes before **Rename**.
+- **Avatar** shows every style first, each with an example and its name. Pick a style, then an avatar of it.
 - When you go down past the apps row, Spotlight folds away and stops on its title. The background under the apps turns soft, so the cards read better. Go back up and Spotlight opens again on the same title.
 
 ## 4.0.0-beta.16

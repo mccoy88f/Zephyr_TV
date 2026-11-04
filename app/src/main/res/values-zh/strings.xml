@@ -698,7 +698,6 @@
     <string name="users_title">用户</string>
     <string name="users_settings">设置</string>
     <string name="user_avatar">头像</string>
-    <string name="avatar_style">风格</string>
     <string name="avatar_more">其他头像</string>
     <string name="avatar_none">不使用头像</string>
     <string name="avatar_none_value">无</string>

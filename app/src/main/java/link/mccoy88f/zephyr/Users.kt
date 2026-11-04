@@ -202,7 +202,7 @@ private fun MainActivity.userPage(given: User, focus: Int = 0) {
         else page(getString(R.string.trakt_sync), account.user) { syncTrakt(u.id, tell = true) },
         account?.let { page(getString(R.string.trakt_disconnect)) { Trakt.forget(dir); userPage(u) } },
         // Their avatar first, drawn before its row's name (see below), then their name.
-        page(getString(R.string.user_avatar), Avatars.parse(u.avatar)?.let { Avatars.styleName(it.first) } ?: getString(R.string.avatar_none_value)) { avatarPage(u) },
+        page(getString(R.string.user_avatar), Avatars.parse(u.avatar)?.let { Avatars.styleName(it.first) } ?: getString(R.string.avatar_none_value)) { avatarStyles(u) },
         page(getString(R.string.user_rename)) { userName(u) },
         // The first user stays: their files are Zephyr TV's own.
         if (u.id == "") null else page(getString(R.string.user_remove)) {
@@ -227,50 +227,86 @@ private fun MainActivity.renameRow(u: User) = avatarRow(u) + 1
 private fun MainActivity.avatarRow(u: User) = if (Trakt.account(vodDir(u.id)) == null) 1 else 2
 
 /**
- * [u]'s avatar: a few of [style]'s on top to pick from (◀ ▶, OK), then the style (the next one), others of it, and
- * none (the initial again). [focus]: the row to focus; none, the first avatar.
+ * [u]'s avatar, first its style: every style side by side, each drawn with the same seed (the user's own, when they
+ * have an avatar: themselves in each style) and named under it; OK on one shows that style's avatars (see avatarPage).
+ * [focus]: the style to focus; none, the user's own (or the first).
  */
-private fun MainActivity.avatarPage(u: User, style: String = Avatars.parse(u.avatar)?.first ?: Avatars.STYLES.first(), focus: Int? = null) {
+private fun MainActivity.avatarStyles(u: User, focus: String? = null) {
+    val seed = Avatars.parse(u.avatar)?.second ?: Avatars.newSeed()
+    val mine = Avatars.parse(u.avatar)?.first
+    val (strip, tiles) = avatarStrip(Avatars.STYLES.map { "$it/$seed" to Avatars.styleName(it) }, mine?.let { "$it/$seed" }) { a ->
+        avatarPage(u, Avatars.parse(a)!!.first)
+    }
+    val rows = listOfNotNull(if (u.avatar == null) null else page(getString(R.string.avatar_none)) { setAvatar(u, null) })
+    showPage(getString(R.string.user_avatar), rows, 0, top = strip) { userPage(u, avatarRow(u)) }
+    linkStrip(tiles)
+    tiles[((focus ?: mine)?.let { Avatars.STYLES.indexOf(it) } ?: 0).coerceAtLeast(0)].requestFocus()
+}
+
+/**
+ * A few of [style]'s avatars to pick from (◀ ▶, OK): the user's own first when it's of this style; then others of it,
+ * and none (the initial again). Back: the styles. [focus]: the row to focus; none, the first avatar.
+ */
+private fun MainActivity.avatarPage(u: User, style: String, focus: Int? = null) {
     val choices = (listOfNotNull(u.avatar?.takeIf { Avatars.parse(it)?.first == style }) + List(6) { "$style/${Avatars.newSeed()}" }).take(6)
+    val (strip, tiles) = avatarStrip(choices.map { it to null }, u.avatar) { a -> setAvatar(u, a) }
+    val rows = listOfNotNull(
+        page(getString(R.string.avatar_more)) { avatarPage(u, style, 0) },
+        if (u.avatar == null) null else page(getString(R.string.avatar_none)) { setAvatar(u, null) },
+    )
+    showPage(Avatars.styleName(style), rows, focus ?: 0, top = strip) { avatarStyles(u, style) }
+    linkStrip(tiles)
+    if (focus == null) tiles.first().requestFocus()
+}
+
+/**
+ * A row of avatars ([items]: the avatar, and a name to show under it or none), side by side, scrolling sideways;
+ * [chosen] ringed; OK on one [pick]s it. The row, and its tiles (each focusable).
+ */
+private fun MainActivity.avatarStrip(items: List<Pair<String, String?>>, chosen: String?, pick: (String) -> Unit): Pair<android.view.View, List<android.view.View>> {
     val strip = android.widget.LinearLayout(this).apply {
         orientation = android.widget.LinearLayout.HORIZONTAL
         setPadding(dp(14), dp(6), dp(14), dp(12))
+    }
+    val tiles = items.map { (a, name) ->
+        val ring = android.graphics.drawable.GradientDrawable().apply { shape = android.graphics.drawable.GradientDrawable.OVAL }
+        val pic = android.widget.ImageView(this).apply {
+            setPadding(dp(5), dp(5), dp(5), dp(5))
+            background = ring
+            avatarInto(this, a, still = { isAttachedToWindow })
+        }
+        val label = name?.let { label(it, 12f).apply { gravity = android.view.Gravity.CENTER; isSingleLine = true; setPadding(0, dp(4), 0, 0) } }
+        fun mark(focused: Boolean) {
+            ring.setStroke(if (focused) dp(3) else if (a == chosen) dp(2) else 0, fg)
+            label?.alpha = if (focused) 1f else 0.7f
+        }
+        android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            gravity = android.view.Gravity.CENTER_HORIZONTAL
+            id = android.view.View.generateViewId()
+            isFocusable = true
+            isClickable = true
+            contentDescription = name ?: getString(R.string.user_avatar)
+            addView(pic, android.widget.LinearLayout.LayoutParams(dp(72), dp(72)))
+            label?.let { addView(it, android.widget.LinearLayout.LayoutParams(dp(84), android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)) }
+            mark(false)
+            setOnFocusChangeListener { _, focused -> mark(focused) }
+            setOnClickListener { pick(a) }
+        }.also { strip.addView(it, android.widget.LinearLayout.LayoutParams(android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT).apply { marginEnd = dp(10) }) }
     }
     val scroll = android.widget.HorizontalScrollView(this).apply {
         isHorizontalScrollBarEnabled = false
         addView(strip)
     }
-    val pics = choices.map { a ->
-        val ring = android.graphics.drawable.GradientDrawable().apply { shape = android.graphics.drawable.GradientDrawable.OVAL }
-        fun mark(focused: Boolean) = ring.setStroke(if (focused) dp(3) else if (a == u.avatar) dp(2) else 0, fg)
-        android.widget.ImageView(this).apply {
-            id = android.view.View.generateViewId()
-            isFocusable = true
-            isClickable = true
-            setPadding(dp(5), dp(5), dp(5), dp(5))
-            background = ring
-            mark(false)
-            contentDescription = getString(R.string.user_avatar)
-            setOnFocusChangeListener { _, focused -> mark(focused) }
-            setOnClickListener { setAvatar(u, a) }
-            avatarInto(this, a, still = { isAttachedToWindow })
-        }.also { strip.addView(it, android.widget.LinearLayout.LayoutParams(dp(72), dp(72)).apply { marginEnd = dp(10) }) }
-    }
-    val rows = listOfNotNull(
-        page(getString(R.string.avatar_style), Avatars.styleName(style)) {
-            avatarPage(u, Avatars.STYLES[(Avatars.STYLES.indexOf(style) + 1) % Avatars.STYLES.size], 0)
-        },
-        page(getString(R.string.avatar_more)) { avatarPage(u, style, 1) },
-        if (u.avatar == null) null else page(getString(R.string.avatar_none)) { setAvatar(u, null) },
-    )
-    showPage(getString(R.string.user_avatar), rows, focus ?: 0, top = scroll) { userPage(u, avatarRow(u)) }
-    // Up from the rows to the avatars, Down from them to the rows (the panel pins Up on its first row otherwise).
+    return scroll to tiles
+}
+
+/** Up from the page's first row to the avatars on top, Down from them to it (the panel pins Up on its first row otherwise). */
+private fun MainActivity.linkStrip(tiles: List<android.view.View>) {
     val first = settingsList.getChildAt(1)
-    if (first != null) {
-        first.nextFocusUpId = pics.first().id
-        pics.forEach { it.nextFocusDownId = first.id; it.nextFocusUpId = it.id }
-    }
-    if (focus == null) pics.first().requestFocus()
+    tiles.forEach { it.nextFocusUpId = it.id; if (first != null) it.nextFocusDownId = first.id else it.nextFocusDownId = it.id }
+    first?.nextFocusUpId = tiles.first().id
 }
 
 /** [u]'s avatar set ([avatar], or none: their initial), and their page again. */

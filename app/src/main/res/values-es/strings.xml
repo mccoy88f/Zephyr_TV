@@ -704,7 +704,6 @@
     <string name="users_title">Usuarios</string>
     <string name="users_settings">Ajustes</string>
     <string name="user_avatar">Avatar</string>
-    <string name="avatar_style">Estilo</string>
     <string name="avatar_more">Otros avatares</string>
     <string name="avatar_none">Sin avatar</string>
     <string name="avatar_none_value">Ninguno</string>
