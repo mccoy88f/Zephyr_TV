@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "title": "Zephyr TV — the home screen for Android TV",
+    "description": "A light, open-source home screen for Android TV and Google TV: your apps, Continue Watching, films and series from Stremio add-ons, TV channels and a player, in nine languages."
+  },
+  "nav": {
+    "download": "Download",
+    "credits": "Projects and licences",
+    "admin": "Admin",
+    "login": "Sign in",
+    "logout": "Sign out",
+    "language": "Language"
+  },
+  "footer": {
+    "source": "Source code",
+    "tmdb": "Zephyr TV uses the TMDB API but is not endorsed or certified by TMDB."
+  },
+  "home": {
+    "hero_title": "The home screen your Android TV deserves",
+    "hero_text": "Zephyr TV is a light, open-source home screen for Android TV and Google TV: your apps, what you were watching, films and series, TV channels and a player, without ads.",
+    "cta_download": "Download Zephyr TV",
+    "cta_github": "See it on GitHub",
+    "screens_alt": "Zephyr TV on a TV",
+    "features_title": "What it does",
+    "f_home_title": "A clean home screen",
+    "f_home_text": "Your apps in your order, Continue Watching from every app, a Spotlight of what's popular, and light, dark or glass themes.",
+    "f_watch_title": "Films and series",
+    "f_watch_text": "Catalogs from Cinemeta and Stremio add-ons, completed by TMDB, with pages for every title, season and episode.",
+    "f_addons_title": "Add-ons, plugins, extensions",
+    "f_addons_text": "Stremio add-ons, Nuvio plugins and Zephyr TV extensions bring channels, films, series, radio and more.",
+    "f_player_title": "A player that plays",
+    "f_player_text": "Picks the best stream in your language and quality, with Dolby and DTS sound, Dolby Vision, subtitles from add-ons and the screen's frame rate.",
+    "f_users_title": "Users and Trakt",
+    "f_users_text": "Each person in the house has their own history, Continue Watching, avatar and Trakt account.",
+    "f_phone_title": "Your phone helps",
+    "f_phone_text": "Type on the phone, send add-ons and keys, back up and restore, or use it as a remote.",
+    "screens_title": "A look at it"
+  },
+  "download": {
+    "title": "Download",
+    "intro": "Zephyr TV installs on Android TV, Google TV and Android TV boxes (Android 7 or later). It updates itself from Settings → System → Updates.",
+    "stable": "Release",
+    "beta": "Beta",
+    "published": "Published on {date}",
+    "get_apk": "Download the APK",
+    "notes": "Release notes",
+    "none": "The releases can't be read right now. Find them on",
+    "install_title": "How to install",
+    "install_text": "Download the APK on the TV with a browser or a file manager (or send it from a phone), allow installs from unknown sources when asked, then open it. In Settings, set Zephyr TV as the home screen."
+  },
+  "credits": {
+    "title": "Projects and licences",
+    "intro": "Zephyr TV is free software. It is built on the work of other projects, and uses these libraries, services and media, each under its own licence.",
+    "origin": "Where Zephyr TV comes from",
+    "app": "Libraries in the app",
+    "services": "Services and data",
+    "media": "Images",
+    "site": "Libraries of this site",
+    "license_title": "Zephyr TV's licence",
+    "license_text": "Zephyr TV is a modified version of Plume Launcher and, like it, is released under the GNU General Public License v3.0: you may use, modify and share it, and any version you distribute must be released under the GPL-3.0 with its full source code.",
+    "source": "Source code",
+    "items": {
+      "plume": "The launcher Zephyr TV is built on: its design and most of its code.",
+      "piume": "What Zephyr TV was before its new name; its history is in Zephyr TV's repository.",
+      "media3": "The player: streams, HLS, DASH, RTSP and the like.",
+      "ffmpeg_decoder": "Decodes the sound the device can't (Dolby, DTS, TrueHD), through FFmpeg.",
+      "ffmpeg": "The audio decoders inside the FFmpeg extension.",
+      "wireguard": "The tunnel for WARP, to hide Zephyr TV's address.",
+      "quickjs_kt": "Runs the JavaScript of Nuvio plugins and extensions on the TV.",
+      "quickjs": "The JavaScript engine inside quickjs-kt.",
+      "coroutines": "Background work in the app.",
+      "desugar": "Newer Java features on older Android versions.",
+      "tmdb": "Titles, posters, backdrops, cast and trending lists. Zephyr TV uses the TMDB API but is not endorsed or certified by TMDB.",
+      "trakt": "History and progress of each user, synced with their Trakt account.",
+      "dicebear": "The users' avatars, drawn by its API.",
+      "iptv_org": "TV channel logos, for channels the TV has none for.",
+      "iptv_epg": "The TV guide of each country.",
+      "stremio": "The add-on protocol Zephyr TV speaks, and Cinemeta's free catalog.",
+      "nuvio": "The plugin format Zephyr TV runs, as NuvioTV defines it.",
+      "simple_icons": "The logos of well-known apps.",
+      "paintings": "The paintings of the screensaver, scans in the public domain.",
+      "unsplash": "The default wallpaper."
+    }
+  },
+  "login": {
+    "title": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "error_wrong": "Wrong email or password.",
+    "error_limited": "Too many tries. Wait a few minutes and try again.",
+    "error_unverified": "Confirm your email first: open the link we sent you.",
+    "error_invalid": "Enter a valid email and your password.",
+    "signup_soon": "Accounts for everyone, to sync your TVs, are coming soon."
+  },
+  "admin": {
+    "title": "Admin",
+    "signed_in": "Signed in as {email}",
+    "accounts": "Accounts",
+    "verified": "Verified",
+    "superadmins": "Superadmins",
+    "sessions": "Active sessions",
+    "soon": "Users, TVs, sync and extensions come in the next phases."
+  }
+}

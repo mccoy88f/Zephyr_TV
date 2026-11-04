@@ -1,0 +1,37 @@
+# Zephyr TV's site and its database, as Coolify deploys them (Docker Compose build pack): the site is built from this
+# folder; Postgres keeps its data in a volume. Settings come from the environment (see .env.example): set them in
+# Coolify, or in a .env next to this file for a local run (`docker compose up --build`).
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-ztv}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-ztv}
+      SITE_URL: ${SITE_URL:-https://ztv.mccoy88f.link}
+      SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-su@ztv.mccoy88f.link}
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:?set SUPERADMIN_PASSWORD}
+      GITHUB_REPO: ${GITHUB_REPO:-mccoy88f/Zephyr_TV}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+    ports:
+      - "3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ztv}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-ztv}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db-data:

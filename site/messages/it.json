@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "title": "Zephyr TV — la schermata Home per Android TV",
+    "description": "Una schermata Home leggera e open source per Android TV e Google TV: le tue app, Continua la riproduzione, film e serie dagli add-on Stremio, canali TV e un player, in nove lingue."
+  },
+  "nav": {
+    "download": "Download",
+    "credits": "Progetti e licenze",
+    "admin": "Admin",
+    "login": "Accedi",
+    "logout": "Esci",
+    "language": "Lingua"
+  },
+  "footer": {
+    "source": "Codice sorgente",
+    "tmdb": "Zephyr TV usa le API di TMDB ma non è approvato né certificato da TMDB."
+  },
+  "home": {
+    "hero_title": "La schermata Home che il tuo Android TV merita",
+    "hero_text": "Zephyr TV è una schermata Home leggera e open source per Android TV e Google TV: le tue app, quello che stavi guardando, film e serie, canali TV e un player, senza pubblicità.",
+    "cta_download": "Scarica Zephyr TV",
+    "cta_github": "Guardalo su GitHub",
+    "screens_alt": "Zephyr TV su un televisore",
+    "features_title": "Cosa fa",
+    "f_home_title": "Una Home pulita",
+    "f_home_text": "Le tue app nel tuo ordine, Continua la riproduzione da tutte le app, In evidenza con i titoli del momento, e temi chiaro, scuro o vetro.",
+    "f_watch_title": "Film e serie",
+    "f_watch_text": "Cataloghi da Cinemeta e dagli add-on Stremio, completati da TMDB, con una pagina per ogni titolo, stagione ed episodio.",
+    "f_addons_title": "Add-on, plugin, estensioni",
+    "f_addons_text": "Add-on Stremio, plugin Nuvio ed estensioni Zephyr TV portano canali, film, serie, radio e altro.",
+    "f_player_title": "Un player che riproduce",
+    "f_player_text": "Sceglie lo stream migliore nella tua lingua e qualità, con audio Dolby e DTS, Dolby Vision, sottotitoli dagli add-on e la frequenza dello schermo.",
+    "f_users_title": "Utenti e Trakt",
+    "f_users_text": "Ognuno in casa ha la sua cronologia, il suo Continua la riproduzione, il suo avatar e il suo account Trakt.",
+    "f_phone_title": "Il telefono aiuta",
+    "f_phone_text": "Scrivi dal telefono, manda add-on e chiavi, fai backup e ripristino, o usalo come telecomando.",
+    "screens_title": "Uno sguardo"
+  },
+  "download": {
+    "title": "Download",
+    "intro": "Zephyr TV si installa su Android TV, Google TV e box Android TV (Android 7 o successivo). Si aggiorna da solo da Impostazioni → Sistema → Aggiornamenti.",
+    "stable": "Versione",
+    "beta": "Beta",
+    "published": "Pubblicata il {date}",
+    "get_apk": "Scarica l'APK",
+    "notes": "Note di rilascio",
+    "none": "Le versioni non si possono leggere in questo momento. Le trovi su",
+    "install_title": "Come installarlo",
+    "install_text": "Scarica l'APK sul TV con un browser o un file manager (o mandalo dal telefono), consenti l'installazione da origini sconosciute quando richiesto, poi aprilo. Nelle impostazioni, imposta Zephyr TV come schermata Home."
+  },
+  "credits": {
+    "title": "Progetti e licenze",
+    "intro": "Zephyr TV è software libero. Nasce dal lavoro di altri progetti e usa queste librerie, servizi e immagini, ognuno con la sua licenza.",
+    "origin": "Da dove nasce Zephyr TV",
+    "app": "Librerie nell'app",
+    "services": "Servizi e dati",
+    "media": "Immagini",
+    "site": "Librerie di questo sito",
+    "license_title": "La licenza di Zephyr TV",
+    "license_text": "Zephyr TV è una versione modificata di Plume Launcher e, come questo, è distribuito con la GNU General Public License v3.0: puoi usarlo, modificarlo e condividerlo, e ogni versione che distribuisci deve essere rilasciata con la GPL-3.0 e il suo codice sorgente completo.",
+    "source": "Codice sorgente",
+    "items": {
+      "plume": "Il launcher su cui è costruito Zephyr TV: il suo design e gran parte del suo codice.",
+      "piume": "Quello che era Zephyr TV prima del nuovo nome; la sua storia è nel repository di Zephyr TV.",
+      "media3": "Il player: stream, HLS, DASH, RTSP e simili.",
+      "ffmpeg_decoder": "Decodifica l'audio che il dispositivo non sa decodificare (Dolby, DTS, TrueHD), tramite FFmpeg.",
+      "ffmpeg": "I decoder audio dentro l'estensione FFmpeg.",
+      "wireguard": "Il tunnel di WARP, per nascondere l'indirizzo di Zephyr TV.",
+      "quickjs_kt": "Esegue sul TV il JavaScript dei plugin Nuvio e delle estensioni.",
+      "quickjs": "Il motore JavaScript dentro quickjs-kt.",
+      "coroutines": "Il lavoro in background dell'app.",
+      "desugar": "Le funzioni Java più recenti sulle versioni di Android meno recenti.",
+      "tmdb": "Titoli, locandine, sfondi, cast e titoli del momento. Zephyr TV usa le API di TMDB ma non è approvato né certificato da TMDB.",
+      "trakt": "Cronologia e avanzamento di ogni utente, sincronizzati con il suo account Trakt.",
+      "dicebear": "Gli avatar degli utenti, disegnati dalla sua API.",
+      "iptv_org": "I loghi dei canali TV, per i canali di cui il TV non ne ha.",
+      "iptv_epg": "La guida TV di ogni paese.",
+      "stremio": "Il protocollo degli add-on che Zephyr TV parla, e il catalogo gratuito di Cinemeta.",
+      "nuvio": "Il formato dei plugin che Zephyr TV esegue, come lo definisce NuvioTV.",
+      "simple_icons": "I loghi delle app più note.",
+      "paintings": "I quadri del salvaschermo, scansioni di pubblico dominio.",
+      "unsplash": "Lo sfondo predefinito."
+    }
+  },
+  "login": {
+    "title": "Accedi",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Accedi",
+    "error_wrong": "Email o password sbagliate.",
+    "error_limited": "Troppi tentativi. Aspetta qualche minuto e riprova.",
+    "error_unverified": "Prima conferma la tua email: apri il link che ti abbiamo mandato.",
+    "error_invalid": "Inserisci un'email valida e la tua password.",
+    "signup_soon": "Gli account per tutti, per sincronizzare i tuoi TV, arrivano presto."
+  },
+  "admin": {
+    "title": "Admin",
+    "signed_in": "Accesso come {email}",
+    "accounts": "Account",
+    "verified": "Verificati",
+    "superadmins": "Superadmin",
+    "sessions": "Sessioni attive",
+    "soon": "Utenti, TV, sincronizzazione ed estensioni arrivano nelle prossime fasi."
+  }
+}

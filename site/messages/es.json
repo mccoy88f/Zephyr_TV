@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "title": "Zephyr TV — la pantalla de inicio para Android TV",
+    "description": "Una pantalla de inicio ligera y de código abierto para Android TV y Google TV: tus apps, Seguir viendo, películas y series de add-ons de Stremio, canales de TV y un reproductor, en nueve idiomas."
+  },
+  "nav": {
+    "download": "Descargar",
+    "credits": "Proyectos y licencias",
+    "admin": "Admin",
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "language": "Idioma"
+  },
+  "footer": {
+    "source": "Código fuente",
+    "tmdb": "Zephyr TV usa la API de TMDB pero no está respaldado ni certificado por TMDB."
+  },
+  "home": {
+    "hero_title": "La pantalla de inicio que tu Android TV merece",
+    "hero_text": "Zephyr TV es una pantalla de inicio ligera y de código abierto para Android TV y Google TV: tus apps, lo que estabas viendo, películas y series, canales de TV y un reproductor, sin anuncios.",
+    "cta_download": "Descargar Zephyr TV",
+    "cta_github": "Verlo en GitHub",
+    "screens_alt": "Zephyr TV en un televisor",
+    "features_title": "Qué hace",
+    "f_home_title": "Un inicio limpio",
+    "f_home_text": "Tus apps en tu orden, Seguir viendo de todas las apps, Destacados con lo más popular y temas claro, oscuro o cristal.",
+    "f_watch_title": "Películas y series",
+    "f_watch_text": "Catálogos de Cinemeta y de add-ons de Stremio, completados con TMDB, con una página para cada título, temporada y episodio.",
+    "f_addons_title": "Add-ons, plugins, extensiones",
+    "f_addons_text": "Los add-ons de Stremio, los plugins de Nuvio y las extensiones de Zephyr TV traen canales, películas, series, radio y más.",
+    "f_player_title": "Un reproductor que reproduce",
+    "f_player_text": "Elige el mejor stream en tu idioma y calidad, con sonido Dolby y DTS, Dolby Vision, subtítulos de add-ons y la frecuencia de la pantalla.",
+    "f_users_title": "Usuarios y Trakt",
+    "f_users_text": "Cada persona de la casa tiene su historial, su Seguir viendo, su avatar y su cuenta de Trakt.",
+    "f_phone_title": "Tu teléfono ayuda",
+    "f_phone_text": "Escribe desde el teléfono, envía add-ons y claves, haz copias y restaura, o úsalo como mando.",
+    "screens_title": "Un vistazo"
+  },
+  "download": {
+    "title": "Descargar",
+    "intro": "Zephyr TV se instala en Android TV, Google TV y boxes Android TV (Android 7 o posterior). Se actualiza solo desde Ajustes → Sistema → Actualizaciones.",
+    "stable": "Versión",
+    "beta": "Beta",
+    "published": "Publicada el {date}",
+    "get_apk": "Descargar el APK",
+    "notes": "Notas de la versión",
+    "none": "Ahora no se pueden leer las versiones. Encuéntralas en",
+    "install_title": "Cómo instalarlo",
+    "install_text": "Descarga el APK en la TV con un navegador o un gestor de archivos (o envíalo desde el teléfono), permite instalar desde orígenes desconocidos cuando se pida y ábrelo. En los ajustes, elige Zephyr TV como pantalla de inicio."
+  },
+  "credits": {
+    "title": "Proyectos y licencias",
+    "intro": "Zephyr TV es software libre. Nace del trabajo de otros proyectos y usa estas bibliotecas, servicios e imágenes, cada uno con su licencia.",
+    "origin": "De dónde viene Zephyr TV",
+    "app": "Bibliotecas de la app",
+    "services": "Servicios y datos",
+    "media": "Imágenes",
+    "site": "Bibliotecas de este sitio",
+    "license_title": "La licencia de Zephyr TV",
+    "license_text": "Zephyr TV es una versión modificada de Plume Launcher y, como este, se distribuye con la GNU General Public License v3.0: puedes usarlo, modificarlo y compartirlo, y toda versión que distribuyas debe publicarse con la GPL-3.0 y su código fuente completo.",
+    "source": "Código fuente",
+    "items": {
+      "plume": "El launcher sobre el que se construye Zephyr TV: su diseño y la mayor parte de su código.",
+      "piume": "Lo que era Zephyr TV antes de su nuevo nombre; su historia está en el repositorio de Zephyr TV.",
+      "media3": "El reproductor: streams, HLS, DASH, RTSP y similares.",
+      "ffmpeg_decoder": "Decodifica el sonido que el dispositivo no puede (Dolby, DTS, TrueHD) mediante FFmpeg.",
+      "ffmpeg": "Los decodificadores de audio dentro de la extensión FFmpeg.",
+      "wireguard": "El túnel de WARP, para ocultar la dirección de Zephyr TV.",
+      "quickjs_kt": "Ejecuta en la TV el JavaScript de los plugins de Nuvio y de las extensiones.",
+      "quickjs": "El motor JavaScript dentro de quickjs-kt.",
+      "coroutines": "El trabajo en segundo plano de la app.",
+      "desugar": "Funciones recientes de Java en versiones antiguas de Android.",
+      "tmdb": "Títulos, pósteres, fondos, reparto y lo más popular. Zephyr TV usa la API de TMDB pero no está respaldado ni certificado por TMDB.",
+      "trakt": "El historial y el progreso de cada usuario, sincronizados con su cuenta de Trakt.",
+      "dicebear": "Los avatares de los usuarios, dibujados por su API.",
+      "iptv_org": "Logos de canales de TV, para los canales sin logo en la TV.",
+      "iptv_epg": "La guía de TV de cada país.",
+      "stremio": "El protocolo de add-ons que habla Zephyr TV y el catálogo gratuito de Cinemeta.",
+      "nuvio": "El formato de plugins que ejecuta Zephyr TV, tal como lo define NuvioTV.",
+      "simple_icons": "Los logos de las apps conocidas.",
+      "paintings": "Los cuadros del salvapantallas, escaneos de dominio público.",
+      "unsplash": "El fondo de pantalla predeterminado."
+    }
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "email": "Correo",
+    "password": "Contraseña",
+    "submit": "Iniciar sesión",
+    "error_wrong": "Correo o contraseña incorrectos.",
+    "error_limited": "Demasiados intentos. Espera unos minutos y vuelve a intentarlo.",
+    "error_unverified": "Primero confirma tu correo: abre el enlace que te enviamos.",
+    "error_invalid": "Escribe un correo válido y tu contraseña.",
+    "signup_soon": "Pronto habrá cuentas para todos, para sincronizar tus TV."
+  },
+  "admin": {
+    "title": "Admin",
+    "signed_in": "Sesión iniciada como {email}",
+    "accounts": "Cuentas",
+    "verified": "Verificadas",
+    "superadmins": "Superadmins",
+    "sessions": "Sesiones activas",
+    "soon": "Usuarios, TV, sincronización y extensiones llegan en las próximas fases."
+  }
+}

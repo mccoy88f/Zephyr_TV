@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "title": "Zephyr TV — la pantalla d'inici per a Android TV",
+    "description": "Una pantalla d'inici lleugera i de codi obert per a Android TV i Google TV: les teves apps, Continua mirant, pel·lícules i sèries dels add-ons de Stremio, canals de TV i un reproductor, en nou idiomes."
+  },
+  "nav": {
+    "download": "Baixa",
+    "credits": "Projectes i llicències",
+    "admin": "Admin",
+    "login": "Inicia la sessió",
+    "logout": "Tanca la sessió",
+    "language": "Idioma"
+  },
+  "footer": {
+    "source": "Codi font",
+    "tmdb": "Zephyr TV fa servir l'API de TMDB però no té l'aval ni la certificació de TMDB."
+  },
+  "home": {
+    "hero_title": "La pantalla d'inici que el teu Android TV es mereix",
+    "hero_text": "Zephyr TV és una pantalla d'inici lleugera i de codi obert per a Android TV i Google TV: les teves apps, el que estaves mirant, pel·lícules i sèries, canals de TV i un reproductor, sense anuncis.",
+    "cta_download": "Baixa Zephyr TV",
+    "cta_github": "Mira'l a GitHub",
+    "screens_alt": "Zephyr TV en un televisor",
+    "features_title": "Què fa",
+    "f_home_title": "Un inici net",
+    "f_home_text": "Les teves apps en el teu ordre, Continua mirant de totes les apps, Destacats amb el més popular i temes clar, fosc o vidre.",
+    "f_watch_title": "Pel·lícules i sèries",
+    "f_watch_text": "Catàlegs de Cinemeta i dels add-ons de Stremio, completats amb TMDB, amb una pàgina per a cada títol, temporada i episodi.",
+    "f_addons_title": "Add-ons, plugins, extensions",
+    "f_addons_text": "Els add-ons de Stremio, els plugins de Nuvio i les extensions de Zephyr TV porten canals, pel·lícules, sèries, ràdio i més.",
+    "f_player_title": "Un reproductor que reprodueix",
+    "f_player_text": "Tria el millor stream en el teu idioma i qualitat, amb so Dolby i DTS, Dolby Vision, subtítols dels add-ons i la freqüència de la pantalla.",
+    "f_users_title": "Usuaris i Trakt",
+    "f_users_text": "Cada persona de casa té el seu historial, el seu Continua mirant, el seu avatar i el seu compte de Trakt.",
+    "f_phone_title": "El telèfon t'ajuda",
+    "f_phone_text": "Escriu des del telèfon, envia add-ons i claus, fes còpies i restaura, o fes-lo servir de comandament.",
+    "screens_title": "Una ullada"
+  },
+  "download": {
+    "title": "Baixa",
+    "intro": "Zephyr TV s'instal·la a Android TV, Google TV i boxes Android TV (Android 7 o posterior). S'actualitza des de Configuració → Sistema → Actualitzacions.",
+    "stable": "Versió",
+    "beta": "Beta",
+    "published": "Publicada el {date}",
+    "get_apk": "Baixa l'APK",
+    "notes": "Notes de la versió",
+    "none": "Ara no es poden llegir les versions. Les trobaràs a",
+    "install_title": "Com instal·lar-lo",
+    "install_text": "Baixa l'APK al televisor amb un navegador o un gestor de fitxers (o envia'l des del telèfon), permet la instal·lació d'orígens desconeguts quan t'ho demani i obre'l. A la configuració, tria Zephyr TV com a pantalla d'inici."
+  },
+  "credits": {
+    "title": "Projectes i llicències",
+    "intro": "Zephyr TV és programari lliure. Neix de la feina d'altres projectes i fa servir aquestes biblioteques, serveis i imatges, cadascun amb la seva llicència.",
+    "origin": "D'on ve Zephyr TV",
+    "app": "Biblioteques de l'app",
+    "services": "Serveis i dades",
+    "media": "Imatges",
+    "site": "Biblioteques d'aquest lloc",
+    "license_title": "La llicència de Zephyr TV",
+    "license_text": "Zephyr TV és una versió modificada de Plume Launcher i, com aquest, es distribueix amb la GNU General Public License v3.0: pots fer-lo servir, modificar-lo i compartir-lo, i qualsevol versió que distribueixis s'ha de publicar amb la GPL-3.0 i tot el seu codi font.",
+    "source": "Codi font",
+    "items": {
+      "plume": "El launcher sobre el qual es construeix Zephyr TV: el seu disseny i la major part del seu codi.",
+      "piume": "El que era Zephyr TV abans del nou nom; la seva història és al repositori de Zephyr TV.",
+      "media3": "El reproductor: streams, HLS, DASH, RTSP i similars.",
+      "ffmpeg_decoder": "Descodifica el so que el dispositiu no pot (Dolby, DTS, TrueHD), amb FFmpeg.",
+      "ffmpeg": "Els descodificadors d'àudio de l'extensió FFmpeg.",
+      "wireguard": "El túnel de WARP, per amagar l'adreça de Zephyr TV.",
+      "quickjs_kt": "Executa al televisor el JavaScript dels plugins de Nuvio i de les extensions.",
+      "quickjs": "El motor JavaScript de quickjs-kt.",
+      "coroutines": "La feina en segon pla de l'app.",
+      "desugar": "Funcions recents de Java en versions antigues d'Android.",
+      "tmdb": "Títols, pòsters, fons, repartiment i el més popular. Zephyr TV fa servir l'API de TMDB però no té l'aval ni la certificació de TMDB.",
+      "trakt": "L'historial i el progrés de cada usuari, sincronitzats amb el seu compte de Trakt.",
+      "dicebear": "Els avatars dels usuaris, dibuixats per la seva API.",
+      "iptv_org": "Logos de canals de TV, per als canals sense logo al televisor.",
+      "iptv_epg": "La guia de TV de cada país.",
+      "stremio": "El protocol d'add-ons que parla Zephyr TV i el catàleg gratuït de Cinemeta.",
+      "nuvio": "El format de plugins que executa Zephyr TV, tal com el defineix NuvioTV.",
+      "simple_icons": "Els logos de les apps conegudes.",
+      "paintings": "Els quadres de l'estalvi de pantalla, escanejos de domini públic.",
+      "unsplash": "El fons de pantalla predeterminat."
+    }
+  },
+  "login": {
+    "title": "Inicia la sessió",
+    "email": "Correu",
+    "password": "Contrasenya",
+    "submit": "Inicia la sessió",
+    "error_wrong": "Correu o contrasenya incorrectes.",
+    "error_limited": "Massa intents. Espera uns minuts i torna-ho a provar.",
+    "error_unverified": "Primer confirma el teu correu: obre l'enllaç que t'hem enviat.",
+    "error_invalid": "Escriu un correu vàlid i la teva contrasenya.",
+    "signup_soon": "Aviat hi haurà comptes per a tothom, per sincronitzar els teus televisors."
+  },
+  "admin": {
+    "title": "Admin",
+    "signed_in": "Sessió iniciada com a {email}",
+    "accounts": "Comptes",
+    "verified": "Verificats",
+    "superadmins": "Superadmins",
+    "sessions": "Sessions actives",
+    "soon": "Usuaris, televisors, sincronització i extensions arriben a les properes fases."
+  }
+}

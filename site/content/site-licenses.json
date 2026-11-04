@@ -1,0 +1,56 @@
+[
+  {
+    "name": "@node-rs/argon2",
+    "version": "2.2.2",
+    "license": "MIT",
+    "url": "https://github.com/napi-rs/node-rs"
+  },
+  {
+    "name": "drizzle-orm",
+    "version": "0.45.4",
+    "license": "Apache-2.0",
+    "url": "https://orm.drizzle.team"
+  },
+  {
+    "name": "next",
+    "version": "16.4.2",
+    "license": "MIT",
+    "url": "https://nextjs.org"
+  },
+  {
+    "name": "next-intl",
+    "version": "4.14.9",
+    "license": "MIT",
+    "url": "https://next-intl.dev"
+  },
+  {
+    "name": "pg",
+    "version": "8.23.1",
+    "license": "MIT",
+    "url": "https://github.com/brianc/node-postgres"
+  },
+  {
+    "name": "react",
+    "version": "19.3.1",
+    "license": "MIT",
+    "url": "https://react.dev/"
+  },
+  {
+    "name": "react-dom",
+    "version": "19.3.1",
+    "license": "MIT",
+    "url": "https://react.dev/"
+  },
+  {
+    "name": "server-only",
+    "version": "0.0.1",
+    "license": "MIT",
+    "url": "https://reactjs.org/"
+  },
+  {
+    "name": "zod",
+    "version": "4.6.7",
+    "license": "MIT",
+    "url": "https://zod.dev"
+  }
+]

@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "title": "Zephyr TV — 为 Android TV 打造的主屏幕",
+    "description": "一款轻量、开源的 Android TV 和 Google TV 主屏幕：你的应用、继续观看、来自 Stremio 插件的电影和剧集、电视频道和播放器，支持九种语言。"
+  },
+  "nav": {
+    "download": "下载",
+    "credits": "项目与许可",
+    "admin": "管理",
+    "login": "登录",
+    "logout": "退出",
+    "language": "语言"
+  },
+  "footer": {
+    "source": "源代码",
+    "tmdb": "Zephyr TV 使用 TMDB API，但未获得 TMDB 的认可或认证。"
+  },
+  "home": {
+    "hero_title": "你的 Android TV 值得拥有的主屏幕",
+    "hero_text": "Zephyr TV 是一款轻量、开源的 Android TV 和 Google TV 主屏幕：你的应用、正在观看的内容、电影和剧集、电视频道和播放器，没有广告。",
+    "cta_download": "下载 Zephyr TV",
+    "cta_github": "在 GitHub 上查看",
+    "screens_alt": "电视上的 Zephyr TV",
+    "features_title": "它能做什么",
+    "f_home_title": "简洁的主屏幕",
+    "f_home_text": "按你的顺序排列应用，汇集所有应用的继续观看，热门推荐，以及浅色、深色或玻璃主题。",
+    "f_watch_title": "电影和剧集",
+    "f_watch_text": "来自 Cinemeta 和 Stremio 插件的目录，由 TMDB 补充，每部作品、每一季和每一集都有自己的页面。",
+    "f_addons_title": "插件、扩展",
+    "f_addons_text": "Stremio 插件、Nuvio 插件和 Zephyr TV 扩展带来频道、电影、剧集、电台等内容。",
+    "f_player_title": "能播放的播放器",
+    "f_player_text": "按你的语言和画质挑选最佳流，支持杜比和 DTS 音频、杜比视界、插件字幕以及屏幕刷新率匹配。",
+    "f_users_title": "用户和 Trakt",
+    "f_users_text": "家里每个人都有自己的观看记录、继续观看、头像和 Trakt 账号。",
+    "f_phone_title": "手机来帮忙",
+    "f_phone_text": "用手机输入文字、发送插件和密钥、备份与恢复，或当作遥控器使用。",
+    "screens_title": "看一看"
+  },
+  "download": {
+    "title": "下载",
+    "intro": "Zephyr TV 可安装在 Android TV、Google TV 和 Android TV 盒子上（Android 7 或更高版本）。在 设置 → 系统 → 更新 中自动更新。",
+    "stable": "正式版",
+    "beta": "测试版",
+    "published": "发布于 {date}",
+    "get_apk": "下载 APK",
+    "notes": "版本说明",
+    "none": "目前无法读取版本信息。请前往",
+    "install_title": "如何安装",
+    "install_text": "在电视上用浏览器或文件管理器下载 APK（或从手机发送），在提示时允许安装未知来源的应用，然后打开它。在设置中将 Zephyr TV 设为主屏幕。"
+  },
+  "credits": {
+    "title": "项目与许可",
+    "intro": "Zephyr TV 是自由软件。它建立在其他项目的成果之上，并使用以下库、服务和图片，各自遵循其许可。",
+    "origin": "Zephyr TV 的来源",
+    "app": "应用中的库",
+    "services": "服务和数据",
+    "media": "图片",
+    "site": "本网站的库",
+    "license_title": "Zephyr TV 的许可",
+    "license_text": "Zephyr TV 是 Plume Launcher 的修改版本，与其一样以 GNU General Public License v3.0 发布：你可以使用、修改和分享它，你分发的任何版本都必须以 GPL-3.0 发布并附带完整源代码。",
+    "source": "源代码",
+    "items": {
+      "plume": "Zephyr TV 所基于的启动器：它的设计和大部分代码。",
+      "piume": "Zephyr TV 更名前的名字；它的历史保存在 Zephyr TV 的仓库中。",
+      "media3": "播放器：流、HLS、DASH、RTSP 等。",
+      "ffmpeg_decoder": "通过 FFmpeg 解码设备无法解码的音频（杜比、DTS、TrueHD）。",
+      "ffmpeg": "FFmpeg 扩展中的音频解码器。",
+      "wireguard": "WARP 的隧道，用于隐藏 Zephyr TV 的地址。",
+      "quickjs_kt": "在电视上运行 Nuvio 插件和扩展的 JavaScript。",
+      "quickjs": "quickjs-kt 内部的 JavaScript 引擎。",
+      "coroutines": "应用的后台任务。",
+      "desugar": "在旧版 Android 上使用较新的 Java 功能。",
+      "tmdb": "片名、海报、背景、演员和热门内容。Zephyr TV 使用 TMDB API，但未获得 TMDB 的认可或认证。",
+      "trakt": "每个用户的观看记录和进度，与其 Trakt 账号同步。",
+      "dicebear": "用户的头像，由其 API 绘制。",
+      "iptv_org": "电视频道的台标，用于电视上没有台标的频道。",
+      "iptv_epg": "各个国家的电视节目指南。",
+      "stremio": "Zephyr TV 使用的插件协议，以及 Cinemeta 的免费目录。",
+      "nuvio": "Zephyr TV 运行的插件格式，由 NuvioTV 定义。",
+      "simple_icons": "知名应用的标志。",
+      "paintings": "屏保中的画作，公有领域的扫描件。",
+      "unsplash": "默认壁纸。"
+    }
+  },
+  "login": {
+    "title": "登录",
+    "email": "电子邮件",
+    "password": "密码",
+    "submit": "登录",
+    "error_wrong": "电子邮件或密码错误。",
+    "error_limited": "尝试次数过多。请等待几分钟后重试。",
+    "error_unverified": "请先确认你的电子邮件：打开我们发送给你的链接。",
+    "error_invalid": "请输入有效的电子邮件和密码。",
+    "signup_soon": "面向所有人的账号即将推出，用于同步你的电视。"
+  },
+  "admin": {
+    "title": "管理",
+    "signed_in": "已登录为 {email}",
+    "accounts": "账号",
+    "verified": "已验证",
+    "superadmins": "超级管理员",
+    "sessions": "活动会话",
+    "soon": "用户、电视、同步和扩展将在后续阶段推出。"
+  }
+}

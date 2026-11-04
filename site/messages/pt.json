@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "title": "Zephyr TV — a tela inicial para Android TV",
+    "description": "Uma tela inicial leve e de código aberto para Android TV e Google TV: seus apps, Continuar assistindo, filmes e séries de add-ons do Stremio, canais de TV e um player, em nove idiomas."
+  },
+  "nav": {
+    "download": "Baixar",
+    "credits": "Projetos e licenças",
+    "admin": "Admin",
+    "login": "Entrar",
+    "logout": "Sair",
+    "language": "Idioma"
+  },
+  "footer": {
+    "source": "Código-fonte",
+    "tmdb": "O Zephyr TV usa a API do TMDB, mas não é endossado nem certificado pelo TMDB."
+  },
+  "home": {
+    "hero_title": "A tela inicial que sua Android TV merece",
+    "hero_text": "O Zephyr TV é uma tela inicial leve e de código aberto para Android TV e Google TV: seus apps, o que você estava assistindo, filmes e séries, canais de TV e um player, sem anúncios.",
+    "cta_download": "Baixar o Zephyr TV",
+    "cta_github": "Ver no GitHub",
+    "screens_alt": "Zephyr TV em uma TV",
+    "features_title": "O que ele faz",
+    "f_home_title": "Um início limpo",
+    "f_home_text": "Seus apps na sua ordem, Continuar assistindo de todos os apps, um Destaque com o que está em alta e temas claro, escuro ou vidro.",
+    "f_watch_title": "Filmes e séries",
+    "f_watch_text": "Catálogos do Cinemeta e de add-ons do Stremio, completados pelo TMDB, com uma página para cada título, temporada e episódio.",
+    "f_addons_title": "Add-ons, plugins, extensões",
+    "f_addons_text": "Add-ons do Stremio, plugins do Nuvio e extensões do Zephyr TV trazem canais, filmes, séries, rádio e mais.",
+    "f_player_title": "Um player que reproduz",
+    "f_player_text": "Escolhe o melhor stream no seu idioma e qualidade, com som Dolby e DTS, Dolby Vision, legendas de add-ons e a frequência da tela.",
+    "f_users_title": "Usuários e Trakt",
+    "f_users_text": "Cada pessoa da casa tem seu histórico, seu Continuar assistindo, seu avatar e sua conta Trakt.",
+    "f_phone_title": "Seu celular ajuda",
+    "f_phone_text": "Digite no celular, envie add-ons e chaves, faça backup e restauração ou use-o como controle remoto.",
+    "screens_title": "Uma olhada"
+  },
+  "download": {
+    "title": "Baixar",
+    "intro": "O Zephyr TV é instalado em Android TV, Google TV e boxes Android TV (Android 7 ou mais recente). Ele se atualiza em Configurações → Sistema → Atualizações.",
+    "stable": "Versão",
+    "beta": "Beta",
+    "published": "Publicada em {date}",
+    "get_apk": "Baixar o APK",
+    "notes": "Notas da versão",
+    "none": "As versões não podem ser lidas agora. Encontre-as no",
+    "install_title": "Como instalar",
+    "install_text": "Baixe o APK na TV com um navegador ou gerenciador de arquivos (ou envie do celular), permita a instalação de fontes desconhecidas quando pedido e abra. Nas configurações, defina o Zephyr TV como tela inicial."
+  },
+  "credits": {
+    "title": "Projetos e licenças",
+    "intro": "O Zephyr TV é software livre. Ele nasce do trabalho de outros projetos e usa estas bibliotecas, serviços e imagens, cada um com sua licença.",
+    "origin": "De onde vem o Zephyr TV",
+    "app": "Bibliotecas do app",
+    "services": "Serviços e dados",
+    "media": "Imagens",
+    "site": "Bibliotecas deste site",
+    "license_title": "A licença do Zephyr TV",
+    "license_text": "O Zephyr TV é uma versão modificada do Plume Launcher e, como ele, é distribuído sob a GNU General Public License v3.0: você pode usá-lo, modificá-lo e compartilhá-lo, e toda versão que distribuir deve ser publicada sob a GPL-3.0 com seu código-fonte completo.",
+    "source": "Código-fonte",
+    "items": {
+      "plume": "O launcher sobre o qual o Zephyr TV é construído: seu design e a maior parte do código.",
+      "piume": "O que o Zephyr TV era antes do novo nome; sua história está no repositório do Zephyr TV.",
+      "media3": "O player: streams, HLS, DASH, RTSP e similares.",
+      "ffmpeg_decoder": "Decodifica o som que o aparelho não consegue (Dolby, DTS, TrueHD), via FFmpeg.",
+      "ffmpeg": "Os decodificadores de áudio dentro da extensão FFmpeg.",
+      "wireguard": "O túnel do WARP, para esconder o endereço do Zephyr TV.",
+      "quickjs_kt": "Executa na TV o JavaScript dos plugins do Nuvio e das extensões.",
+      "quickjs": "O motor JavaScript dentro do quickjs-kt.",
+      "coroutines": "O trabalho em segundo plano do app.",
+      "desugar": "Recursos recentes do Java em versões antigas do Android.",
+      "tmdb": "Títulos, pôsteres, fundos, elenco e o que está em alta. O Zephyr TV usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.",
+      "trakt": "O histórico e o progresso de cada usuário, sincronizados com sua conta Trakt.",
+      "dicebear": "Os avatares dos usuários, desenhados pela sua API.",
+      "iptv_org": "Logos de canais de TV, para os canais sem logo na TV.",
+      "iptv_epg": "O guia de TV de cada país.",
+      "stremio": "O protocolo de add-ons que o Zephyr TV fala e o catálogo gratuito do Cinemeta.",
+      "nuvio": "O formato de plugins que o Zephyr TV executa, como o NuvioTV o define.",
+      "simple_icons": "Os logos de apps conhecidos.",
+      "paintings": "As pinturas do protetor de tela, digitalizações de domínio público.",
+      "unsplash": "O papel de parede padrão."
+    }
+  },
+  "login": {
+    "title": "Entrar",
+    "email": "E-mail",
+    "password": "Senha",
+    "submit": "Entrar",
+    "error_wrong": "E-mail ou senha incorretos.",
+    "error_limited": "Tentativas demais. Espere alguns minutos e tente de novo.",
+    "error_unverified": "Confirme seu e-mail primeiro: abra o link que enviamos.",
+    "error_invalid": "Digite um e-mail válido e sua senha.",
+    "signup_soon": "Contas para todos, para sincronizar suas TVs, chegam em breve."
+  },
+  "admin": {
+    "title": "Admin",
+    "signed_in": "Conectado como {email}",
+    "accounts": "Contas",
+    "verified": "Verificadas",
+    "superadmins": "Superadmins",
+    "sessions": "Sessões ativas",
+    "soon": "Usuários, TVs, sincronização e extensões chegam nas próximas fases."
+  }
+}

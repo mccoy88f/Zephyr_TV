@@ -1,0 +1,31 @@
+{
+  "_": "Zephyr TV's origins, the libraries and services it uses, and the media it ships, with their licences (checked on their repositories). Each one's description is the message credits.items.<id>. The site's own libraries come from package.json at build time (scripts/site-licenses.mjs).",
+  "origin": [
+    { "id": "plume", "name": "Plume Launcher", "by": "aradhyas8", "url": "https://github.com/aradhyas8/Plume_Launcher", "license": "GPL-3.0" },
+    { "id": "piume", "name": "Piume Launcher", "by": "mccoy88f", "url": "https://github.com/mccoy88f/Piume_Launcher", "license": "GPL-3.0" }
+  ],
+  "app": [
+    { "id": "media3", "name": "AndroidX Media3 (ExoPlayer)", "by": "Google", "url": "https://github.com/androidx/media", "license": "Apache-2.0" },
+    { "id": "ffmpeg_decoder", "name": "Jellyfin Media3 FFmpeg decoder", "by": "Jellyfin", "url": "https://github.com/jellyfin/jellyfin-androidx-media", "license": "GPL-3.0" },
+    { "id": "ffmpeg", "name": "FFmpeg", "by": "FFmpeg", "url": "https://ffmpeg.org", "license": "LGPL-2.1+ / GPL" },
+    { "id": "wireguard", "name": "WireGuard Android tunnel", "by": "WireGuard", "url": "https://github.com/WireGuard/wireguard-android", "license": "Apache-2.0" },
+    { "id": "quickjs_kt", "name": "quickjs-kt", "by": "dokar3", "url": "https://github.com/dokar3/quickjs-kt", "license": "Apache-2.0" },
+    { "id": "quickjs", "name": "QuickJS", "by": "Fabrice Bellard, Charlie Gordon", "url": "https://bellard.org/quickjs/", "license": "MIT" },
+    { "id": "coroutines", "name": "kotlinx.coroutines", "by": "JetBrains", "url": "https://github.com/Kotlin/kotlinx.coroutines", "license": "Apache-2.0" },
+    { "id": "desugar", "name": "desugar_jdk_libs", "by": "Google", "url": "https://github.com/google/desugar_jdk_libs", "license": "GPL-2.0 with Classpath Exception" }
+  ],
+  "services": [
+    { "id": "tmdb", "name": "TMDB", "by": "The Movie Database", "url": "https://www.themoviedb.org", "license": "TMDB API terms" },
+    { "id": "trakt", "name": "Trakt", "by": "Trakt", "url": "https://trakt.tv", "license": "Trakt API terms" },
+    { "id": "dicebear", "name": "DiceBear", "by": "Florian Körner", "url": "https://www.dicebear.com", "license": "MIT; styles: CC0-1.0 (Lorelei, Notionists, Thumbs, Pixel Art), free for personal and commercial use (Bottts, Avataaars)" },
+    { "id": "iptv_org", "name": "iptv-org database", "by": "iptv-org", "url": "https://github.com/iptv-org/database", "license": "Unlicense" },
+    { "id": "iptv_epg", "name": "iptv-epg.org", "by": "iptv-epg.org", "url": "https://iptv-epg.org", "license": "" },
+    { "id": "stremio", "name": "Stremio add-on protocol, Cinemeta", "by": "Stremio", "url": "https://github.com/Stremio/stremio-addon-sdk", "license": "MIT" },
+    { "id": "nuvio", "name": "Nuvio plugins", "by": "tapframe", "url": "https://github.com/tapframe/NuvioTV", "license": "GPL-3.0" }
+  ],
+  "media": [
+    { "id": "simple_icons", "name": "Simple Icons", "by": "Simple Icons", "url": "https://simpleicons.org", "license": "CC0-1.0" },
+    { "id": "paintings", "name": "Church, Shishkin, Cropsey, Heade", "by": "Wikimedia Commons", "url": "https://commons.wikimedia.org", "license": "Public domain" },
+    { "id": "unsplash", "name": "\"Canada\"", "by": "Thomas Curryer", "url": "https://unsplash.com/@tawc20", "license": "CC0" }
+  ]
+}

@@ -1,0 +1,32 @@
+# Checks that every change to the site (site/) builds: its languages complete, its types and its pages. Coolify builds
+# and deploys the site itself, from the same folder (see site/README.md).
+name: Site
+
+on:
+  push:
+    branches: ['**']
+    paths: ['site/**', '.github/workflows/site.yml']
+  pull_request:
+    paths: ['site/**', '.github/workflows/site.yml']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - run: npm ci
+      - run: npm run check:i18n
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'

@@ -1,0 +1,37 @@
+{
+  "name": "zephyr-tv-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ztv.mccoy88f.link: Zephyr TV's site, accounts, sync and admin",
+  "license": "GPL-3.0-only",
+  "scripts": {
+    "dev": "next dev",
+    "build": "node scripts/site-licenses.mjs && next build",
+    "start": "node .next/standalone/server.js",
+    "typecheck": "tsc --noEmit",
+    "check:i18n": "node scripts/check-messages.mjs",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@node-rs/argon2": "2.2.2",
+    "drizzle-orm": "0.45.4",
+    "next": "16.4.2",
+    "next-intl": "4.14.9",
+    "pg": "8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "server-only": "0.0.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "drizzle-kit": "0.31.11",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

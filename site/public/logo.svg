@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Gradiente di sfondo profondo e pulito -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <!-- Gradiente brillante per la cornice TV -->
+    <linearGradient id="frameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+
+    <!-- Gradiente pulito per il tasto Play -->
+    <linearGradient id="playGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#BAE6FD" />
+    </linearGradient>
+
+    <!-- Gradiente metallico/luminoso per il testo principale -->
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#94A3B8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sfondo dell'app -->
+  <rect width="512" height="512" rx="116" fill="url(#bgGrad)" />
+
+  <!-- Gruppo Icona TV (Ingrandito e prominente) -->
+  <g>
+    <!-- Antenna / Segnale -->
+    <circle cx="256" cy="72" r="8" fill="#38BDF8" />
+    <line x1="256" y1="80" x2="256" y2="114" stroke="#38BDF8" stroke-width="6" stroke-linecap="round" />
+
+    <!-- Cornice TV ingrandita (320x196) -->
+    <rect x="96" y="114" width="320" height="196" rx="32" fill="none" stroke="url(#frameGrad)" stroke-width="20" stroke-linejoin="round" />
+
+    <!-- Pulsante Play centrale riproporzionato -->
+    <polygon points="224,165 224,245 304,205" fill="url(#playGrad)" />
+  </g>
+
+  <!-- Sezione Testo -->
+  <text x="256" y="375" font-family="system-ui, -apple-system, &#39;Segoe UI&#39;, Roboto, sans-serif" font-size="42" font-weight="900" fill="url(#textGrad)" text-anchor="middle" letter-spacing="6">ZEPHYR</text>
+
+  <text x="256" y="415" font-family="system-ui, -apple-system, &#39;Segoe UI&#39;, Roboto, sans-serif" font-size="20" font-weight="700" fill="#38BDF8" text-anchor="middle" letter-spacing="10">TV</text>
+</svg>
