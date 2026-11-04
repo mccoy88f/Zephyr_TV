@@ -111,5 +111,13 @@
     "get": "下载 Zephyr TV",
     "hint": "如果没有 Zephyr TV，请先下载，然后再次打开此链接。",
     "episode": "第 {s} 季 · 第 {e} 集"
+  },
+  "trakt": {
+    "ok_title": "完成：Zephyr TV 已连接 Trakt",
+    "ok_text": "回到电视：几秒钟后会自动继续。你可以关闭此页面。",
+    "refused_title": "未授权",
+    "refused_text": "Zephyr TV 未在 Trakt 上获得授权。随时可以从电视上重试。",
+    "error_title": "出了点问题",
+    "error_text": "此次登录已过期或已被使用。请从电视上重新开始。"
   }
 }

@@ -111,5 +111,13 @@
     "get": "Baixa Zephyr TV",
     "hint": "Si no tens Zephyr TV, baixa'l i torna a obrir aquest enllaç.",
     "episode": "T{s} · E{e}"
+  },
+  "trakt": {
+    "ok_title": "Fet: Zephyr TV està connectat a Trakt",
+    "ok_text": "Torna al televisor: continua sol en uns segons. Pots tancar aquesta pàgina.",
+    "refused_title": "No autoritzat",
+    "refused_text": "Zephyr TV no s'ha autoritzat a Trakt. Torna-ho a provar des del televisor quan vulguis.",
+    "error_title": "Alguna cosa ha anat malament",
+    "error_text": "L'inici de sessió ha caducat o ja s'ha fet servir. Torna a començar des del televisor."
   }
 }

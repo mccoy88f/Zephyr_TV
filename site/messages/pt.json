@@ -111,5 +111,13 @@
     "get": "Baixar o Zephyr TV",
     "hint": "Sem o Zephyr TV, baixe-o e abra este link de novo.",
     "episode": "T{s} · E{e}"
+  },
+  "trakt": {
+    "ok_title": "Pronto: o Zephyr TV está conectado ao Trakt",
+    "ok_text": "Volte à TV: ela continua sozinha em alguns segundos. Você pode fechar esta página.",
+    "refused_title": "Não autorizado",
+    "refused_text": "O Zephyr TV não foi autorizado no Trakt. Tente de novo pela TV quando quiser.",
+    "error_title": "Algo deu errado",
+    "error_text": "O login expirou ou já foi usado. Comece de novo pela TV."
   }
 }

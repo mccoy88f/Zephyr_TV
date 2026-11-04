@@ -433,8 +433,17 @@ private fun MainActivity.userName(u: User?) {
  * asking every few seconds whether it's done, while the page is open (ten minutes at most).
  */
 private fun MainActivity.traktSignIn(u: User, intro: String? = null, then: (() -> Unit)? = null) {
+    // The site it goes through first (Zephyr TV's once it's set up for Trakt, else the one before it): asked off the UI.
+    netIo.execute {
+        val site = Trakt.signInSite()
+        ui.post { traktSignIn(u, site, intro, then) }
+    }
+}
+
+/** [u]'s Trakt sign-in through [site]: its QR code, and the TV asking that site until the phone is done. */
+private fun MainActivity.traktSignIn(u: User, site: String, intro: String?, then: (() -> Unit)?) {
     val state = Trakt.newState()
-    val url = Trakt.signInUrl(state)
+    val url = Trakt.signInUrl(state, site)
     val status = label(getString(R.string.trakt_waiting), 14f)
     val box = qrBox(url, null, intro ?: getString(R.string.trakt_sign_in_intro), status)
     val title = getString(R.string.trakt_connect) + " · " + u.name
@@ -447,7 +456,7 @@ private fun MainActivity.traktSignIn(u: User, intro: String? = null, then: (() -
         if (!pageShowing(title)) return // left: no more asking
         if (System.currentTimeMillis() > until) return run { status.text = getString(R.string.trakt_expired) }
         netIo.execute {
-            val sign = runCatching { Trakt.poll(dir, state) }.getOrDefault(Trakt.SignIn.WAITING) // offline for a moment: ask again
+            val sign = runCatching { Trakt.poll(dir, state, site) }.getOrDefault(Trakt.SignIn.WAITING) // offline for a moment: ask again
             ui.post {
                 when (sign) {
                     Trakt.SignIn.DONE -> {

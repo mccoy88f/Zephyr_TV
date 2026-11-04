@@ -111,5 +111,13 @@
     "get": "Télécharger Zephyr TV",
     "hint": "Sans Zephyr TV, téléchargez-le, puis rouvrez ce lien.",
     "episode": "S{s} · É{e}"
+  },
+  "trakt": {
+    "ok_title": "C'est fait : Zephyr TV est connecté à Trakt",
+    "ok_text": "Revenez à la TV : elle continue seule en quelques secondes. Vous pouvez fermer cette page.",
+    "refused_title": "Non autorisé",
+    "refused_text": "Zephyr TV n'a pas été autorisé sur Trakt. Réessayez depuis la TV quand vous voulez.",
+    "error_title": "Un problème est survenu",
+    "error_text": "La connexion a expiré ou a déjà été utilisée. Recommencez depuis la TV."
   }
 }

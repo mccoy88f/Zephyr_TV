@@ -1,4 +1,4 @@
-import { index, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 /** What an account may do: a user's own things, or everything (the superadmin's panel). */
 export const role = pgEnum("role", ["user", "superadmin"]);
@@ -35,3 +35,18 @@ export const sessions = pgTable(
 );
 
 export type Account = typeof accounts.$inferSelect;
+
+/** Where a Trakt sign-in is: the phone on Trakt's page, done (its tokens waiting for the TV), or refused. */
+export const traktStatus = pgEnum("trakt_status", ["waiting", "done", "refused"]);
+
+/**
+ * A Trakt sign-in begun on a TV (see src/app/traktauth): [state] is the random one in the TV's QR code. Once the phone
+ * has signed in, Trakt's tokens wait here for the TV, which asks with that state (api/trakt/poll) and gets them once:
+ * then, or after 15 minutes, the row goes.
+ */
+export const traktSignins = pgTable("trakt_signins", {
+  state: text("state").primaryKey(),
+  status: traktStatus("status").notNull().default("waiting"),
+  tokens: jsonb("tokens"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

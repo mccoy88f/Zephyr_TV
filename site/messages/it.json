@@ -111,5 +111,13 @@
     "get": "Scarica Zephyr TV",
     "hint": "Se non hai Zephyr TV, scaricalo e poi apri di nuovo questo link.",
     "episode": "S{s} · E{e}"
+  },
+  "trakt": {
+    "ok_title": "Fatto: Zephyr TV è collegato a Trakt",
+    "ok_text": "Torna al TV: prosegue da solo in pochi secondi. Puoi chiudere questa pagina.",
+    "refused_title": "Non autorizzato",
+    "refused_text": "Zephyr TV non è stato autorizzato su Trakt. Riprova dal TV quando vuoi.",
+    "error_title": "Qualcosa è andato storto",
+    "error_text": "L'accesso è scaduto o è già stato usato. Ricomincia dal TV."
   }
 }

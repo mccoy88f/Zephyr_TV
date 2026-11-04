@@ -111,5 +111,13 @@
     "get": "Zephyr TV herunterladen",
     "hint": "Ohne Zephyr TV: herunterladen und diesen Link erneut öffnen.",
     "episode": "S{s} · F{e}"
+  },
+  "trakt": {
+    "ok_title": "Fertig: Zephyr TV ist mit Trakt verbunden",
+    "ok_text": "Geh zurück zum Fernseher: Er macht in ein paar Sekunden von selbst weiter. Du kannst diese Seite schließen.",
+    "refused_title": "Nicht erlaubt",
+    "refused_text": "Zephyr TV wurde auf Trakt nicht erlaubt. Versuche es jederzeit erneut am Fernseher.",
+    "error_title": "Etwas ist schiefgelaufen",
+    "error_text": "Die Anmeldung ist abgelaufen oder wurde schon verwendet. Starte sie am Fernseher neu."
   }
 }

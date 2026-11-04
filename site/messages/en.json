@@ -111,5 +111,13 @@
     "get": "Get Zephyr TV",
     "hint": "Without Zephyr TV, get it, then open this link again.",
     "episode": "S{s} · E{e}"
+  },
+  "trakt": {
+    "ok_title": "Done: Zephyr TV is signed in to Trakt",
+    "ok_text": "Go back to the TV: it carries on by itself in a few seconds. You can close this page.",
+    "refused_title": "Not allowed",
+    "refused_text": "Zephyr TV wasn't allowed on Trakt. Try again from the TV when you like.",
+    "error_title": "Something went wrong",
+    "error_text": "The sign-in is too old or was already used. Start it again from the TV."
   }
 }

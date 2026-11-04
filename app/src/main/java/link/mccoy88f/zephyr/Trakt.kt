@@ -11,17 +11,19 @@ import org.json.JSONObject
  * what they mark watched on a page goes to their history, and what they watched elsewhere and where they paused
  * comes back into Zephyr TV (see MainActivity.syncTrakt).
  *
- * Signing in happens on a phone: the TV shows a QR code of Trakt's authorize page, whose answer goes to
- * mccoy88f.link/traktauth. That site holds the app's client secret (Trakt wants it for every token, and an app's
- * own copy would be anyone's), swaps the code for the tokens and keeps them a few minutes for the TV, which asks for
- * them by the random state it put in the QR code. Tokens are refreshed through the site too.
+ * Signing in happens on a phone: the TV shows a QR code of Trakt's authorize page, whose answer goes to a site's
+ * /traktauth: Zephyr TV's (ztv.mccoy88f.link), or the one before it (www.mccoy88f.link) while the new one isn't set
+ * up (see signInSite). That site holds the app's client secret (Trakt wants it for every token, and an app's own copy
+ * would be anyone's), swaps the code for the tokens and keeps them a few minutes for the TV, which asks for them by the
+ * random state it put in the QR code. Tokens are refreshed through a site too, the new one first.
  *
  * Kept in a file in the user's folder (the player, in its own process, scrobbles with it). Network: off the UI thread.
  */
 internal object Trakt {
     const val CLIENT_ID = "0TPZx8EN9N4gVqDp4QDbegDyKkcgLO9BDC1lavq9WWY"
-    private const val SITE = "https://www.mccoy88f.link"
-    private const val REDIRECT = "$SITE/traktauth"
+    /** The sites that sign in to Trakt and refresh its tokens: Zephyr TV's, then the one before it. */
+    private val SITES = listOf("https://ztv.mccoy88f.link", "https://www.mccoy88f.link")
+    @Volatile private var ready: Pair<String, Long>? = null
     private const val API = "https://api.trakt.tv"
     private const val FILE = "trakt.json"
     private const val REFRESH_BEFORE_MS = 3600_000L // a token about to expire is refreshed this long before (they last a day or more)
@@ -33,8 +35,21 @@ internal object Trakt {
     fun newState(): String = ByteArray(24).also { SecureRandom().nextBytes(it) }
         .let { java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(it) }
 
-    /** The sign-in for the QR code: the site sends the phone on to Trakt's page to sign in and allow Zephyr TV (short, for a QR code). */
-    fun signInUrl(state: String) = "$REDIRECT?start=${enc(state)}"
+    /**
+     * The site to sign in through: the first that says it's set up for Trakt (its /api/trakt/ready), asked at most every
+     * 10 minutes; else the last, the one before Zephyr TV's site. Network: off the UI thread.
+     */
+    fun signInSite(): String {
+        ready?.takeIf { System.currentTimeMillis() - it.second < 600_000L }?.let { return it.first }
+        val site = SITES.dropLast(1).firstOrNull { s ->
+            runCatching { Http.connect("$s/api/trakt/ready").let { c -> try { c.responseCode == 200 } finally { c.disconnect() } } }.getOrDefault(false)
+        } ?: SITES.last()
+        ready = site to System.currentTimeMillis()
+        return site
+    }
+
+    /** The sign-in for the QR code, on [site]: it sends the phone on to Trakt's page to sign in and allow Zephyr TV (short, for a QR code). */
+    fun signInUrl(state: String, site: String) = "$site/traktauth?start=${enc(state)}"
 
     @Synchronized
     fun account(dir: File): Account? = runCatching {
@@ -76,9 +91,9 @@ internal object Trakt {
     /** Where a sign-in is: done (the account saved), waiting for the phone, refused by Trakt, or no longer known (expired). */
     enum class SignIn { DONE, WAITING, REFUSED, EXPIRED }
 
-    /** Where the sign-in with [state] is; once done, the account is saved in [dir] (with its Trakt name). */
-    fun poll(dir: File, state: String): SignIn {
-        val (code, body) = Http.send("$SITE/api/trakt/poll", JSONObject().put("state", state))
+    /** Where the sign-in with [state] (begun on [site]) is; once done, the account is saved in [dir] (with its Trakt name). */
+    fun poll(dir: File, state: String, site: String): SignIn {
+        val (code, body) = Http.send("$site/api/trakt/poll", JSONObject().put("state", state))
         return when (code) {
             200 -> {
                 val a = tokens(JSONObject(body), "")
@@ -107,8 +122,7 @@ internal object Trakt {
             locked(dir, FILE) {
                 val now = account(dir) ?: return@locked null
                 if (now.refresh != a.refresh) return@locked now.access // refreshed meanwhile, here or in the other process
-                val (code, body) = runCatching { Http.send("$SITE/api/trakt/refresh", JSONObject().put("refresh_token", now.refresh)) }
-                    .getOrElse { return@locked now.access } // offline: the old one may still work
+                val (code, body) = refreshThroughSites(now.refresh) ?: return@locked now.access // offline: the old one may still work
                 when {
                     code == 401 || code == 400 -> { forget(dir); null } // revoked: signed out
                     code !in 200..299 -> now.access
@@ -116,6 +130,19 @@ internal object Trakt {
                 }
             }
         }
+    }
+
+    /**
+     * Trakt's answer to [refresh], through the first site that answers it (Zephyr TV's, then the one before it): one that
+     * can't be reached, or isn't set up for Trakt (404, 5xx), passes it on to the next. Null when none answered.
+     */
+    private fun refreshThroughSites(refresh: String): Pair<Int, String>? {
+        for (site in SITES) {
+            val answer = runCatching { Http.send("$site/api/trakt/refresh", JSONObject().put("refresh_token", refresh)) }.getOrNull() ?: continue
+            if (answer.first == 404 || answer.first >= 500) continue
+            return answer
+        }
+        return null
     }
 
     private fun request(token: String, method: String, path: String, body: JSONObject?): Pair<Int, String> {
