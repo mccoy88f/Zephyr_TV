@@ -226,12 +226,12 @@ internal fun MainActivity.addonsAndPlugins(focus: Int = 0) {
     val repos = nuvioRepoUrls(prefs)
     showPage(getString(R.string.settings_section_addons_plugins), listOf(
         page(getString(R.string.virtual_apps_integrations), SUBMENU) { integrationsPage() },
-        page(getString(R.string.addons_stremio), "${addonUrls().size}") { renderSettings(MainActivity.ADDON_ADD_ROW) },
+        page(getString(R.string.addons_stremio), "${addonUrls().size}") { renderSettings(SettingsRows.ADDON_ADD_ROW) },
         page(getString(R.string.nuvio_plugins), "${repos.size}") { nuvioPage() },
         page(getString(R.string.ext_title), "${extensions(prefs, filesDir).size}") { extensionsPage() },
         // Their requests, and the videos, from Cloudflare's addresses instead of the device's (see Privacy).
         page(getString(R.string.warp_title), getString(if (vpnOn()) R.string.warp_vpn_on else R.string.state_off)) { privacyPage { addonsAndPlugins(4) } },
-    ), focus) { renderSettingsHome(HOME_SECTIONS.indexOf(MainActivity.ADDONS_SECTION)) }
+    ), focus) { renderSettingsHome(HOME_SECTIONS.indexOf(SettingsRows.ADDONS_SECTION)) }
 }
 
 /** Virtual apps and integrations: where the add-ons', plugins' and extensions' content shows (see placementRows). */

@@ -28,7 +28,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import link.mccoy88f.zephyr.MainActivity.App
-import link.mccoy88f.zephyr.MainActivity.Companion.CW_APPS_ROW
+import link.mccoy88f.zephyr.SettingsRows.CW_APPS_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.GREYSCALE
 import link.mccoy88f.zephyr.MainActivity.Companion.GRID_GAP
 import link.mccoy88f.zephyr.MainActivity.Companion.HDMI

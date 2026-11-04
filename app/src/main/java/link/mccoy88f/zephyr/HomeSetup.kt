@@ -20,7 +20,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import link.mccoy88f.zephyr.MainActivity.Companion.HELP_URL
-import link.mccoy88f.zephyr.MainActivity.Companion.HOME_BUTTON_ROW
+import link.mccoy88f.zephyr.SettingsRows.HOME_BUTTON_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.ROLE_REQUEST
 import link.mccoy88f.zephyr.MainActivity.Companion.WRITE_SECURE
 

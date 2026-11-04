@@ -350,8 +350,8 @@ internal fun MainActivity.remoteHasPin(tell: Boolean = false): Boolean {
  */
 internal fun rowsAfterRemote(remoteOn: Boolean) = if (remoteOn) 2 else 1
 
-internal fun MainActivity.remoteShowRow() = MainActivity.REMOTE_ROW + 1
-internal fun MainActivity.backupRow() = MainActivity.REMOTE_ROW + rowsAfterRemote(remoteOn())
+internal fun MainActivity.remoteShowRow() = SettingsRows.REMOTE_ROW + 1
+internal fun MainActivity.backupRow() = SettingsRows.REMOTE_ROW + rowsAfterRemote(remoteOn())
 internal fun MainActivity.problemsRow() = backupRow() + 1
 internal fun MainActivity.guideRow() = backupRow() + 2
 internal fun MainActivity.aboutRow() = backupRow() + 3
@@ -378,15 +378,15 @@ internal fun MainActivity.toggleRemote() {
         prefs.edit().putBoolean(K.REMOTE, false).apply()
         Remote.stop()
         dropUnusedPin() // a lock may still use it
-        renderSettings(MainActivity.REMOTE_ROW)
+        renderSettings(SettingsRows.REMOTE_ROW)
         return
     }
-    ensureRemote({ renderSettings(MainActivity.REMOTE_ROW) }) { renderSettings(MainActivity.REMOTE_ROW) }
+    ensureRemote({ renderSettings(SettingsRows.REMOTE_ROW) }) { renderSettings(SettingsRows.REMOTE_ROW) }
 }
 
 /** The address to save: the whole settings page, after the PIN. */
 internal fun MainActivity.showRemoteAddress() {
-    val back = { renderSettings(if (remoteOn()) remoteShowRow() else MainActivity.REMOTE_ROW) }
+    val back = { renderSettings(if (remoteOn()) remoteShowRow() else SettingsRows.REMOTE_ROW) }
     ensureRemote(back) {
         if (warpOn()) {
             showPage(getString(R.string.setting_remote), listOf(page(getString(R.string.dialog_done)) { back() }), top = warpQrNotice(), back = back)

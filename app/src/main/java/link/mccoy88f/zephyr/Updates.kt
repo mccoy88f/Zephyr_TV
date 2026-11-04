@@ -12,7 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import link.mccoy88f.zephyr.MainActivity.Companion.REPO
-import link.mccoy88f.zephyr.MainActivity.Companion.UPDATE_ROW
+import link.mccoy88f.zephyr.SettingsRows.UPDATE_ROW
 
 // Updates from GitHub releases as the settings show them: checking, installing, what's new, the badge.
 // Functions of MainActivity, kept here by topic; their state lives in MainActivity.

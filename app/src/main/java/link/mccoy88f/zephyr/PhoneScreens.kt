@@ -9,7 +9,7 @@ import android.view.Gravity
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import link.mccoy88f.zephyr.MainActivity.Companion.TMDB_LIST_ROW
+import link.mccoy88f.zephyr.SettingsRows.TMDB_LIST_ROW
 
 // Screens that hand a job to a phone (remote access): wallpapers, text (fromPhoneText), recent problems.
 // Functions of MainActivity, kept here by topic; their state lives in MainActivity.

@@ -7,9 +7,9 @@ import android.graphics.drawable.BitmapDrawable
 import android.media.tv.TvContract
 import android.widget.Toast
 import link.mccoy88f.zephyr.MainActivity.Prog
-import link.mccoy88f.zephyr.MainActivity.Companion.CINEMETA_ROW
-import link.mccoy88f.zephyr.MainActivity.Companion.ADDON_ADD_ROW
-import link.mccoy88f.zephyr.MainActivity.Companion.ADDON_ROWS
+import link.mccoy88f.zephyr.SettingsRows.CINEMETA_ROW
+import link.mccoy88f.zephyr.SettingsRows.ADDON_ADD_ROW
+import link.mccoy88f.zephyr.SettingsRows.ADDON_ROWS
 import link.mccoy88f.zephyr.MainActivity.Companion.SUBMENU
 
 // Stremio add-ons' TV channels on the home screen: where they show (the TV app, one IPTV app, or an app per add-on),

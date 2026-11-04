@@ -11,7 +11,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import link.mccoy88f.zephyr.MainActivity.Companion.CHOSEN
-import link.mccoy88f.zephyr.MainActivity.Companion.CITY_ROW
+import link.mccoy88f.zephyr.SettingsRows.CITY_ROW
 
 // The weather under the clock and the weather location page.
 // Functions of MainActivity, kept here by topic; their state lives in MainActivity.
