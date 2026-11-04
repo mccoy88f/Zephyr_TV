@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.0.0-beta.23
 
 - Shared links go to ztv.mccoy88f.link. A chat shows the title's poster, name and plot as the link's preview.
 - Zephyr TV opens the links of the site, and the older links too.
