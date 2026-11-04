@@ -160,13 +160,31 @@ private fun MainActivity.confirmLink(title: String, url: String, add: () -> Unit
  * A film's or series' page shared (an episode's too: [season], [episode]): the title and its link, through the
  * phone's own share sheet (WhatsApp, Telegram…).
  */
-internal fun MainActivity.shareTitle(type: String, id: String, name: String, season: Int? = null, episode: Int? = null) {
+internal fun MainActivity.shareTitle(type: String, id: String, name: String, season: Int? = null, episode: Int? = null, image: String? = null) {
     val query = "?n=" + Uri.encode(name) + if (season != null && episode != null) "&s=$season&e=$episode" else ""
     val link = SHARE_PAGE + "#title/$type/" + Uri.encode(id) + query
     val what = if (season != null && episode != null) getString(R.string.player_episode, name, season, episode) else name
     val text = getString(R.string.share_text, what, link)
-    val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text).putExtra(Intent.EXTRA_SUBJECT, what)
-    runCatching { startActivity(Intent.createChooser(send, getString(R.string.share))) }
+    fun send(picture: Uri?) {
+        val send = Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_TEXT, text).putExtra(Intent.EXTRA_SUBJECT, what)
+        if (picture == null) send.type = "text/plain"
+        else send.setType("image/jpeg").putExtra(Intent.EXTRA_STREAM, picture)
+            .setClipData(android.content.ClipData.newRawUri(what, picture)).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        runCatching { startActivity(Intent.createChooser(send, getString(R.string.share))) }
+    }
+    // A chat shows a link's preview only from what its server says, and the page shared (one for every title, the
+    // title after its #) can't say a title's: the title's poster goes with the link instead, as a picture with the
+    // text under it. Without one (or if it won't load), the text alone.
+    if (image == null) return send(null)
+    posterIo.execute {
+        val picture = runCatching {
+            val bmp = android.graphics.BitmapFactory.decodeFile(Images.file(image, Images.Kind.ART).path) ?: return@runCatching null
+            val out = java.io.File(SharedImages.folder(this), "title.jpg")
+            out.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, it) }
+            SharedImages.uri(this, out)
+        }.onFailure { warn("share picture failed ($it)") }.getOrNull()
+        ui.post { send(picture) }
+    }
 }
 
 /** On a phone or tablet: Search and the Play queue held on Zephyr TV's icon. */

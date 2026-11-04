@@ -119,6 +119,14 @@
             </intent-filter>
         </activity>
 
+        <!-- A shared title's poster, read by the app it's shared to (see SharedImages): not exported, readable only
+             through the permission the share grants for that one picture. -->
+        <provider
+            android:name=".SharedImages"
+            android:authorities="${applicationId}.shared"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+
         <!-- The player for the Stremio add-ons' channels, in a process of its own: a stream that hangs or a decoder
              that crashes can't take the home screen with it. -->
         <activity

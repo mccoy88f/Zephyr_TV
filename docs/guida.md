@@ -379,7 +379,7 @@ Zephyr TV funziona anche su telefoni e tablet Android, con il dito:
   andare avanti di 10 secondi; trascina la barra di avanzamento; scorri su e giù a sinistra per la luminosità, a
   destra per il volume, al centro per cambiare canale; pizzica per riempire lo schermo o adattarlo; 🔒 blocca i
   comandi; se esci dal player mentre un video va, continua in una finestrella.
-- **Condividi** nella pagina di un titolo manda un link: Zephyr TV lo apre su un altro telefono o tablet. Un link
+- **Condividi** nella pagina di un titolo manda la sua locandina con un link: Zephyr TV lo apre su un altro telefono o tablet. Un link
   condiviso con Zephyr TV (il `manifest.json` di un add-on Stremio, un link `stremio://`, `nuvio://` o `ztv://`) viene aggiunto
   dopo la tua conferma.
 - Quello che una TV fa con un QR code e il telefono si fa direttamente sul dispositivo: la sua tastiera, il suo
