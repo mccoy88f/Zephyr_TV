@@ -752,7 +752,9 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
         setBackgroundColor(if (dark) 0xFF18181A.toInt() else 0xFFDDE1E5.toInt())
     }
     // Long titles scroll while their poster is focused instead of staying cut off.
-    val title = label(p.title, 14f).apply {
+    // The title larger and heavier than the line under it: it reads from the sofa.
+    val title = label(p.title, 15f).apply {
+        typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
         setPadding(0, dp(6), 0, 0)
         isSingleLine = true
         ellipsize = TextUtils.TruncateAt.MARQUEE
@@ -800,6 +802,21 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
     }, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.END).apply {
         setMargins(0, 0, dp(6), dp(6))
     })
+    // Its rating (a film's or series'): a small rounded tag in the top right corner, as the cinema one, its star gold.
+    p.rating?.let { r ->
+        frame.addView(TextView(this).apply {
+            text = android.text.SpannableString("★ $r").apply {
+                setSpan(android.text.style.ForegroundColorSpan(0xFFFFC83D.toInt()), 0, 1, 0)
+            }
+            textSize = 10f
+            setTextColor(Color.WHITE)
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+            setPadding(dp(6), dp(2), dp(6), dp(2))
+            background = GradientDrawable().apply { cornerRadius = dp(4).toFloat(); setColor(0xCC000000.toInt()) }
+        }, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.TOP or Gravity.END).apply {
+            setMargins(0, dp(6), dp(6), 0)
+        })
+    }
     frame.setOnClickListener {
         val fromSearch = watchApp == SEARCH_PKG
         val addon = p.addon ?: p.channelPage?.addon

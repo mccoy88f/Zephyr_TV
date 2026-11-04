@@ -84,7 +84,7 @@ class MainActivity : Activity() {
     // icon stays the small mark on cards.
     internal class App(val pkg: String, val label: String, val launch: Intent, val icon: Drawable, val offline: Boolean = false,
                        val picture: Drawable? = null, val sublabel: String? = null)
-    internal class Prog(val title: String, val sub: String, val progress: Int, val image: String?, val intent: String?, val pkg: String?, val weight: Long = 0, val badge: String? = null, val logo: String? = null, val poster: String? = null, val channelPage: ChannelDetail? = null, val channelId: Long? = null, val playing: Boolean = false, val addon: AddonChannel? = null, val icon: String? = null, val vod: TitleRef? = null, val cinema: Boolean = false) // icon: the tile whose icon marks the card, when not pkg's; vod: a film or series (see Titles); cinema: a film still only in cinemas
+    internal class Prog(val title: String, val sub: String, val progress: Int, val image: String?, val intent: String?, val pkg: String?, val weight: Long = 0, val badge: String? = null, val logo: String? = null, val poster: String? = null, val channelPage: ChannelDetail? = null, val channelId: Long? = null, val playing: Boolean = false, val addon: AddonChannel? = null, val icon: String? = null, val vod: TitleRef? = null, val cinema: Boolean = false, val rating: String? = null) // icon: the tile whose icon marks the card, when not pkg's; vod: a film or series (see Titles); cinema: a film still only in cinemas; rating: its score, tagged on the art
 
     internal val prefs by lazy { getSharedPreferences(K.FILE, MODE_PRIVATE) }
     internal val io = Executors.newSingleThreadExecutor()

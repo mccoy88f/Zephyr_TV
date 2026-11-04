@@ -256,12 +256,14 @@ private fun MainActivity.refreshShelves(addon: Stremio.Addon, pkg: String) {
 }
 
 /**
- * A film's or series' card: its wide art (or its poster on a blur of itself), under it its year, genre and rating,
- * marked with the icon of the tile [icon] it's under (Films, Series, or the add-on's own), and ✓ once [watched]; or [sub].
+ * A film's or series' card: its wide art (or its poster on a blur of itself), its rating tagged on it, under it its year
+ * and genre, marked with the icon of the tile [icon] it's under (Films, Series, or the add-on's own), and ✓ once
+ * [watched]; or [sub].
  */
 internal fun titleCard(t: Stremio.Title, source: String?, icon: String?, watched: Boolean = false, sub: String? = null) =
-    Prog(t.name, sub ?: listOfNotNull("✓".takeIf { watched }, t.year, t.genres.firstOrNull(), t.rating?.let { "★ $it" }).joinToString(" · "), 0, t.background, null, null,
+    Prog(t.name, sub ?: listOfNotNull("✓".takeIf { watched }, t.year, t.genres.firstOrNull()).joinToString(" · "), 0, t.background, null, null,
         logo = t.logo, poster = t.poster, icon = icon, cinema = t.type == "movie" && Releases.known(t.id) == Releases.State.CINEMA,
+        rating = t.rating?.takeIf { it.isNotBlank() && it != "0" && it != "0.0" },
         vod = TitleRef(t.type, t.id, t.name, t.poster, t.background, source, logo = t.logo, rating = t.rating, about = t.description,
             fallback = t.fallback))
 

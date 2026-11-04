@@ -13,6 +13,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- The titles of the cards in the rows are larger and bolder.
+- A film's or series' rating shows as a tag in the top right corner of its card.
+
 ## 4.0.0-beta.17
 
 - When an update is found, **Settings → System → Updates** shows what's new in it, under **Install**.
