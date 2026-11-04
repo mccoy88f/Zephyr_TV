@@ -306,7 +306,7 @@ I pulsanti di In evidenza aprono la pagina del titolo, il trailer o un'app di st
 
 ## 17. Utenti e Trakt
 
-Il pulsante **Utenti** nella barra in alto (mostra l'iniziale dell'utente in uso):
+Il pulsante **Utenti** nella barra in alto (mostra l'iniziale dell'utente in uso) apre un piccolo menu sotto di sé, come **Sorgenti TV**:
 
 - **Scegli un utente**: ognuno ha la sua cronologia, i suoi "visto" e il suo Continua la riproduzione.
 - **Impostazioni** (protette dal Blocco layout, se attivo):

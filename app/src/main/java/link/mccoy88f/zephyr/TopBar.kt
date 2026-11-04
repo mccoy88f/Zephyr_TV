@@ -59,7 +59,7 @@ internal fun MainActivity.openSettings(action: String, data: Uri? = null) {
 /** The top bar's buttons: users, search, network, All apps, TV inputs, Android settings, launcher settings. Round, lit on focus. */
 internal fun MainActivity.setupTopBar() {
     for ((id, action) in listOf<Pair<Int, () -> Unit>>(
-        R.id.usersButton to { showUsers() },
+        R.id.usersButton to { openUsersMenu(findViewById(R.id.usersButton)) },
         R.id.searchButton to { openSearch(if (searchQuery != null) lastSearchWord else "") },
         R.id.wifi to { openSettings(Settings.ACTION_WIFI_SETTINGS) },
         R.id.allAppsButton to { openAllApps() },

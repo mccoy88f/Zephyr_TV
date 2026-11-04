@@ -61,6 +61,40 @@ internal fun MainActivity.showUsers(focus: Int? = null) {
         focus ?: list.indexOfFirst { it.id == current.id }.coerceAtLeast(0)) { closeLauncherSettings() }
 }
 
+/**
+ * The top bar's users button: a small menu under it, as the TV inputs' (see openInputsMenu), not the whole panel:
+ * each user (the one in use ticked), the 18+ lock when it's on, and the users' settings. Remote access keeps the
+ * panel (see showUsers), which the phone shows.
+ */
+internal fun MainActivity.openUsersMenu(anchor: android.view.View) {
+    val current = currentUser()
+    val list = users()
+    val box = android.widget.LinearLayout(this).apply {
+        orientation = android.widget.LinearLayout.VERTICAL
+        setPadding(dp(6), dp(6), dp(6), dp(6))
+        background = menuBackground()
+        elevation = dp(8).toFloat()
+    }
+    val menu = android.widget.PopupWindow(box, dp(260), android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, true).apply {
+        setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0))
+        elevation = dp(8).toFloat()
+    }
+    val rows = list.map { u -> page(u.name, if (u.id == current.id) CHOSEN else "") { if (u.id != current.id) useUser(u) } } +
+        listOfNotNull(
+            // The 18+ lock, when it's on: unlock with its PIN (in the panel), or lock again.
+            if (adultLockOn()) adultMenuRow { closeLauncherSettings() } else null,
+            page(getString(R.string.users_settings), SUBMENU) { unlock { usersSettings() } }, // behind the layout lock
+        )
+    rows.forEachIndexed { i, (title, value, action) ->
+        box.addView(settingsRow(title, value) { menu.dismiss(); action() },
+            android.widget.LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, dp(40)).apply { if (i > 0) topMargin = dp(2) })
+    }
+    val at = IntArray(2).also { anchor.getLocationInWindow(it) }
+    // Under the button, as the inputs' menu, kept on the screen when the button is near its edge.
+    menu.showAtLocation(anchor, android.view.Gravity.NO_GRAVITY, (at[0] - dp(100)).coerceAtLeast(dp(16)), at[1] + anchor.height + dp(8))
+    box.getChildAt(list.indexOfFirst { it.id == current.id }.coerceAtLeast(0))?.requestFocus()
+}
+
 /** The users' settings: each user (their page: Trakt, rename, remove), then Add user. */
 private fun MainActivity.usersSettings(focus: Int = 0) {
     if (settingsScrim.visibility != android.view.View.VISIBLE) showPanel() // after the PIN, which closes the panel

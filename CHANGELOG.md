@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- The **Users** button opens a small menu under it, as **TV inputs** does.
+
 ## 4.0.0-beta.15
 
 - The mpv player is removed. The built-in player plays the streams. If you installed Zephyr MPV, uninstall it in the Android settings.

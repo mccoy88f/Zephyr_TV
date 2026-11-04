@@ -306,7 +306,7 @@ Spotlight's buttons open the title's page, the trailer or a streaming app.
 
 ## 17. Users and Trakt
 
-The **Users** button in the top bar (it shows the initial of the user in use):
+The **Users** button in the top bar (it shows the initial of the user in use) opens a small menu under it, as **TV inputs** does:
 
 - **Pick a user**: each has their own history, watched marks and Continue Playing.
 - **Settings** (behind the layout lock, when it's on):
