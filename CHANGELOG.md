@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.0.0-beta.11
 
 - Zephyr TV is in Catalan. Thanks to oscarsanchezdm.
 - Select **Settings → TV → Reorder channels** to put the channels in your order. Thanks to oscarsanchezdm.
