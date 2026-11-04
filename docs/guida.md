@@ -306,11 +306,11 @@ I pulsanti di In evidenza aprono la pagina del titolo, il trailer o un'app di st
 
 ## 17. Utenti e Trakt
 
-Il pulsante **Utenti** nella barra in alto (mostra l'avatar dell'utente in uso, o la sua iniziale) apre un piccolo menu sotto di sé, come **Sorgenti TV**: gli utenti uno accanto all'altro, con avatar e nome, e sotto **Sblocca VM18** e **Impostazioni**.
+Il pulsante **Utenti** nella barra in alto (mostra l'avatar dell'utente in uso, o la sua iniziale) apre un piccolo menu sotto di sé, come **Sorgenti TV**: gli utenti uno accanto all'altro, al centro, con avatar e nome, e sotto **Sblocca VM18** e **Impostazioni**. Tieni premuto OK su un utente per aprire le sue impostazioni.
 
 - **Scegli un utente**: ognuno ha la sua cronologia, i suoi "visto" e il suo Continua la riproduzione.
 - **Impostazioni** (protette dal Blocco layout, se attivo):
-  - **Aggiungi utente**, e per ogni utente **Rinomina**, **Avatar** e **Rimuovi**.
+  - **Aggiungi utente**, e per ogni utente **Avatar**, **Rinomina** e **Rimuovi**.
   - **Avatar**: scegli tra alcuni avatar di [DiceBear](https://www.dicebear.com) (sinistra e destra, poi OK). **Stile** passa a un altro stile, **Altri avatar** ne propone di nuovi, **Nessun avatar** torna all'iniziale. A DiceBear va solo un codice casuale, mai il nome dell'utente.
   - **Collega Trakt**: sincronizza visti e avanzamento con il tuo account Trakt.
 

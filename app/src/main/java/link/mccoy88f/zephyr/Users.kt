@@ -87,9 +87,18 @@ internal fun MainActivity.openUsersMenu(anchor: android.view.View) {
         orientation = android.widget.LinearLayout.HORIZONTAL
         gravity = android.view.Gravity.CENTER_HORIZONTAL
     }
-    val tiles = list.map { u -> userTile(u, u.id == current.id) { menu.dismiss(); if (u.id != current.id) useUser(u) } }
+    val tiles = list.map { u ->
+        userTile(u, u.id == current.id, pick = { menu.dismiss(); if (u.id != current.id) useUser(u) },
+            // Held: that user's page (Trakt, rename, avatar, remove), behind the layout lock as the users' settings are.
+            hold = { menu.dismiss(); unlock { if (settingsScrim.visibility != android.view.View.VISIBLE) showPanel(); userPage(u) } })
+    }
     tiles.forEach { strip.addView(it, android.widget.LinearLayout.LayoutParams(dp(92), android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)) }
-    box.addView(android.widget.HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(strip) },
+    // The users in the middle of the menu, however wide its rows make it (the strip fills the scroll's width).
+    box.addView(android.widget.HorizontalScrollView(this).apply {
+        isHorizontalScrollBarEnabled = false
+        isFillViewport = true
+        addView(strip, android.widget.FrameLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT))
+    },
         android.widget.LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT).apply {
             gravity = android.view.Gravity.CENTER_HORIZONTAL
             bottomMargin = dp(4)
@@ -112,8 +121,8 @@ internal fun MainActivity.openUsersMenu(anchor: android.view.View) {
     tiles.getOrNull(list.indexOfFirst { it.id == current.id }.coerceAtLeast(0))?.requestFocus()
 }
 
-/** A user in the users' menu: their avatar (or initial) in a circle, their name under it; [inUse] ringed. */
-private fun MainActivity.userTile(u: User, inUse: Boolean, pick: () -> Unit): android.view.View {
+/** A user in the users' menu: their avatar (or initial) in a circle, their name under it; [inUse] ringed; OK [pick], held [hold]. */
+private fun MainActivity.userTile(u: User, inUse: Boolean, pick: () -> Unit, hold: () -> Unit): android.view.View {
     val bg = android.graphics.drawable.GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(0) }
     val ring = android.graphics.drawable.GradientDrawable().apply {
         shape = android.graphics.drawable.GradientDrawable.OVAL
@@ -146,6 +155,7 @@ private fun MainActivity.userTile(u: User, inUse: Boolean, pick: () -> Unit): an
         addView(pic, android.widget.LinearLayout.LayoutParams(dp(56), dp(56)))
         addView(name, android.widget.LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT))
         setOnClickListener { pick() }
+        setOnLongClickListener { hold(); true }
         setOnFocusChangeListener { _, focused ->
             bg.setColor(if (focused) fg else 0)
             name.setTextColor(if (focused) onFg else fg)
@@ -163,6 +173,22 @@ private fun MainActivity.usersSettings(focus: Int = 0) {
         page(u.name, listOfNotNull(trakt, if (u.id == current.id) CHOSEN else null).joinToString("  ")) { userPage(u) }
     } + page(getString(R.string.user_add)) { userName(null) } +
         adultSettingsRows { usersSettings(list.size + 1) }, focus) { showUsers(list.size + if (adultLockOn()) 1 else 0) }
+    userIcons(list)
+}
+
+/**
+ * Before each user's name on the users' settings page, their avatar (or initial). Avatars not in memory yet are
+ * loaded, and drawn once they all are, if the page is still up.
+ */
+private fun MainActivity.userIcons(list: List<User>) {
+    val title = getString(R.string.users_settings)
+    rowIcons(list.mapIndexed { i, u -> i to (Avatars.cached(u.avatar)?.let { AvatarDrawable(it) } ?: initials(u)) }.toMap(), first = 0)
+    val missing = list.mapNotNull { u -> u.avatar?.takeIf { Avatars.parse(it) != null && Avatars.cached(it) == null } }
+    if (missing.isEmpty()) return
+    posterIo.execute {
+        val any = missing.map { Avatars.load(it) }.any { it != null }
+        ui.post { if (any && pageShowing(title)) usersSettings(focusedRow() ?: 0) }
+    }
 }
 
 /** A user's page: their Trakt account (connect, or sync and disconnect), rename, remove. */
@@ -175,8 +201,9 @@ private fun MainActivity.userPage(given: User, focus: Int = 0) {
         if (account == null) page(getString(R.string.trakt_connect), getString(R.string.trakt_not_connected)) { traktSignIn(u) }
         else page(getString(R.string.trakt_sync), account.user) { syncTrakt(u.id, tell = true) },
         account?.let { page(getString(R.string.trakt_disconnect)) { Trakt.forget(dir); userPage(u) } },
-        page(getString(R.string.user_rename)) { userName(u) },
+        // Their avatar first, drawn before its row's name (see below), then their name.
         page(getString(R.string.user_avatar), Avatars.parse(u.avatar)?.let { Avatars.styleName(it.first) } ?: getString(R.string.avatar_none_value)) { avatarPage(u) },
+        page(getString(R.string.user_rename)) { userName(u) },
         // The first user stays: their files are Zephyr TV's own.
         if (u.id == "") null else page(getString(R.string.user_remove)) {
             saveUsers(users().filter { it.id != u.id })
@@ -185,13 +212,19 @@ private fun MainActivity.userPage(given: User, focus: Int = 0) {
             usersSettings()
         },
     ), focus, back = back)
+    val row = avatarRow(u)
+    rowIcons(mapOf(row to (Avatars.cached(u.avatar)?.let { AvatarDrawable(it) } ?: initials(u))), first = 0)
+    // Not in memory yet: drawn once it's loaded, if this page is still up.
+    if (Avatars.parse(u.avatar) != null && Avatars.cached(u.avatar) == null) posterIo.execute {
+        if (Avatars.load(u.avatar!!) != null) ui.post { if (pageShowing(u.name)) userPage(u, focusedRow() ?: focus) }
+    }
 }
 
-/** The row of Rename on [u]'s page (after Trakt's one or two). */
-private fun MainActivity.renameRow(u: User) = if (Trakt.account(vodDir(u.id)) == null) 1 else 2
+/** The row of Rename on [u]'s page, after Avatar. */
+private fun MainActivity.renameRow(u: User) = avatarRow(u) + 1
 
-/** The row of Avatar on [u]'s page, after Rename. */
-private fun MainActivity.avatarRow(u: User) = renameRow(u) + 1
+/** The row of Avatar on [u]'s page (after Trakt's one or two). */
+private fun MainActivity.avatarRow(u: User) = if (Trakt.account(vodDir(u.id)) == null) 1 else 2
 
 /**
  * [u]'s avatar: a few of [style]'s on top to pick from (◀ ▶, OK), then the style (the next one), others of it, and

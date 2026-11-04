@@ -17,6 +17,8 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 - When an update is found, **Settings → System → Updates** shows what's new in it, under **Install**.
 - In the Glass theme, the icon of the first settings row can be read as soon as Settings opens.
+- In the **Users** menu the users are in the middle. Hold OK on a user to open their settings.
+- **Users → Settings** shows each user's avatar before the name. On a user's page, **Avatar** comes before **Rename**.
 
 ## 4.0.0-beta.16
 
