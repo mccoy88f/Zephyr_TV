@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- Going down from the apps row with the arrows, the page moves once, after Spotlight folds away. Before, it went up and then down again.
+
 ## 4.0.0-beta.21
 
 - The Zephyr TV icon has transparent corners. Before, they were white on dark or coloured backgrounds.

@@ -58,26 +58,28 @@ internal fun MainActivity.setupSpotlight() {
 
     window.decorView.viewTreeObserver.addOnGlobalFocusChangeListener { _, newFocus ->
         updateSpotlightFocusState(newFocus)
-        foldSpotlight(newFocus)
-        keepInView(newFocus)
+        // Spotlight folding or opening moves the rows itself: the page is placed once it's done (see foldAnimation),
+        // not now, measured with Spotlight still there (it went up twice, then back down).
+        if (!foldSpotlight(newFocus)) keepInView(newFocus)
     }
 }
 
 /**
- * Focus down in the rows under the apps: Spotlight folds away (the apps go up), its carousel stops on the title it
+ * True when it folds or opens now (the page is placed once it's done). Focus down in the rows under the apps: Spotlight folds away (the apps go up), its carousel stops on the title it
  * shows, and the backdrop softens under the apps (see RowsVeil). Back on the apps or above: it opens again on the same
  * title, which gets its full time again. With the arrows on a phone or tablet too (a finger moves no focus); not without
  * Spotlight.
  */
-internal fun MainActivity.foldSpotlight(v: View?) {
+internal fun MainActivity.foldSpotlight(v: View?): Boolean {
     val content = findViewById<View>(R.id.content)
-    if (v == null || !isDescendantOf(v, content)) return // the panel, a menu: as it is
+    if (v == null || !isDescendantOf(v, content)) return false // the panel, a menu: as it is
     val below = isDescendantOf(v, bottomSection) && !isDescendantOf(v, findViewById(R.id.appScroll))
     val fold = below && spotlightContainer.visibility == View.VISIBLE
-    if (fold == spotlightFolded) return
+    if (fold == spotlightFolded) return false
     spotlightFolded = fold
     foldAnimation(fold)
     if (!fold) restartSpotlightTick()
+    return true
 }
 
 /** Spotlight's height and margins down to nothing ([fold]), or back to its own; the veil fading in or out with it. */
