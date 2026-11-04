@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { traktSignins } from "@/db/schema";
 import { allow } from "@/server/limit";
-import { STATE, dropOldSignins, trakt, traktToken } from "@/server/trakt";
+import { CHALLENGE, STATE, dropOldSignins, trakt } from "@/server/trakt";
 
 export const dynamic = "force-dynamic";
 
@@ -12,24 +12,28 @@ function done(req: Request, result: "ok" | "refused" | "error") {
 }
 
 /**
- * A Trakt sign-in, from the TV's QR code to Trakt and back (the address Zephyr TV puts in the code).
- * ?start=<state>: kept, then on to Trakt's page to sign in and allow Zephyr TV.
- * ?code=…&state=…: Trakt's answer, swapped for the tokens (with the app's secret), kept for the TV (see api/trakt/poll).
+ * A Trakt sign-in, from the TV's QR code to Trakt and back (the address Zephyr TV puts in the code), with PKCE.
+ * ?start=<state>&cc=<challenge>: kept, then on to Trakt's page to sign in and allow Zephyr TV, with the TV's challenge.
+ * ?code=…&state=…: Trakt's code, kept for the TV (see api/trakt/poll), which swaps it for the tokens itself with its
+ *   verifier: the tokens never pass through here.
  * ?error=access_denied&state=…: refused on Trakt's page.
  */
 export async function GET(req: Request) {
   const q = new URL(req.url).searchParams;
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "?";
   if (!allow(`traktauth:${ip}`, 30, 10 * 60_000)) return new Response("Too many tries", { status: 429 });
-  if (!trakt.secret) return new Response("Trakt isn't set up on this site (TRAKT_CLIENT_SECRET)", { status: 503 });
 
   const start = q.get("start");
   if (start) {
-    if (!STATE.test(start)) return new Response("Bad state", { status: 400 });
+    const challenge = q.get("cc");
+    if (!STATE.test(start) || !challenge || !CHALLENGE.test(challenge)) return new Response("Bad sign-in", { status: 400 });
     await dropOldSignins();
     await db.insert(traktSignins).values({ state: start }).onConflictDoNothing();
     const to = new URL("https://trakt.tv/oauth/authorize");
-    to.search = new URLSearchParams({ response_type: "code", client_id: trakt.clientId, redirect_uri: trakt.redirect, state: start }).toString();
+    to.search = new URLSearchParams({
+      response_type: "code", client_id: trakt.clientId, redirect_uri: trakt.redirect, state: start,
+      code_challenge: challenge, code_challenge_method: "S256",
+    }).toString();
     return Response.redirect(to, 302);
   }
 
@@ -38,18 +42,11 @@ export async function GET(req: Request) {
   const [row] = await db.select().from(traktSignins).where(eq(traktSignins.state, state));
   if (!row || row.status !== "waiting") return done(req, "error"); // too old, or used already
 
-  if (q.get("error")) {
-    await db.update(traktSignins).set({ status: "refused" }).where(eq(traktSignins.state, state));
-    return done(req, "refused");
-  }
   const code = q.get("code");
-  if (!code) return new Response("No code", { status: 400 });
-  const { status, json } = await traktToken({ code, grant_type: "authorization_code" });
-  if (status !== 200) {
-    console.warn(`trakt: code refused (${status})`);
+  if (q.get("error") || !code) {
     await db.update(traktSignins).set({ status: "refused" }).where(eq(traktSignins.state, state));
-    return done(req, "error");
+    return done(req, q.get("error") ? "refused" : "error");
   }
-  await db.update(traktSignins).set({ status: "done", tokens: json }).where(eq(traktSignins.state, state));
+  await db.update(traktSignins).set({ status: "done", code: code.slice(0, 512) }).where(eq(traktSignins.state, state));
   return done(req, "ok");
 }

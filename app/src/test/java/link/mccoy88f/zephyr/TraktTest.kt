@@ -33,4 +33,12 @@ class TraktTest {
         assertEquals(48, p[1].runtimeMin)
         assertEquals(1422223292000L, p[0].at)
     }
+
+    // PKCE's S256 challenge, as RFC 7636 (appendix B) works it out; and verifiers of the length it asks (43 to 128).
+    @Test fun pkceChallenge() {
+        org.junit.Assert.assertEquals("E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuIDqHPpEhM", Trakt.challenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"))
+        val v = Trakt.newVerifier()
+        org.junit.Assert.assertTrue(v.length in 43..128 && v.all { it.isLetterOrDigit() || it == '-' || it == '_' })
+        org.junit.Assert.assertNotEquals(v, Trakt.newVerifier())
+    }
 }

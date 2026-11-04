@@ -1,5 +1,5 @@
 {
-  "id": "f709767e-774d-44e1-b604-c3ccc2e28a45",
+  "id": "f836cb88-74c9-475b-8f0c-a4d5ce491d1d",
   "prevId": "2a39d7fd-042f-4c14-b7c0-573198f4d2d1",
   "version": "7",
   "dialect": "postgresql",
@@ -170,9 +170,9 @@
           "notNull": true,
           "default": "'waiting'"
         },
-        "tokens": {
-          "name": "tokens",
-          "type": "jsonb",
+        "code": {
+          "name": "code",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },

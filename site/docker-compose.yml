@@ -14,7 +14,6 @@ services:
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       TMDB_API_KEY: ${TMDB_API_KEY:-}
       TRAKT_CLIENT_ID: ${TRAKT_CLIENT_ID:-}
-      TRAKT_CLIENT_SECRET: ${TRAKT_CLIENT_SECRET:-}
     ports:
       - "3000"
     depends_on:

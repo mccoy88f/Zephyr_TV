@@ -443,7 +443,8 @@ private fun MainActivity.traktSignIn(u: User, intro: String? = null, then: (() -
 /** [u]'s Trakt sign-in through [site]: its QR code, and the TV asking that site until the phone is done. */
 private fun MainActivity.traktSignIn(u: User, site: String, intro: String?, then: (() -> Unit)?) {
     val state = Trakt.newState()
-    val url = Trakt.signInUrl(state, site)
+    val verifier = Trakt.newVerifier() // PKCE: stays here; the site only ever sees its challenge
+    val url = Trakt.signInUrl(state, verifier, site)
     val status = label(getString(R.string.trakt_waiting), 14f)
     val box = qrBox(url, null, intro ?: getString(R.string.trakt_sign_in_intro), status)
     val title = getString(R.string.trakt_connect) + " · " + u.name
@@ -456,7 +457,7 @@ private fun MainActivity.traktSignIn(u: User, site: String, intro: String?, then
         if (!pageShowing(title)) return // left: no more asking
         if (System.currentTimeMillis() > until) return run { status.text = getString(R.string.trakt_expired) }
         netIo.execute {
-            val sign = runCatching { Trakt.poll(dir, state, site) }.getOrDefault(Trakt.SignIn.WAITING) // offline for a moment: ask again
+            val sign = runCatching { Trakt.poll(dir, state, verifier, site) }.getOrDefault(Trakt.SignIn.WAITING) // offline for a moment: ask again
             ui.post {
                 when (sign) {
                     Trakt.SignIn.DONE -> {

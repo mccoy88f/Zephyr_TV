@@ -2,6 +2,6 @@ CREATE TYPE "public"."trakt_status" AS ENUM('waiting', 'done', 'refused');--> st
 CREATE TABLE "trakt_signins" (
 	"state" text PRIMARY KEY NOT NULL,
 	"status" "trakt_status" DEFAULT 'waiting' NOT NULL,
-	"tokens" jsonb,
+	"code" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );

@@ -17,7 +17,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 - Shared links go to ztv.mccoy88f.link. A chat shows the title's poster, name and plot as the link's preview.
 - Zephyr TV opens the links of the site, and the older links too.
-- Trakt's sign-in goes through ztv.mccoy88f.link once it is set up there, and through the older site until then.
+- Trakt's sign-in goes through ztv.mccoy88f.link with PKCE: the TV gets its keys from Trakt itself, and refreshes them itself. Until the site is up, it goes through the older site.
 
 ## 4.0.0-beta.22
 

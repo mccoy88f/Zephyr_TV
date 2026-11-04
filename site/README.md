@@ -44,7 +44,7 @@ The app's health check is `GET /healthz` (200 when the database answers).
 |---|---|
 | F0 | This: Docker Compose, PostgreSQL, the languages, presentation, downloads, licences, superadmin sign-in |
 | F1 | Shared links with each title's poster as their preview (`/t/<type>/<id>`, `/o/<kind>?u=`): done |
-| F2 | Trakt's sign-in moved here (`/traktauth`, `/api/trakt/poll`, `/api/trakt/refresh`): done; set `TRAKT_CLIENT_SECRET` and add `SITE_URL/traktauth` to the app's redirect URIs on trakt.tv |
+| F2 | Trakt's sign-in through here with PKCE (`/traktauth`, `/api/trakt/poll`): no secret, and the tokens never pass through the site (the TV swaps the code itself). On trakt.tv, Zephyr TV's app needs "Sign users in with PKCE" and `SITE_URL/traktauth` among its redirect URIs: done |
 | F3 | Accounts (email and password, email verified), Zephyr TV users and avatars, TVs linked with a code, the extensions' catalogue (published after review) |
 | F4 | Sync between TVs (add-ons and keys end-to-end encrypted) |
 | F5 | Privacy policy, notices from the admin, launch |

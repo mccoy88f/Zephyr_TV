@@ -1,8 +1,9 @@
-import { trakt } from "@/server/trakt";
-
 export const dynamic = "force-dynamic";
 
-/** Whether this site signs in to Trakt (its secret set): Zephyr TV asks before it shows the sign-in's QR code here. */
+/**
+ * This site signs in to Trakt with PKCE (see traktauth): Zephyr TV asks before it shows the sign-in's QR code here,
+ * and goes through the older site while this one isn't up.
+ */
 export function GET() {
-  return trakt.secret ? Response.json({ ok: true }) : Response.json({ ok: false }, { status: 503 });
+  return Response.json({ ok: true, pkce: true });
 }
