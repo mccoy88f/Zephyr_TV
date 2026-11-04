@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.0.0-beta.20
 
 - **Share** on a title's page sends its poster with the link. The chat shows the poster.
 - When Spotlight folds away, the apps row goes up under the top bar. It folds on phones too, with the arrows.
