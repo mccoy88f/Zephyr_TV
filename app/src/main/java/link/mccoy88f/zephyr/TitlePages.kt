@@ -742,6 +742,14 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
  * Each row with an icon in [icons] (by its index among the rows, the first at [first] in the list) starts with it,
  * before the name. Vector and shape icons are tinted as the row's text, inverted with focus; pictures stay as they are.
  */
+/**
+ * An icon's colour on a panel row: with focus, the colour the row's own content takes (see settingsRow). A pane of
+ * glass (a title's page in the Glass theme: it has a foreground, its rim) stays dark, so the icon stays white; a
+ * plain row fills with fg, so the icon turns onFg, or it would be white on white in the Glass theme.
+ */
+internal fun MainActivity.rowIconTint(row: android.view.View, focused: Boolean): Int =
+    if (focused && row.foreground == null) onFg else fg
+
 internal fun MainActivity.rowIcons(icons: Map<Int, android.graphics.drawable.Drawable>, first: Int) {
     for ((i, icon) in icons) {
         val row = settingsList.getChildAt(first + i) as? LinearLayout ?: continue
@@ -757,7 +765,7 @@ internal fun MainActivity.rowIcons(icons: Map<Int, android.graphics.drawable.Dra
         row.setOnFocusChangeListener { v, focused ->
             orig?.onFocusChange(v, focused)
             if (icon !is android.graphics.drawable.BitmapDrawable) {
-                iv.setColorFilter(if (focused && !glass) onFg else fg, android.graphics.PorterDuff.Mode.SRC_IN)
+                iv.setColorFilter(rowIconTint(v, focused), android.graphics.PorterDuff.Mode.SRC_IN)
             }
         }
     }

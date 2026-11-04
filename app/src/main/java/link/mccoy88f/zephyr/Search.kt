@@ -553,7 +553,7 @@ internal fun MainActivity.showChannel(d: ChannelDetail) {
         row?.setOnFocusChangeListener { v, focused ->
             orig?.onFocusChange(v, focused)
             if (icon !is android.graphics.drawable.BitmapDrawable) {
-                iv.setColorFilter(if (focused && !glass) onFg else fg, android.graphics.PorterDuff.Mode.SRC_IN)
+                iv.setColorFilter(rowIconTint(v, focused), android.graphics.PorterDuff.Mode.SRC_IN)
             }
         }
     }
