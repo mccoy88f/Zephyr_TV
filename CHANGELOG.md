@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## 4.0.0-beta.13
+## 4.0.0-beta.14
 
 - Select **Settings → Player mpv** to install the mpv player. It is an app of its own, so Zephyr TV stays small.
 - The mpv player plays almost all files: Blu-ray discs (.m2ts), AVI, DTS-HD and TrueHD sound, ASS subtitles.
