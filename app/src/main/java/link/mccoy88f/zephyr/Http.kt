@@ -24,14 +24,25 @@ internal object Http {
     const val STREAMS_TIMEOUT_MS = 20_000
     private const val USER_AGENT = "ZephyrTV/1 (Android TV launcher; https://github.com/mccoy88f/Zephyr_TV)"
 
-    fun connect(url: String, headers: Map<String, String> = emptyMap(), timeout: Int = TIMEOUT_MS): HttpURLConnection =
+    /**
+     * [agent]: who's asking, as Wikimedia (most channel logos) wants: Android's anonymous default gets throttled there.
+     * Null leaves Android's own, as the player sends (see Stremio.probe). [connect]: how long to wait to connect.
+     */
+    fun connect(url: String, headers: Map<String, String> = emptyMap(), timeout: Int = TIMEOUT_MS,
+                agent: String? = USER_AGENT, connect: Int = TIMEOUT_MS): HttpURLConnection =
         (URL(url).openConnection() as HttpURLConnection).apply {
-            connectTimeout = TIMEOUT_MS
+            connectTimeout = connect
             readTimeout = timeout
-            // Who's asking, as Wikimedia (most channel logos) wants: Android's anonymous default gets throttled there.
-            setRequestProperty("User-Agent", USER_AGENT)
+            agent?.let { setRequestProperty("User-Agent", it) }
             headers.forEach { (k, v) -> setRequestProperty(k, v) }
         }
+
+    /**
+     * A film's or episode's stream: a debrid service's link goes through the add-on's resolver first, which asks
+     * the service for the file and can take tens of seconds. Stremio waits that long: so do the check and the player.
+     */
+    const val VOD_STREAM_TIMEOUT_MS = 30_000
+    const val STREAM_CONNECT_MS = 15_000
 
     /** The body of [url]; throws on a network error or a non-2xx answer. */
     fun open(url: String, headers: Map<String, String> = emptyMap(), timeout: Int = TIMEOUT_MS): InputStream = connect(url, headers, timeout).inputStream

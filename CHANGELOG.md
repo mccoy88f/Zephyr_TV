@@ -13,6 +13,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- A film or episode from a debrid service (TorBox, Real-Debrid…) gets 30 seconds to start, as in Stremio. Before, the player gave up after a few seconds.
+- The player checks a stream as the same player that plays it. A server that refuses one check gets a second one as VLC.
+
 ## 4.0.0-beta.12
 
 - Zephyr TV is in German, Portuguese (Brazil), Chinese (Simplified) and Hindi.

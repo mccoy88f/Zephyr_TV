@@ -1691,7 +1691,7 @@ class PlayerActivity : Activity() {
             // Its best few at the preferred quality (or above, for the highest) checked: the first that answers plays.
             hit = more.filter { s -> s.langRank == Stremio.LANG_OURS && streamQuality(s.title) == preferred }
                 .sortedWith(qualityOrder(preferred)).take(3)
-                .firstOrNull { s -> (probes[s.url] ?: Stremio.probe(s.url, s.headers).also { probes[s.url] = it }).ok }
+                .firstOrNull { s -> (probes[s.url] ?: Stremio.probe(s.url, s.headers, vod).also { probes[s.url] = it }).ok }
         }
         // The sources still looking: their streams come in the background, checked, at the end of the list.
         val left = sources.size - done
@@ -1757,7 +1757,7 @@ class PlayerActivity : Activity() {
         if (!vod || list.size < 2) return list
         val todo = list.filter { !probes.containsKey(it.url) }
         runCatching {
-            checks.invokeAll(todo.map { s -> Callable { probes[s.url] = Stremio.probe(s.url, s.headers) } }, CHECK_MS, TimeUnit.MILLISECONDS)
+            checks.invokeAll(todo.map { s -> Callable { probes[s.url] = Stremio.probe(s.url, s.headers, vod) } }, CHECK_MS, TimeUnit.MILLISECONDS)
         }
         // Answering first, then not yet known (still being checked when time ran out), then those that failed; in each,
         // the best quality first (as its name says it).
@@ -1840,7 +1840,7 @@ class PlayerActivity : Activity() {
         net.execute {
             // A check that fails is a stream that doesn't answer: the next is tried (never the player closing).
             // Another app's (a YouTube video's watch link): opened, not asked as a stream.
-            val probe = if (s.app != null) Stremio.Probe(true, null) else probes[s.url] ?: runCatching { Stremio.probe(s.url, s.headers) }.getOrElse { Stremio.Probe(false, null) }.also { probes[s.url] = it }
+            val probe = if (s.app != null) Stremio.Probe(true, null) else probes[s.url] ?: runCatching { Stremio.probe(s.url, s.headers, vod) }.getOrElse { Stremio.Probe(false, null) }.also { probes[s.url] = it }
             ui.post {
                 if (isFinishing || tuning != tune || n != tried) return@post
                 // The only stream (one picked by hand) is played even when the check failed: some servers turn the
@@ -1863,6 +1863,9 @@ class PlayerActivity : Activity() {
         release()
         val http = DefaultHttpDataSource.Factory()
             .setAllowCrossProtocolRedirects(true) // some add-ons' addresses go from https to a proxy's http, and back
+            // A film's: a debrid link answers once the add-on's resolver has the file, as long as Stremio waits.
+            .setConnectTimeoutMs(Http.STREAM_CONNECT_MS)
+            .setReadTimeoutMs(if (vod) Http.VOD_STREAM_TIMEOUT_MS else DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS)
             // Not what the connection sets itself: a plugin's Accept-Encoding: gzip would hand the player packed bytes.
             .setDefaultRequestProperties(s.headers.filterKeys { k -> SKIPPED_HEADERS.none { it.equals(k, ignoreCase = true) } })
         (agent ?: s.headers.entries.firstOrNull { it.key.equals("User-Agent", ignoreCase = true) }?.value)?.let { http.setUserAgent(it) }
@@ -2184,7 +2187,7 @@ class PlayerActivity : Activity() {
         private const val VOD_ALL_MS = 30_000L // ...or, to pick the best of them all, every one up to this long
         private const val VOD_LATE_MS = 40_000L // ...and those that didn't, waited for this long while it plays
         private const val VOD_SOME_MS = 12_000L // ...or this long, once one has given streams
-        private const val VOD_STUCK_MS = 30_000L // a film's stream buffering longer than this: the next
+        private const val VOD_STUCK_MS = 45_000L // a film's stream buffering longer than this: the next (a debrid link resolves first)
         private const val CHOICES_FILE = "player" // not K.FILE: the home screen's process writes that one whole
         private const val TEXT_LANG = "text_lang" // "" for off; none for the stream's own choice
         private const val BANNER_MS = 5000L
@@ -2196,7 +2199,7 @@ class PlayerActivity : Activity() {
         private const val ZAP_MS = 700L // the keys rest this long before the channel is tuned
         private const val STUCK_MS = 15_000L // buffering longer than this: the next stream
         private const val RESTARTS = 2 // a stream that played and stalls, started again at most this many times
-        private const val VLC_AGENT = "VLC/3.0.20 LibVLC/3.0.20" // what servers that take only players' User-Agent take
+        private const val VLC_AGENT = Stremio.VLC_AGENT // what servers that take only players' User-Agent take
         private val NETWORK_ERRORS = listOf(PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
             PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT, PlaybackException.ERROR_CODE_IO_UNSPECIFIED)
         private val FORMAT_ERRORS = listOf(PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED,

@@ -590,7 +590,24 @@ internal object Stremio {
      * from DASH by, and the player can't tell either. Follows the redirects (also http to https), then goes by the
      * answer's type, the final address's extension, and the first bytes. Network: off the UI thread.
      */
-    fun probe(url: String, headers: Map<String, String>): Probe {
+    fun probe(url: String, headers: Map<String, String>, vod: Boolean = false): Probe {
+        val first = probeAs(url, headers, vod, agent = null)
+        // Turned away with no User-Agent of its own: some servers take only players' (VLC's), as the player retries.
+        if (first.why == Why.DENIED && headers.keys.none { it.equals("User-Agent", true) }) {
+            val vlc = probeAs(url, headers, vod, agent = VLC_AGENT)
+            if (vlc.ok) return vlc
+        }
+        return first
+    }
+
+    /** What VLC says it is: some servers take only players. The player asks again as VLC when it's turned away. */
+    const val VLC_AGENT = "VLC/3.0.20 LibVLC/3.0.20"
+
+    /**
+     * [probe] as [agent] (null: Android's own, the one the player sends), waiting as long as the player does: a
+     * film's ([vod]) stream as long as a debrid resolver takes.
+     */
+    private fun probeAs(url: String, headers: Map<String, String>, vod: Boolean, agent: String?): Probe {
         // Not the web's (RTSP, RTMP, UDP): nothing to ask first; the player reads it as its address says.
         if (OTHER_SCHEMES.any { url.startsWith(it, ignoreCase = true) }) return Probe(true, if (url.startsWith("rtsp", true)) "rtsp" else null)
         // The playlist written in its address: nothing to ask, its type says what it is.
@@ -608,7 +625,10 @@ internal object Stremio {
         if (!url.startsWith("http://", true) && !url.startsWith("https://", true)) return Probe(true, null)
         var at = url
         for (hop in 0..5) {
-            val c = runCatching { Http.connect(at, headers).apply { instanceFollowRedirects = false } }
+            val c = runCatching {
+                Http.connect(at, headers, timeout = if (vod) Http.VOD_STREAM_TIMEOUT_MS else 6000, agent = agent,
+                    connect = Http.STREAM_CONNECT_MS).apply { instanceFollowRedirects = false }
+            }
                 .getOrElse { return Probe(false, null, whyOf(it) ?: Why.UNREACHABLE) }
             try {
                 val code = c.responseCode
