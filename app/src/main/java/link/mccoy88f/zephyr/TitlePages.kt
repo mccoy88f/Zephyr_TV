@@ -635,7 +635,7 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
     showPage(title, rows, focus, top = if (wide) null else top.root, back = back, panes = glass)
     // A whole page: the art over the screen, its logo and details on the left, buttons on the right.
     detailPage("$name|${art.first}|${art.third}", listOfNotNull(art.second, fallback?.second).distinct(), title = name, infoView = top.root) { frame, fw, fh ->
-        fillArt(frame, fw, fh, art.first, null, art.third, name, fallback?.let { Triple(it.first, null, it.third) })
+        fillArt(frame, fw, fh, art.first, null, art.third, name, fallback?.let { Triple(it.first, null, it.third) }, page = true)
         sharpBackdrop(frame, fw, listOfNotNull(art.first, fallback?.first).distinct())
     }
     val firstIndex = if (wide) 0 else 1

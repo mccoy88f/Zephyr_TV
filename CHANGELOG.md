@@ -20,6 +20,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - In the Glass theme, the icons of the settings rows can be read when the row has focus.
 - An add-on that is switched off shows its name in the add-ons list, not its address. Its icon is grey.
 - With the stream choice on automatic, hold OK on **Watch** to pick a stream from the list.
+- A TV channel's page shows its logo smaller in the middle, not across the screen.
 
 ## 4.0.0-beta.15
 

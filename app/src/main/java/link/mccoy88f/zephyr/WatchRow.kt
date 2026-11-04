@@ -863,7 +863,7 @@ internal fun MainActivity.artGround() = if (glass) 0x592C2C34 else if (dark) 0xF
  * A TV channel's picture in [frame] ([w] by [h]): its [logo] (found on a background thread) large in the middle on a
  * blur of itself; with no logo, or until it's in, its [number] and [name] instead.
  */
-internal fun MainActivity.channelArt(frame: FrameLayout, w: Int, h: Int, number: String, name: String, logo: () -> List<String>) {
+internal fun MainActivity.channelArt(frame: FrameLayout, w: Int, h: Int, number: String, name: String, page: Boolean = false, logo: () -> List<String>) {
     val text = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
         gravity = Gravity.CENTER
@@ -891,11 +891,13 @@ internal fun MainActivity.channelArt(frame: FrameLayout, w: Int, h: Int, number:
                 alpha = 0.55f
                 setImageBitmap(blur)
             }, frame.indexOfChild(text), FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+            // On a card, the logo fills it; on the channel's page (the whole screen, [page]) it stays a logo's size in
+            // the middle, on the blur of itself, as a film's page shows a logo when it has no backdrop.
             frame.addView(ImageView(this).apply {
                 scaleType = ImageView.ScaleType.FIT_CENTER
-                setPadding(w / 6, h / 5, w / 6, h / 5)
+                if (!page) setPadding(w / 6, h / 5, w / 6, h / 5)
                 setImageBitmap(bmp)
-            }, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+            }, if (page) FrameLayout.LayoutParams(w / 4, h / 4, Gravity.CENTER) else FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         }
     }
 }
@@ -907,15 +909,16 @@ internal fun MainActivity.channelArt(frame: FrameLayout, w: Int, h: Int, number:
  * picture that won't load gives way to [fallback]'s (background, logo, poster), then to the next kind of art.
  */
 internal fun MainActivity.fillArt(frame: FrameLayout, w: Int, h: Int, backdrop: String?, logo: String?, poster: String?, title: String,
-                                  fallback: Triple<String?, String?, String?>? = null) {
+                                  fallback: Triple<String?, String?, String?>? = null, page: Boolean = false) {
     // Drawn in a frame of its own: art that won't load is drawn again in it, the rest of [frame] left as it is.
     val art = FrameLayout(this)
     frame.addView(art, MATCH_PARENT, MATCH_PARENT)
     drawArt(art, w, h, listOfNotNull(backdrop, fallback?.first).distinct(), listOfNotNull(logo, fallback?.second).distinct(),
-        listOfNotNull(poster, fallback?.third).distinct(), title)
+        listOfNotNull(poster, fallback?.third).distinct(), title, page)
 }
 
-private fun MainActivity.drawArt(frame: FrameLayout, w: Int, h: Int, backdrops: List<String>, logos: List<String>, posters: List<String>, title: String) {
+private fun MainActivity.drawArt(frame: FrameLayout, w: Int, h: Int, backdrops: List<String>, logos: List<String>, posters: List<String>, title: String,
+                                 page: Boolean = false) {
     // The first of [uris] that loads; [failed] when none does.
     fun load(v: ImageView, uris: List<String>, blur: Boolean = false, failed: () -> Unit = {}) = posterIo.execute {
         val bmp = uris.firstNotNullOfOrNull { uri -> runCatching { art(uri, alpha = uri in logos) }.getOrNull() }
@@ -925,7 +928,7 @@ private fun MainActivity.drawArt(frame: FrameLayout, w: Int, h: Int, backdrops: 
     }
     fun again(backdrops: List<String>, posters: List<String>) {
         frame.removeAllViews()
-        drawArt(frame, w, h, backdrops, logos, posters, title)
+        drawArt(frame, w, h, backdrops, logos, posters, title, page)
     }
     when {
         backdrops.isNotEmpty() -> {
@@ -948,8 +951,9 @@ private fun MainActivity.drawArt(frame: FrameLayout, w: Int, h: Int, backdrops: 
                 background = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(
                     Color.HSVToColor(floatArrayOf(hue, 0.45f, 0.42f)), Color.HSVToColor(floatArrayOf((hue + 40) % 360, 0.55f, 0.18f))))
             }, MATCH_PARENT, MATCH_PARENT)
+            // Neither backdrop nor poster: the logo in the middle, filling a card; a logo's size on a whole page ([page]).
             if (logos.isNotEmpty()) frame.addView(ImageView(this).apply { scaleType = ImageView.ScaleType.FIT_CENTER; load(this, logos) },
-                FrameLayout.LayoutParams(w * 3 / 4, h / 2, Gravity.CENTER))
+                if (page) FrameLayout.LayoutParams(w / 4, h / 4, Gravity.CENTER) else FrameLayout.LayoutParams(w * 3 / 4, h / 2, Gravity.CENTER))
             else frame.addView(TextView(this).apply {
                 text = title
                 textSize = 18f

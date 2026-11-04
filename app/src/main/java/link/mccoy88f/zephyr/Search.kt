@@ -532,7 +532,7 @@ internal fun MainActivity.showChannel(d: ChannelDetail) {
     showPage(d.name, rows, top = if (wide) null else top, back = { closeLauncherSettings() }, panes = glass)
     // The same page as a film: art over the screen, the details on the left, the buttons on the right.
     detailPage("channel|${d.name}|${d.number}", listOfNotNull(d.logo?.takeIf { it.startsWith("http") }), title = d.name, infoView = top) { frame, fw, fh ->
-        channelArt(frame, fw, fh, d.number, d.name) {
+        channelArt(frame, fw, fh, d.number, d.name, page = true) {
             listOfNotNull(d.logo, d.addon?.let { ChannelLogos.match(channelLogoTable(), d.name) })
         }
     }
