@@ -83,8 +83,6 @@ internal fun MainActivity.shiftChannelOrder(id: Long, by: Int): Long? {
 
 // —— Settings list (vertical ▲ ▼) ——
 
-/** Non-null while a channel is picked up in the settings reorder list. */
-internal var channelOrderGrabId: Long? = null
 
 internal fun MainActivity.showChannelOrderPage(focusId: Long? = null) {
     val all = tunerChannels()
@@ -214,11 +212,7 @@ internal fun MainActivity.channelOrderListKey(e: KeyEvent, confirm: Boolean): Bo
 
 // —— Home channel strip (horizontal ◀ ▶) ——
 
-/** Non-null while moving a channel card on the home rows. */
-internal var movingChannelId: Long? = null
 
-/** After a channel-row reload, focus this `_id` and keep it grabbed. */
-internal var pendingChannelFocusId: Long? = null
 
 internal fun MainActivity.startChannelCardMove(v: View, id: Long) {
     ensureChannelOrderSeeded()

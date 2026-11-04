@@ -59,6 +59,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.ScrollView
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -518,6 +519,26 @@ class MainActivity : Activity() {
     internal val pageFocus = HashMap<String, Int>() // each page's row last left from, by its title
     internal var pageExit: (() -> Unit)? = null // cleanup when the page goes away (releases its phone page, see Remote.hold)
     internal val phonePanel = PhonePanel() // what the phone's remote-access page shows of the panel (see Remote)
+
+    // A page's state lives with the home screen that drew it, not in the process: a new home screen (a restart, a
+    // theme) starts clean, and the old one's views go with it.
+    // The details page (see DetailPage): the art behind it and what it shows, so a page drawn again with the same
+    // art keeps it, unloaded; its logo by its key; and its two columns, for the arrows (see Navigation).
+    internal var detailArt: FrameLayout? = null
+    internal var detailKey: String? = null
+    internal var detailHeld = false
+    internal var detailLogo: Pair<String, Bitmap>? = null
+    internal var detailLeftScroll: ScrollView? = null
+    internal var detailDescView: View? = null
+    internal var detailLastLeftFocusables: List<View> = emptyList()
+    // The season's or episode's page on show, drawn again once its title's whole page is in (see openTitle).
+    internal var titleRedraw: (() -> Unit)? = null
+    internal var titleRedrawFor: String? = null
+    // Moving channels (see ChannelOrder): the one picked up in the settings list, the card moved on the home
+    // rows, and the card to focus once the channels' row is built again.
+    internal var channelOrderGrabId: Long? = null
+    internal var movingChannelId: Long? = null
+    internal var pendingChannelFocusId: Long? = null
     internal var pageSides: ((Int) -> Unit)? = null // Left/Right (-1, +1) on a page that has them: a series' seasons
     internal var pageReturn: (() -> Unit)? = null // the page to show again, as it was, back from the player it opened
 

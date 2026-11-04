@@ -16,14 +16,6 @@ import android.widget.TextView
 // actors) in a column on the left and action buttons on the right.
 // Functions of MainActivity, kept here by topic; their state lives in MainActivity.
 
-/** The art behind the page on show, and what it shows: a page drawn again with the same art keeps it, unloaded. */
-private var detailArt: FrameLayout? = null
-private var detailKey: String? = null
-private var detailHeld = false
-private var detailLogo: Pair<String, android.graphics.Bitmap>? = null // the page's logo, by its key: drawn again, at once
-internal var detailLeftScroll: android.widget.ScrollView? = null
-internal var detailDescView: View? = null
-internal var detailLastLeftFocusables: List<View> = emptyList()
 
 /** How the panel was before the page took it over, given back when the page goes. */
 private class PanelWas(val width: Int, val gravity: Int, val padding: IntArray, val background: Drawable?, val titleSize: Float, val titleVisibility: Int)
