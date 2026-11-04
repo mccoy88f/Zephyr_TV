@@ -60,6 +60,11 @@
     <string name="toast_channel_logos_updated">Loghi dei canali aggiornati: %1$d nomi</string>
     <string name="toast_channel_logos_failed">Impossibile scaricare i loghi dei canali. Riprova più tardi.</string>
     <string name="setting_epg">Guida TV (XMLTV)</string>
+    <string name="epg_auto">Automatica (%1$s)</string>
+    <string name="epg_country">Un altro paese…</string>
+    <string name="epg_custom">Indirizzo personalizzato…</string>
+    <string name="epg_this_tv">Questa TV</string>
+    <string name="toast_epg_failed_list">Impossibile leggere l\'elenco delle guide TV. Riprova più tardi.</string>
     <string name="setting_play_channels">Riproduci all\'apertura i canali TV</string>
     <string name="setting_tv_app">App TV</string>
     <string name="tv_app_auto">Automatica (%1$s)</string>

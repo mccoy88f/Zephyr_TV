@@ -60,6 +60,11 @@
     <string name="toast_channel_logos_updated">Channel logos updated: %1$d names</string>
     <string name="toast_channel_logos_failed">Couldn\'t download the channel logos. Try again later.</string>
     <string name="setting_epg">TV guide (XMLTV)</string>
+    <string name="epg_auto">Automatic (%1$s)</string>
+    <string name="epg_country">Another country…</string>
+    <string name="epg_custom">Address of your own…</string>
+    <string name="epg_this_tv">This TV</string>
+    <string name="toast_epg_failed_list">Couldn\'t read the list of TV guides. Try again later.</string>
     <string name="setting_play_channels">Play TV channels when you open them</string>
     <string name="setting_tv_app">TV app</string>
     <string name="tv_app_auto">Automatic (%1$s)</string>

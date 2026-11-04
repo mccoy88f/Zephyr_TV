@@ -265,7 +265,7 @@ When you choose **Virtual app**, its app goes back into Favourites if you had ta
 | **Show connected inputs in Favourites** | Puts the inputs with a device plugged in (a console over HDMI, for example) in Favourites |
 | **Channel logos (iptv-org)** | Logos for the channels that have none |
 | **Update the channel logos** | Downloads the latest logos now |
-| **TV guide (XMLTV)** | The address of a TV guide, to see what's on with a progress bar |
+| **TV guide (XMLTV)** | What's on, with a progress bar. **Automatic** uses the guide of the TV's country from iptv-epg.org. **Another country…** picks another iptv-epg.org guide. **Address of your own…** uses another XMLTV guide, typed with the remote or sent from the phone |
 | **TV app** | The app that shows the channels and opens them. **Automatic** finds it by itself (on a Philips, the Philips app). **Other app…** picks any app: if it can't open a channel (**Rows only**), the channels open in the automatic app |
 | **Show channel numbers** | The numbers on the channel cards |
 | **Reorder channels** | The channels in your order. Or hold OK on a channel and select **Move** |

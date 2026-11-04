@@ -399,7 +399,7 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                     else getString(R.string.toast_channel_logos_updated, n), Toast.LENGTH_LONG).show()
             }
         },
-        page(getString(R.string.setting_epg), epgUrl()?.let { Uri.parse(it).host } ?: getString(R.string.state_off)) { configureEpg() },
+        page(getString(R.string.setting_epg), epgValue()) { configureEpg() },
         page(getString(R.string.setting_play_channels), toggle(playChannelsOnOpen())) {
             prefs.edit().putBoolean(K.PLAY_CHANNELS, !playChannelsOnOpen()).apply()
             renderSettings(PLAY_CHANNELS_ROW)
@@ -541,21 +541,6 @@ internal fun MainActivity.saveTmdbKey(key: String) {
  * The TV guide's address (an XMLTV file, see Epg): typed with the remote or sent from a phone. Saving fetches it at
  * once; Clear turns the guide off.
  */
-internal fun MainActivity.configureEpg() =
-    textPage(getString(R.string.setting_epg), epgUrl() ?: "", getString(R.string.epg_hint), getString(R.string.epg_intro), back = { renderSettings(EPG_ROW) }) { typed ->
-        listOf(
-            page(getString(R.string.from_phone)) { epgFromPhone() },
-            page(getString(R.string.dialog_save)) {
-                saveEpgUrl(typed())
-                renderSettings(EPG_ROW)
-            },
-            page(getString(R.string.dialog_clear)) {
-                saveEpgUrl(null)
-                renderSettings(EPG_ROW)
-            },
-        )
-    }
-
 /** A box for a web address, typed with the remote: framed like the other settings boxes. */
 internal fun MainActivity.urlField(value: String, hint: String): EditText =
     EditText(this).apply {
@@ -614,12 +599,15 @@ internal fun MainActivity.downFrom(input: EditText) {
     input.requestFocus()
 }
 
-/** Saves the guide's address (null or blank: no guide) and fetches it, telling how it went. */
+/**
+ * Saves the guide's address (null or not a web address: the guide of the TV's country, see EpgSources) and
+ * fetches it, telling how it went.
+ */
 internal fun MainActivity.saveEpgUrl(url: String?) {
     val clean = url?.takeIf { it.startsWith("http://") || it.startsWith("https://") }
     prefs.edit().apply { if (clean == null) remove(K.EPG_URL) else putString(K.EPG_URL, clean) }.apply()
     watchKey = null
-    if (clean == null) return
+    if (epgUrl() == null) return
     toast(R.string.epg_downloading, long = false)
     updateEpg(tmdbLastFocusApp) { n ->
         Toast.makeText(this, getString(when (n) {

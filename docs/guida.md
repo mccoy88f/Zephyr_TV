@@ -265,7 +265,7 @@ Quando scegli **App virtuale**, la sua app torna nei Preferiti se l'avevi tolta.
 | **Sorgenti collegate nei Preferiti** | Mette nei Preferiti gli ingressi con un dispositivo collegato (es. una console via HDMI) |
 | **Loghi dei canali (iptv-org)** | Loghi per i canali che non ne hanno uno |
 | **Aggiorna i loghi dei canali** | Scarica subito gli ultimi loghi |
-| **Guida TV (XMLTV)** | L'indirizzo di una guida TV, per vedere il programma in onda con la barra di avanzamento |
+| **Guida TV (XMLTV)** | Il programma in onda, con la barra di avanzamento. **Automatica** usa la guida del paese della TV da iptv-epg.org. **Un altro paese…** sceglie un'altra guida di iptv-epg.org. **Indirizzo personalizzato…** usa un'altra guida XMLTV, scritta con il telecomando o inviata dal telefono |
 | **App TV** | L'app che mostra i canali e li apre. **Automatica** la trova da sola (su Philips l'app Philips). **Altra app…** sceglie qualsiasi app: se non sa aprire un canale (**Solo le righe**), i canali si aprono con l'app automatica |
 | **Mostra i numeri dei canali** | I numeri sulle tessere dei canali |
 | **Riordina i canali** | I canali nel tuo ordine. Oppure tieni premuto OK su un canale e scegli **Sposta** |

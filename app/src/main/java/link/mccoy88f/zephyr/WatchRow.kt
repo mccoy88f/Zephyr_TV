@@ -459,7 +459,6 @@ internal fun MainActivity.programsOnNow(): Map<Long, OnNow> {
 internal fun MainActivity.channelLogosOn() = prefs.getBoolean(K.CHANNEL_LOGOS, true)
 
 /** The address of the XMLTV guide set in Zephyr TV settings, or null for none. */
-internal fun MainActivity.epgUrl() = prefs.getString(K.EPG_URL, null)?.takeIf { it.isNotBlank() }
 
 /**
  * Fetches the guide in the background; once it's in, the TV app's sections are built again if it's still the app
