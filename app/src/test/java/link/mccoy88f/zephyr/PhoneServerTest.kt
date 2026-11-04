@@ -7,7 +7,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class PhoneLinkTest {
+class PhoneServerTest {
     private fun call(url: String, body: String? = null): Pair<Int, String> {
         val c = URL(url).openConnection() as HttpURLConnection
         if (body != null) {
@@ -20,39 +20,70 @@ class PhoneLinkTest {
         return code to text
     }
 
-    @Test fun answersOnlyOnItsToken() {
+    /** A server that answers [task] on /t, and 404 everywhere else. */
+    private fun serverFor(task: PhoneTask): PhoneServer {
+        val temp = Files.createTempDirectory("phone").toFile()
+        return PhoneServer.start(0, "test") { r ->
+            if (r.path == "/t") r.serve(task, temp) else r.reply(404, TEXT, "Not found.")
+        }!!
+    }
+
+    @Test fun servesATaskOnItsPath() {
         var got = ""
-        val link = PhoneLink(Files.createTempDirectory("phone").toFile(), PhoneTask("<p>page</p>", 100) { f ->
+        val server = serverFor(PhoneTask("<p>page</p>", 100) { f ->
             got = f.readText()
             200 to "thanks"
         })
         try {
-            val base = "http://127.0.0.1:${link.port}"
+            val base = "http://127.0.0.1:${server.port}"
             assertEquals(404, call("$base/1234").first)
-            assertEquals(200 to "<p>page</p>", call("$base/${link.token}"))
-            assertEquals(200 to "thanks", call("$base/${link.token}", "my key"))
+            assertEquals(200 to "<p>page</p>", call("$base/t"))
+            assertEquals(200 to "thanks", call("$base/t", "my key"))
             assertEquals("my key", got)
-            assertEquals(413, call("$base/${link.token}", "x".repeat(101)).first)
-            assertTrue(link.token.length >= 24)
+            assertEquals(413, call("$base/t", "x".repeat(101)).first)
         } finally {
-            link.stop()
+            server.stop()
+        }
+        assertTrue(!server.running)
+    }
+
+    @Test fun aPageToReadTakesNothing() {
+        val server = serverFor(PhoneTask("<p>read</p>", 0) { 200 to "never" })
+        try {
+            assertEquals(405, call("http://127.0.0.1:${server.port}/t", "x").first)
+        } finally {
+            server.stop()
         }
     }
 
     @Test fun acceptsLargePayloadsLikeEncryptedAddonUrls() {
         var received = ""
-        val link = PhoneLink(Files.createTempDirectory("phone").toFile(), PhoneTask("<p>addon</p>", 1024L * 1024) { f ->
+        val server = serverFor(PhoneTask("<p>addon</p>", 1024L * 1024) { f ->
             received = f.readText()
             200 to "saved"
         })
         try {
-            val base = "http://127.0.0.1:${link.port}"
             val longUrl = "https://example.com/" + "a".repeat(16384) + "/manifest.json\nadult"
-            val res = call("$base/${link.token}", longUrl)
-            assertEquals(200 to "saved", res)
+            assertEquals(200 to "saved", call("http://127.0.0.1:${server.port}/t", longUrl))
             assertEquals(longUrl, received)
         } finally {
-            link.stop()
+            server.stop()
+        }
+    }
+
+    @Test fun aSmallBodyIsReadAsText() {
+        var body: String? = "unset"
+        val server = PhoneServer.start(0, "test") { r ->
+            body = r.body(8)
+            r.reply(200)
+        }!!
+        try {
+            call("http://127.0.0.1:${server.port}/x", "12345678")
+            assertEquals("12345678", body)
+            call("http://127.0.0.1:${server.port}/x", "123456789")
+            assertEquals(null, body) // longer than it may be
+        } finally {
+            server.stop()
         }
     }
 }

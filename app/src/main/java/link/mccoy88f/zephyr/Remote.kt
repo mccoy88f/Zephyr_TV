@@ -15,18 +15,12 @@ import android.widget.TextView
 import android.widget.Toast
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.BufferedInputStream
 import java.io.File
 import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
 import java.net.InetAddress
-import java.net.ServerSocket
-import java.net.Socket
 import java.security.SecureRandom
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
@@ -139,9 +133,9 @@ internal fun isPrivateLan(addr: InetAddress): Boolean {
 internal object Remote {
     @Volatile var home: MainActivity? = null
 
-    private var socket: ServerSocket? = null
-    private var workers = Executors.newFixedThreadPool(4)
-    @Volatile var port: Int? = null
+    /** The one phone server (see PhoneServer), while remote access is on. */
+    @Volatile private var server: PhoneServer? = null
+    val port: Int? get() = server?.port
     @Volatile private var cachedToken: String? = null
 
     private val sessions = ConcurrentHashMap<String, Long>()
@@ -164,14 +158,8 @@ internal object Remote {
     }
 
     fun stop() {
-        try {
-            socket?.close()
-        } catch (e: IOException) {
-        }
-        socket = null
-        port = null
-        workers.shutdownNow()
-        workers = Executors.newFixedThreadPool(4)
+        server?.stop()
+        server = null
         sessions.clear()
         held.clear()
         done.clear()
@@ -199,32 +187,10 @@ internal object Remote {
     }
 
     private fun listen() {
-        if (socket?.isClosed == false) return
+        if (server?.running == true) return
         val a = home ?: return
         cachedToken = tokenOf(a)
-        val chosen = openSocket() ?: return
-        socket = chosen
-        port = chosen.localPort
-        val pool = workers
-        Thread({ serve(pool) }, "remote-access").start()
-    }
-
-    /** Port 8765 when it's free, so a saved address keeps working. Any free port when it isn't. */
-    private fun openSocket(): ServerSocket? {
-        fun bind(port: Int) = ServerSocket().apply {
-            reuseAddress = true
-            bind(java.net.InetSocketAddress(port))
-        }
-        return try {
-            bind(PORT)
-        } catch (e: IOException) {
-            try {
-                bind(0)
-            } catch (e2: IOException) {
-                warn("remote access didn't start ($e2)")
-                null
-            }
-        }
+        server = PhoneServer.start(PORT, "remote-access", ::handle)
     }
 
     private fun token(): String? = home?.let { tokenOf(it) } ?: cachedToken
@@ -237,70 +203,38 @@ internal object Remote {
         return t
     }
 
-    private fun serve(pool: java.util.concurrent.ExecutorService) {
-        val server = socket ?: return
-        while (!server.isClosed) {
-            val s = try {
-                server.accept()
-            } catch (e: IOException) {
-                return
-            }
-            try {
-                pool.execute {
-                    try {
-                        s.use { handle(it) }
-                    } catch (e: Exception) {
-                        warn("remote request failed ($e)")
-                    }
-                }
-            } catch (e: java.util.concurrent.RejectedExecutionException) {
-                s.close()
-            }
-        }
-    }
-
-    private fun handle(s: Socket) {
-        s.soTimeout = 30_000
-        val input = BufferedInputStream(s.getInputStream())
-        val out = s.getOutputStream()
-        if (!isPrivateLan(s.inetAddress)) return reply(out, 403, "text/plain; charset=utf-8", "This page is only for your home network.")
-        val request = readLine(input) ?: return
-        val headers = generateSequence { readLine(input)?.takeIf { it.isNotEmpty() } }
-            .take(100)
-            .associate { it.substringBefore(':').trim().lowercase() to it.substringAfter(':').trim() }
-        val method = request.substringBefore(' ')
-        val path = request.substringAfter(' ').substringBefore(' ').substringBefore('?')
-        val token = token() ?: return reply(out, 503, "text/plain; charset=utf-8", "Zephyr TV is starting.")
-        val rest = remoteRest(path, token) ?: return reply(out, 404, "text/plain; charset=utf-8", "Not found.")
+    private fun handle(r: PhoneRequest) {
+        if (!isPrivateLan(r.from)) return r.reply(403, TEXT, "This page is only for your home network.")
+        val token = token() ?: return r.reply(503, TEXT, "Zephyr TV is starting.")
+        val rest = remoteRest(r.path, token) ?: return r.reply(404, TEXT, "Not found.")
         val a = home
-        if (a == null || !a.remoteOn()) return reply(out, 503, "text/plain; charset=utf-8", "Remote access is off.")
-        val authed = authed(headers)
+        if (a == null || !a.remoteOn()) return r.reply(503, TEXT, "Remote access is off.")
+        val authed = authed(r.headers)
+        val post = r.method == "POST"
         when {
-            rest == "api/pin" && method == "POST" -> pin(a, out, readBody(input, headers, 32))
-            !authed && rest.startsWith("api/") -> reply(out, 401, "text/plain; charset=utf-8", a.remotePinPrompt())
-            rest == "api/page" && method == "GET" -> reply(out, 200, "application/json; charset=utf-8", onMain { remoteSnapshot().toString() })
-            rest == "api/press" && method == "POST" -> press(out, readBody(input, headers, 32))
-            rest == "api/back" && method == "POST" -> { onMain { goBack() }; reply(out, 200, "text/plain; charset=utf-8", "") }
-            rest == "api/open" && method == "POST" -> { onMain { showOnTv { openFromPhone() } }; reply(out, 200, "text/plain; charset=utf-8", "") }
-            rest == "api/panel" && method == "POST" -> panel(out, readBody(input, headers, 16))
-            rest == "api/key" && method == "POST" -> key(out, readBody(input, headers, 16))
-            rest == "api/text" && method == "POST" -> text(out, readBody(input, headers, 1024L * 1024))
-            rest.isEmpty() && method == "GET" -> reply(out, 200, "text/html; charset=utf-8", if (authed) a.menuHtml() else a.pinHtml())
-            rest.startsWith("go/") && method == "GET" -> goGet(a, out, rest.removePrefix("go/"), authed)
-            rest.startsWith("go/") && method == "POST" -> goPost(a, out, input, headers, rest.removePrefix("go/"), authed)
-            else -> reply(out, 404, "text/plain; charset=utf-8", "Not found.")
+            rest == "api/pin" && post -> pin(a, r, r.body(32))
+            !authed && rest.startsWith("api/") -> r.reply(401, TEXT, a.remotePinPrompt())
+            rest == "api/page" && r.method == "GET" -> r.reply(200, JSON, onMain { remoteSnapshot().toString() })
+            rest == "api/press" && post -> press(r, r.body(32))
+            rest == "api/back" && post -> { onMain { goBack() }; r.reply(200) }
+            rest == "api/open" && post -> { onMain { showOnTv { openFromPhone() } }; r.reply(200) }
+            rest == "api/panel" && post -> panel(r, r.body(16))
+            rest == "api/key" && post -> key(r, r.body(16))
+            rest == "api/text" && post -> text(r, r.body(1024L * 1024))
+            rest.isEmpty() && r.method == "GET" -> r.reply(200, HTML, if (authed) a.menuHtml() else a.pinHtml())
+            rest.startsWith("go/") -> go(a, r, rest.removePrefix("go/"), authed)
+            else -> r.reply(404, TEXT, "Not found.")
         }
     }
 
-    private fun pin(a: MainActivity, out: OutputStream, body: String?) {
-        val pin = body?.trim().orEmpty()
-        val error = checkPin(a, pin)
-        if (error != null) return reply(out, 401, "text/plain; charset=utf-8", error)
+    private fun pin(a: MainActivity, r: PhoneRequest, body: String?) {
+        val error = checkPin(a, body?.trim().orEmpty())
+        if (error != null) return r.reply(401, TEXT, error)
         val z = ByteArray(18).also { SecureRandom().nextBytes(it) }
             .let { java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(it) }
         sessions[z] = System.currentTimeMillis() + SESSION_MS
         val token = token().orEmpty()
-        reply(out, 200, "text/plain; charset=utf-8", "", "Set-Cookie: z=$z; HttpOnly; SameSite=Strict; Path=/$token\r\n")
+        r.reply(200, TEXT, "", "Set-Cookie: z=$z; HttpOnly; SameSite=Strict; Path=/$token\r\n")
     }
 
     /** Null when the PIN is right. */
@@ -320,9 +254,9 @@ internal object Remote {
         return true
     }
 
-    private fun panel(out: OutputStream, body: String?) {
-        val which = remotePanelName(body?.trim().orEmpty()) ?: return reply(out, 400, "text/plain; charset=utf-8", "")
-        val a = home ?: return reply(out, 503, "text/plain; charset=utf-8", "")
+    private fun panel(r: PhoneRequest, body: String?) {
+        val which = remotePanelName(body?.trim().orEmpty()) ?: return r.reply(400)
+        val a = home ?: return r.reply(503)
         onMain {
             a.showOnTv {
                 when (which) {
@@ -332,19 +266,19 @@ internal object Remote {
                 }
             }
         }
-        reply(out, 200, "text/plain; charset=utf-8", "")
+        r.reply(200)
     }
 
-    private fun key(out: OutputStream, body: String?) {
+    private fun key(r: PhoneRequest, body: String?) {
         val name = body?.trim().orEmpty()
-        if (name !in REMOTE_COMMANDS) return reply(out, 400, "text/plain; charset=utf-8", "")
-        val a = home ?: return reply(out, 503, "text/plain; charset=utf-8", "")
+        if (name !in REMOTE_COMMANDS) return r.reply(400)
+        val a = home ?: return r.reply(503)
         onMain { a.remoteCommand(name) }
-        reply(out, 200, "text/plain; charset=utf-8", "")
+        r.reply(200)
     }
 
     /** A row from the phone. 409 when the TV shows another page now: the phone draws the page again. */
-    private fun press(out: OutputStream, body: String?) {
+    private fun press(r: PhoneRequest, body: String?) {
         val status = try {
             onMain {
                 if (settingsScrim.visibility != View.VISIBLE) return@onMain 409
@@ -357,65 +291,26 @@ internal object Remote {
             warn("remote press ($e)")
             503
         }
-        reply(out, status, "text/plain; charset=utf-8", "")
+        r.reply(status)
     }
 
-    private fun text(out: OutputStream, body: String?) {
+    private fun text(r: PhoneRequest, body: String?) {
         val answer = onMain { takeText(body.orEmpty()) }
-        reply(out, answer.first, "text/plain; charset=utf-8", answer.second)
+        r.reply(answer.first, TEXT, answer.second)
     }
 
-    private fun goGet(a: MainActivity, out: OutputStream, id: String, authed: Boolean) {
-        if (!authed) return reply(out, 200, "text/html; charset=utf-8", a.pinHtml())
-        if (!ID.matches(id)) return reply(out, 404, "text/plain; charset=utf-8", "Not found.")
-        val task = held[id] ?: a.remoteTask(id) ?: return reply(out, 404, "text/plain; charset=utf-8", a.getString(R.string.remote_not_open))
-        reply(out, 200, "text/html; charset=utf-8", task.page.html)
-    }
-
-    private fun goPost(a: MainActivity, out: OutputStream, input: InputStream, headers: Map<String, String>, id: String, authed: Boolean) {
-        if (!authed) return reply(out, 401, "text/plain; charset=utf-8", a.remotePinPrompt())
-        if (!ID.matches(id)) return reply(out, 404, "text/plain; charset=utf-8", "Not found.")
-        val task = held[id] ?: a.remoteTask(id) ?: return reply(out, 404, "text/plain; charset=utf-8", a.getString(R.string.remote_not_open))
-        if (task.maxBytes < 1) return reply(out, 405, "text/plain; charset=utf-8", "Not allowed")
-        val length = headers["content-length"]?.toLongOrNull() ?: -1
-        if (length !in 1..task.maxBytes) return reply(out, 413, "text/plain; charset=utf-8", "Too big.")
-        val temp = File.createTempFile("remote", ".part", a.cacheDir)
-        try {
-            temp.outputStream().use { file ->
-                val buf = ByteArray(64 * 1024)
-                var left = length
-                while (left > 0) {
-                    val n = input.read(buf, 0, minOf(buf.size.toLong(), left).toInt())
-                    if (n < 0) throw IOException("upload cut short")
-                    file.write(buf, 0, n)
-                    left -= n
-                }
-            }
-            val (status, text) = task.onSend(temp)
-            if (status in 200..299) succeed(id)
-            reply(out, status, "text/plain; charset=utf-8", text)
-        } finally {
-            temp.delete()
-        }
+    /** A single setting's page (see [hold] and remoteTask): its page, and what the phone sends it. */
+    private fun go(a: MainActivity, r: PhoneRequest, id: String, authed: Boolean) {
+        if (!authed) return if (r.method == "GET") r.reply(200, HTML, a.pinHtml()) else r.reply(401, TEXT, a.remotePinPrompt())
+        if (!ID.matches(id)) return r.reply(404, TEXT, "Not found.")
+        val task = held[id] ?: a.remoteTask(id) ?: return r.reply(404, TEXT, a.getString(R.string.remote_not_open))
+        val status = r.serve(task, a.cacheDir)
+        if (r.method == "POST" && status in 200..299) succeed(id)
     }
 
     private fun succeed(id: String) {
         val onDone = done[id] ?: return
         home?.ui?.post { if (done[id] === onDone) onDone() }
-    }
-
-    private fun readBody(input: InputStream, headers: Map<String, String>, max: Long): String? {
-        val length = headers["content-length"]?.toLongOrNull() ?: 0
-        if (length !in 0..max) return null
-        if (length == 0L) return ""
-        val buf = ByteArray(length.toInt())
-        var got = 0
-        while (got < buf.size) {
-            val n = input.read(buf, got, buf.size - got)
-            if (n < 0) return null
-            got += n
-        }
-        return buf.decodeToString()
     }
 
     private fun <T> onMain(block: MainActivity.() -> T): T {
@@ -429,24 +324,6 @@ internal object Remote {
         }
         if (!latch.await(8, TimeUnit.SECONDS)) throw IOException("tv busy")
         return box.get().getOrThrow()
-    }
-
-    private fun readLine(input: InputStream): String? {
-        val sb = StringBuilder()
-        while (sb.length < 8192) {
-            val c = input.read()
-            if (c < 0) return if (sb.isEmpty()) null else sb.toString()
-            if (c == '\n'.code) return sb.toString().trimEnd('\r')
-            sb.append(c.toChar())
-        }
-        throw IOException("header line too long")
-    }
-
-    private fun reply(out: OutputStream, status: Int, type: String, body: String, extra: String = "") {
-        val bytes = body.toByteArray()
-        out.write(("HTTP/1.1 $status ${if (status == 200) "OK" else "Error"}\r\nContent-Type: $type\r\nContent-Length: ${bytes.size}\r\nCache-Control: no-store\r\nConnection: close\r\n$extra\r\n").toByteArray())
-        out.write(bytes)
-        out.flush()
     }
 }
 

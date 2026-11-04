@@ -1,19 +1,11 @@
 package link.mccoy88f.zephyr
 
-import java.io.BufferedInputStream
 import java.io.File
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
-import java.net.ServerSocket
-import java.net.Socket
-import java.security.SecureRandom
-import java.util.concurrent.Executors
 
 /**
  * What the phone can do on one Zephyr TV screen: the [page] it opens, how much it may send ([maxBytes]), and
  * [onSend], which gets what it sent (as a temporary file, deleted afterwards) and returns the status code and the
- * text the phone shows. [onSend] runs on a server thread.
+ * text the phone shows. [onSend] runs on a server thread. The one phone server (PhoneServer, see Remote) serves it.
  */
 internal class PhoneTask(val page: PhonePage, val maxBytes: Long, val onSend: (File) -> Pair<Int, String>) {
     /** A page of its own (read-only, nothing to do on the device itself: see PhoneLocal). */
@@ -31,115 +23,6 @@ internal sealed class PhoneLocal {
     class Download(val fileName: String, val content: String) : PhoneLocal()
     class Form(val fields: List<Triple<String, String, Pair<String, Boolean>>>) : PhoneLocal()
     object View : PhoneLocal()
-}
-
-/**
- * A small web server that lets a phone on the same Wi-Fi do something on the TV: send a wallpaper, type the TMDB
- * key, and whatever comes next. It runs only while its screen is open (call [stop] when it closes) and only
- * answers on /<token>, a random 144-bit path that's in the QR code, so nobody else on the network can guess it.
- * The page sends its data as the raw request body, so there's no multipart parsing. A few requests are served at
- * once, so one slow or silent connection can't hold up the phone.
- */
-internal class PhoneLink(private val tempDir: File, private val task: PhoneTask) {
-    val token: String = ByteArray(18).also { SecureRandom().nextBytes(it) }
-        .let { java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(it) }
-
-    private val socket = try {
-        ServerSocket(8080)
-    } catch (e: IOException) {
-        ServerSocket(0) // 8080 taken: any free port (it's in the QR code either way)
-    }
-    private val workers = Executors.newFixedThreadPool(4)
-    val port get() = socket.localPort
-
-    init {
-        Thread(::serve, "phone-link").start()
-    }
-
-    fun url(ip: String) = "http://$ip:$port/$token"
-
-    fun stop() {
-        socket.close()
-        workers.shutdownNow()
-    }
-
-    private fun serve() {
-        while (!socket.isClosed) {
-            val s = try {
-                socket.accept()
-            } catch (e: IOException) {
-                return // closed
-            }
-            try {
-                workers.execute {
-                    try {
-                        s.use { handle(it) }
-                    } catch (e: Exception) {
-                        warn("phone request failed ($e)")
-                    }
-                }
-            } catch (e: java.util.concurrent.RejectedExecutionException) {
-                s.close() // stopping
-            }
-        }
-    }
-
-    private fun handle(s: Socket) {
-        s.soTimeout = 30_000
-        val input = BufferedInputStream(s.getInputStream())
-        val out = s.getOutputStream()
-        val request = readLine(input) ?: return
-        val headers = generateSequence { readLine(input)?.takeIf { it.isNotEmpty() } }
-            .take(100)
-            .associate { it.substringBefore(':').trim().lowercase() to it.substringAfter(':').trim() }
-        val method = request.substringBefore(' ')
-        val path = request.substringAfter(' ').substringBefore(' ').substringBefore('?')
-        when {
-            path != "/$token" -> reply(out, 404, "text/plain; charset=utf-8", "Not found. Scan the code on the TV again.")
-            method == "GET" -> reply(out, 200, "text/html; charset=utf-8", task.page.html)
-            method == "POST" -> {
-                val length = headers["content-length"]?.toLongOrNull() ?: -1
-                if (length !in 1..task.maxBytes) return reply(out, 413, "text/plain; charset=utf-8", "Too big.")
-                val temp = File.createTempFile("phone", ".part", tempDir)
-                try {
-                    temp.outputStream().use { file ->
-                        val buf = ByteArray(64 * 1024)
-                        var left = length
-                        while (left > 0) {
-                            val n = input.read(buf, 0, minOf(buf.size.toLong(), left).toInt())
-                            if (n < 0) throw IOException("upload cut short")
-                            file.write(buf, 0, n)
-                            left -= n
-                        }
-                    }
-                    val (status, text) = task.onSend(temp)
-                    reply(out, status, "text/plain; charset=utf-8", text)
-                } finally {
-                    temp.delete()
-                }
-            }
-            else -> reply(out, 405, "text/plain; charset=utf-8", "Not allowed")
-        }
-    }
-
-    /** One header line, without the line break; null at the end of the stream. Capped so junk can't fill memory. */
-    private fun readLine(input: InputStream): String? {
-        val sb = StringBuilder()
-        while (sb.length < 8192) {
-            val c = input.read()
-            if (c < 0) return if (sb.isEmpty()) null else sb.toString()
-            if (c == '\n'.code) return sb.toString().trimEnd('\r')
-            sb.append(c.toChar())
-        }
-        throw IOException("header line too long")
-    }
-
-    private fun reply(out: OutputStream, status: Int, type: String, body: String) {
-        val bytes = body.toByteArray()
-        out.write("HTTP/1.1 $status ${if (status == 200) "OK" else "Error"}\r\nContent-Type: $type\r\nContent-Length: ${bytes.size}\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n".toByteArray())
-        out.write(bytes)
-        out.flush()
-    }
 }
 
 /**

@@ -327,6 +327,8 @@
     <!-- Backup and restore -->
     <string name="setting_backup">Copia de seguridad y restauración</string>
     <string name="backup_save">Guardar una copia en el móvil…</string>
+    <string name="backup_failed">No se pudo crear la copia. Inténtalo de nuevo.</string>
+    <string name="backup_skipped">Demasiado grandes para la copia: %1$s. Después de restaurar, instálalas otra vez desde su archivo.</string>
     <string name="backup_restore">Restaurar desde el móvil…</string>
     <string name="backup_waiting">Esperando el archivo de copia…</string>
     <string name="phone_backup_title">Copia de seguridad de Zephyr TV</string>

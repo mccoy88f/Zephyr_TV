@@ -13,7 +13,7 @@ import android.widget.Toast
 import org.json.JSONObject
 import java.io.File
 
-// Phones and tablets: what a TV hands to a phone over a QR code (PhoneLink), done on the device itself, with its own
+// Phones and tablets: what a TV hands to a phone over a QR code (see Remote), done on the device itself, with its own
 // keyboard, file picker and Save dialog. Functions of MainActivity, kept here by topic; their state lives in MainActivity.
 
 /** A phone or a tablet: a touch screen, and not a TV (Android TV and Google TV say leanback). */

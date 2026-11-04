@@ -327,6 +327,8 @@
     <!-- Backup and restore -->
     <string name="setting_backup">Backup and restore</string>
     <string name="backup_save">Save a backup on your phone…</string>
+    <string name="backup_failed">The backup could not be made. Try again.</string>
+    <string name="backup_skipped">Too large for the backup: %1$s. After a restore, install them again from their file.</string>
     <string name="backup_restore">Restore from your phone…</string>
     <string name="backup_waiting">Waiting for the backup file…</string>
     <string name="phone_backup_title">Zephyr TV backup</string>

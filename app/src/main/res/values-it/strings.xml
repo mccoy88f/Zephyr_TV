@@ -327,6 +327,8 @@
     <!-- Backup and restore -->
     <string name="setting_backup">Backup e ripristino</string>
     <string name="backup_save">Salva un backup sul telefono…</string>
+    <string name="backup_failed">Non è stato possibile creare il backup. Riprova.</string>
+    <string name="backup_skipped">Troppo grandi per il backup: %1$s. Dopo il ripristino, installale di nuovo dal loro file.</string>
     <string name="backup_restore">Ripristina dal telefono…</string>
     <string name="backup_waiting">In attesa del file di backup…</string>
     <string name="phone_backup_title">Backup di Zephyr TV</string>

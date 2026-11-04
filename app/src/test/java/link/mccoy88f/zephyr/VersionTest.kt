@@ -20,6 +20,7 @@ class VersionTest {
     @Test fun putsBetasBeforeTheirRelease() {
         assertTrue(newerVersion("4.0.0-beta.1", "3.1"))
         assertTrue(newerVersion("4.0.0-beta.2", "4.0.0-beta.1"))
+        assertTrue(newerVersion("4.0.0-beta.10", "4.0.0-beta.8")) // by number, not by letter
         assertTrue(newerVersion("4.0", "4.0.0-beta.2"))
         assertTrue(newerVersion("4.0.0", "4.0.0-beta.1"))
         assertFalse(newerVersion("4.0.0-beta.1", "4.0.0"))

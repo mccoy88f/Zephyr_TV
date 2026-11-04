@@ -327,6 +327,8 @@
     <!-- Backup and restore -->
     <string name="setting_backup">Sauvegarde et restauration</string>
     <string name="backup_save">Enregistrer une sauvegarde sur le téléphone…</string>
+    <string name="backup_failed">La sauvegarde n\'a pas pu être créée. Réessayez.</string>
+    <string name="backup_skipped">Trop grandes pour la sauvegarde : %1$s. Après la restauration, installez-les à nouveau depuis leur fichier.</string>
     <string name="backup_restore">Restaurer depuis le téléphone…</string>
     <string name="backup_waiting">En attente du fichier de sauvegarde…</string>
     <string name="phone_backup_title">Sauvegarde de Zephyr TV</string>

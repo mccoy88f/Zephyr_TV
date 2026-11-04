@@ -162,6 +162,12 @@ internal object Backup {
         return n
     }
 
+    /** The ids of the extensions that [json] (see export) leaves out: their packages didn't fit. */
+    fun skipped(json: String): List<String> = runCatching {
+        val a = JSONObject(json).optJSONObject("extras")?.optJSONArray("skipped") ?: return emptyList()
+        (0 until a.length()).map { a.getString(it) }
+    }.getOrDefault(emptyList())
+
     /** The extensions that have an address to download them again from (see extensionSource). */
     private fun withSource(prefs: SharedPreferences) =
         runCatching { JSONObject(prefs.getString(K.EXT_SOURCES, null) ?: "{}").keys().asSequence().toSet() }.getOrDefault(emptySet())

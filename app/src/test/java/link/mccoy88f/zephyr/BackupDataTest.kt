@@ -91,5 +91,23 @@ class BackupDataTest {
         assertEquals(0, Backup.restoreExtras(other, extras))
         assertEquals(null, Extensions.installed(other, "org.example.bad"))
     }
+
+    @Test fun anExtensionTooLargeIsNamedAsLeftOut() {
+        val tv = tmp.newFolder()
+        install(tv, "org.example.small")
+        val big = tmp.newFile()
+        val noise = java.util.Random(1).let { r -> ByteArray(5 * 1024 * 1024).also { r.nextBytes(it) } } // doesn't compress
+        ZipOutputStream(big.outputStream()).use { z ->
+            z.putNextEntry(ZipEntry("manifest.json")); z.write(manifest("org.example.big").toByteArray()); z.closeEntry()
+            z.putNextEntry(ZipEntry("main.js")); z.write("module.exports = {};".toByteArray()); z.closeEntry()
+            z.putNextEntry(ZipEntry("data.bin")); z.write(noise); z.closeEntry()
+        }
+        Extensions.install(tv, big)
+        val extras = Backup.exportExtras(tv, emptySet())
+        assertEquals(setOf("org.example.small"), extras.getJSONObject("packages").keys().asSequence().toSet())
+        val backup = JSONObject().put("extras", extras).toString()
+        assertEquals(listOf("org.example.big"), Backup.skipped(backup))
+        assertEquals(emptyList<String>(), Backup.skipped("not json"))
+    }
 }
 

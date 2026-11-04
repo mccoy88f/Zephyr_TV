@@ -461,7 +461,6 @@ class MainActivity : Activity() {
         applicationContext.getSystemService(ConnectivityManager::class.java).unregisterNetworkCallback(net)
         getSystemService(TvInputManager::class.java)?.unregisterCallback(inputCallback)
         contentResolver.unregisterContentObserver(inputsObserver)
-        upload?.stop()
         Remote.detach(this) // the page stays up across a recreate; it stops when remote access is turned off
         io.shutdownNow()
         posterIo.shutdownNow()
@@ -853,7 +852,6 @@ class MainActivity : Activity() {
         }) { pickWallpaper(forDark) }
     }
 
-    internal var upload: PhoneLink? = null
     internal var fileDone: ((android.net.Uri?) -> Unit)? = null // the file picker or Save dialog open (see Handheld)
     internal var warpBack: (() -> Unit)? = null // the WARP page's Back, to show it again once WARP is up (see Privacy)
 
@@ -875,7 +873,7 @@ class MainActivity : Activity() {
     internal var pageBack: (() -> Unit)? = null
     internal var goingBack = false // Back is drawing the page before: its row left from gets focus (see showPage)
     internal val pageFocus = HashMap<String, Int>() // each page's row last left from, by its title
-    internal var pageExit: (() -> Unit)? = null // cleanup when the page goes away (stops the upload server)
+    internal var pageExit: (() -> Unit)? = null // cleanup when the page goes away (releases its phone page, see Remote.hold)
     internal val phonePanel = PhonePanel() // what the phone's remote-access page shows of the panel (see Remote)
     internal var pageSides: ((Int) -> Unit)? = null // Left/Right (-1, +1) on a page that has them: a series' seasons
     internal var pageReturn: (() -> Unit)? = null // the page to show again, as it was, back from the player it opened

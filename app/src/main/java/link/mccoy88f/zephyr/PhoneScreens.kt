@@ -204,15 +204,37 @@ internal fun MainActivity.showBackup() {
     )) { renderSettings(backupRow()) }
 }
 
-/** The phone page that saves a backup of this TV. */
-internal fun MainActivity.backupPage() = PhonePages.download(
-    phoneTexts(getString(R.string.phone_backup_title), getString(R.string.phone_backup_intro), getString(R.string.phone_backup_download)),
-    "zephyr-backup.json", Backup.export(prefs, filesDir, users().map { it.id }))
+/** A backup of this TV, made now, and the line that names the extensions too large to be in it (empty when none). */
+private fun MainActivity.makeBackup(): Pair<String, String> {
+    val json = Backup.export(prefs, filesDir, users().map { it.id })
+    val names = Backup.skipped(json).map { Extensions.installed(filesDir, it)?.name ?: it }
+    return json to if (names.isEmpty()) "" else getString(R.string.backup_skipped, names.joinToString(", "))
+}
 
-/** The backup to save on the phone. With a PIN set, the PIN first: the backup holds the add-ons and the sign-ins. */
+/** The phone page that saves [backup] (see makeBackup): its line on what is left out under the intro. */
+private fun MainActivity.backupPage(backup: Pair<String, String>) = PhonePages.download(
+    phoneTexts(getString(R.string.phone_backup_title),
+        listOf(getString(R.string.phone_backup_intro), backup.second).filter { it.isNotEmpty() }.joinToString(" "),
+        getString(R.string.phone_backup_download)),
+    "zephyr-backup.json", backup.first)
+
+/** The phone page that saves a backup of this TV, made now. Off the UI thread: it reads the extensions' files. */
+internal fun MainActivity.backupPage() = backupPage(makeBackup())
+
+/**
+ * The backup to save on the phone. With a PIN set, the PIN first: the backup holds the add-ons and the sign-ins.
+ * The backup is made off the UI thread (the extensions' packages can take a moment), then its code shows.
+ */
 internal fun MainActivity.backupToPhone(asked: Boolean = false) {
     if (pinSet() && !asked) return askPin({ showBackup() }) { backupToPhone(asked = true) }
-    showPhoneLink(getString(R.string.backup_save), PhoneTask(backupPage(), 0) { 405 to "" }, label("", 12f), target = "backup-save") { showBackup() }
+    netIo.execute {
+        val backup = runCatching { makeBackup() }.onFailure { warn("backup failed ($it)") }.getOrNull()
+        ui.post {
+            if (backup == null) return@post toast(R.string.backup_failed)
+            val status = label(backup.second, 12f)
+            showPhoneLink(getString(R.string.backup_save), PhoneTask(backupPage(backup), 0) { 405 to "" }, status, target = "backup-save") { showBackup() }
+        }
+    }
 }
 
 internal fun MainActivity.restoreFromPhone() {
