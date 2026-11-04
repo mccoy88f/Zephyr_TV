@@ -302,7 +302,7 @@
     <string name="setup_close">Close</string>
     <string name="setup_done">Done</string>
     <string name="whats_new_title">What\'s new in %1$s</string>
-    <string name="updates_notes_loading">Loading what's new…</string>
+    <string name="updates_notes_loading">Loading what\'s new…</string>
     <string name="updates_version">Version %1$s</string>
     <string name="updates_installed">Version %1$s · installed</string>
     <string name="check_updates">Check for updates</string>
