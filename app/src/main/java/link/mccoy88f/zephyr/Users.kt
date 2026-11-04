@@ -172,8 +172,17 @@ private fun MainActivity.usersSettings(focus: Int = 0) {
         val trakt = Trakt.account(vodDir(u.id))?.user?.let { "Trakt: $it" }
         page(u.name, listOfNotNull(trakt, if (u.id == current.id) CHOSEN else null).joinToString("  ")) { userPage(u) }
     } + page(getString(R.string.user_add)) { userName(null) } +
-        adultSettingsRows { usersSettings(list.size + 1) }, focus) { showUsers(list.size + if (adultLockOn()) 1 else 0) }
+        adultSettingsRows { usersSettings(list.size + 1) }, focus) { backFromUsersSettings() }
     userIcons(list)
+}
+
+/**
+ * Back from the users' settings: the users' menu again, under the top bar's button, as they were opened from it (not
+ * the panel's list, which only remote access shows: its users button opens that one again).
+ */
+private fun MainActivity.backFromUsersSettings() {
+    closeLauncherSettings()
+    findViewById<android.view.View>(R.id.usersButton)?.let { b -> b.post { openUsersMenu(b) } }
 }
 
 /**
