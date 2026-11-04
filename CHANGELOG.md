@@ -18,6 +18,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - The **Users** button opens a small menu under it, as **TV inputs** does.
 - In the Glass theme, the icons of the settings rows can be read when the row has focus.
 - An add-on that is switched off shows its name in the add-ons list, not its address. Its icon is grey.
+- With the stream choice on automatic, hold OK on **Watch** to pick a stream from the list.
 
 ## 4.0.0-beta.15
 

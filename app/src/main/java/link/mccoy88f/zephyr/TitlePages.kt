@@ -148,9 +148,12 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
         if (having?.isEmpty() == true) rows += page(getString(R.string.title_no_streams)) { }
         else {
             icons[rows.size] = watchIcon(one)
+            // Hold OK, with the streams chosen automatically: the list of them all, to pick one by hand.
+            val watchRow = rows.size
+            fun pickHere() = pickStream(ref, meta, null) { showVodTitle(meta, ref, services.known, focusRow = watchRow, found = found) }
+            if (!manualStreams()) holds[watchRow] = { pickHere() }
             rows += page(watchLabel(one, at, seen), listOfNotNull(if (seen) "✓" else null, streamsLine(found)).joinToString(" · ")) {
-                val row = focusedRow()
-                if (manualStreams()) pickStream(ref, meta, null) { showVodTitle(meta, ref, services.known, focusRow = row, found = found) } else play(one?.base)
+                if (manualStreams()) pickHere() else play(one?.base)
             }
         }
         val markRow = rows.size
@@ -283,6 +286,7 @@ internal fun MainActivity.showVodEpisode(given: Stremio.TitleMeta, ref: TitleRef
     val sources = streamSources(t.type, e.id)
     val rows = ArrayList<Triple<String, String, () -> Unit>>()
     val icons = HashMap<Int, android.graphics.drawable.Drawable>()
+    val holds = HashMap<Int, () -> Unit>() // what holding OK on a row does (Watch: the streams to pick from)
     fun play(only: String?) {
         pageReturn = { showVodEpisode(meta, ref, e, services.known, found, focus) }
         playTitle(ref, meta, e, only)
@@ -294,6 +298,9 @@ internal fun MainActivity.showVodEpisode(given: Stremio.TitleMeta, ref: TitleRef
         // Watch: the player takes the streams found here (see warmTitle), or, picked by hand, the streams' page does.
         val sole = soleAddon(having ?: sources)
         icons[rows.size] = watchIcon(sole)
+        // Hold OK, with the streams chosen automatically: the list of them all, to pick one by hand.
+        val watchRow = rows.size
+        if (!manual) holds[watchRow] = { pickStream(ref, meta, e) { showVodEpisode(meta, ref, e, services.known, found, watchRow) } }
         rows += page(watchLabel(sole, VodProgress.position(vodDir(), e.id), seen), streamsLine(found)) {
             if (manual) pickStream(ref, meta, e) { showVodEpisode(meta, ref, e, services.known, found, 0) } else play(sole?.base)
         }
@@ -311,7 +318,7 @@ internal fun MainActivity.showVodEpisode(given: Stremio.TitleMeta, ref: TitleRef
     }
     if (handheld()) rows += page(getString(R.string.share)) { shareTitle(t.type, t.id, t.name, e.season, e.episode) }
     val targetFocus = if (focus < 0 && top.descView != null) -1 else if (focus < 0) 0 else focus
-    titlePage(title, art, ref.fallback, t.name, top, rows, targetFocus, icons, servicesBar = servicesBar) {
+    titlePage(title, art, ref.fallback, t.name, top, rows, targetFocus, icons, holds, servicesBar = servicesBar) {
         if (t.type != "series") showVodTitle(meta, ref, services.known)
         else showVodSeason(meta, ref, e.season, services.known, e.id)
     }

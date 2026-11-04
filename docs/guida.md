@@ -113,7 +113,7 @@ OK su una scheda di film o serie apre la sua pagina, a tutto schermo: l'immagine
 - **Film**: **Guarda** (o **Riprendi da…**) e **Segna come visto**.
 - **Serie**: le stagioni, con quanti episodi hai visto. In una stagione, sinistra e destra passano alla stagione accanto. Ogni episodio ha la sua pagina con **Guarda** e **Segna come visto**.
 
-La pagina di un film o di un episodio cerca gli stream quando si apre. **Guarda** mostra **Cerco gli stream…**, poi quanti stream hanno le fonti. Quando premi **Guarda**, il player parte con gli stream già trovati. Gli stream trovati restano pronti per 90 secondi; dopo, il player li cerca di nuovo. Gli stream di un canale TV si trovano allo stesso modo, quando resti un momento sulla sua card: un canale fatto di più canali (per esempio HD e SD) li ha tutti pronti.
+La pagina di un film o di un episodio cerca gli stream quando si apre. **Guarda** mostra **Cerco gli stream…**, poi quanti stream hanno le fonti. Quando premi **Guarda**, il player parte con gli stream già trovati. Con la scelta dello stream automatica, tieni premuto OK su **Guarda** per aprire la lista di tutti gli stream e sceglierne uno. Gli stream trovati restano pronti per 90 secondi; dopo, il player li cerca di nuovo. Gli stream di un canale TV si trovano allo stesso modo, quando resti un momento sulla sua card: un canale fatto di più canali (per esempio HD e SD) li ha tutti pronti.
 
 ## 8. Il player
 

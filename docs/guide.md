@@ -113,7 +113,7 @@ OK on a film or series card opens its page, over the whole screen: its picture f
 - **Films**: **Watch** (or **Resume from…**) and **Mark as watched**.
 - **Series**: the seasons, with how many episodes you watched. In a season, Left and Right go to the season beside it. Each episode has its page with **Watch** and **Mark as watched**.
 
-The page of a film or an episode looks for the streams when it opens. **Watch** shows **Looking for streams…**, then how many streams the sources have. When you select **Watch**, the player starts with the streams already found. The streams found stay ready for 90 seconds; after that, the player looks for them again. A TV channel's streams are found in the same way, when its card stays selected for a moment: a channel made of several (for example HD and SD) has them all ready.
+The page of a film or an episode looks for the streams when it opens. **Watch** shows **Looking for streams…**, then how many streams the sources have. When you select **Watch**, the player starts with the streams already found. With the stream choice on automatic, hold OK on **Watch** to open the list of all the streams and pick one. The streams found stay ready for 90 seconds; after that, the player looks for them again. A TV channel's streams are found in the same way, when its card stays selected for a moment: a channel made of several (for example HD and SD) has them all ready.
 
 ## 8. The player
 
