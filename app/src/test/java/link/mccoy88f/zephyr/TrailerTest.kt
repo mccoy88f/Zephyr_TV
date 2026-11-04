@@ -10,7 +10,9 @@ class TrailerTest {
         assertEquals("Dune trailer italiano", TmdbClient.trailerQuery("Dune", "it-IT"))
         assertEquals("Dune trailer deutsch", TmdbClient.trailerQuery("Dune", "de-DE"))
         assertEquals("Dune trailer english", TmdbClient.trailerQuery("Dune", "en-US"))
-        assertEquals("Dune trailer english", TmdbClient.trailerQuery("Dune", "pt-BR")) // unknown: English
+        assertEquals("Dune trailer português", TmdbClient.trailerQuery("Dune", "pt-BR"))
+        assertEquals("Dune trailer 中文", TmdbClient.trailerQuery("Dune", "zh-CN"))
+        assertEquals("Dune trailer english", TmdbClient.trailerQuery("Dune", "ja-JP")) // unknown: English
     }
 
     private fun v(key: String, type: String = "Trailer", lang: String = "en", official: Boolean = true, site: String = "YouTube", at: String = "2026-01-01") =

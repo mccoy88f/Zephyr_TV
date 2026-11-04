@@ -131,6 +131,8 @@ private val LANGUAGE_MARKS = mapOf(
     "ta" to listOf("tamil"), "te" to listOf("telugu"), "ml" to listOf("malayalam"), "kn" to listOf("kannada"),
     "ja" to listOf("jpn", "japanese", "\uD83C\uDDEF\uD83C\uDDF5"), "ko" to listOf("korean", "\uD83C\uDDF0\uD83C\uDDF7"),
     "ar" to listOf("arabic"), "ru" to listOf("rus", "russian", "\uD83C\uDDF7\uD83C\uDDFA"),
+    "zh" to listOf("chinese", "mandarin", "中文", "国语", "\uD83C\uDDE8\uD83C\uDDF3"),
+    "ca" to listOf("catalan", "català"),
 )
 
 /**

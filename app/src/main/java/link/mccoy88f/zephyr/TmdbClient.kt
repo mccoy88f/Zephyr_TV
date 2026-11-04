@@ -24,7 +24,7 @@ object TmdbClient {
     private const val IMAGE_BASE = "https://image.tmdb.org/t/p/w1280"
 
     /** Languages offered in settings; the device's own one is picked when it's among them. */
-    val LANGUAGES = listOf("it-IT", "en-US", "es-ES", "fr-FR", "de-DE")
+    val LANGUAGES = listOf("it-IT", "en-US", "es-ES", "fr-FR", "de-DE", "ca-ES", "pt-BR", "zh-CN", "hi-IN")
 
     fun defaultLanguage(): String {
         val device = java.util.Locale.getDefault().language
@@ -538,6 +538,10 @@ object TmdbClient {
             "es" -> "español"
             "fr" -> "français"
             "de" -> "deutsch"
+            "ca" -> "català"
+            "pt" -> "português"
+            "hi" -> "hindi"
+            "zh" -> "中文"
             else -> "english"
         }
         return "$title trailer $name"
