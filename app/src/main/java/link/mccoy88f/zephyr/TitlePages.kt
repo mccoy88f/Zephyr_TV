@@ -772,6 +772,8 @@ internal fun MainActivity.rowIcons(icons: Map<Int, android.graphics.drawable.Dra
             if (i in off) alpha = 0.45f
         }
         row.addView(iv, 0, LinearLayout.LayoutParams(dp(22), dp(22)).apply { marginEnd = dp(12) })
+        // The row may have focus already (the page's first, as it opens): its icon in the focused colour from the start.
+        if (icon !is android.graphics.drawable.BitmapDrawable && row.hasFocus()) iv.setColorFilter(rowIconTint(row, true), android.graphics.PorterDuff.Mode.SRC_IN)
         val orig = row.onFocusChangeListener
         row.setOnFocusChangeListener { v, focused ->
             orig?.onFocusChange(v, focused)

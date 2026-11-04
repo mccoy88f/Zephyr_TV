@@ -549,6 +549,7 @@ internal fun MainActivity.showChannel(d: ChannelDetail) {
             }
         }
         row?.addView(iv, 0, LinearLayout.LayoutParams(dp(22), dp(22)).apply { marginEnd = dp(12) })
+        if (row != null && icon !is android.graphics.drawable.BitmapDrawable && row.hasFocus()) iv.setColorFilter(rowIconTint(row, true), android.graphics.PorterDuff.Mode.SRC_IN)
         val orig = row?.onFocusChangeListener
         row?.setOnFocusChangeListener { v, focused ->
             orig?.onFocusChange(v, focused)
