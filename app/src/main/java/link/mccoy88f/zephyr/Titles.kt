@@ -75,6 +75,10 @@ internal fun MainActivity.streamSources(type: String, id: String): List<Pair<Str
         pluginSources(prefs, filesDir, type, id, adultUnlocked()) // Nuvio's plugins after the add-ons
 }
 
+/** The subtitles add-ons (OpenSubtitles and the like) for film or episode [id]: their addresses and names. */
+internal fun MainActivity.subtitleSources(type: String, id: String): List<Pair<String, String>> =
+    shownAddonUrls().mapNotNull { Stremio.saved(filesDir, it)?.addon }.filter { it.provides("subtitles", type, id) }.map { it.base to it.name }
+
 /** The tiles films and series add to the apps row: Films and Series, or nothing here (each add-on's own, see addonApps). */
 internal fun MainActivity.vodApps(): List<MainActivity.App> {
     if (libraryUrls().isEmpty()) return emptyList()

@@ -264,7 +264,7 @@ internal object Nuvio {
             "${JSONObject.quote(base)}, ${JSONObject.quote(media)}, $season, $episode)"
         val found = runCatching { exec(script, call, globals(dir, url, s, options, tmdbKey)) { keep(dir, url, s, it) } }.onFailure { warn("Nuvio plugin failed: ${s.name} ($it)") }.getOrNull()
             ?: return emptyList()
-        return Stremio.streams(asStremio(found), vod = true).map { Stremio.Stream(it.url, it.title, it.headers, it.group, name) }
+        return Stremio.streams(asStremio(found), vod = true).map { Stremio.Stream(it.url, it.title, it.headers, it.group, name, subtitles = it.subtitles) }
     }
 
     /** A plugin's streams as a Stremio add-on's answer: its headers where Stremio keeps them, its title as the description. */

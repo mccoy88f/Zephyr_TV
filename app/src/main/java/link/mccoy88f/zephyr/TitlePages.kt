@@ -981,6 +981,11 @@ internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, epi
             .putStringArrayListExtra(PlayerActivity.ADULT_SOURCES, ArrayList(adultSourcesList))
             .putStringArrayListExtra(PlayerActivity.SOURCES, ArrayList(sources.map { it.first }))
             .putStringArrayListExtra(PlayerActivity.SOURCE_NAMES, ArrayList(sources.map { it.second }))
+            .apply {
+                val subs = subtitleSources(type, items[start].first)
+                putStringArrayListExtra(PlayerActivity.SUB_SOURCES, ArrayList(subs.map { it.first }))
+                putStringArrayListExtra(PlayerActivity.SUB_NAMES, ArrayList(subs.map { it.second }))
+            }
             .putStringArrayListExtra(PlayerActivity.TYPES, strings { type })
             .putStringArrayListExtra(PlayerActivity.IDS, strings { it.first })
             .putStringArrayListExtra(PlayerActivity.NAMES, strings { it.second })
@@ -1075,12 +1080,12 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
     show()
     for ((base, name) in sources) netIo.execute {
         val got = runCatching { cachedStreams(prefs, filesDir, cacheDir, base, name, t.type, id) }.getOrDefault(emptyList())
-            .map { Stremio.Stream(it.url, it.title, it.headers, it.group, it.source ?: name, it.langRank, it.clearkey, it.app, it.audio) }
+            .map { Stremio.Stream(it.url, it.title, it.headers, it.group, it.source ?: name, it.langRank, it.clearkey, it.app, it.audio, it.subtitles) }
         ui.post {
             left--
             // Each source's, in the TV's language first then the preferred quality's order, after those already there in
             // their quality's group.
-            found += got.sortedWith(compareBy<Stremio.Stream> { it.langRank }.then(qualityOrder(preferredQuality(prefs))))
+            found += got.sortedWith(compareBy<Stremio.Stream> { it.langRank }.thenBy { dvLast(it) }.then(qualityOrder(preferredQuality(prefs))))
             if (pageShowing(title)) show()
         }
     }

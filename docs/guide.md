@@ -146,11 +146,15 @@ The banner has the **Previous episode**, **Play/Pause**, **Next episode**, **Aud
 | **Hide streams without a language** | Off | Hides the streams that don't say their language |
 | **Hide films not yet released** | Off | Hides from Spotlight and the apps' rows the films that are not out at home yet in your country: still only in cinemas, or still to come. It uses TMDB (the key is necessary). A film is hidden only when TMDB says so for sure |
 | **Subtitles always on** | Off | Off: each stream starts without subtitles, but those it forces (for example a line in another language). On: the subtitles in the language you picked last, else in the TV's language. A choice made in the player stays until you close it |
+| **Match the frame rate** | Off | Switches the screen to the film's frame rate (for example 24 Hz for a 23.976 fps film), when the TV has it: no judder in the pans. The screen goes black for a moment while the TV changes mode, and the film waits |
 
 How **quality** and **language** are recognised:
 - **Quality**: from the stream's name, for example 2160p/4K/UHD, 1440p/QHD, 1080p/FHD/Full HD, 720p/HD, 480p/SD.
 - **Language**: from the stream's name, for example ITA, Italian, SUB-ITA, 🇮🇹, or "multi". When a plugin's stream says none, the plugin's declared language counts.
 - **Check**: before it starts, the player checks all the streams at once and tries first those that really answer with a video. Expired links and web pages are skipped.
+- **Files no player opens**: disc images (.iso) and archives (.rar, .zip, .7z) don't show among the streams.
+- **Dolby Vision**: on a TV without Dolby Vision, films in Dolby Vision profile 7 (many 4K remuxes) play in HDR10. Streams that say "DV" alone, without HDR10, are tried after the others: on that TV their colours are wrong.
+- **Subtitles from add-ons**: with a subtitles add-on installed (for example OpenSubtitles), its subtitles in the TV's language and in English show in **Subtitles**, with those an add-on hands with the stream.
 
 ## 10. Content catalogs
 

@@ -99,7 +99,7 @@ internal fun sourceStreams(p: SharedPreferences, dir: File, base: String, name: 
     // Each marked with its language against the TV's: the player and the streams' page put ours first, then those
     // saying none (unless they're hidden), then the others, as a last choice.
     val hideUnknown = p.getBoolean(K.HIDE_UNKNOWN_LANG, false)
-    return all.map { s -> Stremio.Stream(s.url, s.title, s.headers, s.group, s.source, languageRank(s.title, lang, declared), s.clearkey, s.app, s.audio) }
+    return all.map { s -> Stremio.Stream(s.url, s.title, s.headers, s.group, s.source, languageRank(s.title, lang, declared), s.clearkey, s.app, s.audio, s.subtitles) }
         .filter { !(hideUnknown && it.langRank == Stremio.LANG_UNKNOWN) }
 }
 
@@ -186,6 +186,12 @@ internal fun quickStart(p: SharedPreferences) = p.getBoolean(K.FAST_START, true)
 internal fun qualityOrder(preferred: Int): Comparator<Stremio.Stream> = compareBy<Stremio.Stream> { s ->
     if (preferred == 0 || streamQuality(s.title) <= preferred) 0 else 1
 }.thenBy { s -> streamQuality(s.title).let { q -> if (preferred == 0 || q <= preferred) -q else q } }
+
+/**
+ * 1 for a stream that says Dolby Vision alone (see DolbyVision.only) on a device without Dolby Vision, which can't
+ * show it: after the others of its language. 0 for the rest.
+ */
+internal fun dvLast(s: Stremio.Stream): Int = if (!DolbyVision.decodes() && DolbyVision.only(s.title)) 1 else 0
 
 /** The languages [title] says a stream is in, as LANGUAGE_MARKS knows them; none when it doesn't say. */
 internal fun streamLanguages(title: String): Set<String> {

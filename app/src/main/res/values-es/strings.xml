@@ -642,6 +642,7 @@
     <string name="setting_stream_choice">Elección del stream</string>
     <string name="stream_choice_auto">Automática</string>
     <string name="stream_choice_manual">Manual</string>
+    <string name="setting_match_frame_rate">Ajustar la frecuencia de la pantalla</string>
     <string name="stream_pick_title">Elige el stream</string>
     <string name="cinemeta_intro">Las películas y series vienen de estos catálogos. El primero es el catálogo principal: da los detalles, la búsqueda y las imágenes de los títulos. Los otros añaden sus filas a Películas y Series, en este orden. Cinemeta es la biblioteca gratuita de Stremio. Nuvio Catalog usa TMDB, en el idioma del dispositivo.</string>
     <string name="cinemeta_default">Cinemeta (predeterminado)</string>

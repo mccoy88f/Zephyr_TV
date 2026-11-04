@@ -125,7 +125,11 @@ internal object Stremio {
                           val langRank: Int = LANG_OURS, // in the TV's language (0), saying none (1), in another (2)
                           val clearkey: Map<String, String> = emptyMap(), // DASH keys, key id to key (hex): an extension's drm.clearkey
                           val app: String? = null, // [url] opened by another app (externalUrl, ytId), with this one first
-                          val audio: String? = null) // a second address, video-only [url] plus this audio (YouTube adaptive / yt-dlp)
+                          val audio: String? = null, // a second address, video-only [url] plus this audio (YouTube adaptive / yt-dlp)
+                          val subtitles: List<Subtitle> = emptyList()) // subtitle files the add-on hands with it
+
+    /** A subtitle file: an add-on's (its "subtitles"), in [lang] (ISO 639-2, "ita", as Stremio's say, or 639-1). */
+    internal class Subtitle(val url: String, val lang: String?, val source: String? = null)
 
     @Volatile private var listings: Map<String, Listing> = emptyMap() // manifest address to what's saved, once read
     private val updating = java.util.Collections.synchronizedSet(HashSet<String>())
@@ -476,8 +480,34 @@ internal object Stremio {
     fun titleStreams(base: String, name: String, type: String, id: String): List<Stream> =
         streams(get("$base/stream/${enc(type)}/${enc(id)}.json", Http.STREAMS_TIMEOUT_MS), vod = true,
             external = base.startsWith(EXT) || type.equals("YouTube", ignoreCase = true) || id.startsWith("yt_id:")).map {
-            Stream(it.url, it.title, it.headers, it.group, name, clearkey = it.clearkey, app = it.app, audio = it.audio)
+            Stream(it.url, it.title, it.headers, it.group, name, clearkey = it.clearkey, app = it.app, audio = it.audio, subtitles = it.subtitles)
         }
+
+    /**
+     * The subtitles the add-on at [base] (a subtitles add-on: OpenSubtitles and the like) has for film or episode [id].
+     * Throws when it can't be asked. Network: off the UI thread.
+     */
+    fun subtitles(base: String, name: String, type: String, id: String): List<Subtitle> =
+        subtitles(get("$base/subtitles/${enc(type)}/${enc(id)}.json", Http.STREAMS_TIMEOUT_MS), name)
+
+    /** The subtitles in an add-on's answer (its "subtitles": url and lang each), those with a web address. */
+    internal fun subtitles(answer: JSONObject, source: String? = null): List<Subtitle> {
+        val list = answer.optJSONArray("subtitles") ?: return emptyList()
+        return (0 until list.length()).mapNotNull { list.optJSONObject(it) }.mapNotNull { o ->
+            val url = text(o, "url")?.takeIf { it.startsWith("http://") || it.startsWith("https://") } ?: return@mapNotNull null
+            Subtitle(url, text(o, "lang")?.lowercase(), source)
+        }.distinctBy { it.url }
+    }
+
+    /**
+     * A file no player on the TV opens: a disc image (.iso, .img) or an archive (.rar, .zip, .7z, .r00…), by the name
+     * the add-on gives it (behaviorHints.filename) or its address's last part. Such streams are left out.
+     */
+    internal fun unplayable(filename: String?, url: String): Boolean {
+        val last = url.substringBefore('?').substringBefore('#').substringAfterLast('/')
+        val name = (filename ?: runCatching { java.net.URLDecoder.decode(last, "UTF-8") }.getOrDefault(last)).trim().lowercase()
+        return Regex("""\.(iso|img|rar|zip|7z|r\d{2})$""").containsMatchIn(name)
+    }
 
     /** What the add-on tells about a channel on its page: what's on and next ([description]), and what's on in short. */
     internal class Meta(val description: String?, val now: String?)
@@ -540,6 +570,7 @@ internal object Stremio {
                 OTHER_SCHEMES.any { p -> it.startsWith(p, ignoreCase = true) } }
                 ?.let { if (it.startsWith("data://")) "data:" + it.removePrefix("data://") else it } // "data://": a plugin's slip
                 ?: external ?: return@mapNotNull null
+            if (unplayable(hints?.let { text(it, "filename") }, url)) return@mapNotNull null
             val keys = s.optJSONObject("drm")?.optJSONObject("clearkey")?.let { k -> k.keys().asSequence().associateWith { k.optString(it) } }
                 ?.filter { (kid, key) -> Regex("[0-9a-fA-F]{32}").matches(kid) && Regex("[0-9a-fA-F]{32}").matches(key) }.orEmpty()
             val request = hints?.optJSONObject("proxyHeaders")?.optJSONObject("request")
@@ -551,7 +582,7 @@ internal object Stremio {
             val isYt = yt != null || text(s, "ytId") != null || url.contains("youtube.com") || url.contains("youtu.be")
             Stream(url, title, headers, hints?.let { text(it, "bingeGroup") }, clearkey = keys,
                 app = if (url == external) hints?.let { text(it, "androidPackage") } ?: (if (isYt) YOUTUBE_TV else "") else null,
-                audio = hints?.let { text(it, "audioUrl") })
+                audio = hints?.let { text(it, "audioUrl") }, subtitles = subtitles(s))
         }
     }
 

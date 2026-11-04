@@ -47,6 +47,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -98,6 +99,12 @@ class PlayerActivity : Activity() {
     private var adult = false // whether this content is from an adult add-on (no history or continue watching)
     private var adultSources: Set<String> = emptySet()
     private var sources: List<Pair<String, String>> = emptyList() // films' and episodes' stream add-ons: address and name, in order
+    private var subSources: List<Pair<String, String>> = emptyList() // films' and episodes' subtitles add-ons: address and name
+    // A film's or episode's subtitles from those add-ons, by its id: being asked, then ready for its streams (see subtitlesFor).
+    private val subsAsked = java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.Future<List<Stremio.Subtitle>>>()
+    private val subsReady = java.util.concurrent.ConcurrentHashMap<String, List<Stremio.Subtitle>>()
+    private var frameRateFor: String? = null // the stream the screen's refresh rate was matched to (see matchFrameRate)
+    private val badSubs = HashSet<String>() // subtitle files that couldn't be had: left out (see onPlayerError)
     private var descs: List<String> = emptyList() // what each film or episode is about (OK on the banner shows it)
     private var pendingSeek = -1L // where the stream starts once it's ready: resumed, or where a failed one stopped
     private var group: String? = null // the bingeGroup of the stream playing: the next episode's like it first
@@ -244,6 +251,7 @@ class PlayerActivity : Activity() {
         fun list(key: String) = intent.getStringArrayListExtra(key).orEmpty()
         adultSources = list(ADULT_SOURCES).toSet()
         sources = list(SOURCES).zip(list(SOURCE_NAMES))
+        subSources = list(SUB_SOURCES).zip(list(SUB_NAMES))
         descs = list(DESCS)
         if (vod && sources.isEmpty()) return finish()
         val ids = list(IDS)
@@ -1616,6 +1624,7 @@ class PlayerActivity : Activity() {
         why = null
         release()
         pendingSeek = if (vod && !isAdult()) VodProgress.position(userDir, c.id) ?: -1L else -1L
+        askSubtitles(c)
         // A film's or episode's: its streams looked for, then checked, then each tried ("stream 1 of 5").
         // Or found ahead by the launcher (see StreamCache.warm): every source's.
         val known = fetched[c.id]?.takeIf { System.currentTimeMillis() - it.first < FRESH_MS } != null ||
@@ -1660,7 +1669,7 @@ class PlayerActivity : Activity() {
      */
     private fun streamOrder(): Comparator<Stremio.Stream> =
         compareBy<Stremio.Stream> { s -> when (probes[s.url]?.ok) { true -> 0; null -> 1; false -> 2 } }
-            .thenBy { it.langRank }.then(qualityOrder(preferredQuality(prefs)))
+            .thenBy { it.langRank }.thenBy { dvLast(it) }.then(qualityOrder(preferredQuality(prefs)))
 
     /**
      * Quick start: a film's sources asked all at once, each one's streams looked at as they come; the first in the
@@ -1689,7 +1698,7 @@ class PlayerActivity : Activity() {
             val more = runCatching { answer.get() }.getOrDefault(emptyList()).filter { s -> got.none { it.url == s.url } }
             got += more
             // Its best few at the preferred quality (or above, for the highest) checked: the first that answers plays.
-            hit = more.filter { s -> s.langRank == Stremio.LANG_OURS && streamQuality(s.title) == preferred }
+            hit = more.filter { s -> s.langRank == Stremio.LANG_OURS && streamQuality(s.title) == preferred && dvLast(s) == 0 }
                 .sortedWith(qualityOrder(preferred)).take(3)
                 .firstOrNull { s -> (probes[s.url] ?: Stremio.probe(s.url, s.headers).also { probes[s.url] = it }).ok }
         }
@@ -1700,7 +1709,7 @@ class PlayerActivity : Activity() {
             repeat(left) { lateWaits.execute { late(runCatching { answers.poll(VOD_LATE_MS, TimeUnit.MILLISECONDS)?.get() }.getOrNull()) } }
         }
         val found = hit ?: return got.also { if (it.isNotEmpty()) fetched[c.id] = System.currentTimeMillis() to it } to false
-        val list = listOf(found) + got.filter { it.url != found.url }.sortedWith(compareBy<Stremio.Stream> { it.langRank }.then(qualityOrder(preferred)))
+        val list = listOf(found) + got.filter { it.url != found.url }.sortedWith(compareBy<Stremio.Stream> { it.langRank }.thenBy { dvLast(it) }.then(qualityOrder(preferred)))
         fetched[c.id] = System.currentTimeMillis() to list
         return list to true
     }
@@ -1841,6 +1850,7 @@ class PlayerActivity : Activity() {
             // A check that fails is a stream that doesn't answer: the next is tried (never the player closing).
             // Another app's (a YouTube video's watch link): opened, not asked as a stream.
             val probe = if (s.app != null) Stremio.Probe(true, null) else probes[s.url] ?: runCatching { Stremio.probe(s.url, s.headers) }.getOrElse { Stremio.Probe(false, null) }.also { probes[s.url] = it }
+            channels.getOrNull(at)?.let { c -> subtitlesFor(c) } // the add-ons' subtitles, waited for a moment
             ui.post {
                 if (isFinishing || tuning != tune || n != tried) return@post
                 // The only stream (one picked by hand) is played even when the check failed: some servers turn the
@@ -1882,11 +1892,14 @@ class PlayerActivity : Activity() {
                 .setUuidAndExoMediaDrmProvider(C.CLEARKEY_UUID, androidx.media3.exoplayer.drm.FrameworkMediaDrm.DEFAULT_PROVIDER)
                 .build(androidx.media3.exoplayer.drm.LocalMediaDrmCallback(license.toString().toByteArray()))
         }
-        val sources = DefaultMediaSourceFactory(DefaultDataSource.Factory(this, http)).apply { drm?.let { m -> setDrmSessionManagerProvider { m } } }
+        // Dolby Vision profile 7 (4K remuxes) on a TV without it: its HDR10 base layer (see DolbyVision).
+        val sources = DefaultMediaSourceFactory(DefaultDataSource.Factory(this, http), DvBaseLayer()).apply { drm?.let { m -> setDrmSessionManagerProvider { m } } }
         // Sound the device has no decoder for (Dolby and DTS on a phone or tablet, TrueHD or DTS on many TVs): FFmpeg's,
         // after the device's own, so a TV's still passes Dolby on to a receiver (see build.gradle).
         val renderers = androidx.media3.exoplayer.DefaultRenderersFactory(this)
             .setExtensionRendererMode(androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
+            // A decoder that fails to start (a TV's hardware one, busy or picky): the next one that can, not a failure.
+            .setEnableDecoderFallback(true)
         val pairAudio = !s.audio.isNullOrEmpty() && format != "dash" && format != "hls"
         val p = ExoPlayer.Builder(this, renderers).setMediaSourceFactory(sources)
             .setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).build(), true)
@@ -1933,6 +1946,14 @@ class PlayerActivity : Activity() {
                     p.seekToDefaultPosition()
                     p.prepare()
                     return
+                }
+                // A subtitle file that can't be had (gone from the add-on's server) fails the whole stream in Media3:
+                // the same stream again without it.
+                val failed = (error.cause as? androidx.media3.datasource.HttpDataSource.HttpDataSourceException)?.dataSpec?.uri?.toString()
+                val retry = playing
+                if (failed != null && retry != null && failed != retry.s.url && failed != retry.s.audio && badSubs.add(failed)) {
+                    warn("subtitles not had: ${failed.substringAfter("://").substringBefore('/')}, again without them")
+                    return start(retry.s, retry.format, retry.noAudio, retry.agent)
                 }
                 // One that played and lost the network for a moment: the same again (see again).
                 if (error.errorCode in NETWORK_ERRORS && again("lost the network")) return
@@ -1982,6 +2003,7 @@ class PlayerActivity : Activity() {
 
             override fun onTracksChanged(tracks: Tracks) {
                 if (banner.visibility == View.VISIBLE && shown == at) { fillTrackLine(at); fillButtons(at) }
+                p.videoFormat?.frameRate?.let { matchFrameRate(s.url, it) }
             }
 
             // The song on air, as the stream tells it as it plays: under the station's name.
@@ -1999,12 +2021,14 @@ class PlayerActivity : Activity() {
                 "ts", "m2ts" -> setMimeType(MimeTypes.VIDEO_MP2T)
             }
             if (drm != null) setDrmConfiguration(MediaItem.DrmConfiguration.Builder(C.CLEARKEY_UUID).build())
+            // Subtitle files besides the stream's own: the add-on's for this stream, and the subtitles add-ons'.
+            if (vod) setSubtitleConfigurations(subtitleFiles(s))
         }.build()
         // HLS read so that audio timed hours off its video is moved onto it (see HlsAlign): else the player waits for it.
         if (format == "hls") p.setMediaSource(androidx.media3.exoplayer.hls.HlsMediaSource.Factory(DefaultDataSource.Factory(this, http))
             .setExtractorFactory(HlsAlign()).apply { drm?.let { m -> setDrmSessionManagerProvider { m } } }.createMediaSource(item))
         // A Blu-ray's MPEG-TS read as plain MPEG-TS, its packets' times left out, its DTS sound read too (see M2ts).
-        else if (format == "m2ts") p.setMediaSource(DefaultMediaSourceFactory(M2ts.Factory(DefaultDataSource.Factory(this, http)), M2ts.extractors()).createMediaSource(item))
+        else if (format == "m2ts") p.setMediaSource(DefaultMediaSourceFactory(M2ts.Factory(DefaultDataSource.Factory(this, http)), DvBaseLayer(M2ts.extractors())).createMediaSource(item))
         // Video-only plus a second audio address (YouTube adaptive): play them together, as ffmpeg would merge them.
         else if (pairAudio) {
             val data = DefaultDataSource.Factory(this, http)
@@ -2032,6 +2056,93 @@ class PlayerActivity : Activity() {
             null -> null
         }
         return getString(R.string.player_no_streams) + (reason?.let { "\n" + getString(it) } ?: "")
+    }
+
+    // ---------- subtitles from the add-ons ----------
+
+    /** Film or episode [c]'s subtitles asked of the subtitles add-ons, while its streams are looked for. Once each. */
+    private fun askSubtitles(c: Channel) {
+        if (!vod || subSources.isEmpty() || isAdult() || subsAsked.containsKey(c.id)) return
+        val type = intent.getStringExtra(META_TYPE)?.takeIf { it == "series" || it == "movie" } ?: c.type
+        subsAsked[c.id] = pool.submit(java.util.concurrent.Callable {
+            subSources.flatMap { (b, name) ->
+                runCatching { Stremio.subtitles(b, name, type, c.id) }.onFailure { warn("subtitles failed: ${b.substringAfter("://").substringBefore('/')} ($it)") }
+                    .getOrDefault(emptyList())
+            }
+        })
+    }
+
+    /**
+     * [c]'s subtitles from the add-ons, once they've answered (waited for up to SUBS_WAIT_MS, the first time): in the
+     * languages that matter here (see wantedSubtitles). Off the UI thread.
+     */
+    private fun subtitlesFor(c: Channel) {
+        if (subsReady.containsKey(c.id)) return
+        val asked = subsAsked[c.id] ?: return
+        val all = runCatching { asked.get(SUBS_WAIT_MS, TimeUnit.MILLISECONDS) }.getOrNull() ?: return
+        subsReady[c.id] = wantedSubtitles(all, SUBS_PER_LANGUAGE)
+    }
+
+    /**
+     * Of [all], those in the TV's language, the subtitles' language picked last, and English, at most [each] in each
+     * (a subtitles add-on has dozens): every one of them is downloaded when the stream starts.
+     */
+    private fun wantedSubtitles(all: List<Stremio.Subtitle>, each: Int): List<Stremio.Subtitle> {
+        val tv = (prefs.getString(K.TMDB_LANG, null) ?: TmdbClient.defaultLanguage()).substringBefore('-')
+        val langs = listOfNotNull(tv, choices.getString(TEXT_LANG, null)?.ifEmpty { null }, "en").map { iso3(it) }.distinct()
+        return langs.flatMap { l -> all.filter { iso3(it.lang) == l }.take(each) }
+    }
+
+    /** A language as ISO 639-2 ("it", "ita", "it-IT": "ita"), as subtitles add-ons and tracks name them. */
+    private fun iso3(lang: String?): String? {
+        val l = lang?.trim()?.lowercase()?.takeIf { it.isNotEmpty() } ?: return null
+        return runCatching { java.util.Locale.forLanguageTag(l.replace('_', '-')).getISO3Language() }.getOrNull()?.takeIf { it.isNotEmpty() } ?: l
+    }
+
+    /** [s]'s subtitle files for the player: the add-on's for it, then the subtitles add-ons' ones for its title. */
+    private fun subtitleFiles(s: Stremio.Stream): List<MediaItem.SubtitleConfiguration> {
+        val c = channels.getOrNull(at)
+        // The stream's own: those in the languages wanted, and a couple that say none.
+        val own = wantedSubtitles(s.subtitles, SUBS_PER_LANGUAGE) + s.subtitles.filter { it.lang == null }.take(2)
+        val others = c?.let { subsReady[it.id] }.orEmpty()
+        return (own + others).distinctBy { it.url }.filter { it.url !in badSubs }.mapIndexed { i, sub ->
+            val path = sub.url.substringBefore('?').lowercase()
+            MediaItem.SubtitleConfiguration.Builder(android.net.Uri.parse(sub.url))
+                .setId("addon-$i")
+                .setMimeType(when {
+                    path.endsWith(".vtt") -> MimeTypes.TEXT_VTT
+                    path.endsWith(".ass") || path.endsWith(".ssa") -> MimeTypes.TEXT_SSA
+                    path.endsWith(".ttml") || path.endsWith(".dfxp") -> MimeTypes.APPLICATION_TTML
+                    else -> MimeTypes.APPLICATION_SUBRIP // OpenSubtitles' and most add-ons', often without an extension
+                })
+                .setLanguage(sub.lang)
+                .setLabel(sub.source ?: s.source)
+                .build()
+        }
+    }
+
+    // ---------- the screen's refresh rate ----------
+
+    /**
+     * The screen switched to a refresh rate the film's frame rate [fps] divides (24 Hz for a 23.976 film, 50 Hz for
+     * 25), when the user wants it (Content → Match the frame rate) and the TV has one: no judder in the pans. Once a
+     * stream ([url]); the picture goes dark for a moment while the TV switches, so the film waits for it.
+     */
+    private fun matchFrameRate(url: String, fps: Float) {
+        if (!vod || fps <= 1f || frameRateFor == url || !prefs.getBoolean(K.MATCH_FRAME_RATE, false)) return
+        frameRateFor = url
+        @Suppress("DEPRECATION") val screen = (if (android.os.Build.VERSION.SDK_INT >= 30) this.display else windowManager.defaultDisplay) ?: return
+        val now = screen.mode
+        val best = FrameRate.pick(now.physicalWidth, now.physicalHeight,
+            screen.supportedModes.map { FrameRate.Mode(it.modeId, it.physicalWidth, it.physicalHeight, it.refreshRate) }, fps) ?: return
+        if (best.id == now.modeId) return
+        warn("frame rate ${fps}: screen to ${best.hz} Hz")
+        window.attributes = window.attributes.apply { preferredDisplayModeId = best.id }
+        // The film paused while the TV changes mode (a couple of seconds of black), then on.
+        val p = player ?: return
+        if (!p.playWhenReady) return
+        p.playWhenReady = false
+        ui.postDelayed({ if (player === p) p.playWhenReady = true }, FrameRate.SWITCH_MS)
     }
 
     private fun release() {
@@ -2151,6 +2262,7 @@ class PlayerActivity : Activity() {
             .put("headers", JSONObject(s.headers as Map<*, *>)).put("group", s.group ?: JSONObject.NULL).put("source", s.source ?: JSONObject.NULL)
             .put("clearkey", JSONObject(s.clearkey as Map<*, *>)).put("app", s.app ?: JSONObject.NULL).put("lang", s.langRank)
             .put("audio", s.audio ?: JSONObject.NULL)
+            .put("subs", JSONArray(s.subtitles.map { JSONObject().put("url", it.url).put("lang", it.lang ?: JSONObject.NULL).put("source", it.source ?: JSONObject.NULL) }))
 
         internal fun streamOf(j: JSONObject): Stremio.Stream {
             val h = j.optJSONObject("headers") ?: JSONObject()
@@ -2158,7 +2270,15 @@ class PlayerActivity : Activity() {
             return Stremio.Stream(j.getString("url"), j.optString("title"), h.keys().asSequence().associateWith { h.optString(it) },
                 j.optString("group").takeIf { !j.isNull("group") && it.isNotEmpty() }, j.optString("source").takeIf { !j.isNull("source") && it.isNotEmpty() },
                 j.optInt("lang", Stremio.LANG_OURS), k.keys().asSequence().associateWith { k.optString(it) }, if (j.isNull("app")) null else j.optString("app"),
-                j.optString("audio").takeIf { !j.isNull("audio") && it.isNotEmpty() })
+                j.optString("audio").takeIf { !j.isNull("audio") && it.isNotEmpty() },
+                (j.optJSONArray("subs") ?: JSONArray()).let { a ->
+                    (0 until a.length()).mapNotNull { a.optJSONObject(it) }.mapNotNull { o ->
+                        o.optString("url").takeIf { it.isNotEmpty() }?.let { url ->
+                            Stremio.Subtitle(url, o.optString("lang").takeIf { !o.isNull("lang") && it.isNotEmpty() },
+                                o.optString("source").takeIf { !o.isNull("source") && it.isNotEmpty() })
+                        }
+                    }
+                })
         }
         const val TYPES = "types"
         const val IDS = "ids"
@@ -2171,6 +2291,8 @@ class PlayerActivity : Activity() {
         const val MODE_VOD = "vod"
         const val SOURCES = "sources" // films and episodes: the stream add-ons' addresses (without /manifest.json), in order
         const val SOURCE_NAMES = "source_names"
+        const val SUB_SOURCES = "sub_sources" // films and episodes: the subtitles add-ons' addresses (without /manifest.json)
+        const val SUB_NAMES = "sub_names"
         const val DESCS = "descs" // what each film or episode is about
         const val META_TYPE = "meta_type" // the title's type and id ("series", "tt…"), for its page from Continue Playing
         const val META_ID = "meta_id"
@@ -2197,6 +2319,8 @@ class PlayerActivity : Activity() {
         private const val STUCK_MS = 15_000L // buffering longer than this: the next stream
         private const val RESTARTS = 2 // a stream that played and stalls, started again at most this many times
         private const val VLC_AGENT = "VLC/3.0.20 LibVLC/3.0.20" // what servers that take only players' User-Agent take
+        private const val SUBS_WAIT_MS = 3_000L // the subtitles add-ons waited for this long before a film starts without theirs
+        private const val SUBS_PER_LANGUAGE = 3 // a subtitles add-on's files in each language: the first few, its best
         private val NETWORK_ERRORS = listOf(PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
             PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT, PlaybackException.ERROR_CODE_IO_UNSPECIFIED)
         private val FORMAT_ERRORS = listOf(PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED,

@@ -18,6 +18,14 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - The mpv player is removed. The built-in player plays the streams. If you installed Zephyr MPV, uninstall it in the Android settings.
 - On the phone, the search page and the other pages that remote access opens have the bar at the bottom.
 - In the search, press ◀ at the start of the words to go to the microphone. Press ▶ at the end to go to the cross.
+- 4K films in Dolby Vision profile 7 play in HDR10 on a TV without Dolby Vision. Before, they did not play.
+- On a TV without Dolby Vision, streams that say "DV" alone are tried last. Their colours are wrong on that TV.
+- Subtitles from subtitles add-ons (for example OpenSubtitles) show in **Subtitles**, in the TV's language and in English.
+- Subtitles that an add-on gives with a stream show in **Subtitles** too.
+- Turn on **Match the frame rate** to play films at their own frame rate, for example 24 Hz. Pans do not judder.
+- If a decoder of the TV does not start, the player tries another one.
+- Disc images (.iso) and archives (.rar, .zip) do not show among the streams. No player can open them.
+- Blu-ray files (.m2ts) play their LPCM sound, and the AC-3 sound inside their TrueHD tracks.
 
 ## 4.0.0-beta.14
 

@@ -371,6 +371,12 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 watchKey = null
                 renderSettings(WATCH_SECTION * SECTION + 10)
             },
+            // The screen's refresh rate switched to the film's frame rate (24 Hz for a film): no judder in the pans,
+            // a moment of black as the TV changes mode. Off by default.
+            page(getString(R.string.setting_match_frame_rate), toggle(prefs.getBoolean(K.MATCH_FRAME_RATE, false))) {
+                prefs.edit().putBoolean(K.MATCH_FRAME_RATE, !prefs.getBoolean(K.MATCH_FRAME_RATE, false)).apply()
+                renderSettings(WATCH_SECTION * SECTION + 11)
+            },
         )
     }
     // The TV's own side: its inputs (HDMI and the like) and its channels, with their logos and guide.

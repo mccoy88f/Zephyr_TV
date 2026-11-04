@@ -146,11 +146,15 @@ Nel banner ci sono i pulsanti **Episodio precedente**, **Play/Pausa**, **Episodi
 | **Nascondi stream senza lingua** | Spento | Nasconde gli stream che non dicono in che lingua sono |
 | **Nascondi film non ancora usciti** | Spento | Nasconde dallo Spotlight e dalle righe delle app i film non ancora usciti a casa nel tuo paese: ancora solo al cinema, o non ancora usciti. Usa TMDB (serve la chiave). Un film viene nascosto solo quando TMDB lo dice con certezza |
 | **Sottotitoli sempre attivi** | Spento | Spento: ogni stream parte senza sottotitoli, tranne quelli che lo stream impone (per esempio una frase in un'altra lingua). Acceso: i sottotitoli nella lingua scelta per ultima, altrimenti in quella del TV. Una scelta fatta nel player vale finché non lo chiudi |
+| **Adatta la frequenza dello schermo** | Spento | Porta lo schermo alla frequenza del film (per esempio 24 Hz per un film a 23,976 fps), se il TV ce l'ha: niente scatti nelle panoramiche. Quando il TV cambia modalità lo schermo resta nero per un attimo, e il film aspetta |
 
 Come vengono riconosciute **qualità** e **lingua**:
 - **Qualità**: dal nome dello stream, per esempio 2160p/4K/UHD, 1440p/QHD, 1080p/FHD/Full HD, 720p/HD, 480p/SD.
 - **Lingua**: dal nome dello stream, per esempio ITA, Italian, SUB-ITA, 🇮🇹, oppure "multi". Se un plugin non lo indica nel nome, vale la lingua dichiarata dal plugin.
 - **Controllo**: prima di partire, il player controlla in parallelo tutti gli stream e prova per primi quelli che rispondono davvero con un video. Link scaduti e pagine web vengono saltati.
+- **File che nessun player apre**: immagini di dischi (.iso) e archivi (.rar, .zip, .7z) non compaiono tra gli stream.
+- **Dolby Vision**: su un TV senza Dolby Vision, i film in Dolby Vision profilo 7 (molti remux 4K) partono in HDR10. Gli stream che dicono solo "DV", senza HDR10, vengono provati dopo gli altri: su quel TV mostrano colori sbagliati.
+- **Sottotitoli dagli add-on**: con un add-on di sottotitoli installato (per esempio OpenSubtitles), i suoi sottotitoli nella lingua del TV e in inglese compaiono in **Sottotitoli**, insieme a quelli che un add-on dà con lo stream.
 
 ## 10. Cataloghi dei contenuti
 
