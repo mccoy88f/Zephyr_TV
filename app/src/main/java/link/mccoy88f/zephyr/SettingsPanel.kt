@@ -157,10 +157,10 @@ internal fun MainActivity.renderSettings(row: Int) {
         if (section == ADDONS_SECTION) addonsAndPlugins(1) else renderSettingsHome(HOME_SECTIONS.indexOf(section))
     }
     shownSection = section
-    // Each add-on's row starts with its icon, as its Watch on rows on a title's page do.
+    // Each add-on's row starts with its icon; grey when it's switched off.
     if (section == ADDONS_SECTION) rowIcons(addonUrls().mapIndexed { i, url ->
         ADDON_ROWS % SECTION + i to (Stremio.saved(filesDir, url)?.addon?.let { addonIcon(it) } ?: getDrawable(R.drawable.ic_stream)!!.mutate())
-    }.toMap(), first = 0)
+    }.toMap(), first = 0, off = addonUrls().mapIndexedNotNull { i, url -> if (addonOn(url)) null else ADDON_ROWS % SECTION + i }.toSet())
     if (section == ADDONS_SECTION) fetchAddonLogos()
     if (section == SYSTEM_SECTION) updateDot(UPDATE_ROW % SECTION)
 }

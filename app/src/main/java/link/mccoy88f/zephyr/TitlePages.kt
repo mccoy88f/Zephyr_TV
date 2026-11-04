@@ -750,7 +750,7 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
 internal fun MainActivity.rowIconTint(row: android.view.View, focused: Boolean): Int =
     if (focused && row.foreground == null) onFg else fg
 
-internal fun MainActivity.rowIcons(icons: Map<Int, android.graphics.drawable.Drawable>, first: Int) {
+internal fun MainActivity.rowIcons(icons: Map<Int, android.graphics.drawable.Drawable>, first: Int, off: Set<Int> = emptySet()) {
     for ((i, icon) in icons) {
         val row = settingsList.getChildAt(first + i) as? LinearLayout ?: continue
         val iv = ImageView(this).apply {
@@ -758,7 +758,11 @@ internal fun MainActivity.rowIcons(icons: Map<Int, android.graphics.drawable.Dra
             scaleType = ImageView.ScaleType.FIT_CENTER
             if (icon !is android.graphics.drawable.BitmapDrawable) {
                 setColorFilter(fg, android.graphics.PorterDuff.Mode.SRC_IN)
+            } else if (i in off) {
+                colorFilter = android.graphics.ColorMatrixColorFilter(android.graphics.ColorMatrix().apply { setSaturation(0f) })
             }
+            // Switched off (an add-on): grey, its logo without colour, faded.
+            if (i in off) alpha = 0.45f
         }
         row.addView(iv, 0, LinearLayout.LayoutParams(dp(22), dp(22)).apply { marginEnd = dp(12) })
         val orig = row.onFocusChangeListener
