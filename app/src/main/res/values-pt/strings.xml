@@ -731,6 +731,8 @@
     <string name="user_name_hint">Nome</string>
     <string name="user_switched">Perfil: %1$s</string>
     <string name="trakt_connect">Conectar o Trakt</string>
+    <string name="trakt_skip">Pular</string>
+    <string name="trakt_reconnect_intro">No backup, %1$s estava conectado ao Trakt (%2$s). Leia o código com o celular para conectar de novo: um backup nunca leva as chaves do Trakt.</string>
     <string name="trakt_not_connected">Não conectado</string>
     <string name="trakt_sign_in_intro">Escaneie o código com o celular. Entre no Trakt e autorize o Zephyr TV. O dispositivo se conecta sozinho.</string>
     <string name="trakt_waiting">Aguardando o Trakt…</string>

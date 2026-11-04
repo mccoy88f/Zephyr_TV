@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- A backup tells which users had a Trakt account, but never its keys. After a restore, each of them signs in to Trakt again with a code, as the PIN is chosen again. Select **Skip** to do it later.
+
 ## 4.0.0-beta.19
 
 - Back from **Users → Settings** goes to the users menu, not to the old list of users.

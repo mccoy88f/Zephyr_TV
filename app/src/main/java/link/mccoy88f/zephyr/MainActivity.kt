@@ -258,7 +258,8 @@ class MainActivity : Activity() {
         if (prefs.contains(K.REOPEN_ROW)) {
             val row = prefs.getInt(K.REOPEN_ROW, THEME_ROW)
             prefs.edit().remove(K.REOPEN_ROW).apply()
-            ui.post { openLauncherSettings(row) }
+            // Back from a restore: the users that had Trakt sign in again first (see reconnectTrakt), then the row.
+            ui.post { if (prefs.contains(K.TRAKT_PENDING)) reconnectTrakt { openLauncherSettings(row) } else openLauncherSettings(row) }
         } else if (takeFromPiume()) {
             // Piume's settings and history first (the screen is built again with them); the Home setup after.
         } else if (!homeServiceOn() && !prefs.getBoolean(K.SETUP_SHOWN, false)) {

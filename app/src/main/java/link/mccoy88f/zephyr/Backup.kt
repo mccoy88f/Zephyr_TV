@@ -17,7 +17,8 @@ import org.json.JSONObject
  * Not in it: passing state (the last weather reading, update checks); the PIN, never ("pin" only says that the TV
  * had one: a restore then asks for a new PIN, see needsPin); remote access and WARP (their address, token and
  * account belong to one TV); photos used as wallpapers. The locks' switches are in it, so they come back on. With each user's data too ("data": what they watched, where they
- * got to), not their Trakt account (its keys: they sign in again from a phone).
+ * got to), not their Trakt account: only who had one, and its name (its keys never: each is asked to sign in again after
+ * a restore, as the PIN is chosen again).
  */
 internal object Backup {
     private const val FORMAT = 1
@@ -63,6 +64,24 @@ internal object Backup {
             for (name in USER_FILES) File(userDir(files, u), name).takeIf { it.isFile }?.let { mine.put(name, it.readText()) }
             if (mine.length() > 0) out.put(u, mine)
         }
+        return out
+    }
+
+    /**
+     * Which of [users] had a Trakt account, and its name: {user: Trakt name}. Never its keys (they'd give the account
+     * to whoever has the file, and two TVs with the same ones sign each other out): a restore asks each to sign in
+     * again (see restore, and MainActivity.reconnectTrakt), as it asks for a new PIN.
+     */
+    internal fun exportTrakt(files: File, users: List<String>): JSONObject {
+        val out = JSONObject()
+        for (u in users) Trakt.account(userDir(files, u))?.let { out.put(u, it.user) }
+        return out
+    }
+
+    /** Of [trakt] (see exportTrakt), the users without a Trakt account on this TV under [files]: those to sign in again. */
+    internal fun traktToConnect(files: File, trakt: JSONObject): JSONObject {
+        val out = JSONObject()
+        for (u in trakt.keys()) if (Trakt.account(userDir(files, u)) == null) out.put(u, trakt.optString(u))
         return out
     }
 
@@ -189,6 +208,7 @@ internal object Backup {
         }
         val root = JSONObject().put("app", "zephyr").put("format", FORMAT).put("prefs", values).put("pin", prefs.contains(K.PIN))
         if (files != null) root.put("data", exportData(files, users)).put("extras", exportExtras(files, withSource(prefs)))
+            .put("trakt", exportTrakt(files, users))
         return root.toString(2)
     }
 
@@ -244,6 +264,9 @@ internal object Backup {
             }
             n++
         }
+        // The users that had Trakt on the TV that made it, and don't here: asked to sign in again once it's back.
+        val trakt = if (files != null) root.optJSONObject("trakt")?.let { traktToConnect(files, it) } else null
+        if (trakt != null && trakt.length() > 0) edit.putString(K.TRAKT_PENDING, trakt.toString()) else edit.remove(K.TRAKT_PENDING)
         edit.apply()
         if (files != null) {
             root.optJSONObject("data")?.let { restoreData(files, it) }

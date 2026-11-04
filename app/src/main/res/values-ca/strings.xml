@@ -731,6 +731,8 @@
     <string name="user_name_hint">Nom</string>
     <string name="user_switched">Perfil: %1$s</string>
     <string name="trakt_connect">Connecta Trakt</string>
+    <string name="trakt_skip">Omet</string>
+    <string name="trakt_reconnect_intro">A la còpia, %1$s estava connectat a Trakt (%2$s). Escaneja el codi amb el telèfon per tornar-lo a connectar: una còpia mai no porta les claus de Trakt.</string>
     <string name="trakt_not_connected">No connectat</string>
     <string name="trakt_sign_in_intro">Escaneja el codi amb el mòbil. Inicia la sessió a Trakt i permet Zephyr TV. El dispositiu es connecta sol.</string>
     <string name="trakt_waiting">Esperant Trakt…</string>

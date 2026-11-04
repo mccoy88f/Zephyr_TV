@@ -432,13 +432,15 @@ private fun MainActivity.userName(u: User?) {
  * Connect [u] to Trakt from a phone: a QR code of the sign-in (Trakt's own page, through mccoy88f.link), and the TV
  * asking every few seconds whether it's done, while the page is open (ten minutes at most).
  */
-private fun MainActivity.traktSignIn(u: User) {
+private fun MainActivity.traktSignIn(u: User, intro: String? = null, then: (() -> Unit)? = null) {
     val state = Trakt.newState()
     val url = Trakt.signInUrl(state)
     val status = label(getString(R.string.trakt_waiting), 14f)
-    val box = qrBox(url, null, getString(R.string.trakt_sign_in_intro), status)
+    val box = qrBox(url, null, intro ?: getString(R.string.trakt_sign_in_intro), status)
     val title = getString(R.string.trakt_connect) + " · " + u.name
-    showPage(title, listOf(page(getString(R.string.dialog_cancel)) { userPage(u) }), top = box, back = { userPage(u) })
+    // After a restore ([then]): Skip goes on to the next user; else Cancel, back to the user's page.
+    val leave = then ?: { userPage(u) }
+    showPage(title, listOf(page(getString(if (then != null) R.string.trakt_skip else R.string.dialog_cancel)) { leave() }), top = box, back = leave)
     val until = System.currentTimeMillis() + 10 * 60_000L
     val dir = vodDir(u.id)
     fun ask() {
@@ -450,7 +452,7 @@ private fun MainActivity.traktSignIn(u: User) {
                 when (sign) {
                     Trakt.SignIn.DONE -> {
                         Toast.makeText(this, getString(R.string.trakt_connected, Trakt.account(dir)?.user.orEmpty()), Toast.LENGTH_LONG).show()
-                        if (pageShowing(title)) userPage(u)
+                        if (pageShowing(title)) { if (then != null) then() else userPage(u) }
                         syncTrakt(u.id, tell = true)
                     }
                     Trakt.SignIn.REFUSED -> status.text = getString(R.string.trakt_refused)
@@ -461,6 +463,25 @@ private fun MainActivity.traktSignIn(u: User) {
         }
     }
     ui.postDelayed({ ask() }, 5000)
+}
+
+/**
+ * After a restore: each user that had Trakt on the TV the backup came from (and hasn't here) asked to sign in again,
+ * one after another (Skip goes on), as a restore asks for a new PIN; the keys never travel in a backup (see
+ * Backup.exportTrakt). [done] once none is left.
+ */
+internal fun MainActivity.reconnectTrakt(done: () -> Unit) {
+    val pending = runCatching { org.json.JSONObject(prefs.getString(K.TRAKT_PENDING, null) ?: "{}") }.getOrDefault(org.json.JSONObject())
+    val u = users().firstOrNull { pending.has(it.id) && Trakt.account(vodDir(it.id)) == null }
+    if (u == null) {
+        prefs.edit().remove(K.TRAKT_PENDING).apply()
+        return done()
+    }
+    val name = pending.optString(u.id)
+    pending.remove(u.id)
+    prefs.edit().putString(K.TRAKT_PENDING, pending.toString()).apply()
+    if (settingsScrim.visibility != android.view.View.VISIBLE) showPanel()
+    traktSignIn(u, getString(R.string.trakt_reconnect_intro, u.name, name.ifEmpty { "Trakt" })) { reconnectTrakt(done) }
 }
 
 private val syncing = java.util.Collections.synchronizedSet(HashSet<String>())
