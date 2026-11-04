@@ -233,6 +233,11 @@ internal class Scene(private val host: MainActivity) {
     private var moveStart = 0L
     private var frame = 0
 
+    /** The rows' veil (see RowsVeil): drawn from this photo, so redrawn as it drifts. */
+    var veil: View? = null
+    private val veilPaint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)
+    private val veilMask = Paint(Paint.ANTI_ALIAS_FLAG).apply { xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.DST_IN) }
+
     private val paint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG)
     private val shade = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     private val m = Matrix()
@@ -265,6 +270,7 @@ internal class Scene(private val host: MainActivity) {
             if (!fading && previous != null) dropPrevious()
             frame++
             plate.invalidateSelf()
+            if (host.spotlightFolded) veil?.invalidate()
             if (host.glass && (!fading || frame % 3 == 0)) invalidatePanes(host.findViewById(R.id.root))
             if (current != null && host.sceneAlive) host.ui.postDelayed(this, if (fading) 33L else DRIFT_MS)
         }
@@ -342,6 +348,28 @@ internal class Scene(private val host: MainActivity) {
         } else {
             blit(canvas, r, radius, sharp, blur, ox, oy, wp.width, wp.height, now, 255, true)
         }
+        return true
+    }
+
+    /**
+     * The blurred photo, placed and drifting as the sharp one behind it ([w] by [h], the screen), from [top] down: it
+     * fades in over [fade] pixels, so the photo stays sharp above and turns soft under. False with nothing to draw.
+     */
+    fun drawVeil(canvas: Canvas, w: Int, h: Int, top: Float, fade: Float): Boolean {
+        val sharp = current ?: return false
+        val blur = currentBlur ?: return false
+        if (sharp.isRecycled || blur.isRecycled || w == 0 || h == 0) return false
+        val layer = canvas.saveLayer(0f, top, w.toFloat(), h.toFloat(), null)
+        place(sharp, w, h, android.os.SystemClock.uptimeMillis())
+        blurM.set(m)
+        blurM.preScale(sharp.width / blur.width.toFloat(), sharp.height / blur.height.toFloat())
+        val shader = shaderFor(blur, true)
+        shader.setLocalMatrix(blurM)
+        veilPaint.shader = shader
+        canvas.drawRect(0f, top, w.toFloat(), h.toFloat(), veilPaint)
+        veilMask.shader = LinearGradient(0f, top, 0f, top + fade, 0x00000000, Color.BLACK, Shader.TileMode.CLAMP)
+        canvas.drawRect(0f, top, w.toFloat(), h.toFloat(), veilMask)
+        canvas.restoreToCount(layer)
         return true
     }
 

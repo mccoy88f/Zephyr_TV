@@ -54,7 +54,7 @@ Entrambe le scelte si cambiano in seguito: il catalogo in **Impostazioni → Con
 Dall'alto in basso:
 
 - **Barra in alto**: orologio e meteo, rete, **Utenti**, **Cerca**, **Sorgenti TV** e **Impostazioni**. Un pallino rosso sulla rete indica che manca internet; uno sulle impostazioni, che c'è un aggiornamento.
-- **In evidenza** (facoltativo): un film o una serie in grande, che cambia ogni pochi secondi.
+- **In evidenza** (facoltativo): un film o una serie in grande, che cambia ogni pochi secondi. Quando scendi sotto la riga delle app si chiude, si ferma sul titolo che mostra e lo sfondo sotto le app si sfuma e si scurisce (o si schiarisce, nel tema chiaro), così le card si leggono meglio. Torna su e riparte da quel titolo.
 - **Preferiti**: la riga delle tue app, con le app virtuali di Zephyr TV (TV, Film, Serie TV…).
 - **Sezioni**: sotto i Preferiti, le righe dell'app che ha il focus. Per esempio Continua la riproduzione, le sezioni di YouTube, i canali TV, le righe di film e serie.
 

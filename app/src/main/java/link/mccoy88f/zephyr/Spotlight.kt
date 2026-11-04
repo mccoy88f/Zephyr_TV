@@ -2,6 +2,8 @@ package link.mccoy88f.zephyr
 
 import android.animation.ValueAnimator
 import android.graphics.Canvas
+import android.graphics.LinearGradient
+import android.graphics.Shader
 import android.graphics.ColorFilter
 import android.graphics.Paint
 import android.graphics.PixelFormat
@@ -49,9 +51,110 @@ internal fun MainActivity.setupSpotlight() {
     // The title has no card to light up like the tiles: a soft panel round its text says it has focus.
     spotlightInfoBox.background = TextHalo(spotlightInfoBox as ViewGroup, dp(14).toFloat(), (fg and 0xFFFFFF) or 0x2E000000).apply { alpha = 0 }
 
+    // Under the apps, behind the rows: the backdrop softened while Spotlight is folded away (see RowsVeil).
+    rowsVeil = RowsVeil(this)
+    (findViewById<ViewGroup>(R.id.root)).addView(rowsVeil, 1, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+    scene.veil = rowsVeil
+
     window.decorView.viewTreeObserver.addOnGlobalFocusChangeListener { _, newFocus ->
         updateSpotlightFocusState(newFocus)
+        foldSpotlight(newFocus)
         keepInView(newFocus)
+    }
+}
+
+/**
+ * Focus down in the rows under the apps: Spotlight folds away (the apps go up), its carousel stops on the title it
+ * shows, and the backdrop softens under the apps (see RowsVeil). Back on the apps or above: it opens again on the same
+ * title, which gets its full time again. Not on a phone or tablet, nor without Spotlight.
+ */
+internal fun MainActivity.foldSpotlight(v: View?) {
+    val content = findViewById<View>(R.id.content)
+    if (v == null || !isDescendantOf(v, content)) return // the panel, a menu: as it is
+    val below = isDescendantOf(v, bottomSection) && !isDescendantOf(v, findViewById(R.id.appScroll))
+    val fold = below && spotlightContainer.visibility == View.VISIBLE && !handheld()
+    if (fold == spotlightFolded) return
+    spotlightFolded = fold
+    foldAnimation(fold)
+    if (!fold) restartSpotlightTick()
+}
+
+/** Spotlight's height and margins down to nothing ([fold]), or back to its own; the veil fading in or out with it. */
+private fun MainActivity.foldAnimation(fold: Boolean) {
+    val c = spotlightContainer
+    (c.getTag(R.id.spotlightContainer) as? ValueAnimator)?.cancel()
+    val lp = c.layoutParams as ViewGroup.MarginLayoutParams
+    val parent = c.parent as View
+    val from = c.height
+    val to = if (fold) 0 else {
+        c.measure(View.MeasureSpec.makeMeasureSpec(parent.width - parent.paddingLeft - parent.paddingRight, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+        c.measuredHeight
+    }
+    val start = rowsVeil.folded
+    val anim = ValueAnimator.ofFloat(0f, 1f).setDuration(FOLD_MS)
+    anim.interpolator = DECELERATE
+    anim.addUpdateListener { a ->
+        val t = a.animatedValue as Float
+        val f = if (fold) start + (1f - start) * t else start * (1f - t) // how folded: 0 open, 1 away
+        lp.height = from + ((to - from) * t).toInt()
+        lp.topMargin = (dp(36) * (1f - f)).toInt()
+        lp.bottomMargin = (dp(12) * (1f - f)).toInt()
+        c.layoutParams = lp
+        c.alpha = 1f - f
+        rowsVeil.folded = f
+    }
+    anim.addListener(object : android.animation.AnimatorListenerAdapter() {
+        var cancelled = false
+        override fun onAnimationCancel(animation: android.animation.Animator) { cancelled = true }
+        override fun onAnimationEnd(animation: android.animation.Animator) {
+            if (cancelled) return
+            if (!fold) {
+                lp.height = ViewGroup.LayoutParams.WRAP_CONTENT
+                c.layoutParams = lp
+            }
+            keepInView(currentFocus) // the page where it should be, now the apps have moved
+        }
+    })
+    c.setTag(R.id.spotlightContainer, anim)
+    anim.start()
+}
+
+private const val FOLD_MS = 260L
+
+/**
+ * Behind the rows under the apps, while Spotlight is folded away ([folded], 0 to 1): the backdrop blurred from a little
+ * under the apps down, fading in, with a veil of the theme's colour over it, so the cards read on any photo.
+ * Spotlight's photo stays still meanwhile (its carousel stops), and drifts as the sharp one does.
+ */
+internal class RowsVeil(private val host: MainActivity) : View(host) {
+    var folded = 0f
+        set(value) {
+            field = value
+            invalidate()
+        }
+    private val tint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    override fun onDraw(canvas: Canvas) {
+        if (folded <= 0f || width == 0 || height == 0) return
+        val apps = host.findViewById<View>(R.id.appScroll)
+        val at = IntArray(2).also { apps.getLocationInWindow(it) }
+        val me = IntArray(2).also { getLocationInWindow(it) }
+        // A little under the apps (their names show under the focused one), then soft over FADE.
+        val top = (at[1] - me[1] + apps.height - apps.paddingBottom + host.dp(20)).toFloat()
+        val fade = host.dp(90).toFloat()
+        val w = width.toFloat()
+        val h = height.toFloat()
+        val layer = canvas.saveLayerAlpha(0f, top, w, h, (folded * 255).toInt())
+        host.scene.drawVeil(canvas, width, height, top, fade)
+        val colour = when {
+            host.glass -> 0x8C101216.toInt()
+            host.dark -> 0x99000000.toInt()
+            else -> (host.ground and 0xFFFFFF) or 0xB3000000.toInt()
+        }
+        tint.shader = LinearGradient(0f, top, 0f, top + fade, colour and 0xFFFFFF, colour, Shader.TileMode.CLAMP)
+        canvas.drawRect(0f, top, w, h, tint)
+        canvas.restoreToCount(layer)
     }
 }
 
@@ -73,7 +176,9 @@ internal fun MainActivity.keepInView(v: View?) {
             val bottom = at[1] - content.translationY - bottomSection.translationY + target.height + under
             shift = (bottom - (findViewById<View>(R.id.root).height - dp(16))).coerceAtLeast(0f)
         }
-        if (shift != -content.translationY) content.animate().translationY(-shift).setDuration(200).setInterpolator(DECELERATE).start()
+        // The veil under the apps follows them (see RowsVeil).
+        if (shift != -content.translationY) content.animate().translationY(-shift).setDuration(200).setInterpolator(DECELERATE)
+            .setUpdateListener { rowsVeil.invalidate() }.start()
     }
 }
 

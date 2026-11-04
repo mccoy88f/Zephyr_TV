@@ -54,7 +54,7 @@ You can change both later: the catalog in **Settings → Content → Content cat
 From top to bottom:
 
 - **Top bar**: clock and weather, network, **Users**, **Search**, **TV inputs** and **Settings**. A red dot on the network means no internet; one on Settings means an update is ready.
-- **Spotlight** (optional): a large film or series that changes every few seconds.
+- **Spotlight** (optional): a large film or series that changes every few seconds. When you go down past the apps row it folds away, stops on the title it shows, and the background under the apps turns soft and darker (lighter in the Light theme), so the cards read better. Go back up and it goes on from that title.
 - **Favourites**: the row of your apps, with Zephyr TV's virtual apps (TV, Films, TV Series…).
 - **Sections**: under Favourites, the rows of the app in focus. For example Continue Playing, YouTube's sections, the TV channels, the rows of films and series.
 

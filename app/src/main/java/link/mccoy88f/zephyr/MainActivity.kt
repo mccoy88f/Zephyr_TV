@@ -114,6 +114,8 @@ class MainActivity : Activity() {
     internal var watchKey: String? = null
     internal var lastTop: View? = null // last focused view in each home row, so Up/Down return to it
     internal var lastApp: View? = null
+    internal var spotlightFolded = false // focus in the rows under the apps: Spotlight folded away, its carousel still (see foldSpotlight)
+    internal lateinit var rowsVeil: RowsVeil
     internal var lastCard: View? = null
     internal var editing = false
     internal var grabbed: View? = null
@@ -643,7 +645,7 @@ class MainActivity : Activity() {
                 spotlightIdle = true
                 return
             }
-            val busy = isNight() || isDescendantOf(currentFocus, spotlightContainer) || settingsScrim.visibility == View.VISIBLE ||
+            val busy = isNight() || spotlightFolded || isDescendantOf(currentFocus, spotlightContainer) || settingsScrim.visibility == View.VISIBLE ||
                 allApps.visibility == View.VISIBLE || editing || !hasWindowFocus()
             if (busy) restartSpotlightTick() else cycleSpotlight(1)
         }
