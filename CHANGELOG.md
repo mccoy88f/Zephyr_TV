@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- The Zephyr TV icon has transparent corners. Before, they were white on dark or coloured backgrounds.
+
 ## 4.0.0-beta.20
 
 - **Share** on a title's page sends its poster with the link. The chat shows the poster.
