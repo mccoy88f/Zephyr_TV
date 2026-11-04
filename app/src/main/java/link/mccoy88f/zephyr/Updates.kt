@@ -91,21 +91,70 @@ internal fun MainActivity.showUpdates() {
     val rows = listOf(topRow, betaRow)
     showPage(getString(R.string.whats_new_title, myVersion()), rows, back = { renderSettings(UPDATE_ROW) })
     // Focusable, lit on focus, so Down walks through notes longer than the panel and it scrolls along.
-    getString(R.string.whats_new).split('\n').forEach {
-        settingsList.addView(label("", 13f).apply {
-            text = SpannableString(it).apply { setSpan(BulletSpan(dp(10), fg), 0, it.length, 0) }
-            maxLines = Int.MAX_VALUE
-            ellipsize = null
-            alpha = 0.7f
-            isFocusable = true
-            setOnFocusChangeListener { v, focused -> v.alpha = if (focused) 1f else 0.7f }
-            setPadding(dp(14), dp(10), dp(14), dp(2))
-        })
+    fun note(line: String) = settingsList.addView(label("", 13f).apply {
+        text = SpannableString(line).apply { setSpan(BulletSpan(dp(10), fg), 0, line.length, 0) }
+        maxLines = Int.MAX_VALUE
+        ellipsize = null
+        alpha = 0.7f
+        isFocusable = true
+        setOnFocusChangeListener { v, focused -> v.alpha = if (focused) 1f else 0.7f }
+        setPadding(dp(14), dp(10), dp(14), dp(2))
+    })
+    fun heading(text: String) = settingsList.addView(label(text, 14f).apply {
+        typeface = android.graphics.Typeface.DEFAULT_BOLD
+        setPadding(dp(14), dp(18), dp(14), dp(2))
+    })
+    // A newer version found: what's new in it (and in those between), under Install, before this version's notes.
+    if (ver != null) {
+        val found = upcoming?.takeIf { it.first == ver }
+        if (found == null) {
+            heading(getString(R.string.updates_notes_loading))
+            askUpcoming(ver)
+        } else found.second.forEach { (v, notes) ->
+            heading(getString(R.string.updates_version, v))
+            notes.forEach { note(it) }
+        }
+        heading(getString(R.string.updates_installed, myVersion()))
     }
+    getString(R.string.whats_new).split('\n').forEach { note(it) }
     // showPage stops Down at its last row (Receive betas): from there it goes on to the notes.
     settingsList.getChildAt(rows.size - 1).nextFocusDownId = View.NO_ID
     settingsList.getChildAt(settingsList.childCount - 1).let { it.id = View.generateViewId(); it.nextFocusDownId = it.id }
 }
+
+/** The versions after this one up to an update found ([first]): each with its notes, newest first (see askUpcoming). */
+@Volatile private var upcoming: Pair<String, List<Pair<String, List<String>>>>? = null
+@Volatile private var askingUpcoming: String? = null
+
+/**
+ * What's new in the versions after this one, up to [ver], from GitHub's releases (each one's notes are its CHANGELOG
+ * section); the Updates page again once they're in, if it's still up. Once for each version found.
+ */
+private fun MainActivity.askUpcoming(ver: String) {
+    if (askingUpcoming == ver) return
+    askingUpcoming = ver
+    val mine = myVersion()
+    netIo.execute {
+        val got = runCatching {
+            val a = org.json.JSONArray(Http.text("https://api.github.com/repos/$REPO/releases?per_page=30", mapOf("Accept" to "application/json")))
+            upcomingNotes((0 until a.length()).map { a.getJSONObject(it) }.filter { !it.optBoolean("draft") }
+                .map { it.optString("tag_name").removePrefix("v") to it.optString("body") }, mine, ver)
+        }.onFailure { warn("release notes failed ($it)") }.getOrDefault(emptyList())
+        ui.post {
+            upcoming = ver to got
+            if (isShowingUpdates()) showUpdates()
+        }
+    }
+}
+
+/**
+ * Of [releases] (version and notes, as GitHub has them), those after [mine] up to [ver], newest first, each with its
+ * notes: the body's "- " lines, without their ** marks (as Zephyr TV shows its own).
+ */
+internal fun upcomingNotes(releases: List<Pair<String, String>>, mine: String, ver: String): List<Pair<String, List<String>>> =
+    releases.filter { (v, _) -> newerVersion(v, mine) && !newerVersion(v, ver) }
+        .sortedWith { x, y -> if (newerVersion(x.first, y.first)) -1 else if (newerVersion(y.first, x.first)) 1 else 0 }
+        .map { (v, body) -> v to body.replace("\r", "").lines().filter { it.startsWith("- ") }.map { it.removePrefix("- ").replace("**", "").trim() } }
 
 /** Notes the user hasn't opened since updating. A fresh install has nothing new to tell. */
 internal fun MainActivity.notesUnseen(): Boolean {

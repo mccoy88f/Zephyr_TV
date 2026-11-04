@@ -302,6 +302,9 @@
     <string name="setup_close">बंद करें</string>
     <string name="setup_done">हो गया</string>
     <string name="whats_new_title">%1$s में नया क्या है</string>
+    <string name="updates_notes_loading">नया क्या है, लोड हो रहा है…</string>
+    <string name="updates_version">संस्करण %1$s</string>
+    <string name="updates_installed">संस्करण %1$s · इंस्टॉल है</string>
     <string name="check_updates">अपडेट देखें</string>
     <string name="install_update">%1$s इंस्टॉल करें</string>
     <string name="setting_updates_beta">बीटा पाएँ</string>

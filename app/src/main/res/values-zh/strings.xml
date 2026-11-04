@@ -302,6 +302,9 @@
     <string name="setup_close">关闭</string>
     <string name="setup_done">完成</string>
     <string name="whats_new_title">%1$s 的新功能</string>
+    <string name="updates_notes_loading">正在加载更新内容…</string>
+    <string name="updates_version">版本 %1$s</string>
+    <string name="updates_installed">版本 %1$s · 已安装</string>
     <string name="check_updates">检查更新</string>
     <string name="install_update">安装 %1$s</string>
     <string name="setting_updates_beta">接收测试版</string>

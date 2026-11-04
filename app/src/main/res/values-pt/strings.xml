@@ -302,6 +302,9 @@
     <string name="setup_close">Fechar</string>
     <string name="setup_done">Concluído</string>
     <string name="whats_new_title">Novidades do %1$s</string>
+    <string name="updates_notes_loading">Carregando as novidades…</string>
+    <string name="updates_version">Versão %1$s</string>
+    <string name="updates_installed">Versão %1$s · instalada</string>
     <string name="check_updates">Verificar atualizações</string>
     <string name="install_update">Instalar %1$s</string>
     <string name="setting_updates_beta">Receber betas</string>
