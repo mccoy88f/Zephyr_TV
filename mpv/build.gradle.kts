@@ -42,6 +42,11 @@ android {
         }
     }
 
+    lint {
+        // On purpose: no launcher entry, on a TV or elsewhere. Zephyr TV opens it, with a stream to play.
+        disable += "MissingLeanbackLauncher"
+    }
+
     packaging {
         // libmpv's libraries as they are: extracted, as its loader expects.
         jniLibs { useLegacyPackaging = true }
