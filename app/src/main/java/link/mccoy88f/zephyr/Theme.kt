@@ -1,5 +1,6 @@
 package link.mccoy88f.zephyr
 
+import android.content.SharedPreferences
 import java.util.Calendar
 import android.graphics.Color
 import android.provider.MediaStore
