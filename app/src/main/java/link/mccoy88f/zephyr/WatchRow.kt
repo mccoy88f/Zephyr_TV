@@ -1131,3 +1131,16 @@ internal fun MainActivity.decode(uri: String, alpha: Boolean = false): Bitmap? {
     }
     return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
 }
+
+/** Newest first across apps (ties keep their order), at most [perApp] per app: one app's ten shows can't bury the rest. */
+internal fun <T> newestPerApp(items: List<Pair<Long, T>>, perApp: Int, app: (T) -> String?): List<T> {
+    val shown = HashMap<String?, Int>()
+    return items.sortedByDescending { it.first }.map { it.second }.filter { shown.merge(app(it), 1, Int::plus)!! <= perApp }
+}
+
+/** "5", "5-1", "5.1", "101" as numbers to sort by (5-1 right after 5); no number sorts last. */
+internal fun channelKey(number: String?): Double {
+    val parts = number?.split('-', '.', ' ')?.mapNotNull { it.toIntOrNull() } ?: return Double.MAX_VALUE
+    val major = parts.firstOrNull() ?: return Double.MAX_VALUE
+    return major + (parts.getOrNull(1) ?: 0) / 1000.0
+}

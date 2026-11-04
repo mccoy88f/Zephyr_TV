@@ -1,5 +1,8 @@
 package link.mccoy88f.zephyr
 
+import android.widget.ImageView
+import link.mccoy88f.zephyr.MainActivity.Companion.HDMI
+import link.mccoy88f.zephyr.MainActivity.Companion.SONY_INPUTS
 import android.content.Intent
 import android.media.tv.TvContract
 import android.media.tv.TvInputInfo
@@ -98,4 +101,44 @@ internal fun MainActivity.applyInputsMode() {
     showInputsButton()
     updateInputsDot()
     refreshApps()
+}
+
+/**
+ * The external inputs (HDMI, AV) with a device connected, by input id. Sony TVs keep the real state in their
+ * external inputs app's own table, readable by any app; Android's own input state there says "connected" for
+ * every HDMI input. Elsewhere, Android's state (connected, not standby or disconnected).
+ */
+internal fun MainActivity.connectedInputs(): Set<String> {
+    val sony = runCatching {
+        contentResolver.query(SONY_INPUTS,
+            arrayOf("input_id", "connect_state"), null, null, null)?.use { c ->
+            val out = HashSet<String>()
+            while (c.moveToNext()) if (c.getInt(1) == 1) c.getString(0)?.let { out += it }
+            out
+        }
+    }.getOrNull()
+    if (sony != null) return sony
+
+    val tm = getSystemService(TvInputManager::class.java) ?: return emptySet()
+    return runCatching {
+        val cec = tm.tvInputList.filter { it.parentId != null }.mapNotNull { it.parentId }.toSet()
+        val hdmi = tm.tvInputList.filter { it.type == TvInputInfo.TYPE_HDMI || it.isPassthroughInput }
+        val connected = hdmi.filter { tm.getInputState(it.id) == TvInputManager.INPUT_STATE_CONNECTED }.map { it.id }.toSet()
+        if (hdmi.isNotEmpty() && connected.size == hdmi.size && cec.isNotEmpty()) cec else cec + connected
+    }.getOrDefault(emptySet())
+}
+
+/** A green dot on the TV inputs button while at least one external input has an active device (see hdmiInputs). */
+internal fun MainActivity.updateInputsDot() {
+    val icon = findViewById<ImageView>(R.id.tvInputsButton) ?: return
+    val on = hdmiInputs().any { !it.offline }
+    icon.overlay.remove(inputsDot)
+    if (!on) return
+    if (icon.width == 0) {
+        icon.post { updateInputsDot() }
+        return
+    }
+    val size = dp(9)
+    inputsDot.setBounds(icon.width - size - dp(3), dp(3), icon.width - dp(3), dp(3) + size)
+    icon.overlay.add(inputsDot)
 }

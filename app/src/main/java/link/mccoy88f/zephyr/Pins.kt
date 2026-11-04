@@ -1,5 +1,7 @@
 package link.mccoy88f.zephyr
 
+import java.security.MessageDigest
+import java.security.SecureRandom
 import android.content.Context
 import android.widget.Toast
 
@@ -127,3 +129,9 @@ internal fun MainActivity.changePin(back: () -> Unit) {
         }
     }
 }
+
+/** The PIN, stored as "salt:sha256". Keeps it out of plain sight in a prefs backup; not real security. */
+internal fun hashPin(pin: String, salt: String = ByteArray(8).also { SecureRandom().nextBytes(it) }.joinToString("") { "%02x".format(it) }) =
+    salt + ":" + MessageDigest.getInstance("SHA-256").digest((salt + pin).toByteArray()).joinToString("") { "%02x".format(it) }
+
+internal fun pinMatches(stored: String, pin: String) = hashPin(pin, stored.substringBefore(':')) == stored
