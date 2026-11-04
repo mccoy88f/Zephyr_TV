@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.0.0-beta.17
 
 - When an update is found, **Settings → System → Updates** shows what's new in it, under **Install**.
 - In the Glass theme, the icon of the first settings row can be read as soon as Settings opens.
