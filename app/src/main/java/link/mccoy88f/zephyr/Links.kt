@@ -168,8 +168,11 @@ internal fun MainActivity.shareTitle(type: String, id: String, name: String, sea
     fun send(picture: Uri?) {
         val send = Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_TEXT, text).putExtra(Intent.EXTRA_SUBJECT, what)
         if (picture == null) send.type = "text/plain"
-        else send.setType("image/jpeg").putExtra(Intent.EXTRA_STREAM, picture)
-            .setClipData(android.content.ClipData.newRawUri(what, picture)).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        else {
+            send.setType("image/jpeg").putExtra(Intent.EXTRA_STREAM, picture)
+            send.clipData = android.content.ClipData.newRawUri(what, picture) // the permission goes with the clip
+            send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
         runCatching { startActivity(Intent.createChooser(send, getString(R.string.share))) }
     }
     // A chat shows a link's preview only from what its server says, and the page shared (one for every title, the
