@@ -171,7 +171,7 @@ internal fun MainActivity.addonsUnder(pkg: String): List<String> {
     return when {
         pkg == IPTV_PKG -> if (mode == TvPlace.IPTV) urls else emptyList()
         pkg.startsWith(STREMIO) -> if (mode == TvPlace.APPS) urls.filter { Stremio.saved(filesDir, it)?.addon?.let { a -> STREMIO + a.id } == pkg } else emptyList()
-        mode == TvPlace.TV && isTvApp(pkg) -> urls
+        mode == TvPlace.TV && pkg == tvApp() -> urls
         else -> emptyList()
     }
 }
@@ -376,7 +376,7 @@ internal fun MainActivity.addonTile(c: AddonChannel): MainActivity.App? {
     val pkg = when (addonsTv()) {
         TvPlace.APPS -> Stremio.saved(filesDir, c.addon)?.addon?.let { STREMIO + it.id }
         TvPlace.IPTV -> IPTV_PKG
-        TvPlace.TV -> return apps.firstOrNull { !it.pkg.startsWith(STREMIO) && isTvApp(it.pkg) }
+        TvPlace.TV -> tvApp()
     }
     return apps.firstOrNull { it.pkg == pkg }
 }

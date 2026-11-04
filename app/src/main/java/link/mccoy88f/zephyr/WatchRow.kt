@@ -198,7 +198,7 @@ internal fun MainActivity.queryAppChannels(pkg: String?) {
         // The TV app shows its channel list, a section per tuner (none, on a TV without one), then the add-ons'
         // channels if they show there; an add-on's tile, its channels; any other app, a section per row it
         // publishes for the home screen. Each can be turned off (see pickSections).
-        val tv = !pkg.startsWith(STREMIO) && isTvApp(pkg)
+        val tv = pkg == tvApp() // the TV app: found by itself, or the one picked (see TvApp)
         val own = when {
             pkg.startsWith(STREMIO) || !readsListings() -> emptyList()
             tv -> tunerSections(pkg, hidden)
@@ -338,17 +338,6 @@ internal fun channelOf(p: Prog): Long? =
         ?.lastPathSegment?.toLongOrNull()
 
 /**
- * The TV app: the one Android opens a channel link (content://android.media.tv/channel/<id>) with. Found the
- * same way on any TV, whatever it's called (Sony's com.sony.dtv.tvx, Google's Live Channels, ...).
- */
-internal fun MainActivity.isTvApp(pkg: String): Boolean {
-    val uri = TvContract.buildChannelUri(1)
-    return listOf(Intent(Intent.ACTION_VIEW, uri), Intent(Intent.ACTION_VIEW).setType(TvContract.Channels.CONTENT_ITEM_TYPE)).any { intent ->
-        packageManager.queryIntentActivities(intent, 0).any { it.activityInfo.packageName == pkg }
-    }
-}
-
-/**
  * The TV app's sections: the TV's own channel list, a section per tuner (aerial, satellite...), each in number
  * order from the first. Not the cards the app publishes, which are only the handful of channels it picked
  * (Sony's: about 20, often without 1-3) and look different on every TV; these all share one design (see
@@ -387,8 +376,8 @@ internal fun MainActivity.tunerSections(pkg: String, hidden: Set<String>): List<
         return Prog(ch.name, num.orEmpty(), 0, null,
             Intent(Intent.ACTION_VIEW, TvContract.buildChannelUri(ch.id)).toUri(Intent.URI_INTENT_SCHEME), pkg, badge = num, channelId = ch.id)
     }
-    // Philips: one row in the user's order when they set one (see ChannelOrder).
-    if (isPhilipsTv() && channelOrderIds().isNotEmpty()) {
+    // One row in the user's order when they set one (see ChannelOrder).
+    if (channelOrderIds().isNotEmpty()) {
         val visible = orderedTunerChannels(all).filter { hideKey(pkg, it.name) !in hidden }
         if (visible.isNotEmpty()) {
             val name = getString(R.string.section_channels)
@@ -1048,6 +1037,8 @@ internal fun MainActivity.programIntent(p: Prog): Intent? {
     val target = intent.component?.packageName ?: intent.`package`
     if (target == packageName || (p.pkg != null && target != null && target != p.pkg)) return null
     intent.selector = null
+    // A TV channel opens in the TV app when it can (see channelOpener), not in whichever app Android asks about.
+    if (target == null && channelOf(p) != null) channelOpener()?.let { intent.setPackage(it) }
     intent.flags = intent.flags and (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
         Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or Intent.FLAG_GRANT_PREFIX_URI_PERMISSION).inv()
     return intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

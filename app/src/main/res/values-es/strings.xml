@@ -61,6 +61,11 @@
     <string name="toast_channel_logos_failed">No se han podido descargar los logos de los canales. Inténtalo más tarde.</string>
     <string name="setting_epg">Guía de TV (XMLTV)</string>
     <string name="setting_play_channels">Reproducir los canales de TV al abrirlos</string>
+    <string name="setting_tv_app">App de TV</string>
+    <string name="tv_app_auto">Automática (%1$s)</string>
+    <string name="tv_app_none">ninguna</string>
+    <string name="tv_app_other">Otra app…</string>
+    <string name="tv_app_rows_only">Solo las filas</string>
     <string name="setting_channel_numbers">Mostrar los números de canal</string>
     <string name="setting_channel_order">Reordenar canales…</string>
     <string name="channel_order_default">Orden de la TV</string>

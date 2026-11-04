@@ -175,6 +175,7 @@ class MainActivity : Activity() {
     internal val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(c: Context, i: Intent) {
             appsDirty = true
+            forgetChannelApps() // a TV app may have come or gone (see TvApp)
             i.data?.schemeSpecificPart?.let { GLYPHS.remove(it); ACCENTS.remove(it) } // an update may bring a new icon
         }
     }

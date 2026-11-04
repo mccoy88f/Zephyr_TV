@@ -16,9 +16,12 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 ## Unreleased
 
 - Zephyr TV is in Catalan. Thanks to oscarsanchezdm.
-- On a Philips TV, select **Settings → TV → Reorder channels** to put the channels in your order. Thanks to oscarsanchezdm.
-- On a Philips TV, hold OK on a channel card and select **Move**. Press ◀ ▶ to move it.
+- Select **Settings → TV → Reorder channels** to put the channels in your order. Thanks to oscarsanchezdm.
+- Hold OK on a channel card and select **Move**. Press ◀ ▶ to move it.
 - Turn off **Show channel numbers** to hide the numbers on the channel cards.
+- Zephyr TV finds the TV app by itself. On a Philips TV it uses the Philips app.
+- Select **Settings → TV → TV app** to choose another app. Its tile shows the channels, and the add-ons' channels when they go in the TV app.
+- An app that cannot open a channel shows **Rows only**. The channels then open in the TV app that Zephyr TV found.
 - The backup keeps the channel order and the numbers setting.
 
 ## 4.0.0-beta.10

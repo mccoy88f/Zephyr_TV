@@ -61,6 +61,11 @@
     <string name="toast_channel_logos_failed">Couldn\'t download the channel logos. Try again later.</string>
     <string name="setting_epg">TV guide (XMLTV)</string>
     <string name="setting_play_channels">Play TV channels when you open them</string>
+    <string name="setting_tv_app">TV app</string>
+    <string name="tv_app_auto">Automatic (%1$s)</string>
+    <string name="tv_app_none">none</string>
+    <string name="tv_app_other">Other app…</string>
+    <string name="tv_app_rows_only">Rows only</string>
     <string name="setting_channel_numbers">Show channel numbers</string>
     <string name="setting_channel_order">Reorder channels…</string>
     <string name="channel_order_default">TV order</string>

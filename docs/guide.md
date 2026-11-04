@@ -266,6 +266,9 @@ When you choose **Virtual app**, its app goes back into Favourites if you had ta
 | **Channel logos (iptv-org)** | Logos for the channels that have none |
 | **Update the channel logos** | Downloads the latest logos now |
 | **TV guide (XMLTV)** | The address of a TV guide, to see what's on with a progress bar |
+| **TV app** | The app that shows the channels and opens them. **Automatic** finds it by itself (on a Philips, the Philips app). **Other app…** picks any app: if it can't open a channel (**Rows only**), the channels open in the automatic app |
+| **Show channel numbers** | The numbers on the channel cards |
+| **Reorder channels** | The channels in your order. Or hold OK on a channel and select **Move** |
 
 **Channel player**: CH+ and CH− change channel, Left and Right change stream, OK shows what's on now and next. The last channel watched shows in **Continue Playing**.
 

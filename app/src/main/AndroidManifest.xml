@@ -53,8 +53,15 @@
         <package android:name="dev.piume" />
         <!-- Sony TVs: which external inputs have a device connected (see connectedInputs). -->
         <provider android:authorities="com.sony.dtv.tvinput.external.provider" />
-        <!-- Philips: detect the channels app for manual channel order (see ChannelOrder). -->
-        <package android:name="org.droidtv.channels" />
+        <!-- The apps that open a TV channel, to find the TV app and offer it in its setting (see TvApp). -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="content" android:host="android.media.tv" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="vnd.android.cursor.item/channel" />
+        </intent>
     </queries>
 
     <!-- Cleartext stays allowed: Continue Watching posters come from other apps' listings, and some give

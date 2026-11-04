@@ -404,13 +404,15 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
             prefs.edit().putBoolean(K.PLAY_CHANNELS, !playChannelsOnOpen()).apply()
             renderSettings(PLAY_CHANNELS_ROW)
         },
+        page(getString(R.string.setting_tv_app), chosenTvApp()?.let { appLabel(it) }
+            ?: getString(R.string.tv_app_auto, autoTvApp()?.let { appLabel(it) } ?: getString(R.string.tv_app_none))) { pickTvApp() },
         page(getString(R.string.setting_channel_numbers), toggle(channelNumbersOn())) {
             prefs.edit().putBoolean(K.CHANNEL_NUMBERS, !channelNumbersOn()).apply()
             watchKey = null
             renderSettings(CHANNEL_NUMBERS_ROW)
         },
     ) + listOfNotNull(
-        if (!isPhilipsTv()) null else page(getString(R.string.setting_channel_order),
+        if (tvApp() == null) null else page(getString(R.string.setting_channel_order),
             channelOrderIds().let { if (it.isEmpty()) getString(R.string.channel_order_default) else getString(R.string.channel_order_custom, it.size) }) {
             showChannelOrderPage()
         },

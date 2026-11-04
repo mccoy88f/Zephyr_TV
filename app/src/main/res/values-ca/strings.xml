@@ -61,6 +61,11 @@
     <string name="toast_channel_logos_failed">No s\'han pogut baixar els logotips dels canals. Torna-ho a provar més tard.</string>
     <string name="setting_epg">Guia de TV (XMLTV)</string>
     <string name="setting_play_channels">Reprodueix els canals de TV en obrir-los</string>
+    <string name="setting_tv_app">App de TV</string>
+    <string name="tv_app_auto">Automàtica (%1$s)</string>
+    <string name="tv_app_none">cap</string>
+    <string name="tv_app_other">Una altra app…</string>
+    <string name="tv_app_rows_only">Només les files</string>
     <string name="setting_channel_numbers">Mostra els números dels canals</string>
     <string name="setting_channel_order">Reordena els canals…</string>
     <string name="channel_order_default">Ordre de la TV</string>

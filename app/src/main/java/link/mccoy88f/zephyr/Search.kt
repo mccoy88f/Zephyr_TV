@@ -464,7 +464,7 @@ internal fun MainActivity.findChannels(query: String): List<ChannelDetail> {
 
 /** What [channels]' pages show: logo, what's on now and next (the guide set in Zephyr TV settings, else the TV's). Off the UI thread. */
 internal fun MainActivity.channelDetails(channels: List<TunerChannel>): List<ChannelDetail> {
-    val tvApp = apps.firstOrNull { isTvApp(it.pkg) }?.pkg
+    val tvApp = channelOpener()
     val logos = if (channelLogosOn()) ChannelLogos.saved(filesDir, channelCountry()).orEmpty() else emptyMap()
     val guide = epgUrl()?.let { Epg.saved(filesDir, it) }
     val onNow = programsOnNow()

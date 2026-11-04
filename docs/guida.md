@@ -266,6 +266,9 @@ Quando scegli **App virtuale**, la sua app torna nei Preferiti se l'avevi tolta.
 | **Loghi dei canali (iptv-org)** | Loghi per i canali che non ne hanno uno |
 | **Aggiorna i loghi dei canali** | Scarica subito gli ultimi loghi |
 | **Guida TV (XMLTV)** | L'indirizzo di una guida TV, per vedere il programma in onda con la barra di avanzamento |
+| **App TV** | L'app che mostra i canali e li apre. **Automatica** la trova da sola (su Philips l'app Philips). **Altra app…** sceglie qualsiasi app: se non sa aprire un canale (**Solo le righe**), i canali si aprono con l'app automatica |
+| **Mostra i numeri dei canali** | I numeri sulle tessere dei canali |
+| **Riordina i canali** | I canali nel tuo ordine. Oppure tieni premuto OK su un canale e scegli **Sposta** |
 
 **Player dei canali**: CH+ e CH− cambiano canale, sinistra e destra cambiano stream, OK mostra il programma in onda e il successivo. L'ultimo canale guardato compare in **Continua la riproduzione**.
 

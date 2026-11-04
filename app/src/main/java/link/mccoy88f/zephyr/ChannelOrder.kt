@@ -7,12 +7,6 @@ import android.widget.HorizontalScrollView
 import android.widget.Toast
 import link.mccoy88f.zephyr.SettingsRows.CHANNEL_ORDER_ROW
 
-private const val PHILIPS_CHANNELS_PKG = "org.droidtv.channels"
-
-/** Philips Google TV (has the channels app). Used to offer manual channel order in Zephyr TV. */
-internal fun MainActivity.isPhilipsTv(): Boolean =
-    packageManager.getLaunchIntentForPackage(PHILIPS_CHANNELS_PKG) != null
-
 /** Saved channel `_id`s in display order. Empty = TV / LCN order. */
 internal fun MainActivity.channelOrderIds(): List<Long> {
     val raw = prefs.getString(K.CHANNEL_ORDER, null) ?: return emptyList()
@@ -56,7 +50,7 @@ internal fun MainActivity.channelNumberBadge(number: String): String? {
     return number.trimStart('0').ifEmpty { number }
 }
 
-/** Tuner channels in the order Zephyr TV should show (custom on Philips, else as returned / LCN). */
+/** Tuner channels in the order Zephyr TV should show: the user's, else by number (LCN). */
 internal fun MainActivity.orderedTunerChannels(all: List<TunerChannel> = tunerChannels()): List<TunerChannel> {
     val order = channelOrderIds()
     if (order.isEmpty()) return all.sortedBy { channelKey(it.number) }
@@ -227,7 +221,6 @@ internal var movingChannelId: Long? = null
 internal var pendingChannelFocusId: Long? = null
 
 internal fun MainActivity.startChannelCardMove(v: View, id: Long) {
-    if (!isPhilipsTv()) return
     ensureChannelOrderSeeded()
     movingChannelId = id
     pendingChannelFocusId = null
