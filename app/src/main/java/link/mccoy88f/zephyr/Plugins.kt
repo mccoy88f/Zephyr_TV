@@ -264,7 +264,7 @@ internal fun MainActivity.nuvioPage(focus: Int = 0) {
             r == null -> SUBMENU
             else -> getString(R.string.nuvio_plugins_on, on, r.scrapers.size)
         }
-        page(r?.name ?: url, value) { repoPage(url) }
+        page(r?.name ?: url.substringAfter("://").substringBefore('/'), value) { repoPage(url) }
     } + page(getString(R.string.nuvio_add), SUBMENU) { nuvioFromPhone() }, focus, top = intro) { addonsAndPlugins(2) }
     showRowLogos(getString(R.string.nuvio_plugins), repos.mapIndexed { i, url -> i to Nuvio.saved(filesDir, url)?.logo }.toMap(), 1)
 }
@@ -308,7 +308,7 @@ private fun MainActivity.repoPage(url: String, focus: Int = 0) {
         if (at > 0) page(getString(R.string.addon_move_up)) { move(-1); repoPage(url, plugins + 2) } else null,
         if (at < urls.size - 1) page(getString(R.string.addon_move_down)) { move(+1); repoPage(url, plugins + 2) } else null,
     )
-    showPage(r?.name ?: url, listOf(
+    showPage(r?.name ?: url.substringAfter("://").substringBefore('/'), listOf(
         page(getString(R.string.addon_on), toggle(repoOn)) {
             switch(K.NUVIO_REPOS_OFF, url, repoOn)
             repoPage(url, 0)
@@ -350,7 +350,7 @@ private fun MainActivity.repoPage(url: String, focus: Int = 0) {
             nuvioPage()
         },
     ), focus, top = if (about.isEmpty()) null else top) { nuvioPage(at.coerceAtLeast(0)) }
-    showRowLogos(r?.name ?: url, scrapers.mapIndexed { i, s -> rowOf[i] to s.logo }.toMap(), if (about.isEmpty()) 0 else 1)
+    showRowLogos(r?.name ?: url.substringAfter("://").substringBefore('/'), scrapers.mapIndexed { i, s -> rowOf[i] to s.logo }.toMap(), if (about.isEmpty()) 0 else 1)
 }
 
 /**

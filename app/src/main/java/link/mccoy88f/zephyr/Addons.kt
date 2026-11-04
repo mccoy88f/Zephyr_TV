@@ -472,8 +472,19 @@ internal fun MainActivity.placementRows(back: (Int) -> Unit): List<Triple<String
 /** The Stremio add-ons' section: Add an add-on, then each add-on (on or off, its page). */
 internal fun MainActivity.addonRows(): List<Triple<String, String, () -> Unit>> =
     listOf(page(getString(R.string.setting_addon_add), SUBMENU) { addonFromPhone() }) + addonUrls().mapIndexed { i, url ->
-        page(Stremio.saved(filesDir, url)?.addon?.name ?: url, if (addonOn(url)) SUBMENU else getString(R.string.state_off)) { addonPage(url) }
+        page(addonName(url), if (addonOn(url)) SUBMENU else getString(R.string.state_off)) { addonPage(url) }
     }
+
+/**
+ * An add-on's name, as its manifest gives it. Not read yet (one switched off is never read with the others: restored
+ * from a backup, say): its address's host meanwhile, not the whole address with its configuration, and it's read now,
+ * its row named once it's in.
+ */
+internal fun MainActivity.addonName(url: String): String {
+    Stremio.saved(filesDir, url)?.addon?.name?.let { return it }
+    if (Stremio.due(filesDir, url)) updateAddon(url, null) { if (it != null) refreshSettings(ADDON_ROWS) }
+    return android.net.Uri.parse(url).host?.takeIf { it.isNotEmpty() } ?: url
+}
 
 /**
  * The catalogs added as alternatives to Cinemeta, as manifest addresses, in the order added. One of them may be the
@@ -730,7 +741,7 @@ internal fun MainActivity.moveAddon(url: String, step: Int) {
  * rows come in), or remove it. [focus] is the row to focus by its name (after a move, the same move again).
  */
 internal fun MainActivity.addonPage(url: String, focus: Int? = null) {
-    val name = Stremio.saved(filesDir, url)?.addon?.name ?: url
+    val name = addonName(url)
     val urls = addonUrls()
     val at = urls.indexOf(url)
     val row = ADDON_ROWS + at
