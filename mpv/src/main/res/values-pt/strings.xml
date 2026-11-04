@@ -4,5 +4,4 @@
     <string name="mpv_subtitles">Legendas: %1$s</string>
     <string name="mpv_subtitles_off">Legendas desativadas</string>
     <string name="mpv_track">Faixa %1$s</string>
-    <string name="mpv_cannot_open">Não foi possível abrir este stream</string>
 </resources>

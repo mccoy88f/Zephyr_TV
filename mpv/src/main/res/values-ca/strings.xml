@@ -4,5 +4,4 @@
     <string name="mpv_subtitles">Subtítols: %1$s</string>
     <string name="mpv_subtitles_off">Subtítols desactivats</string>
     <string name="mpv_track">Pista %1$s</string>
-    <string name="mpv_cannot_open">Aquest stream no es pot obrir</string>
 </resources>

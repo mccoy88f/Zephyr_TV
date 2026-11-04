@@ -5,5 +5,4 @@
     <string name="mpv_subtitles">Subtitles: %1$s</string>
     <string name="mpv_subtitles_off">Subtitles off</string>
     <string name="mpv_track">Track %1$s</string>
-    <string name="mpv_cannot_open">This stream can't be opened</string>
 </resources>

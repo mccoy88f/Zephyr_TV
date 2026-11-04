@@ -4,5 +4,4 @@
     <string name="mpv_subtitles">Sottotitoli: %1$s</string>
     <string name="mpv_subtitles_off">Sottotitoli disattivati</string>
     <string name="mpv_track">Traccia %1$s</string>
-    <string name="mpv_cannot_open">Questo stream non si apre</string>
 </resources>

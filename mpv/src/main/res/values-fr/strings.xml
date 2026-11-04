@@ -4,5 +4,4 @@
     <string name="mpv_subtitles">Sous-titres : %1$s</string>
     <string name="mpv_subtitles_off">Sous-titres désactivés</string>
     <string name="mpv_track">Piste %1$s</string>
-    <string name="mpv_cannot_open">Impossible d\'ouvrir ce flux</string>
 </resources>

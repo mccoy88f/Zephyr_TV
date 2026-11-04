@@ -4,5 +4,4 @@
     <string name="mpv_subtitles">字幕：%1$s</string>
     <string name="mpv_subtitles_off">字幕已关闭</string>
     <string name="mpv_track">轨道 %1$s</string>
-    <string name="mpv_cannot_open">无法打开此流</string>
 </resources>
