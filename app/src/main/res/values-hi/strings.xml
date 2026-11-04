@@ -697,6 +697,11 @@
     <!-- Users and Trakt -->
     <string name="users_title">उपयोगकर्ता</string>
     <string name="users_settings">सेटिंग</string>
+    <string name="user_avatar">अवतार</string>
+    <string name="avatar_style">शैली</string>
+    <string name="avatar_more">दूसरे अवतार</string>
+    <string name="avatar_none">कोई अवतार नहीं</string>
+    <string name="avatar_none_value">कोई नहीं</string>
     <string name="adult_lock">18+ लॉक</string>
     <string name="adult_unlock">18+ अनलॉक करें</string>
     <string name="adult_lock_now">18+ लॉक करें</string>

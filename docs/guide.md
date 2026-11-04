@@ -306,11 +306,12 @@ Spotlight's buttons open the title's page, the trailer or a streaming app.
 
 ## 17. Users and Trakt
 
-The **Users** button in the top bar (it shows the initial of the user in use) opens a small menu under it, as **TV inputs** does:
+The **Users** button in the top bar (it shows the avatar of the user in use, or their initial) opens a small menu under it, as **TV inputs** does: the users side by side, with avatar and name, and under them **Unlock 18+** and **Settings**.
 
 - **Pick a user**: each has their own history, watched marks and Continue Playing.
 - **Settings** (behind the layout lock, when it's on):
-  - **Add user**, and for each user **Rename** and **Remove**.
+  - **Add user**, and for each user **Rename**, **Avatar** and **Remove**.
+  - **Avatar**: pick one of a few avatars by [DiceBear](https://www.dicebear.com) (Left and Right, then OK). **Style** goes to another style, **Other avatars** shows new ones, **No avatar** goes back to the initial. DiceBear gets only a random code, never the user's name.
   - **Connect Trakt**: keeps watched titles and progress in step with your Trakt account.
 
 ## 18. Adult content and the 18+ lock

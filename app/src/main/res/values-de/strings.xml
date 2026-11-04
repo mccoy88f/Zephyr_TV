@@ -697,6 +697,11 @@
     <!-- Users and Trakt -->
     <string name="users_title">Benutzer</string>
     <string name="users_settings">Einstellungen</string>
+    <string name="user_avatar">Avatar</string>
+    <string name="avatar_style">Stil</string>
+    <string name="avatar_more">Andere Avatare</string>
+    <string name="avatar_none">Kein Avatar</string>
+    <string name="avatar_none_value">Keiner</string>
     <string name="adult_lock">18+-Sperre</string>
     <string name="adult_unlock">18+ entsperren</string>
     <string name="adult_lock_now">18+ sperren</string>

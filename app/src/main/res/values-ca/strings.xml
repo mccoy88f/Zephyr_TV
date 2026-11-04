@@ -700,6 +700,11 @@
     <!-- Users and Trakt -->
     <string name="users_title">Usuaris</string>
     <string name="users_settings">Ajustos</string>
+    <string name="user_avatar">Avatar</string>
+    <string name="avatar_style">Estil</string>
+    <string name="avatar_more">Altres avatars</string>
+    <string name="avatar_none">Sense avatar</string>
+    <string name="avatar_none_value">Cap</string>
     <string name="adult_lock">Bloqueig 18+</string>
     <string name="adult_unlock">Desbloqueja 18+</string>
     <string name="adult_lock_now">Bloqueja 18+</string>

@@ -12,7 +12,7 @@ import java.io.File
 // Functions of MainActivity, kept here by topic; the users themselves are in the preferences.
 
 /** A Zephyr TV user: [id] names their folder ("" for the first one: Zephyr TV's own files), [name] is what they're called. */
-internal class User(val id: String, val name: String)
+internal class User(val id: String, val name: String, val avatar: String? = null) // avatar: DiceBear's (see Avatars)
 
 /** What a user's id may be: it names a folder, so letters, digits, "-" and "_" only (a restored backup could say anything). */
 private val USER_ID = Regex("[A-Za-z0-9_-]{1,32}")
@@ -21,7 +21,7 @@ private val USER_ID = Regex("[A-Za-z0-9_-]{1,32}")
 internal fun MainActivity.users(): List<User> {
     val saved = runCatching {
         val a = org.json.JSONArray(prefs.getString(K.USERS, null) ?: return@runCatching emptyList())
-        (0 until a.length()).map { a.getJSONObject(it) }.map { User(it.optString("id"), it.optString("name").take(40)) }
+        (0 until a.length()).map { a.getJSONObject(it) }.map { User(it.optString("id"), it.optString("name").take(40), it.optString("avatar").takeIf { a -> Avatars.parse(a) != null }) }
             .filter { it.id == "" || USER_ID.matches(it.id) }
     }.getOrDefault(emptyList())
     val first = saved.firstOrNull { it.id == "" } ?: User("", getString(R.string.user_default))
@@ -29,7 +29,9 @@ internal fun MainActivity.users(): List<User> {
 }
 
 private fun MainActivity.saveUsers(list: List<User>) {
-    prefs.edit().putString(K.USERS, org.json.JSONArray(list.map { org.json.JSONObject().put("id", it.id).put("name", it.name) }).toString()).apply()
+    prefs.edit().putString(K.USERS, org.json.JSONArray(list.map { u ->
+        org.json.JSONObject().put("id", u.id).put("name", u.name).apply { u.avatar?.let { put("avatar", it) } }
+    }).toString()).apply()
 }
 
 /** The user in use: their progress, watched titles and Trakt account are the ones Zephyr TV shows and keeps. */
@@ -63,8 +65,8 @@ internal fun MainActivity.showUsers(focus: Int? = null) {
 
 /**
  * The top bar's users button: a small menu under it, as the TV inputs' (see openInputsMenu), not the whole panel:
- * each user (the one in use ticked), the 18+ lock when it's on, and the users' settings. Remote access keeps the
- * panel (see showUsers), which the phone shows.
+ * the users side by side, each their avatar (or initial) and name, the one in use ringed; under them the 18+ lock
+ * when it's on, and the users' settings. Remote access keeps the panel (see showUsers), which the phone shows.
  */
 internal fun MainActivity.openUsersMenu(anchor: android.view.View) {
     val current = currentUser()
@@ -74,25 +76,81 @@ internal fun MainActivity.openUsersMenu(anchor: android.view.View) {
         setPadding(dp(6), dp(6), dp(6), dp(6))
         background = menuBackground()
         elevation = dp(8).toFloat()
+        minimumWidth = dp(260)
     }
-    val menu = android.widget.PopupWindow(box, dp(260), android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, true).apply {
+    val menu = android.widget.PopupWindow(box, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, true).apply {
         setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0))
         elevation = dp(8).toFloat()
     }
-    val rows = list.map { u -> page(u.name, if (u.id == current.id) CHOSEN else "") { if (u.id != current.id) useUser(u) } } +
-        listOfNotNull(
-            // The 18+ lock, when it's on: unlock with its PIN (in the panel), or lock again.
-            if (adultLockOn()) adultMenuRow { closeLauncherSettings() } else null,
-            page(getString(R.string.users_settings), SUBMENU) { unlock { usersSettings() } }, // behind the layout lock
-        )
-    rows.forEachIndexed { i, (title, value, action) ->
-        box.addView(settingsRow(title, value) { menu.dismiss(); action() },
-            android.widget.LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, dp(40)).apply { if (i > 0) topMargin = dp(2) })
+    val strip = android.widget.LinearLayout(this).apply {
+        orientation = android.widget.LinearLayout.HORIZONTAL
+        gravity = android.view.Gravity.CENTER_HORIZONTAL
     }
+    val tiles = list.map { u -> userTile(u, u.id == current.id) { menu.dismiss(); if (u.id != current.id) useUser(u) } }
+    tiles.forEach { strip.addView(it, android.widget.LinearLayout.LayoutParams(dp(92), android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)) }
+    box.addView(android.widget.HorizontalScrollView(this).apply { isHorizontalScrollBarEnabled = false; addView(strip) },
+        android.widget.LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            gravity = android.view.Gravity.CENTER_HORIZONTAL
+            bottomMargin = dp(4)
+        })
+    val rows = listOfNotNull(
+        // The 18+ lock, when it's on: unlock with its PIN (in the panel), or lock again.
+        if (adultLockOn()) adultMenuRow { closeLauncherSettings() } else null,
+        page(getString(R.string.users_settings), SUBMENU) { unlock { usersSettings() } }, // behind the layout lock
+    )
+    rows.forEach { (title, value, action) ->
+        box.addView(settingsRow(title, value) { menu.dismiss(); action() },
+            android.widget.LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, dp(40)).apply { topMargin = dp(2) })
+    }
+    box.measure(android.view.View.MeasureSpec.UNSPECIFIED, android.view.View.MeasureSpec.UNSPECIFIED)
     val at = IntArray(2).also { anchor.getLocationInWindow(it) }
     // Under the button, as the inputs' menu, kept on the screen when the button is near its edge.
-    menu.showAtLocation(anchor, android.view.Gravity.NO_GRAVITY, (at[0] - dp(100)).coerceAtLeast(dp(16)), at[1] + anchor.height + dp(8))
-    box.getChildAt(list.indexOfFirst { it.id == current.id }.coerceAtLeast(0))?.requestFocus()
+    val screen = window.decorView.width
+    val x = (at[0] - dp(100)).coerceAtMost(screen - box.measuredWidth - dp(16)).coerceAtLeast(dp(16))
+    menu.showAtLocation(anchor, android.view.Gravity.NO_GRAVITY, x, at[1] + anchor.height + dp(8))
+    tiles.getOrNull(list.indexOfFirst { it.id == current.id }.coerceAtLeast(0))?.requestFocus()
+}
+
+/** A user in the users' menu: their avatar (or initial) in a circle, their name under it; [inUse] ringed. */
+private fun MainActivity.userTile(u: User, inUse: Boolean, pick: () -> Unit): android.view.View {
+    val bg = android.graphics.drawable.GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(0) }
+    val ring = android.graphics.drawable.GradientDrawable().apply {
+        shape = android.graphics.drawable.GradientDrawable.OVAL
+        setColor(field)
+        if (inUse) setStroke(dp(2), fg)
+    }
+    val pic = ImageView(this).apply {
+        background = ring
+        setPadding(dp(3), dp(3), dp(3), dp(3))
+    }
+    fun initial() {
+        pic.setPadding(dp(14), dp(14), dp(14), dp(14))
+        pic.setImageDrawable(initials(u).apply { setColorFilter(android.graphics.PorterDuffColorFilter(fg, android.graphics.PorterDuff.Mode.SRC_IN)) })
+    }
+    avatarInto(pic, u.avatar, still = { pic.isAttachedToWindow }, none = ::initial, shown = { pic.setPadding(dp(3), dp(3), dp(3), dp(3)) })
+    val name = label((if (inUse) "✓ " else "") + u.name, 13f).apply {
+        isSingleLine = true
+        ellipsize = android.text.TextUtils.TruncateAt.END
+        gravity = android.view.Gravity.CENTER
+        setPadding(0, dp(6), 0, 0)
+    }
+    return android.widget.LinearLayout(this).apply {
+        orientation = android.widget.LinearLayout.VERTICAL
+        gravity = android.view.Gravity.CENTER_HORIZONTAL
+        setPadding(dp(6), dp(8), dp(6), dp(8))
+        background = bg
+        isFocusable = true
+        isClickable = true
+        contentDescription = u.name
+        addView(pic, android.widget.LinearLayout.LayoutParams(dp(56), dp(56)))
+        addView(name, android.widget.LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT))
+        setOnClickListener { pick() }
+        setOnFocusChangeListener { _, focused ->
+            bg.setColor(if (focused) fg else 0)
+            name.setTextColor(if (focused) onFg else fg)
+        }
+    }
 }
 
 /** The users' settings: each user (their page: Trakt, rename, remove), then Add user. */
@@ -108,7 +166,8 @@ private fun MainActivity.usersSettings(focus: Int = 0) {
 }
 
 /** A user's page: their Trakt account (connect, or sync and disconnect), rename, remove. */
-private fun MainActivity.userPage(u: User, focus: Int = 0) {
+private fun MainActivity.userPage(given: User, focus: Int = 0) {
+    val u = users().firstOrNull { it.id == given.id } ?: given // as saved: its avatar may have changed
     val dir = vodDir(u.id)
     val account = Trakt.account(dir)
     val back = { usersSettings(users().indexOfFirst { it.id == u.id }.coerceAtLeast(0)) }
@@ -117,6 +176,7 @@ private fun MainActivity.userPage(u: User, focus: Int = 0) {
         else page(getString(R.string.trakt_sync), account.user) { syncTrakt(u.id, tell = true) },
         account?.let { page(getString(R.string.trakt_disconnect)) { Trakt.forget(dir); userPage(u) } },
         page(getString(R.string.user_rename)) { userName(u) },
+        page(getString(R.string.user_avatar), Avatars.parse(u.avatar)?.let { Avatars.styleName(it.first) } ?: getString(R.string.avatar_none_value)) { avatarPage(u) },
         // The first user stays: their files are Zephyr TV's own.
         if (u.id == "") null else page(getString(R.string.user_remove)) {
             saveUsers(users().filter { it.id != u.id })
@@ -129,6 +189,63 @@ private fun MainActivity.userPage(u: User, focus: Int = 0) {
 
 /** The row of Rename on [u]'s page (after Trakt's one or two). */
 private fun MainActivity.renameRow(u: User) = if (Trakt.account(vodDir(u.id)) == null) 1 else 2
+
+/** The row of Avatar on [u]'s page, after Rename. */
+private fun MainActivity.avatarRow(u: User) = renameRow(u) + 1
+
+/**
+ * [u]'s avatar: a few of [style]'s on top to pick from (◀ ▶, OK), then the style (the next one), others of it, and
+ * none (the initial again). [focus]: the row to focus; none, the first avatar.
+ */
+private fun MainActivity.avatarPage(u: User, style: String = Avatars.parse(u.avatar)?.first ?: Avatars.STYLES.first(), focus: Int? = null) {
+    val choices = (listOfNotNull(u.avatar?.takeIf { Avatars.parse(it)?.first == style }) + List(6) { "$style/${Avatars.newSeed()}" }).take(6)
+    val strip = android.widget.LinearLayout(this).apply {
+        orientation = android.widget.LinearLayout.HORIZONTAL
+        setPadding(dp(14), dp(6), dp(14), dp(12))
+    }
+    val scroll = android.widget.HorizontalScrollView(this).apply {
+        isHorizontalScrollBarEnabled = false
+        addView(strip)
+    }
+    val pics = choices.map { a ->
+        val ring = android.graphics.drawable.GradientDrawable().apply { shape = android.graphics.drawable.GradientDrawable.OVAL }
+        fun mark(focused: Boolean) = ring.setStroke(if (focused) dp(3) else if (a == u.avatar) dp(2) else 0, fg)
+        android.widget.ImageView(this).apply {
+            id = android.view.View.generateViewId()
+            isFocusable = true
+            isClickable = true
+            setPadding(dp(5), dp(5), dp(5), dp(5))
+            background = ring
+            mark(false)
+            contentDescription = getString(R.string.user_avatar)
+            setOnFocusChangeListener { _, focused -> mark(focused) }
+            setOnClickListener { setAvatar(u, a) }
+            avatarInto(this, a, still = { isAttachedToWindow })
+        }.also { strip.addView(it, android.widget.LinearLayout.LayoutParams(dp(72), dp(72)).apply { marginEnd = dp(10) }) }
+    }
+    val rows = listOfNotNull(
+        page(getString(R.string.avatar_style), Avatars.styleName(style)) {
+            avatarPage(u, Avatars.STYLES[(Avatars.STYLES.indexOf(style) + 1) % Avatars.STYLES.size], 0)
+        },
+        page(getString(R.string.avatar_more)) { avatarPage(u, style, 1) },
+        if (u.avatar == null) null else page(getString(R.string.avatar_none)) { setAvatar(u, null) },
+    )
+    showPage(getString(R.string.user_avatar), rows, focus ?: 0, top = scroll) { userPage(u, avatarRow(u)) }
+    // Up from the rows to the avatars, Down from them to the rows (the panel pins Up on its first row otherwise).
+    val first = settingsList.getChildAt(1)
+    if (first != null) {
+        first.nextFocusUpId = pics.first().id
+        pics.forEach { it.nextFocusDownId = first.id; it.nextFocusUpId = it.id }
+    }
+    if (focus == null) pics.first().requestFocus()
+}
+
+/** [u]'s avatar set ([avatar], or none: their initial), and their page again. */
+private fun MainActivity.setAvatar(u: User, avatar: String?) {
+    saveUsers(users().map { if (it.id == u.id) User(it.id, it.name, avatar) else it })
+    if (currentUser().id == u.id) showUserIcon()
+    userPage(u, avatarRow(u))
+}
 
 /** [u] in use from now on: Continue Playing and the ✓ marks are theirs; synced with Trakt when they have it. */
 internal fun MainActivity.useUser(u: User) {
@@ -153,16 +270,23 @@ internal fun MainActivity.usersChanged() {
  */
 internal fun MainActivity.showUserIcon() {
     val u = currentUser()
+    val view = findViewById<ImageView>(R.id.usersButton)
+    view.contentDescription = getString(R.string.users_title) + ": " + u.name
+    // Their avatar, round and nearly the button's size; else, or while it loads, their initial.
+    avatarInto(view, u.avatar, still = { currentUser().id == u.id },
+        none = { view.setPadding(dp(8), dp(8), dp(8), dp(8)); view.setImageDrawable(initials(u)) },
+        shown = { view.setPadding(dp(3), dp(3), dp(3), dp(3)) })
+}
+
+/** [u]'s initial, as the top bar draws it: a capital letter, or an emoji whole, in its own colours. */
+private fun initials(u: User): Initials {
     val name = u.name.trim()
     val first = java.text.BreakIterator.getCharacterInstance().run {
         setText(name)
         next().takeIf { it > 0 }?.let { name.substring(0, it) }
     } ?: "?"
     val emoji = !Character.isLetterOrDigit(first.codePointAt(0))
-    findViewById<ImageView>(R.id.usersButton).apply {
-        setImageDrawable(Initials(if (emoji) first else first.uppercase(), keepColours = emoji))
-        contentDescription = getString(R.string.users_title) + ": " + u.name
-    }
+    return Initials(if (emoji) first else first.uppercase(), keepColours = emoji)
 }
 
 /**
@@ -205,9 +329,9 @@ private fun MainActivity.userName(u: User?) {
             saveUsers(list + added)
             userPage(added)
         } else {
-            saveUsers(list.map { if (it.id == u.id) User(it.id, name) else it })
+            saveUsers(list.map { if (it.id == u.id) User(it.id, name, it.avatar) else it })
             if (currentUser().id == u.id) usersChanged()
-            userPage(User(u.id, name), renameRow(u))
+            userPage(User(u.id, name, u.avatar), renameRow(u))
         }
     }
     fun fromPhone() {
