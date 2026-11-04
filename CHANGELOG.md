@@ -13,6 +13,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- If the TV has a PIN, Save a backup asks for the PIN first.
+- With a PIN, the saved address does not open Save a backup alone. Open it on the TV.
+
 ## 4.0.0-beta.8
 
 - The phone remote moves the player. The arrows, OK, Back and Program plus and minus reach it.

@@ -354,7 +354,7 @@ The page works only while that screen is open on the TV, and what you send goes 
 | **Updates** | Looks for and installs new versions. You can get the **betas** too |
 | **Remote access** | A phone on the home network changes settings, after the PIN |
 | **Show the access address** | The code to save. It appears while remote access is on |
-| **Backup and restore** | Saves the settings to your phone and restores them: also the add-ons, Nuvio plugins and extensions, with their state and settings. After a restore, the TV downloads again the extensions and plugins that have an address. Extensions installed from a file are in the backup. The PIN is never in the backup: if the TV had a PIN, the restore asks you to choose a new one. The file holds the TMDB key, the add-ons' addresses and the extensions' sign-ins: keep it private |
+| **Backup and restore** | Saves the settings to your phone and restores them: also the add-ons, Nuvio plugins and extensions, with their state and settings. After a restore, the TV downloads again the extensions and plugins that have an address. Extensions installed from a file are in the backup. If there is a PIN, saving a backup asks for it first. The PIN is never in the backup: if the TV had a PIN, the restore asks you to choose a new one. The file holds the TMDB key, the add-ons' addresses and the extensions' sign-ins: keep it private |
 | **Recent problems** | What went wrong lately. For a stream that fails: its source, its server and what the server sent |
 | **Guide** | This guide, on the TV, chapter by chapter |
 | **About** | Version, licences, data sources |

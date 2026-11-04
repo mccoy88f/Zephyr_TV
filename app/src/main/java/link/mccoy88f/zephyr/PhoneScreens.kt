@@ -209,7 +209,9 @@ internal fun MainActivity.backupPage() = PhonePages.download(
     phoneTexts(getString(R.string.phone_backup_title), getString(R.string.phone_backup_intro), getString(R.string.phone_backup_download)),
     "zephyr-backup.json", Backup.export(prefs, filesDir, users().map { it.id }))
 
-internal fun MainActivity.backupToPhone() {
+/** The backup to save on the phone. With a PIN set, the PIN first: the backup holds the add-ons and the sign-ins. */
+internal fun MainActivity.backupToPhone(asked: Boolean = false) {
+    if (pinSet() && !asked) return askPin({ showBackup() }) { backupToPhone(asked = true) }
     showPhoneLink(getString(R.string.backup_save), PhoneTask(backupPage(), 0) { 405 to "" }, label("", 12f), target = "backup-save") { showBackup() }
 }
 

@@ -753,7 +753,8 @@ internal fun MainActivity.remoteTask(id: String): PhoneTask? = when (id) {
         }
     }
     "problems" -> PhoneTask(problemsHtml(), 0) { 405 to "" }
-    "backup-save" -> PhoneTask(backupPage(), 0) { 405 to "" }
+    // With a PIN set, the backup opens only from the TV, after the PIN there (see backupToPhone).
+    "backup-save" -> if (pinSet()) null else PhoneTask(backupPage(), 0) { 405 to "" }
     "backup-restore" -> {
         val page = PhonePages.file(phoneTexts(R.string.phone_restore_title, R.string.phone_restore_intro), getString(R.string.phone_choose_file), ".json,application/json")
         PhoneTask(page, 16L * 1024 * 1024) { file -> restoreBackup(file.readText()) }
