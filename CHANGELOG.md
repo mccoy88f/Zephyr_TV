@@ -13,6 +13,12 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- The mpv player is removed. The built-in player plays the streams. If you installed Zephyr MPV, uninstall it in the Android settings.
+- On the phone, the search page and the other pages that remote access opens have the bar at the bottom.
+- In the search, press ◀ at the start of the words to go to the microphone. Press ▶ at the end to go to the cross.
+
 ## 4.0.0-beta.14
 
 - Select **Settings → Player mpv** to install the mpv player. It is an app of its own, so Zephyr TV stays small.

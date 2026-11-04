@@ -10,9 +10,6 @@ import android.os.Build
 /** The action MainActivity gets an install's outcome under (from InstallResult). */
 internal const val UPDATE_STATUS = "link.mccoy88f.zephyr.UPDATE_STATUS"
 
-/** Which install an outcome is for: absent for Zephyr TV's update, Mpv.PACKAGE for Zephyr MPV's. */
-internal const val WHAT = "what"
-
 /**
  * "1.10" > "1.9" > "1.2.1" > "1.2": compared number by number, missing parts count as 0. A beta comes before its
  * release, and betas in their order: "4.0" > "4.0.0-beta.2" > "4.0.0-beta.1" > "3.1".
@@ -58,24 +55,17 @@ internal object Updater {
     internal fun newest(versions: List<String>): String? = versions.fold(null as String?) { best, v -> if (best == null || newerVersion(v, best)) v else best }
 
     /** Downloads release [ver] and hands it to Android, which reports to InstallResult. Throws if the download fails. */
-    fun install(context: Context, repo: String, ver: String) =
-        install(context, "https://github.com/$repo/releases/download/v$ver/ZephyrTV.apk", context.packageName, null)
-
-    /**
-     * Downloads the APK at [url], the app [pkg] (Zephyr TV, or Zephyr MPV: see Mpv), and hands it to Android, which
-     * reports to InstallResult, with [what] ([WHAT]: null for Zephyr TV's update). Throws if the download fails.
-     */
-    fun install(context: Context, url: String, pkg: String, what: String?) {
+    fun install(context: Context, repo: String, ver: String) {
         val installer = context.packageManager.packageInstaller
         val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-        params.setAppPackageName(pkg)
+        params.setAppPackageName(context.packageName)
         // Android 12+ can skip the confirm box when we're the app's installer; otherwise Android asks.
         if (Build.VERSION.SDK_INT >= 31) params.setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
         val id = installer.createSession(params)
         installer.openSession(id).use { session ->
             try {
-                Http.open(url).use { input ->
-                    session.openWrite(url.substringAfterLast('/'), 0, -1).use { out ->
+                Http.open("https://github.com/$repo/releases/download/v$ver/ZephyrTV.apk").use { input ->
+                    session.openWrite("ZephyrTV.apk", 0, -1).use { out ->
                         input.copyTo(out)
                         session.fsync(out)
                     }
@@ -85,8 +75,7 @@ internal object Updater {
                 throw e
             }
             // Mutable: the installer adds the status to it. Explicit, to a receiver only Android can reach.
-            val done = PendingIntent.getBroadcast(context, if (what == null) 0 else what.hashCode(),
-                Intent(context, InstallResult::class.java).putExtra(WHAT, what),
+            val done = PendingIntent.getBroadcast(context, 0, Intent(context, InstallResult::class.java),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
             session.commit(done.intentSender)
         }
@@ -110,7 +99,6 @@ class InstallResult : BroadcastReceiver() {
         c.startActivity(Intent(c, MainActivity::class.java).setAction(UPDATE_STATUS)
             .putExtra(PackageInstaller.EXTRA_STATUS, status)
             .putExtra(PackageInstaller.EXTRA_STATUS_MESSAGE, i.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE))
-            .putExtra(WHAT, i.getStringExtra(WHAT))
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 }

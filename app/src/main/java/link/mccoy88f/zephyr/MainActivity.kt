@@ -611,7 +611,6 @@ class MainActivity : Activity() {
 
     @Volatile internal var checking = false
     @Volatile internal var updating = false
-    @Volatile internal var mpvInstalling = false // Zephyr MPV being downloaded or installed (see installMpv)
 
     internal val badge by lazy { GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(BADGE) } }
 

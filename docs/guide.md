@@ -146,14 +146,11 @@ The banner has the **Previous episode**, **Play/Pause**, **Next episode**, **Aud
 | **Hide streams without a language** | Off | Hides the streams that don't say their language |
 | **Hide films not yet released** | Off | Hides from Spotlight and the apps' rows the films that are not out at home yet in your country: still only in cinemas, or still to come. It uses TMDB (the key is necessary). A film is hidden only when TMDB says so for sure |
 | **Subtitles always on** | Off | Off: each stream starts without subtitles, but those it forces (for example a line in another language). On: the subtitles in the language you picked last, else in the TV's language. A choice made in the player stays until you close it |
-| **mpv player** | Not installed | Installs (or updates) **Zephyr MPV**, the mpv player, as an app of its own (about 20 MB, Android 8 or later). It reads nearly every file the built-in player can't: Blu-ray discs (.m2ts), AVI, DTS-HD and TrueHD sound, ASS subtitles. Zephyr TV's APK stays light |
-| **Use the mpv player** | When the built-in player can't | **When the built-in player can't**: a stream the built-in player can't read goes to mpv. **Always**: every stream starts in mpv. **Never** |
 
 How **quality** and **language** are recognised:
 - **Quality**: from the stream's name, for example 2160p/4K/UHD, 1440p/QHD, 1080p/FHD/Full HD, 720p/HD, 480p/SD.
 - **Language**: from the stream's name, for example ITA, Italian, SUB-ITA, 🇮🇹, or "multi". When a plugin's stream says none, the plugin's declared language counts.
 - **Check**: before it starts, the player checks all the streams at once and tries first those that really answer with a video. Expired links and web pages are skipped.
-- **mpv player**: in mpv, OK pauses and plays, Left and Right go back and forward (further while held), Up and Down change the audio and subtitle track, Back leaves. Where you got to stays in **Continue Playing**. When no stream plays because the built-in player can't read the file, and mpv isn't installed, the player offers to install it.
 
 ## 10. Content catalogs
 

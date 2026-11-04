@@ -7,7 +7,6 @@ Thanks for wanting to help. Zephyr TV is a fork of [Plume Launcher](https://gith
 Zephyr TV is a minimal home screen for Android TV and Google TV, which also works on Android phones and tablets with a finger. Every change is weighed against these principles:
 
 - **Small and light.** A 1.2 MB APK, about 50–70 MB of RAM, no extra background services. One library only: Media3's ExoPlayer, for the Stremio add-ons' channels, in a player that runs in a process of its own.
-- **The mpv player is an app of its own.** `mpv/` builds Zephyr MPV (`./gradlew :mpv:assembleRelease`), libmpv for what Media3 can't read. Zephyr TV installs it from its settings, from the newest GitHub release that has a `ZephyrMPV.apk` asset: attach it to a release when `mpv/` changes (and raise its `versionCode`). Both apps are signed with the same key, and each checks the other's signature before a stream passes.
 - **Simple home screen.** One apps row and one Continue Watching row. Nothing else competes for attention.
 - **Yours, not ours.** No ads, no sponsored or recommended content, no analytics, no account.
 - **Quiet on the network.** Zephyr TV only goes online for the things listed under [Privacy](README.md#privacy). Anything new that connects to the internet must be optional and off until the user turns it on.

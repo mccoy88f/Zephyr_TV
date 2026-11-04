@@ -146,14 +146,11 @@ Nel banner ci sono i pulsanti **Episodio precedente**, **Play/Pausa**, **Episodi
 | **Nascondi stream senza lingua** | Spento | Nasconde gli stream che non dicono in che lingua sono |
 | **Nascondi film non ancora usciti** | Spento | Nasconde dallo Spotlight e dalle righe delle app i film non ancora usciti a casa nel tuo paese: ancora solo al cinema, o non ancora usciti. Usa TMDB (serve la chiave). Un film viene nascosto solo quando TMDB lo dice con certezza |
 | **Sottotitoli sempre attivi** | Spento | Spento: ogni stream parte senza sottotitoli, tranne quelli che lo stream impone (per esempio una frase in un'altra lingua). Acceso: i sottotitoli nella lingua scelta per ultima, altrimenti in quella del TV. Una scelta fatta nel player vale finché non lo chiudi |
-| **Player mpv** | Non installato | Installa (o aggiorna) **Zephyr MPV**, il player mpv, come app a sé (circa 20 MB, Android 8 o successivo). Legge quasi tutti i file che il player integrato non legge: dischi Blu-ray (.m2ts), AVI, audio DTS-HD e TrueHD, sottotitoli ASS. L'APK di Zephyr TV resta leggero |
-| **Usa il player mpv** | Quando il player integrato non riesce | **Quando il player integrato non riesce**: uno stream che il player integrato non sa leggere passa a mpv. **Sempre**: ogni stream parte in mpv. **Mai** |
 
 Come vengono riconosciute **qualità** e **lingua**:
 - **Qualità**: dal nome dello stream, per esempio 2160p/4K/UHD, 1440p/QHD, 1080p/FHD/Full HD, 720p/HD, 480p/SD.
 - **Lingua**: dal nome dello stream, per esempio ITA, Italian, SUB-ITA, 🇮🇹, oppure "multi". Se un plugin non lo indica nel nome, vale la lingua dichiarata dal plugin.
 - **Controllo**: prima di partire, il player controlla in parallelo tutti gli stream e prova per primi quelli che rispondono davvero con un video. Link scaduti e pagine web vengono saltati.
-- **Player mpv**: in mpv, OK mette in pausa e riprende, sinistra e destra vanno indietro e avanti (di più tenendo premuto), su e giù cambiano traccia audio e sottotitoli, Indietro esce. Il punto a cui sei arrivato resta in **Continua la riproduzione**. Se nessuno stream funziona perché il player integrato non sa leggere il file, e mpv non è installato, il player propone di installarlo.
 
 ## 10. Cataloghi dei contenuti
 

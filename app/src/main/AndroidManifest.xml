@@ -49,8 +49,6 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.HOME" />
         </intent>
-        <!-- Zephyr MPV, the mpv player installed from the settings (see Mpv). -->
-        <package android:name="link.mccoy88f.zephyr.mpv" />
         <!-- Piume, what Zephyr TV was: its settings and history are taken on the first start (see FromPiume). -->
         <package android:name="dev.piume" />
         <!-- Sony TVs: which external inputs have a device connected (see connectedInputs). -->

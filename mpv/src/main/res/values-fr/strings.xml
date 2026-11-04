@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="mpv_audio">Audio : %1$s</string>
-    <string name="mpv_subtitles">Sous-titres : %1$s</string>
-    <string name="mpv_subtitles_off">Sous-titres désactivés</string>
-    <string name="mpv_track">Piste %1$s</string>
-</resources>

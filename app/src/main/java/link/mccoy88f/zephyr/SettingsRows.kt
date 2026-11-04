@@ -47,8 +47,6 @@ internal object SettingsRows {
     const val ADDON_ADD_ROW = ADDONS_SECTION * SECTION // the Stremio add-ons' section: Add, then one row per add-on
     const val ADDON_ROWS = ADDON_ADD_ROW + 1
     const val CINEMETA_ROW = WATCH_SECTION * SECTION + 3 // the content catalog, last of Content
-    const val MPV_ROW = WATCH_SECTION * SECTION + 11 // Zephyr MPV: installed or not (see Mpv)
-    const val MPV_MODE_ROW = MPV_ROW + 1 // when it plays
     const val TMDB_SOURCE_ROW = SPOTLIGHT_SECTION * SECTION
     const val TMDB_LIST_ROW = TMDB_SOURCE_ROW + 1
     const val TMDB_TYPE_ROW = TMDB_SOURCE_ROW + 2
