@@ -22,7 +22,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - Zephyr TV finds the TV app by itself. On a Philips TV it uses the Philips app.
 - Select **Settings → TV → TV app** to choose another app. Its tile shows the channels, and the add-ons' channels when they go in the TV app.
 - An app that cannot open a channel shows **Rows only**. The channels then open in the TV app that Zephyr TV found.
-- The TV guide is on by default. Zephyr TV uses the guide of the TV's country from iptv-epg.org.
+- The TV guide is on by default. Zephyr TV uses the guide of the TV's country from iptv-epg.org, as a small compressed file.
 - Select **Settings → TV → TV guide** to choose another country, an address of your own, or **Off**.
 - The backup keeps the channel order and the numbers setting.
 

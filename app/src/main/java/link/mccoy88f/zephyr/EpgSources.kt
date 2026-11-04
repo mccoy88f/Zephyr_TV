@@ -4,21 +4,37 @@ import java.util.Locale
 import link.mccoy88f.zephyr.SettingsRows.EPG_ROW
 
 // Where the TV guide comes from. With nothing set, Zephyr TV takes the guide of the TV's country from iptv-epg.org,
-// which has one XMLTV file for each country (epg-<country>.xml). Settings → TV and EPG → TV guide picks another
+// which has one gzipped XMLTV file for each country (epg-<country>.xml.gz). Settings → TV and EPG → TV guide picks another
 // country, an address of one's own (typed, or from the phone), or no guide.
 
-/** iptv-epg.org's page that lists its guides: one link for each country. */
-internal const val EPG_GUIDES_PAGE = "https://iptv-epg.org/guides"
+/** iptv-epg.org's home page: it links each country's guide. */
+internal const val EPG_GUIDES_PAGE = "https://iptv-epg.org/"
 
 /** The value of K.EPG_URL that turns the guide off. Nothing saved means the guide of the TV's country. */
 internal const val EPG_OFF = "off"
 
-/** iptv-epg.org's guide for the country [code] (ISO 3166, two letters). */
-internal fun epgCountryUrl(code: String) = "https://iptv-epg.org/files/epg-${code.lowercase(Locale.ROOT)}.xml"
+/** iptv-epg.org's guide for the country [code] (ISO 3166, two letters), gzipped. */
+internal fun epgCountryUrl(code: String) = "https://iptv-epg.org/files/epg-${code.lowercase(Locale.ROOT)}.xml.gz"
 
-/** The countries whose guides [html] (iptv-epg.org's guides page) links to, by code, in order. */
-internal fun epgCountriesIn(html: String): List<String> =
-    Regex("""files/epg-([a-z]{2})\.xml""").findAll(html).map { it.groupValues[1] }.distinct().sorted().toList()
+private val EPG_LINK = Regex("""(?:href=["']([^"']*?))?epg-([a-z]{2})\.xml(?:\.gz)?\b""")
+
+/** The countries whose guides [html] (iptv-epg.org's page, or an address) names, by code, in order. */
+internal fun epgCountriesIn(html: String): List<String> = epgLinksIn(html, EPG_GUIDES_PAGE).keys.sorted()
+
+/**
+ * Each country's guide as [html] links it (its code to the link, made absolute against [base]): the page's own
+ * address, so a guide that moves is still found.
+ */
+internal fun epgLinksIn(html: String, base: String): Map<String, String> {
+    val out = LinkedHashMap<String, String>()
+    for (m in EPG_LINK.findAll(html)) {
+        val code = m.groupValues[2]
+        if (code in out) continue
+        val href = m.groupValues[1].takeIf { it.isNotEmpty() }?.let { it + m.value.substringAfter(it) }
+        out[code] = href?.let { runCatching { java.net.URL(java.net.URL(base), it).toString() }.getOrNull() } ?: epgCountryUrl(code)
+    }
+    return out
+}
 
 /** The country [code] in the TV's language ("it": Italia). */
 internal fun countryName(code: String): String =
@@ -68,15 +84,16 @@ internal fun MainActivity.configureEpg() {
 private fun MainActivity.pickEpgCountry() {
     toast(R.string.searching, long = false)
     netIo.execute {
-        val codes = runCatching { epgCountriesIn(Http.text(EPG_GUIDES_PAGE)) }.onFailure { warn("TV guides list failed ($it)") }.getOrDefault(emptyList())
+        val links = runCatching { epgLinksIn(Http.text(EPG_GUIDES_PAGE), EPG_GUIDES_PAGE) }.onFailure { warn("TV guides list failed ($it)") }.getOrDefault(emptyMap())
         ui.post {
-            if (codes.isEmpty()) return@post toast(R.string.toast_epg_failed_list)
+            if (links.isEmpty()) return@post toast(R.string.toast_epg_failed_list)
             val now = prefs.getString(K.EPG_URL, null)
-            val sorted = codes.sortedBy { countryName(it).lowercase() }
+            val sorted = links.keys.sortedBy { countryName(it).lowercase() }
             val own = channelCountry().lowercase(Locale.ROOT)
             showPage(getString(R.string.epg_country), sorted.map { code ->
-                page(countryName(code), if (now == epgCountryUrl(code)) MainActivity.CHOSEN else if (code == own) getString(R.string.epg_this_tv) else "") {
-                    saveEpgUrl(epgCountryUrl(code))
+                val url = links.getValue(code)
+                page(countryName(code), if (now == url) MainActivity.CHOSEN else if (code == own) getString(R.string.epg_this_tv) else "") {
+                    saveEpgUrl(url)
                     renderSettings(EPG_ROW)
                 }
             }, (sorted.indexOf(own)).coerceAtLeast(0), back = { configureEpg() })

@@ -5,15 +5,23 @@ import org.junit.Test
 
 class EpgSourcesTest {
     @Test fun eachCountryHasItsGuide() {
-        assertEquals("https://iptv-epg.org/files/epg-it.xml", epgCountryUrl("IT"))
-        assertEquals("https://iptv-epg.org/files/epg-us.xml", epgCountryUrl("us"))
+        assertEquals("https://iptv-epg.org/files/epg-it.xml.gz", epgCountryUrl("IT"))
+        assertEquals("https://iptv-epg.org/files/epg-us.xml.gz", epgCountryUrl("us"))
     }
 
-    @Test fun theCountriesComeFromTheGuidesPage() {
-        val html = """<a href="/files/epg-it.xml">Italy</a> <a href="https://iptv-epg.org/files/epg-de.xml">Germany</a>
-            <a href="/files/epg-it.xml">again</a> <a href="/files/other.xml">no</a> <a href="/files/epg-usa.xml">no</a>"""
-        assertEquals(listOf("de", "it"), epgCountriesIn(html))
-        assertEquals(listOf("fr"), epgCountriesIn(epgCountryUrl("FR"))) // the address saved names its country
+    @Test fun theCountriesComeFromTheHomePage() {
+        val html = """<a href="/files/epg-al.xml.gz">Albania</a> <a href="https://iptv-epg.org/files/epg-de.xml.gz">Germany</a>
+            <a href="files/epg-it.xml">Italy</a> <a href="/files/epg-al.xml.gz">again</a> <a href="/files/other.xml">no</a>"""
+        val links = epgLinksIn(html, "https://iptv-epg.org/")
+        assertEquals(listOf("al", "de", "it"), links.keys.sorted())
+        assertEquals("https://iptv-epg.org/files/epg-al.xml.gz", links["al"]) // the page's own link, made absolute
+        assertEquals("https://iptv-epg.org/files/epg-de.xml.gz", links["de"])
+        assertEquals("https://iptv-epg.org/files/epg-it.xml", links["it"])
+        assertEquals(listOf("al", "de", "it"), epgCountriesIn(html))
+    }
+
+    @Test fun theAddressSavedNamesItsCountry() {
+        assertEquals(listOf("fr"), epgCountriesIn(epgCountryUrl("FR")))
         assertEquals(emptyList<String>(), epgCountriesIn("https://example.com/guide.xml.gz"))
     }
 }
