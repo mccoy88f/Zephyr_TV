@@ -45,6 +45,8 @@ android {
     lint {
         // On purpose: no launcher entry, on a TV or elsewhere. Zephyr TV opens it, with a stream to play.
         disable += "MissingLeanbackLauncher"
+        // Predictive back is a touch gesture; on a TV Back is the remote's key, as in Zephyr TV.
+        disable += "GestureBackNavigation"
     }
 
     packaging {
