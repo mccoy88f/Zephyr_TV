@@ -13,10 +13,22 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.0.0
 
 - When you link a TV to an account that already has a configuration, select what to do: **Use the cloud configuration**, **Use this TV's configuration**, **Merge**, or **Cancel and leave**. Merge keeps the main user of the account and adds all other users of the TV. It also keeps the add-ons of both.
 - On a phone or tablet, the pages that show a QR code to link the TV or to sign in to Trakt also show **Open link**. Select it to continue in the browser of the same device.
+- Zephyr TV 4.0 has a website: ztv.mccoy88f.link. It has the downloads, the extensions catalogue and your Zephyr TV account.
+- **Zephyr TV account** links your TVs. Sync keeps the users, the avatars, the settings, the add-ons and what each user watched the same on all of them. At the first start, select **Local account** or **Zephyr TV account**.
+- **Zephyr TV catalogue** in **Extensions** shows the extensions that are reviewed on the site.
+- **Users** have avatars by DiceBear. The **Users** button opens a small menu with the users side by side.
+- **Spotlight** folds away when you go down to the rows. The background under the rows turns soft.
+- Zephyr TV has one PIN for everything: the layout lock, the 18+ lock and remote access. A backup never keeps the PIN or the Trakt keys.
+- **Remote access** lets a phone on your home network change settings, use a remote and save a backup.
+- The TV guide is on by default. Select **Settings → TV → Reorder channels** to put the channels in your order.
+- The player plays Blu-ray files with their sound, Dolby Vision profile 7 in HDR10, and subtitles from subtitles add-ons. **Match the frame rate** plays films at their own frame rate.
+- Trakt's sign-in goes through ztv.mccoy88f.link with PKCE. Shared links show the title's poster.
+- Zephyr TV is in English, Italian, Spanish, French, German, Portuguese (Brazil), Catalan, Chinese (Simplified) and Hindi.
+- The betas' notes below tell every change of 4.0 in detail.
 
 ## 4.0.0-beta.25
 
