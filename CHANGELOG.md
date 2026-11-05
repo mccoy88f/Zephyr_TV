@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.0.0-beta.24
 
 - **Zephyr TV account** links the TV to your account on ztv.mccoy88f.link. Select **Zephyr TV settings → System → Zephyr TV account**. Scan the QR code or type the code on the site. To unlink the TV, use the TV or the site.
 - **Zephyr TV catalogue** shows the extensions that are reviewed on ztv.mccoy88f.link. Select **Extensions → Zephyr TV catalogue**, then select an extension to install it.
