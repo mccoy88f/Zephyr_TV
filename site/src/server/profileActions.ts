@@ -8,7 +8,7 @@ import { redirect } from "@/i18n/navigation";
 import { parseAvatar } from "@/lib/avatars";
 import { answerLink, normalizeCode, pendingLink } from "./devices";
 import { currentAccount } from "./session";
-import { dropUserDocs } from "./sync";
+import { dropUserDocs, isMain } from "./sync";
 
 const MAX_USERS = 12;
 const field = (data: FormData, name: string) => String(data.get(name) ?? "");
@@ -59,7 +59,7 @@ export async function moveProfile(data: FormData) {
   const list = await db.select().from(profiles).where(eq(profiles.accountId, account.id)).orderBy(asc(profiles.position), asc(profiles.createdAt));
   const at = list.findIndex((p) => p.id === id);
   const to = at + (field(data, "dir") === "up" ? -1 : 1);
-  if (at >= 0 && to >= 0 && to < list.length) {
+  if (at > 0 && to > 0 && to < list.length) { // the first (main) user stays first
     [list[at], list[to]] = [list[to], list[at]];
     await Promise.all(list.map((p, i) => db.update(profiles).set({ position: i }).where(eq(profiles.id, p.id))));
   }
@@ -70,7 +70,7 @@ export async function moveProfile(data: FormData) {
 export async function deleteProfile(data: FormData) {
   const account = await signedIn();
   const id = field(data, "id");
-  if (uuid.test(id)) {
+  if (uuid.test(id) && !(await isMain(account.id, id))) {
     await db.delete(profiles).where(and(eq(profiles.id, id), eq(profiles.accountId, account.id)));
     await dropUserDocs(account.id, id);
   }

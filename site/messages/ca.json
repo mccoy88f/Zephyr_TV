@@ -274,7 +274,9 @@
     "avatar_intro": "Tria un estil i un avatar: el primer de cada estil és el d'aquest usuari, en aquell estil.",
     "pick": "Tria aquest avatar",
     "no_avatar": "Sense avatar",
-    "dicebear": "Avatars de DiceBear: només rep un codi aleatori, mai un nom."
+    "dicebear": "Avatars de DiceBear: només rep un codi aleatori, mai un nom.",
+    "main": "Usuari principal",
+    "main_note": "El primer usuari és el principal: la sincronització és seva i porta tots els usuaris. No es pot eliminar."
   },
   "catalog": {
     "title": "Extensions",

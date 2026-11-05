@@ -274,7 +274,9 @@
     "avatar_intro": "Elige un estilo y un avatar: el primero de cada estilo es el de este usuario, en ese estilo.",
     "pick": "Elegir este avatar",
     "no_avatar": "Sin avatar",
-    "dicebear": "Avatares de DiceBear: solo recibe un código aleatorio, nunca un nombre."
+    "dicebear": "Avatares de DiceBear: solo recibe un código aleatorio, nunca un nombre.",
+    "main": "Usuario principal",
+    "main_note": "El primer usuario es el principal: la sincronización es suya y lleva consigo a todos los usuarios. No se puede eliminar."
   },
   "catalog": {
     "title": "Extensiones",

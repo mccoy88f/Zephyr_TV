@@ -274,7 +274,9 @@
     "avatar_intro": "Wähle einen Stil und einen Avatar: Der erste jedes Stils ist der dieses Nutzers in diesem Stil.",
     "pick": "Diesen Avatar wählen",
     "no_avatar": "Kein Avatar",
-    "dicebear": "Avatare von DiceBear: Es erhält nur einen zufälligen Code, nie einen Namen."
+    "dicebear": "Avatare von DiceBear: Es erhält nur einen zufälligen Code, nie einen Namen.",
+    "main": "Hauptnutzer",
+    "main_note": "Der erste Nutzer ist der Hauptnutzer: Ihm gehört die Synchronisierung, die alle Nutzer mitnimmt. Er kann nicht gelöscht werden."
   },
   "catalog": {
     "title": "Erweiterungen",

@@ -161,8 +161,8 @@ internal object Sync {
     }
 
     /**
-     * The users, here and on the account. A user here new to the account: the account's user of the same name, or
-     * added there. Changed on one side since the last sync: the other side follows (both: the account's). Removed on
+     * The users, here and on the account: all of this TV's, the main one (the first: sync is theirs) being the
+     * account's first. Another user here new to the account: the account's user of the same name, or added there. Changed on one side since the last sync: the other side follows (both: the account's). Removed on
      * one side: removed on the other (here, with what they watched; the first user stays, and goes up again). On the
      * account and new here: added here. Whether it changed here.
      */
@@ -176,7 +176,10 @@ internal object Sync {
         for (u in before) {
             var sid = u.sid
             if (sid == null) {
-                val match = server.values.firstOrNull { it.getString("id") !in claimed && it.optString("name").equals(u.name, ignoreCase = true) }
+                // The main user (the first, sync's owner) is the account's first user; the others by name.
+                val first = (0 until list.length()).firstNotNullOfOrNull { list.optJSONObject(it) }
+                val match = if (u.id == "") first?.takeIf { it.getString("id") !in claimed }
+                    else server.values.firstOrNull { it.getString("id") !in claimed && it.getString("id") != first?.getString("id") && it.optString("name").equals(u.name, ignoreCase = true) }
                 sid = match?.getString("id") ?: ZtvAccount.addUser(token, u.name, u.avatar)?.also {
                     server[it] = JSONObject().put("id", it).put("name", u.name).put("avatar", u.avatar ?: JSONObject.NULL)
                     snap.put(it, JSONObject().put("name", u.name).put("avatar", u.avatar ?: ""))

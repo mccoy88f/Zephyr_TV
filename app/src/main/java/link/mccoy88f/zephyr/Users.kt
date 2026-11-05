@@ -175,7 +175,7 @@ private fun MainActivity.usersSettings(focus: Int = 0) {
         page(u.name, listOfNotNull(trakt, if (u.id == current.id) CHOSEN else null).joinToString("  ")) { userPage(u) }
     } + page(getString(R.string.user_add)) { userName(null) } +
         // Sync with a Zephyr TV account: on (and its page, Sync now), or off (linking this TV).
-        page(getString(R.string.sync_title), syncValue()) { ztvAccount { usersSettings(list.size + 1) } } +
+        page(getString(R.string.sync_owned, list.first().name), syncValue()) { syncByOwner { usersSettings(list.size + 1) } } +
         adultSettingsRows { usersSettings(list.size + 2) }, focus) { backFromUsersSettings() }
     userIcons(list)
 }
@@ -217,6 +217,8 @@ private fun MainActivity.userPage(given: User, focus: Int = 0) {
         // Their avatar first, drawn before its row's name (see below), then their name.
         page(getString(R.string.user_avatar), Avatars.parse(u.avatar)?.let { Avatars.styleName(it.first) } ?: getString(R.string.avatar_none_value)) { avatarStyles(u) },
         page(getString(R.string.user_rename)) { userName(u) },
+        // The main user owns sync: theirs to turn on or off, for every user here.
+        if (u.id == "") page(getString(R.string.sync_title), syncValue()) { syncByOwner { userPage(u) } } else null,
         // The first user stays: their files are Zephyr TV's own.
         if (u.id == "") null else page(getString(R.string.user_remove)) {
             saveUsers(users().filter { it.id != u.id })
@@ -580,3 +582,14 @@ internal fun MainActivity.traktHistory(items: List<Pair<String, String>>, on: Bo
     val dir = vodDir()
     if (Trakt.account(dir) != null) netIo.execute { Trakt.history(dir, items, on) }
 }
+
+/**
+ * Sync's page (see ztvAccount), for the main user only: sync is theirs, and it carries every user of this TV. Another
+ * user in use is told whose it is. [back]: where Back goes.
+ */
+internal fun MainActivity.syncByOwner(back: () -> Unit) {
+    val owner = users().first()
+    if (currentUser().id != owner.id) return Toast.makeText(this, getString(R.string.sync_owner_only, owner.name), Toast.LENGTH_LONG).show()
+    ztvAccount(back)
+}
+

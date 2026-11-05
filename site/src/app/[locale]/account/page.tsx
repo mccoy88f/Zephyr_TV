@@ -45,6 +45,7 @@ export default async function AccountPage({ params, searchParams }: {
       <article className="card" id="users">
         <h2>{u("title")}</h2>
         <p>{u("intro")}</p>
+        {users.length > 0 && <p className="small">{u("main_note")}</p>}
         <ul className="people">
           {users.map((p, i) => (
             <li key={p.id}>
@@ -52,11 +53,13 @@ export default async function AccountPage({ params, searchParams }: {
                 {avatarUrl(p.avatar) ? <img src={avatarUrl(p.avatar)!} alt="" width={56} height={56} /> : <span className="initial">{[...p.name.trim()][0]?.toUpperCase() ?? "?"}</span>}
                 <span>{p.name}</span>
               </Link>
-              <div className="row-actions">
-                {i > 0 && <form action={moveProfile}><input type="hidden" name="id" value={p.id} /><input type="hidden" name="dir" value="up" /><button className="linkish" aria-label={u("up")}>↑</button></form>}
-                {i < users.length - 1 && <form action={moveProfile}><input type="hidden" name="id" value={p.id} /><input type="hidden" name="dir" value="down" /><button className="linkish" aria-label={u("down")}>↓</button></form>}
-                <form action={deleteProfile}><input type="hidden" name="id" value={p.id} /><button className="linkish danger-text">{u("delete")}</button></form>
-              </div>
+              {i === 0 ? <span className="tag" title={u("main_note")}>{u("main")}</span> : (
+                <div className="row-actions">
+                  {i > 1 && <form action={moveProfile}><input type="hidden" name="id" value={p.id} /><input type="hidden" name="dir" value="up" /><button className="linkish" aria-label={u("up")}>↑</button></form>}
+                  {i < users.length - 1 && <form action={moveProfile}><input type="hidden" name="id" value={p.id} /><input type="hidden" name="dir" value="down" /><button className="linkish" aria-label={u("down")}>↓</button></form>}
+                  <form action={deleteProfile}><input type="hidden" name="id" value={p.id} /><button className="linkish danger-text">{u("delete")}</button></form>
+                </div>
+              )}
             </li>
           ))}
         </ul>

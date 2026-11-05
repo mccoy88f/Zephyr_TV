@@ -1,6 +1,6 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
-import { and, eq, like, sql } from "drizzle-orm";
+import { and, asc, eq, like, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { profiles, syncDocs } from "@/db/schema";
 
@@ -84,4 +84,11 @@ export async function writeDoc(accountId: string, deviceId: string, key: string,
 /** A user's documents, gone with them. */
 export async function dropUserDocs(accountId: string, profileId: string) {
   await db.delete(syncDocs).where(and(eq(syncDocs.accountId, accountId), like(syncDocs.key, `%:${profileId}`)));
+}
+
+/** Whether [id] is the account's main user: its first, whose TV owns sync. It stays. */
+export async function isMain(accountId: string, id: string) {
+  const [first] = await db.select({ id: profiles.id }).from(profiles).where(eq(profiles.accountId, accountId))
+    .orderBy(asc(profiles.position), asc(profiles.createdAt)).limit(1);
+  return first?.id === id;
 }

@@ -839,4 +839,6 @@
     <string name="sync_title">Sincronizzazione</string>
     <string name="sync_on">Attiva · %1$s</string>
     <string name="sync_off">Non attiva: collega un account Zephyr TV</string>
+    <string name="sync_owned">Sincronizzazione (%1$s)</string>
+    <string name="sync_owner_only">La sincronizzazione è di %1$s, l\'utente principale: passa a quell\'utente per cambiarla.</string>
 </resources>

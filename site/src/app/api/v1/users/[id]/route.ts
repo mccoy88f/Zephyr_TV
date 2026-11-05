@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { profiles } from "@/db/schema";
 import { parseAvatar } from "@/lib/avatars";
 import { deviceOf } from "@/server/devices";
-import { dropUserDocs } from "@/server/sync";
+import { dropUserDocs, isMain } from "@/server/sync";
 
 export const dynamic = "force-dynamic";
 type Ctx = { params: Promise<{ id: string }> };
@@ -28,7 +28,7 @@ export async function DELETE(req: Request, { params }: Ctx) {
   const me = await deviceOf(req);
   if (!me) return new Response(null, { status: 401 });
   const { id } = await params;
-  if (UUID.test(id)) {
+  if (UUID.test(id) && !(await isMain(me.account.id, id))) {
     await db.delete(profiles).where(and(eq(profiles.id, id), eq(profiles.accountId, me.account.id)));
     await dropUserDocs(me.account.id, id);
   }

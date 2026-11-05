@@ -274,7 +274,9 @@
     "avatar_intro": "Pick a style and an avatar: the first of each style is this user's, in that style.",
     "pick": "Choose this avatar",
     "no_avatar": "No avatar",
-    "dicebear": "Avatars by DiceBear: only a random code goes to it, never a name."
+    "dicebear": "Avatars by DiceBear: only a random code goes to it, never a name.",
+    "main": "Main user",
+    "main_note": "The first user is the main one: their TV owns sync, which carries every user. They can't be removed."
   },
   "catalog": {
     "title": "Extensions",

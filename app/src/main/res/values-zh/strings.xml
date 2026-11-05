@@ -833,4 +833,6 @@
     <string name="sync_title">同步</string>
     <string name="sync_on">已开启 · %1$s</string>
     <string name="sync_off">未开启：关联 Zephyr TV 账号</string>
+    <string name="sync_owned">同步（%1$s）</string>
+    <string name="sync_owner_only">同步属于主用户 %1$s：切换到该用户才能更改。</string>
 </resources>

@@ -836,4 +836,6 @@
     <string name="sync_title">सिंक</string>
     <string name="sync_on">चालू · %1$s</string>
     <string name="sync_off">बंद: Zephyr TV अकाउंट जोड़ें</string>
+    <string name="sync_owned">सिंक (%1$s)</string>
+    <string name="sync_owner_only">सिंक मुख्य यूज़र %1$s का है: इसे बदलने के लिए उस यूज़र पर जाएँ।</string>
 </resources>
