@@ -98,7 +98,13 @@ internal object Trakt {
         part.renameTo(File(dir, SEEN))
     }
 
-    fun synced(dir: File, at: Long) = account(dir)?.let { save(dir, Account(it.access, it.refresh, it.expires, it.user, at)) }
+    /**
+     * When it was last synced, kept with the account. Under the lock, read again: written with tokens read before the
+     * other process refreshed them, it put back a refresh token Trakt had taken back, and the next refresh signed out.
+     */
+    fun synced(dir: File, at: Long) = synchronized(this) {
+        locked(dir, FILE) { account(dir)?.let { save(dir, Account(it.access, it.refresh, it.expires, it.user, at)) } }
+    }
 
     private fun tokens(o: JSONObject, user: String, synced: Long = 0) = Account(o.getString("access_token"), o.getString("refresh_token"),
         (o.optLong("created_at", System.currentTimeMillis() / 1000) + o.optLong("expires_in", 7 * 86400)) * 1000, user, synced)
@@ -147,19 +153,33 @@ internal object Trakt {
     private fun token(dir: File): String? {
         val a = account(dir) ?: return null
         if (System.currentTimeMillis() < a.expires - REFRESH_BEFORE_MS) return a.access
-        return synchronized(this) {
-            locked(dir, FILE) {
-                val now = account(dir) ?: return@locked null
-                if (now.refresh != a.refresh) return@locked now.access // refreshed meanwhile, here or in the other process
-                val (code, body) = refreshed(now.refresh) ?: return@locked now.access // offline: the old one may still work
-                when {
-                    code == 401 || code == 400 -> { forget(dir); null } // revoked: signed out
-                    code !in 200..299 -> now.access
-                    else -> tokens(JSONObject(body), now.user, now.synced).also { save(dir, it) }.access
-                }
+        return renew(dir, a).let { if (it == Renewal.REVOKED) null else account(dir)?.access }
+    }
+
+    /** How a refresh went: new tokens saved; Trakt took the account back (signed out); or no sure answer (kept). */
+    enum class Renewal { DONE, REVOKED, UNKNOWN }
+
+    /**
+     * The tokens of [a] (read before) refreshed. Signed out only when Trakt itself says the refresh token is no longer
+     * valid (invalid_grant): any other failure (offline, Trakt or a site down, a site's own error) keeps the account,
+     * which used to be signed out by an answer that wasn't Trakt's.
+     */
+    private fun renew(dir: File, a: Account): Renewal = synchronized(this) {
+        locked(dir, FILE) {
+            val now = account(dir) ?: return@locked Renewal.REVOKED
+            if (now.refresh != a.refresh) return@locked Renewal.DONE // refreshed meanwhile, here or in the other process
+            val (code, body) = refreshed(now.refresh) ?: return@locked Renewal.UNKNOWN // offline: the old one may still work
+            when {
+                code in 200..299 -> runCatching { tokens(JSONObject(body), now.user, now.synced) }.getOrNull()
+                    ?.let { save(dir, it); Renewal.DONE } ?: Renewal.UNKNOWN
+                invalidGrant(body) -> { forget(dir); Renewal.REVOKED } // Trakt no longer knows it: signed out
+                else -> Renewal.UNKNOWN
             }
         }
     }
+
+    /** Trakt's own "this refresh token is no longer valid": the one answer that signs out. */
+    private fun invalidGrant(body: String) = runCatching { JSONObject(body).optString("error") }.getOrNull() == "invalid_grant"
 
     /**
      * Trakt's answer to [refresh]: from Trakt itself, with the app's id alone (PKCE). When Trakt wants the app's secret
@@ -283,8 +303,22 @@ internal object Trakt {
 
     /** Films and episodes watched, as VodWatched keeps them (with when, and the title's name). Null when Trakt can't be asked. */
     fun watched(dir: File): List<VodWatched.Mark>? {
-        val movies = call(dir, "GET", "/sync/watched/movies")
-        if (refused(movies)) throw SignedOut()
+        var movies = call(dir, "GET", "/sync/watched/movies")
+        // Refused: the access token may have run out early (refreshed by another device's clock, or a refresh that
+        // failed for a moment): refreshed now and asked again. Signed out only when Trakt says so for sure (see renew),
+        // or still refuses the new token; else this sync is skipped and the account kept.
+        if (refused(movies)) {
+            val a = account(dir) ?: return null
+            when (renew(dir, a)) {
+                Renewal.REVOKED -> throw SignedOut()
+                Renewal.UNKNOWN -> return null
+                Renewal.DONE -> {
+                    movies = call(dir, "GET", "/sync/watched/movies")
+                    if (movies?.first == 401) throw SignedOut()
+                    if (refused(movies)) return null // 403: the app's key or Trakt itself, not the account
+                }
+            }
+        }
         val shows = call(dir, "GET", "/sync/watched/shows?extended=progress")
         if (movies?.first != 200 || shows?.first != 200) return null
         return parseWatched(JSONArray(movies.second), JSONArray(shows.second))

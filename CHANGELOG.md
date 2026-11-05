@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- Zephyr TV does not disconnect Trakt by itself any more. Before, a refresh of the access that failed for a moment, or the sync and the player saving the account at the same time, disconnected it. Now Zephyr TV disconnects Trakt only when Trakt says that the access is no longer valid.
+
 ## 4.2.0
 
 - When a film or an episode is downloaded, a **Download** icon shows after **Search** at the top right. A red dot on it shows that a download is in progress.
