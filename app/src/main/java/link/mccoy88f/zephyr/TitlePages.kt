@@ -641,7 +641,12 @@ private fun MainActivity.titlePage(title: String, art: Triple<String?, String?, 
     val scrim = settingsScrim as FrameLayout
     val w = scrim.width.takeIf { it > 0 } ?: resources.displayMetrics.widthPixels
     val wide = w > dp(720)
-    showPage(title, rows, focus, top = if (wide) null else top.root, back = back, panes = glass)
+    Ticks.watched = true // its rows' ✓ are watched marks: blue
+    try {
+        showPage(title, rows, focus, top = if (wide) null else top.root, back = back, panes = glass)
+    } finally {
+        Ticks.watched = false
+    }
     // A whole page: the art over the screen, its logo and details on the left, buttons on the right.
     detailPage("$name|${art.first}|${art.third}", listOfNotNull(art.second, fallback?.second).distinct(), title = name, infoView = top.root) { frame, fw, fh ->
         fillArt(frame, fw, fh, art.first, null, art.third, name, fallback?.let { Triple(it.first, null, it.third) }, page = true)

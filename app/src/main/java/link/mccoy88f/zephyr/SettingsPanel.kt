@@ -913,7 +913,7 @@ internal fun MainActivity.settingsRow(title: String, value: String, pane: Boolea
         val submenu = value == SUBMENU
         // The value gives way to the name: capped, so a long one ("Not set: press to enter") is shortened, not the name.
         val state = label(if (toggled || submenu) "" else value, 13f).apply {
-            text = blueTicks(text) // a watched ✓ in blue
+            if (Ticks.watched) text = blueTicks(text) // a title page's watched ✓ in blue (a chosen option's stays as it is)
             alpha = 0.6f
             maxWidth = dp(170)
             setPadding(dp(12), 0, 0, 0)

@@ -298,6 +298,14 @@ internal fun MainActivity.titleProgressCards(hidden: Set<String>): List<Pair<Lon
     }
 }
 
+/**
+ * While a title's page builds its rows: their ✓ is a watched one, blue. Elsewhere in Settings the same ✓ marks the
+ * option chosen, and keeps the text's colour.
+ */
+internal object Ticks {
+    var watched = false
+}
+
 /** The blue of a "watched" tick (✓), wherever it shows: the cards, the title pages, their rows. */
 internal const val TICK_BLUE = 0xFF3B82F6.toInt()
 
