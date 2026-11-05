@@ -122,18 +122,28 @@ internal fun MainActivity.openDownloadsMenu(anchor: View) {
         setPadding(dp(6), dp(10), dp(6), dp(6))
         background = menuBackground()
         elevation = dp(8).toFloat()
-        minimumWidth = dp(360)
+        minimumWidth = dp(320)
     }
     val menu = PopupWindow(box, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
         setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0))
         elevation = dp(8).toFloat()
     }
-    box.addView(label(getString(R.string.download), 15f).apply { setPadding(dp(14), 0, dp(14), dp(8)) })
+    box.addView(label(getString(R.string.downloads_title), 15f).apply { setPadding(dp(14), 0, dp(14), dp(8)) })
     val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-    box.addView(object : ScrollView(this) {
-        // No taller than about six rows: the rest scrolls.
-        override fun onMeasure(w: Int, h: Int) = super.onMeasure(w, View.MeasureSpec.makeMeasureSpec(dp(300), View.MeasureSpec.AT_MOST))
-    }.apply { isVerticalScrollBarEnabled = false; addView(list) })
+    // The rows in the middle scroll: the window stays small, under the top bar, whatever the number of downloads.
+    val scroll = ScrollView(this).apply {
+        isVerticalScrollBarEnabled = true
+        isVerticalFadingEdgeEnabled = true // a faded edge says there are more rows
+        setFadingEdgeLength(dp(16))
+        isFillViewport = true
+        addView(list)
+    }
+    box.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+    // Up to four rows, and no more than a third of the screen's height: the rest scrolls.
+    val rowsHigh = minOf(dp(46) * 4, resources.displayMetrics.heightPixels / 3)
+    fun fit(rows: Int) {
+        scroll.layoutParams = scroll.layoutParams.apply { height = minOf(dp(46) * rows.coerceAtLeast(1), rowsHigh) }
+    }
     val values = HashMap<String, TextView>()
 
     fun fill(entries: Map<String, Downloads.Entry>) {
@@ -193,6 +203,7 @@ internal fun MainActivity.openDownloadsMenu(anchor: View) {
             }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(2) })
         }
         entries.forEach { (id, _) -> values[id]?.text = downloadValue(lastStatuses[id]) }
+        fit(entries.size)
     }
     fill(lastEntries)
 

@@ -668,6 +668,7 @@
     <string name="download_waiting">Esperant per baixar</string>
     <string name="download_failed_status">La baixada ha fallat</string>
     <string name="download_missing">El fitxer baixat ja no hi és</string>
+    <string name="downloads_title">Baixades</string>
     <string name="downloads_delete_all">Esborra-les totes</string>
     <string name="downloads_delete_all_sure">Prem un altre cop per esborrar-les totes</string>
     <string name="download_no_page">Aquesta baixada no pot obrir la seva pàgina: la va fer una versió anterior. Esborra-la i torna-la a baixar.</string>
@@ -677,7 +678,7 @@
     <string name="share_file">El fitxer</string>
     <string name="setting_download_folder">Carpeta de baixades</string>
     <string name="download_folder_intro">On desa Baixa les pel·lícules i els episodis. Els trobaràs a:\n%1$s</string>
-    <string name="download_folder_app">Zephyr TV (s\'esborra amb l\'app)</string>
+    <string name="download_folder_app">Carpeta de Zephyr TV</string>
     <string name="download_folder_downloads">Download / Zephyr TV</string>
     <string name="download_folder_movies">Pel·lícules (Movies) / Zephyr TV</string>
     <string name="download_folder_drive">Unitat: %1$s</string>

@@ -668,6 +668,7 @@
     <string name="download_waiting">Esperando para descargar</string>
     <string name="download_failed_status">La descarga ha fallado</string>
     <string name="download_missing">El archivo descargado ya no está</string>
+    <string name="downloads_title">Descargas</string>
     <string name="downloads_delete_all">Borrar todas</string>
     <string name="downloads_delete_all_sure">Pulsa otra vez para borrarlas todas</string>
     <string name="download_no_page">Esta descarga no puede abrir su página: la hizo una versión anterior. Bórrala y descárgala de nuevo.</string>
@@ -677,7 +678,7 @@
     <string name="share_file">El archivo</string>
     <string name="setting_download_folder">Carpeta de descargas</string>
     <string name="download_folder_intro">Dónde guarda Descargar películas y episodios. Los encuentras en:\n%1$s</string>
-    <string name="download_folder_app">Zephyr TV (se borra con la app)</string>
+    <string name="download_folder_app">Carpeta de Zephyr TV</string>
     <string name="download_folder_downloads">Download / Zephyr TV</string>
     <string name="download_folder_movies">Películas (Movies) / Zephyr TV</string>
     <string name="download_folder_drive">Unidad: %1$s</string>

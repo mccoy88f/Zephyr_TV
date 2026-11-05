@@ -667,6 +667,7 @@
     <string name="download_waiting">Wartet auf Download</string>
     <string name="download_failed_status">Der Download ist fehlgeschlagen</string>
     <string name="download_missing">Die heruntergeladene Datei ist nicht mehr da</string>
+    <string name="downloads_title">Downloads</string>
     <string name="downloads_delete_all">Alle löschen</string>
     <string name="downloads_delete_all_sure">Erneut drücken, um alle zu löschen</string>
     <string name="download_no_page">Dieser Download kann seine Seite nicht öffnen: Er stammt von einer älteren Version. Lösche ihn und lade ihn erneut herunter.</string>
@@ -676,7 +677,7 @@
     <string name="share_file">Die Datei</string>
     <string name="setting_download_folder">Download-Ordner</string>
     <string name="download_folder_intro">Wo Herunterladen Filme und Folgen speichert. Du findest sie in:\n%1$s</string>
-    <string name="download_folder_app">Zephyr TV (wird mit der App entfernt)</string>
+    <string name="download_folder_app">Zephyr-TV-Ordner</string>
     <string name="download_folder_downloads">Download / Zephyr TV</string>
     <string name="download_folder_movies">Filme (Movies) / Zephyr TV</string>
     <string name="download_folder_drive">Laufwerk: %1$s</string>

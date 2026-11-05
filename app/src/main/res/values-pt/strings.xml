@@ -668,6 +668,7 @@
     <string name="download_waiting">À espera para transferir</string>
     <string name="download_failed_status">A transferência falhou</string>
     <string name="download_missing">O ficheiro transferido já não existe</string>
+    <string name="downloads_title">Transferências</string>
     <string name="downloads_delete_all">Eliminar todas</string>
     <string name="downloads_delete_all_sure">Prima de novo para eliminar todas</string>
     <string name="download_no_page">Esta transferência não consegue abrir a página: foi feita por uma versão anterior. Elimine-a e transfira-a de novo.</string>
@@ -677,7 +678,7 @@
     <string name="share_file">O ficheiro</string>
     <string name="setting_download_folder">Pasta de transferências</string>
     <string name="download_folder_intro">Onde Transferir guarda filmes e episódios. Encontra-os em:\n%1$s</string>
-    <string name="download_folder_app">Zephyr TV (apagada com a app)</string>
+    <string name="download_folder_app">Pasta do Zephyr TV</string>
     <string name="download_folder_downloads">Download / Zephyr TV</string>
     <string name="download_folder_movies">Filmes (Movies) / Zephyr TV</string>
     <string name="download_folder_drive">Unidade: %1$s</string>

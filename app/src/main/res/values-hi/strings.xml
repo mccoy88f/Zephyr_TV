@@ -667,6 +667,7 @@
     <string name="download_waiting">डाउनलोड की प्रतीक्षा</string>
     <string name="download_failed_status">डाउनलोड विफल रहा</string>
     <string name="download_missing">डाउनलोड की गई फ़ाइल अब नहीं है</string>
+    <string name="downloads_title">डाउनलोड किए गए</string>
     <string name="downloads_delete_all">सभी हटाएँ</string>
     <string name="downloads_delete_all_sure">सभी हटाने के लिए फिर से दबाएँ</string>
     <string name="download_no_page">यह डाउनलोड अपना पेज नहीं खोल सकता: इसे पुराने संस्करण ने बनाया था। इसे हटाकर फिर से डाउनलोड करें।</string>
@@ -676,7 +677,7 @@
     <string name="share_file">फ़ाइल</string>
     <string name="setting_download_folder">डाउनलोड फ़ोल्डर</string>
     <string name="download_folder_intro">डाउनलोड फ़िल्में और एपिसोड कहाँ सहेजता है। आप उन्हें यहाँ पाएँगे:\n%1$s</string>
-    <string name="download_folder_app">Zephyr TV (ऐप के साथ हटता है)</string>
+    <string name="download_folder_app">Zephyr TV फ़ोल्डर</string>
     <string name="download_folder_downloads">Download / Zephyr TV</string>
     <string name="download_folder_movies">Movies / Zephyr TV</string>
     <string name="download_folder_drive">ड्राइव: %1$s</string>

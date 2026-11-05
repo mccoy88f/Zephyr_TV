@@ -17,6 +17,8 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 - Zephyr TV does not disconnect Trakt by itself any more. Before, a refresh of the access that failed for a moment, or the sync and the player saving the account at the same time, disconnected it. Now Zephyr TV disconnects Trakt only when Trakt says that the access is no longer valid.
 - When a user has Trakt on another TV of the same Zephyr TV account, this TV asks one time to connect Trakt here too. Scan the QR code with your phone. The account keeps only the Trakt name, never the keys.
+- The downloads window is called **Downloads**. It is smaller: it shows up to four downloads, and you scroll to see the others.
+- The folder of Zephyr TV for downloads is called **Zephyr TV folder**.
 
 ## 4.2.0
 

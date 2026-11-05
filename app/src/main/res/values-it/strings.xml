@@ -668,6 +668,7 @@
     <string name="download_waiting">In attesa di scaricare</string>
     <string name="download_failed_status">Il download non è riuscito</string>
     <string name="download_missing">Il file scaricato non c\'è più</string>
+    <string name="downloads_title">Scaricati</string>
     <string name="downloads_delete_all">Cancella tutti</string>
     <string name="downloads_delete_all_sure">Premi ancora per cancellarli tutti</string>
     <string name="download_no_page">Questo download non può aprire la sua pagina: è stato fatto da una versione precedente. Cancellalo e scaricalo di nuovo.</string>
@@ -677,7 +678,7 @@
     <string name="share_file">Il file</string>
     <string name="setting_download_folder">Cartella dei download</string>
     <string name="download_folder_intro">Dove Scarica salva film ed episodi. Li trovi in:\n%1$s</string>
-    <string name="download_folder_app">Zephyr TV (eliminata con l\'app)</string>
+    <string name="download_folder_app">Cartella di Zephyr TV</string>
     <string name="download_folder_downloads">Download / Zephyr TV</string>
     <string name="download_folder_movies">Film (Movies) / Zephyr TV</string>
     <string name="download_folder_drive">Unità: %1$s</string>

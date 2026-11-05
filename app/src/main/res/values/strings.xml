@@ -667,6 +667,7 @@
     <string name="download_waiting">Waiting to download</string>
     <string name="download_failed_status">The download failed</string>
     <string name="download_missing">The downloaded file is no longer there</string>
+    <string name="downloads_title">Downloads</string>
     <string name="downloads_delete_all">Delete all</string>
     <string name="downloads_delete_all_sure">Press again to delete all</string>
     <string name="download_no_page">This download can\'t open its page: it was made by an older version. Delete it and download it again.</string>
@@ -676,7 +677,7 @@
     <string name="share_file">The file</string>
     <string name="setting_download_folder">Download folder</string>
     <string name="download_folder_intro">Where Download saves films and episodes. Find them in:\n%1$s</string>
-    <string name="download_folder_app">Zephyr TV (removed with the app)</string>
+    <string name="download_folder_app">Zephyr TV folder</string>
     <string name="download_folder_downloads">Download / Zephyr TV</string>
     <string name="download_folder_movies">Movies / Zephyr TV</string>
     <string name="download_folder_drive">Drive: %1$s</string>

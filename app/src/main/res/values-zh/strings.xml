@@ -666,6 +666,7 @@
     <string name="download_waiting">等待下载</string>
     <string name="download_failed_status">下载失败</string>
     <string name="download_missing">下载的文件已不存在</string>
+    <string name="downloads_title">已下载</string>
     <string name="downloads_delete_all">全部删除</string>
     <string name="downloads_delete_all_sure">再按一次以全部删除</string>
     <string name="download_no_page">此下载无法打开其页面：它由旧版本创建。请删除后重新下载。</string>
@@ -675,7 +676,7 @@
     <string name="share_file">文件</string>
     <string name="setting_download_folder">下载文件夹</string>
     <string name="download_folder_intro">“下载”保存电影和剧集的位置。文件位于：\n%1$s</string>
-    <string name="download_folder_app">Zephyr TV（随应用一起删除）</string>
+    <string name="download_folder_app">Zephyr TV 文件夹</string>
     <string name="download_folder_downloads">Download / Zephyr TV</string>
     <string name="download_folder_movies">Movies / Zephyr TV</string>
     <string name="download_folder_drive">存储设备：%1$s</string>
