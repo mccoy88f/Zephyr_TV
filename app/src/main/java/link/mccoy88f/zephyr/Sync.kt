@@ -123,8 +123,30 @@ internal object Sync {
         K.NUVIO_REPOS_OFF, K.NUVIO_REPOS, K.NUVIO_ON, K.NUVIO_OFF, K.NUVIO_ADULT, K.NUVIO_OPTIONS, K.NUVIO_ORDER,
     )
 
-    /** The settings the account keeps: a backup's, but those of this TV only. */
-    val KEYS: Set<String> = Backup.KEYS - LOCAL_ONLY
+    /**
+     * The settings the account keeps: a backup's, but those of this TV only; and which users have Trakt on some TV
+     * (their Trakt name only, never its keys: each TV connects on its own, see offerTrakt).
+     */
+    val KEYS: Set<String> = Backup.KEYS - LOCAL_ONLY + K.TRAKT_ACCOUNTS
+
+    /** The settings that build the home screen: all but who has Trakt (that one changing builds nothing again). */
+    private fun shown(a: MainActivity) = a.prefs.all.filterKeys { it in KEYS && it != K.TRAKT_ACCOUNTS }.mapValues { it.value.toString() }
+
+    /**
+     * This TV's users with Trakt connected, added to those the account knows (K.TRAKT_ACCOUNTS): the other TVs then
+     * offer to connect it there too. A user's entry goes when Trakt is disconnected on a TV (see traktGone); a TV that
+     * still has it puts it back at its next sync.
+     */
+    private fun noteTrakt(a: MainActivity) {
+        val known = runCatching { JSONObject(a.prefs.getString(K.TRAKT_ACCOUNTS, null) ?: "{}") }.getOrDefault(JSONObject())
+        var changed = false
+        for (u in a.users()) {
+            val sid = u.sid ?: continue
+            val name = Trakt.account(a.vodDir(u.id))?.user ?: continue
+            if (!known.has(sid) || known.optString(sid) != name) { known.put(sid, name); changed = true }
+        }
+        if (changed) a.prefs.edit().putString(K.TRAKT_ACCOUNTS, known.toString()).commit()
+    }
 
     internal val running = AtomicBoolean(false)
     @Volatile internal var last = 0L
@@ -138,7 +160,9 @@ internal object Sync {
         state.optString("email").takeIf { it.isNotBlank() }?.let { a.prefs.edit().putString(K.ZTV_EMAIL, it).apply() }
         val revs = state.optJSONObject("docs") ?: JSONObject()
         val users = syncUsers(a, token, state.optJSONArray("users") ?: JSONArray(), first)
-        val settings = syncDoc(token, "settings", revs, File(a.syncDir(), "settings.json"), first) { merge ->
+        noteTrakt(a)
+        val shownBefore = shown(a)
+        val synced = syncDoc(token, "settings", revs, File(a.syncDir(), "settings.json"), first) { merge ->
             val local = SyncMerge.toMap(JSONObject().apply {
                 for ((k, v) in a.prefs.all) if (k in KEYS) Backup.encode(v)?.let { put(k, it) }
             })
@@ -149,6 +173,7 @@ internal object Sync {
             edit.apply()
             merged
         }
+        val settings = synced && shown(a) != shownBefore
         var data = false
         for (u in a.users()) {
             val sid = u.sid ?: continue
@@ -338,6 +363,7 @@ internal fun MainActivity.syncNow(first: Sync.First? = null, then: ((Sync.Result
             } else if (e != null) warn("sync failed ($e)")
             val result = r.getOrNull()
             if (result != null) {
+                offerTrakt() // users with Trakt on another TV: connect it here too
                 if (result.settings) Sync.recreatePending = true
                 if (result.users || result.data) usersChanged() // in place
                 if (then == null) syncShow()

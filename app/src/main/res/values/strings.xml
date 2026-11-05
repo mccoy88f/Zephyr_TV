@@ -765,6 +765,7 @@
     <string name="trakt_connect">Connect Trakt</string>
     <string name="trakt_skip">Skip</string>
     <string name="trakt_reconnect_intro">The backup had %1$s signed in to Trakt (%2$s). Scan the code with your phone to sign in again: a backup never carries Trakt\'s keys.</string>
+    <string name="trakt_elsewhere_intro">On another TV of your Zephyr TV account, %1$s is signed in to Trakt (%2$s). Scan the code with your phone to sign in on this TV too: each TV signs in on its own, the account never carries Trakt\'s keys.</string>
     <string name="trakt_not_connected">Not connected</string>
     <string name="trakt_sign_in_intro">Scan the code with your phone. Sign in to Trakt and allow Zephyr TV. The device connects by itself.</string>
     <string name="trakt_waiting">Waiting for Trakt…</string>

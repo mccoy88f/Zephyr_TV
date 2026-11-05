@@ -765,6 +765,7 @@
     <string name="trakt_connect">Trakt जोड़ें</string>
     <string name="trakt_skip">छोड़ें</string>
     <string name="trakt_reconnect_intro">बैकअप में %1$s Trakt से जुड़ा था (%2$s)। फिर से जोड़ने के लिए फ़ोन से कोड स्कैन करें: बैकअप में Trakt की कुंजियाँ कभी नहीं होतीं।</string>
+    <string name="trakt_elsewhere_intro">आपके Zephyr TV खाते के किसी दूसरे टीवी पर %1$s Trakt से जुड़ा है (%2$s)। इस टीवी पर भी जोड़ने के लिए फ़ोन से कोड स्कैन करें: हर टीवी अपने आप जुड़ता है, खाते में Trakt की कुंजियाँ कभी नहीं जातीं।</string>
     <string name="trakt_not_connected">जुड़ा नहीं है</string>
     <string name="trakt_sign_in_intro">अपने फ़ोन से कोड स्कैन करें। Trakt में साइन इन करें और Zephyr TV को अनुमति दें। डिवाइस अपने-आप जुड़ जाएगा।</string>
     <string name="trakt_waiting">Trakt का इंतज़ार…</string>

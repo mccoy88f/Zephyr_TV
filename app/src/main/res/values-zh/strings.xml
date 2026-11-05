@@ -762,6 +762,7 @@
     <string name="trakt_connect">连接 Trakt</string>
     <string name="trakt_skip">跳过</string>
     <string name="trakt_reconnect_intro">备份中 %1$s 已连接 Trakt（%2$s）。用手机扫描二维码重新连接：备份从不包含 Trakt 的密钥。</string>
+    <string name="trakt_elsewhere_intro">在你的 Zephyr TV 账户的另一台电视上，%1$s 已连接 Trakt（%2$s）。用手机扫描二维码，也在这台电视上连接：每台电视各自连接，账户从不包含 Trakt 的密钥。</string>
     <string name="trakt_not_connected">未连接</string>
     <string name="trakt_sign_in_intro">用手机扫描二维码。登录 Trakt 并允许 Zephyr TV。设备会自动连接。</string>
     <string name="trakt_waiting">正在等待 Trakt…</string>

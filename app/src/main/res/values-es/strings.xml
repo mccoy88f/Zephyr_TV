@@ -768,6 +768,7 @@
     <string name="trakt_connect">Conectar Trakt</string>
     <string name="trakt_skip">Omitir</string>
     <string name="trakt_reconnect_intro">En la copia, %1$s estaba conectado a Trakt (%2$s). Escanea el código con el teléfono para conectarlo de nuevo: una copia nunca lleva las claves de Trakt.</string>
+    <string name="trakt_elsewhere_intro">En otro televisor de tu cuenta de Zephyr TV, %1$s está conectado a Trakt (%2$s). Escanea el código con el teléfono para conectarlo también en este televisor: cada televisor se conecta por su cuenta, la cuenta nunca lleva las claves de Trakt.</string>
     <string name="trakt_not_connected">No conectado</string>
     <string name="trakt_sign_in_intro">Escanea el código con el teléfono. Inicia sesión en Trakt y autoriza Zephyr TV. El dispositivo se conecta solo.</string>
     <string name="trakt_waiting">Esperando a Trakt…</string>

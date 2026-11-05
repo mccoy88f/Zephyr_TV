@@ -213,7 +213,7 @@ private fun MainActivity.userPage(given: User, focus: Int = 0) {
     showPage(u.name, listOfNotNull(
         if (account == null) page(getString(R.string.trakt_connect), getString(R.string.trakt_not_connected)) { traktSignIn(u) }
         else page(getString(R.string.trakt_sync), account.user) { syncTrakt(u.id, tell = true) },
-        account?.let { page(getString(R.string.trakt_disconnect)) { Trakt.forget(dir); userPage(u) } },
+        account?.let { page(getString(R.string.trakt_disconnect)) { Trakt.forget(dir); traktGone(u, account.user); userPage(u) } },
         // Their avatar first, drawn before its row's name (see below), then their name.
         page(getString(R.string.user_avatar), Avatars.parse(u.avatar)?.let { Avatars.styleName(it.first) } ?: getString(R.string.avatar_none_value)) { avatarStyles(u) },
         page(getString(R.string.user_rename)) { userName(u) },
@@ -470,6 +470,7 @@ private fun MainActivity.traktSignIn(u: User, site: String, intro: String?, then
                         Toast.makeText(this, getString(R.string.trakt_connected, Trakt.account(dir)?.user.orEmpty()), Toast.LENGTH_LONG).show()
                         if (pageShowing(title)) { if (then != null) then() else userPage(u) }
                         syncTrakt(u.id, tell = true)
+                        syncSoon() // the account's other TVs then offer to connect it there too (see offerTrakt)
                     }
                     Trakt.SignIn.REFUSED -> status.text = getString(R.string.trakt_refused)
                     Trakt.SignIn.EXPIRED -> status.text = getString(R.string.trakt_expired)
@@ -479,6 +480,58 @@ private fun MainActivity.traktSignIn(u: User, site: String, intro: String?, then
         }
     }
     ui.postDelayed({ ask() }, 5000)
+}
+
+/**
+ * [u]'s Trakt disconnected on this TV (by hand, or refused by Trakt): taken off the users with Trakt the account
+ * knows, and not offered here again under the same name (see offerTrakt). Another TV that still has it puts it back.
+ */
+internal fun MainActivity.traktGone(u: User, name: String) {
+    val sid = u.sid ?: return
+    fun json(key: String) = runCatching { org.json.JSONObject(prefs.getString(key, null) ?: "{}") }.getOrDefault(org.json.JSONObject())
+    val known = json(K.TRAKT_ACCOUNTS).apply { remove(sid) }
+    val asked = json(K.TRAKT_ASKED).apply { put(sid, name) }
+    prefs.edit().putString(K.TRAKT_ACCOUNTS, known.toString()).putString(K.TRAKT_ASKED, asked.toString()).apply()
+    syncSoon()
+}
+
+/**
+ * After a sync: each user that has Trakt on another TV of the account (K.TRAKT_ACCOUNTS) and not here, offered once
+ * (per Trakt name) to connect it here too, one after another (Skip goes on), with the QR code. Each TV signs in on its
+ * own: Trakt takes back a refresh token once it's used, so two TVs sharing one would sign each other out. Not over
+ * anything open: offered at the next sync then.
+ */
+internal fun MainActivity.offerTrakt() {
+    fun json(key: String) = runCatching { org.json.JSONObject(prefs.getString(key, null) ?: "{}") }.getOrDefault(org.json.JSONObject())
+    val known = json(K.TRAKT_ACCOUNTS)
+    val asked = json(K.TRAKT_ASKED)
+    val offer = json(K.TRAKT_OFFER)
+    for (u in users()) {
+        val sid = u.sid ?: continue
+        if (!known.has(sid) || Trakt.account(vodDir(u.id)) != null) continue
+        val name = known.optString(sid)
+        if (asked.has(sid) && asked.optString(sid) == name) continue
+        asked.put(sid, name)
+        offer.put(u.id, name)
+    }
+    prefs.edit().putString(K.TRAKT_ASKED, asked.toString()).putString(K.TRAKT_OFFER, offer.toString()).apply()
+    if (offer.length() == 0 || settingsScrim.visibility == android.view.View.VISIBLE || Screen.activity !== this) return
+    offerNext()
+}
+
+/** The next user of K.TRAKT_OFFER asked to connect Trakt here; the panel closed once none is left. */
+private fun MainActivity.offerNext() {
+    val offer = runCatching { org.json.JSONObject(prefs.getString(K.TRAKT_OFFER, null) ?: "{}") }.getOrDefault(org.json.JSONObject())
+    val u = users().firstOrNull { offer.has(it.id) && Trakt.account(vodDir(it.id)) == null }
+    if (u == null) {
+        prefs.edit().remove(K.TRAKT_OFFER).apply()
+        return closeLauncherSettings()
+    }
+    val name = offer.optString(u.id)
+    offer.remove(u.id)
+    prefs.edit().putString(K.TRAKT_OFFER, offer.toString()).apply()
+    if (settingsScrim.visibility != android.view.View.VISIBLE) showPanel()
+    traktSignIn(u, getString(R.string.trakt_elsewhere_intro, u.name, name.ifEmpty { "Trakt" })) { offerNext() }
 }
 
 /**
@@ -518,7 +571,9 @@ internal fun MainActivity.syncTrakt(user: String = currentUser().id, tell: Boole
             val watched = try {
                 Trakt.watched(dir)
             } catch (e: Trakt.SignedOut) {
+                val had = Trakt.account(dir)?.user.orEmpty()
                 Trakt.forget(dir) // refused on Trakt's side: connected again from the user's page
+                users().firstOrNull { it.id == user }?.let { u -> ui.post { traktGone(u, had) } }
                 signedOut = true
                 null
             } ?: return@runCatching null

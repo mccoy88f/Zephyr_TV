@@ -90,6 +90,9 @@ internal object K {
     const val SYNC_AT = "sync_at" // when this TV last synced with its account
     const val SETUP_RESUME = "setup_resume" // the first start's setup goes on after the home screen was built again with the account's settings
     const val ZTV_EMAIL = "ztv_email" // the email of the account this TV is linked to, shown in System
+    const val TRAKT_ACCOUNTS = "trakt_accounts" // JSON: account user id to Trakt name, the users with Trakt on some TV; synced (see Sync), never in backups
+    const val TRAKT_ASKED = "trakt_asked" // JSON: account user id to the Trakt name this TV already offered to connect (see offerTrakt)
+    const val TRAKT_OFFER = "trakt_offer" // JSON: user id to Trakt name, still to offer on this TV (see offerTrakt)
     const val TRAKT_PENDING = "trakt_pending" // JSON: user id to Trakt name, to sign in again after a restore (see reconnectTrakt); never in backups
     const val DOWNLOAD_FOLDER = "download_folder" // where Download saves: app, downloads, movies or vol:<path> (see Downloads)
     const val MATCH_FRAME_RATE = "match_frame_rate" // the screen's refresh rate switched to the film's frame rate (see matchFrameRate)
