@@ -24,6 +24,9 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - After a force-stop or an update, Zephyr TV turns the **Home button** on again. It stays off when you turn it off.
 - The page of a film or an episode has a **Download** button before the apps. Select it, then select a stream. The TV saves the file.
 - When the download is complete, select **Download** again to play or delete it. Live TV, channels, events and radio do not have **Download**.
+- A downloaded film or episode plays from its file first. **Watch** shows **Downloaded file**, and the list of streams shows the file at the top. If the file does not play, Zephyr TV uses the other streams.
+- On a phone or tablet, **Share** asks if you want to share the link or the file when the title is downloaded.
+- **Zephyr TV settings → Content → Download folder** sets where the files go: the folder of Zephyr TV, **Download**, **Movies** or a drive. The page shows where to find the files.
 
 ## 4.0.4
 

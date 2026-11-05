@@ -668,6 +668,17 @@
     <string name="download_waiting">Esperant per baixar</string>
     <string name="download_failed_status">La baixada ha fallat</string>
     <string name="download_missing">El fitxer baixat ja no hi és</string>
+    <string name="download_local">Fitxer baixat</string>
+    <string name="download_where">Desat a</string>
+    <string name="share_link">Enllaç al títol</string>
+    <string name="share_file">El fitxer</string>
+    <string name="setting_download_folder">Carpeta de baixades</string>
+    <string name="download_folder_intro">On desa Baixa les pel·lícules i els episodis. Els trobaràs a:\n%1$s</string>
+    <string name="download_folder_app">Zephyr TV (s\'esborra amb l\'app)</string>
+    <string name="download_folder_downloads">Download / Zephyr TV</string>
+    <string name="download_folder_movies">Pel·lícules (Movies) / Zephyr TV</string>
+    <string name="download_folder_drive">Unitat: %1$s</string>
+    <string name="download_folder_access_needed">Sense accés a l\'emmagatzematge, les baixades queden a la carpeta de Zephyr TV</string>
     <string name="cinemeta_intro">Les pel·lícules i les sèries provenen d\'aquests catàlegs. El primer és el catàleg principal: ofereix els detalls, la cerca i les imatges dels títols. Els altres catàlegs afegeixen les seves files a Pel·lícules i Sèries, en aquest ordre. Cinemeta és la biblioteca gratuïta de Stremio. Nuvio Catalog utilitza TMDB, en l\'idioma del dispositiu.</string>
     <string name="cinemeta_default">Cinemeta (per defecte)</string>
     <string name="catalog_nuvio">Nuvio Catalog (TMDB)</string>

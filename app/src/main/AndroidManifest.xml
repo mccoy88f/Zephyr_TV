@@ -20,6 +20,9 @@
     <!-- Folder wallpapers: asked for only when someone picks "Choose a folder on this TV". -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <!-- Downloads into the shared Download or Movies folder (Settings → Content → Download folder): Android 9 and
+         older only ask it; from Android 10 the download manager saves there without it. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <!-- Granted once over adb (pm grant link.mccoy88f.zephyr android.permission.WRITE_SECURE_SETTINGS) so the app can
          re-enable its Home service: Android drops it from the enabled list whenever the app is force-stopped. -->
     <uses-permission
@@ -132,6 +135,14 @@
         <provider
             android:name=".SharedImages"
             android:authorities="${applicationId}.shared"
+            android:exported="false"
+            android:grantUriPermissions="true" />
+
+        <!-- The downloaded films and episodes, read by the player and by the app one is shared to (see DownloadFiles):
+             not exported, readable only through the permission the share grants for that one file. -->
+        <provider
+            android:name=".DownloadFiles"
+            android:authorities="${applicationId}.downloads"
             android:exported="false"
             android:grantUriPermissions="true" />
 

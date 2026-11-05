@@ -91,6 +91,8 @@ class PlayerActivity : Activity() {
     private var lateLeft = 0 // a film's sources still looking after the first streams came (slow Nuvio plugins)
     private var waitingLate = false // all the streams so far failed: waiting for theirs rather than saying none works
     private var searchIfChosenFails = false // a resumed film's kept stream failing: look for others (see next)
+    private var locals: Map<String, Stremio.Stream> = emptyMap() // downloaded films and episodes, by id: their file first (see Downloads)
+    private val localFailed: MutableSet<String> = java.util.Collections.synchronizedSet(HashSet()) // those whose file didn't play: their sources' streams instead
     private var holdForLanguage = false // none in the TV's language so far: waiting for the sources still looking
     private var expanded = false // the banner shows all of what's on, not just its first line
     private var tune = 0 // counts tunings, so an answer for a channel left meanwhile is dropped
@@ -253,7 +255,8 @@ class PlayerActivity : Activity() {
         sources = list(SOURCES).zip(list(SOURCE_NAMES))
         subSources = list(SUB_SOURCES).zip(list(SUB_NAMES))
         descs = list(DESCS)
-        if (vod && sources.isEmpty() && !intent.hasExtra(CHOSEN)) return finish() // a download (see Downloads) plays with none
+        locals = list(LOCAL_IDS).zip(list(LOCAL_STREAMS)).mapNotNull { (id, j) -> runCatching { id to streamOf(JSONObject(j)) }.getOrNull() }.toMap()
+        if (vod && sources.isEmpty() && !intent.hasExtra(CHOSEN) && locals.isEmpty()) return finish() // a download (see Downloads) plays with none
         val ids = list(IDS)
         channels = ids.indices.map { i ->
             Channel(list(TYPES).getOrNull(i)?.ifEmpty { null } ?: "tv", ids[i], list(NAMES).getOrNull(i).orEmpty(),
@@ -1639,7 +1642,8 @@ class PlayerActivity : Activity() {
             // Whatever goes wrong looking for them is said, as none found: the player never closes on it.
             try {
                 val lateOnes: (List<Stremio.Stream>?) -> Unit = { more -> val ok = more?.let { checked(it) }; ui.post { late(tuning, ok) } }
-                val cached = fetched[c.id]?.takeIf { System.currentTimeMillis() - it.first < FRESH_MS } != null
+                val cached = fetched[c.id]?.takeIf { System.currentTimeMillis() - it.first < FRESH_MS } != null ||
+                    (c.id in locals && c.id !in localFailed) // downloaded: its file at once (see streamsOf)
                 // Quick start: the first stream in the preferred quality that works plays at once (see quickStreams).
                 val (found, ready) = if (vod && !cached && quickStart(prefs)) quickStreams(c, lateOnes)
                     else streamsOf(c, lateOnes) to false
@@ -1717,6 +1721,8 @@ class PlayerActivity : Activity() {
 
     private fun streamsOf(c: Channel, late: ((List<Stremio.Stream>?) -> Unit)? = null): List<Stremio.Stream> {
         fetched[c.id]?.takeIf { System.currentTimeMillis() - it.first < FRESH_MS }?.let { return it.second }
+        // Downloaded: its file, none looked for; if it doesn't play, the sources' streams after all (see next).
+        if (vod) locals[c.id]?.takeIf { c.id !in localFailed }?.let { return listOf(it) }
         if (vod) return titleStreams(c, late)
         // The channel's add-on, then the Nuvio plugins that can play it (those for TV channels, by its id).
         val own = runCatching { StreamCache.get(cacheDir, base, c.type, c.id) { Stremio.streams(base, c.type, c.id) } }.onFailure { warn("streams failed: $it") }.getOrDefault(emptyList())
@@ -1828,6 +1834,12 @@ class PlayerActivity : Activity() {
         if (vod) player?.let { if (it.currentPosition > 5000) pendingSeek = it.currentPosition }
         if (streams.isEmpty() || ++attempts > streams.size) {
             release()
+            // A downloaded file that doesn't play (deleted, or a drive taken out): the sources' streams after all.
+            channels.getOrNull(at)?.id?.takeIf { it in locals && it !in localFailed }?.let { id ->
+                localFailed += id
+                fetched.remove(id)
+                return play(at)
+            }
             // The stream it played, kept to resume with, no longer plays (an address that expired): a search after all.
             if (searchIfChosenFails) {
                 searchIfChosenFails = false
@@ -2256,6 +2268,8 @@ class PlayerActivity : Activity() {
         const val BASE = "base" // the add-on's address, without /manifest.json
         const val INDEX = "index" // the channel picked, in the lists below
         const val CHOSEN = "chosen" // a film's or episode's stream picked by hand, as streamJson writes it
+        const val LOCAL_IDS = "local_ids" // downloaded films and episodes (see Downloads), with LOCAL_STREAMS: their files
+        const val LOCAL_STREAMS = "local_streams" // as streamJson writes them, in LOCAL_IDS' order
         const val CHOSEN_ELSE_SEARCH = "chosen_else_search" // the chosen one is the one kept to resume with: if it fails, search
 
         /** [s] for an Intent: its address, name, headers, source, ClearKey keys and the app that opens it. */

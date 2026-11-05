@@ -91,6 +91,7 @@ internal object K {
     const val SETUP_RESUME = "setup_resume" // the first start's setup goes on after the home screen was built again with the account's settings
     const val ZTV_EMAIL = "ztv_email" // the email of the account this TV is linked to, shown in System
     const val TRAKT_PENDING = "trakt_pending" // JSON: user id to Trakt name, to sign in again after a restore (see reconnectTrakt); never in backups
+    const val DOWNLOAD_FOLDER = "download_folder" // where Download saves: app, downloads, movies or vol:<path> (see Downloads)
     const val MATCH_FRAME_RATE = "match_frame_rate" // the screen's refresh rate switched to the film's frame rate (see matchFrameRate)
     const val ADDONS_OFF = "addons_off" // add-ons switched off: kept, with their settings, but not shown nor asked
     const val ADDONS_MOVIES = "addons_movies" // where films show (VodPlace); none: as ADDONS_VOD, set before films and series were apart

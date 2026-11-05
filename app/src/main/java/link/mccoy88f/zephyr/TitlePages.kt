@@ -121,8 +121,10 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
     val holds = HashMap<Int, () -> Unit>()
     val marks = VodWatched.all(vodDir())
 
+    // Downloaded (see Downloads): the file is its first source, Watch plays it even with no other.
+    val local = if (single) localDownload(t.id) else null
     val episodic = sources.isNotEmpty() && (t.type == "series" || meta.episodes.size > 1)
-    if (sources.isEmpty()) {
+    if (sources.isEmpty() && local == null) {
         rows += page(getString(R.string.title_no_streams)) { }
     } else if (t.type != "series" && meta.episodes.size > 1) {
         val begun = VodProgress.all(vodDir()).associateBy { it.id }
@@ -148,14 +150,15 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
         // Watch, from all of them; how many streams they have once they've said (see warmTitle), none: no Watch.
         val having = found?.filterValues { it > 0 }?.keys?.let { keys -> sources.filter { it.first in keys } }
         val one = soleAddon(having ?: sources)
-        if (having?.isEmpty() == true) rows += page(getString(R.string.title_no_streams)) { }
+        if (having?.isEmpty() == true && local == null) rows += page(getString(R.string.title_no_streams)) { }
         else {
             icons[rows.size] = watchIcon(one)
             // Hold OK, with the streams chosen automatically: the list of them all, to pick one by hand.
             val watchRow = rows.size
             fun pickHere() = pickStream(ref, meta, null) { showVodTitle(meta, ref, services.known, focusRow = watchRow, found = found) }
             if (!manualStreams()) holds[watchRow] = { pickHere() }
-            rows += page(watchLabel(one, at, seen), listOfNotNull(if (seen) "✓" else null, streamsLine(found)).joinToString(" · ")) {
+            rows += page(watchLabel(one, at, seen), listOfNotNull(if (seen) "✓" else null,
+                local?.let { getString(R.string.download_local) }, streamsLine(found).takeIf { it.isNotEmpty() }).joinToString(" · ")) {
                 if (manualStreams()) pickHere() else play(one?.base)
             }
         }
@@ -190,7 +193,13 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
     services.trailer?.let { (icon, open) -> icons[rows.size] = icon; rows += page(getString(R.string.title_trailer)) { open() } }
 
     // A phone or tablet: the page shared, as a link that opens it in Zephyr TV (see Links).
-    if (handheld()) rows += page(getString(R.string.share)) { shareTitle(t.type, t.id, t.name, image = ref.poster ?: t.poster ?: t.background) }
+    // Downloaded: the link or the file (see shareTitleOrFile).
+    if (handheld()) rows += page(getString(R.string.share)) {
+        val shareRow = focusedRow()
+        shareTitleOrFile(t.id, { showVodTitle(meta, ref, services.known, focusRow = shareRow, found = found) }) {
+            shareTitle(t.type, t.id, t.name, image = ref.poster ?: t.poster ?: t.background)
+        }
+    }
     val focus = focusRow ?: if (top.descView != null) -1 else 0
     val art = if (ref.background != null) Triple(ref.background, ref.logo, ref.poster ?: t.poster) else Triple(t.background, t.logo, ref.poster ?: t.poster)
     titlePage(t.name, art, ref.fallback, t.name, top, rows, focus, icons, holds, servicesBar = servicesBar) { closeLauncherSettings() }
@@ -303,7 +312,9 @@ internal fun MainActivity.showVodEpisode(given: Stremio.TitleMeta, ref: TitleRef
     }
     val having = found?.filterValues { it > 0 }?.keys?.let { keys -> sources.filter { it.first in keys } }
     val manual = manualStreams()
-    if (sources.isEmpty() || having?.isEmpty() == true) rows += page(getString(R.string.title_no_streams)) { }
+    // Downloaded (see Downloads): the file is its first source, Watch plays it even with no other.
+    val local = localDownload(e.id)
+    if ((sources.isEmpty() || having?.isEmpty() == true) && local == null) rows += page(getString(R.string.title_no_streams)) { }
     else {
         // Watch: the player takes the streams found here (see warmTitle), or, picked by hand, the streams' page does.
         val sole = soleAddon(having ?: sources)
@@ -311,7 +322,8 @@ internal fun MainActivity.showVodEpisode(given: Stremio.TitleMeta, ref: TitleRef
         // Hold OK, with the streams chosen automatically: the list of them all, to pick one by hand.
         val watchRow = rows.size
         if (!manual) holds[watchRow] = { pickStream(ref, meta, e) { showVodEpisode(meta, ref, e, services.known, found, watchRow) } }
-        rows += page(watchLabel(sole, VodProgress.position(vodDir(), e.id), seen), streamsLine(found)) {
+        rows += page(watchLabel(sole, VodProgress.position(vodDir(), e.id), seen),
+            listOfNotNull(local?.let { getString(R.string.download_local) }, streamsLine(found).takeIf { it.isNotEmpty() }).joinToString(" · ")) {
             if (manual) pickStream(ref, meta, e) { showVodEpisode(meta, ref, e, services.known, found, 0) } else play(sole?.base)
         }
     }
@@ -326,7 +338,13 @@ internal fun MainActivity.showVodEpisode(given: Stremio.TitleMeta, ref: TitleRef
         ref.background != null -> Triple(ref.background, ref.logo, ref.poster ?: t.poster)
         else -> Triple(t.background, t.logo, ref.poster ?: t.poster)
     }
-    if (handheld()) rows += page(getString(R.string.share)) { shareTitle(t.type, t.id, t.name, e.season, e.episode, image = ref.poster ?: t.poster ?: e.thumbnail) }
+    // Downloaded: the link or the file (see shareTitleOrFile).
+    if (handheld()) rows += page(getString(R.string.share)) {
+        val shareRow = focusedRow() ?: focus
+        shareTitleOrFile(e.id, { showVodEpisode(meta, ref, e, services.known, found, shareRow) }) {
+            shareTitle(t.type, t.id, t.name, e.season, e.episode, image = ref.poster ?: t.poster ?: e.thumbnail)
+        }
+    }
     val targetFocus = if (focus < 0 && top.descView != null) -1 else if (focus < 0) 0 else focus
     // The trailer, on YouTube: a row as Mark watched is, with YouTube's icon.
     services.trailer?.let { (icon, open) -> icons[rows.size] = icon; rows += page(getString(R.string.title_trailer)) { open() } }
@@ -1015,7 +1033,9 @@ internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, epi
     val start = if (all.isEmpty()) 0 else picked - from
     val type = t?.type ?: ref.type
     val sources = streamSources(type, items[start].first).filter { only == null || it.first == only }
-    if (sources.isEmpty() && chosen == null) return toast(R.string.title_no_streams) // a download plays with no source
+    // Downloaded films and episodes (see Downloads): each one's file first, the others' streams if it doesn't play.
+    val locals = localDownloads().filterKeys { id -> items.any { it.first == id } }
+    if (sources.isEmpty() && chosen == null && items[start].first !in locals) return toast(R.string.title_no_streams)
     val adultUrls = adultAddonUrls()
     val adultAddons = adultUrls.mapNotNull { Stremio.saved(filesDir, it)?.addon }
     val adultSourcesList = adultUrls + adultAddons.map { it.base } + adultAddons.map { it.name } + adultPluginSources(prefs, filesDir)
@@ -1028,7 +1048,9 @@ internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, epi
             .putExtra(PlayerActivity.INDEX, start)
             .apply { chosen?.let { putExtra(PlayerActivity.CHOSEN, PlayerActivity.streamJson(it).toString()) } }
             // Resumed: the stream it played, kept with its progress; a search only if it no longer plays.
-            .apply { if (chosen == null && resumeWith != null) putExtra(PlayerActivity.CHOSEN, resumeWith).putExtra(PlayerActivity.CHOSEN_ELSE_SEARCH, true) }
+            .apply { if (chosen == null && resumeWith != null && items[start].first !in locals) putExtra(PlayerActivity.CHOSEN, resumeWith).putExtra(PlayerActivity.CHOSEN_ELSE_SEARCH, true) }
+            .putStringArrayListExtra(PlayerActivity.LOCAL_IDS, ArrayList(locals.keys))
+            .putStringArrayListExtra(PlayerActivity.LOCAL_STREAMS, ArrayList(locals.values.map { PlayerActivity.streamJson(localStream(it)).toString() }))
             .putExtra(PlayerActivity.ADULT, isCatalogAdult || isOnlyAdult)
             .putStringArrayListExtra(PlayerActivity.ADULT_SOURCES, ArrayList(adultSourcesList))
             .putStringArrayListExtra(PlayerActivity.SOURCES, ArrayList(sources.map { it.first }))
@@ -1075,15 +1097,17 @@ internal fun MainActivity.wireLeftColumn(firstRowId: Int) {
  * already there in their group (focus stays on the stream it's on), and the last row says the search goes on until all
  * have answered. A stream picked plays at once.
  */
-internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, episode: Stremio.Episode?, back: () -> Unit,
+internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, episode: Stremio.Episode?,
                                     title: String = getString(R.string.stream_pick_title),
                                     accept: (Stremio.Stream) -> Boolean = { true }, none: String = getString(R.string.title_no_streams),
-                                    picked: ((Stremio.Stream) -> Unit)? = null) {
+                                    picked: ((Stremio.Stream) -> Unit)? = null, back: () -> Unit) {
     // [accept]: only the streams it says yes to listed (Download: files, not live streams); [picked]: what choosing one
     // does instead of playing it, [none] said when no stream is left.
     val t = meta.title
     val id = episode?.id ?: t.id
     val sources = streamSources(t.type, id)
+    // Downloaded: the file on top, under a heading of its own (not when picking one to download).
+    val local = if (picked == null) localDownload(id) else null
     val found = java.util.Collections.synchronizedList(ArrayList<Stremio.Stream>())
     var left = sources.size
     var shown = false
@@ -1096,7 +1120,7 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
         val list = found.toList().distinctBy { it.url }.sortedByDescending { qualityGroup(it.title) }
         val rest = when {
             left > 0 -> listOf(page(getString(R.string.title_finding_streams)) { })
-            found.isEmpty() -> listOf(page(none) { })
+            found.isEmpty() && local == null -> listOf(page(none) { })
             else -> emptyList()
         }
         pageExit = null
@@ -1108,6 +1132,17 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
         findViewById<TextView>(R.id.settingsTitle).visibility = View.VISIBLE
         var group = -1
         var at = 0
+        local?.let { e ->
+            settingsList.addView(label(getString(R.string.download_local), 13f).apply { alpha = 0.6f; setPadding(dp(14), dp(16), 0, dp(6)) }, at++)
+            val s = localStream(e)
+            settingsList.addView(twoLineRow(e.file, downloadFolder()?.name.orEmpty()) {
+                pageReturn = back
+                playTitle(ref, meta, episode, chosen = s)
+            }.apply {
+                tag = s.url
+                if (leftId != null) nextFocusLeftId = leftId
+            }, at++, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
+        }
         for (s in list) {
             val q = qualityGroup(s.title)
             if (q != group) {

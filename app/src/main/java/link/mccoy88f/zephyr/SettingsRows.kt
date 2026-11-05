@@ -37,6 +37,7 @@ internal object SettingsRows {
     const val PIN_ROW = APPS_SECTION * SECTION + 7 // only while a PIN is set
     const val CW_ROW = WATCH_SECTION * SECTION // Continue Playing on/off
     const val CW_APPS_ROW = WATCH_SECTION * SECTION + 1
+    const val DOWNLOAD_FOLDER_ROW = WATCH_SECTION * SECTION + 13 // the last of Content (see pickDownloadFolder)
     const val HIDDEN_ROW = WATCH_SECTION * SECTION + 2
     const val INPUTS_MODE_ROW = TV_SECTION * SECTION
     const val INPUTS_IN_APPS_ROW = TV_SECTION * SECTION + 1

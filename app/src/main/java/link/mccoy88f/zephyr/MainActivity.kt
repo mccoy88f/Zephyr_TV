@@ -173,6 +173,7 @@ class MainActivity : Activity() {
     internal var searchCount = 0 // searches started, to tell the last one's results from an earlier one's
     internal var recognizer: android.speech.SpeechRecognizer? = null // dictating into the search box
     internal var afterMicAccess: (() -> Unit)? = null // what asked, while Android's microphone prompt is up
+    internal var afterStorageAccess: (() -> Unit)? = null // a download folder chosen, while Android 9's storage prompt is up
     internal val appChannelDebounce = Runnable { queryAppChannels(tmdbLastFocusApp) }
 
     internal val packageReceiver = object : BroadcastReceiver() {
@@ -384,6 +385,12 @@ class MainActivity : Activity() {
             if (results.firstOrNull() == PackageManager.PERMISSION_GRANTED) afterMicAccess?.invoke()
             else toast(R.string.toast_mic_needed)
             afterMicAccess = null
+            return
+        }
+        if (code == STORAGE_REQUEST) {
+            if (results.firstOrNull() == PackageManager.PERMISSION_GRANTED) afterStorageAccess?.invoke()
+            else toast(R.string.download_folder_access_needed)
+            afterStorageAccess = null
             return
         }
         if (code != MEDIA_REQUEST) return refreshWatchNext()
@@ -689,6 +696,7 @@ class MainActivity : Activity() {
         const val MIC_REQUEST = 4
         const val FILE_REQUEST = 5 // a file picked, or saved, on a phone or tablet (see Handheld)
         const val VPN_REQUEST = 6 // Android's permission for WARP's VPN (see Privacy)
+        const val STORAGE_REQUEST = 7 // Android 9's storage access, for a download folder in Download or Movies
         const val SPOTLIGHT_IDLE_MS = 15 * 60_000L // Spotlight stops turning after this long without a key press
         private const val PLAYING_POLL_MS = 15_000L // fallback poll when session callbacks miss a change
         const val TMDB_FRESH_MS = 3 * 3600_000L // how long a trending list is kept before it's fetched again

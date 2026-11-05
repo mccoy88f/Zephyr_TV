@@ -668,6 +668,17 @@
     <string name="download_waiting">En attente de téléchargement</string>
     <string name="download_failed_status">Le téléchargement a échoué</string>
     <string name="download_missing">Le fichier téléchargé n\'est plus là</string>
+    <string name="download_local">Fichier téléchargé</string>
+    <string name="download_where">Enregistré dans</string>
+    <string name="share_link">Lien vers le titre</string>
+    <string name="share_file">Le fichier</string>
+    <string name="setting_download_folder">Dossier de téléchargement</string>
+    <string name="download_folder_intro">Où Télécharger enregistre films et épisodes. Vous les trouverez dans :\n%1$s</string>
+    <string name="download_folder_app">Zephyr TV (supprimé avec l\'app)</string>
+    <string name="download_folder_downloads">Download / Zephyr TV</string>
+    <string name="download_folder_movies">Films (Movies) / Zephyr TV</string>
+    <string name="download_folder_drive">Disque : %1$s</string>
+    <string name="download_folder_access_needed">Sans accès au stockage, les téléchargements restent dans le dossier de Zephyr TV</string>
     <string name="cinemeta_intro">Les films et séries viennent de ces catalogues. Le premier est le catalogue principal : il donne les détails, la recherche et les images des titres. Les autres ajoutent leurs rangées à Films et Séries, dans cet ordre. Cinemeta est la bibliothèque gratuite de Stremio. Nuvio Catalog utilise TMDB, dans la langue de l\'appareil.</string>
     <string name="cinemeta_default">Cinemeta (par défaut)</string>
     <string name="catalog_nuvio">Nuvio Catalog (TMDB)</string>

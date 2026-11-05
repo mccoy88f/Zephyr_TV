@@ -666,6 +666,17 @@
     <string name="download_waiting">等待下载</string>
     <string name="download_failed_status">下载失败</string>
     <string name="download_missing">下载的文件已不存在</string>
+    <string name="download_local">已下载的文件</string>
+    <string name="download_where">保存位置</string>
+    <string name="share_link">标题链接</string>
+    <string name="share_file">文件</string>
+    <string name="setting_download_folder">下载文件夹</string>
+    <string name="download_folder_intro">“下载”保存电影和剧集的位置。文件位于：\n%1$s</string>
+    <string name="download_folder_app">Zephyr TV（随应用一起删除）</string>
+    <string name="download_folder_downloads">Download / Zephyr TV</string>
+    <string name="download_folder_movies">Movies / Zephyr TV</string>
+    <string name="download_folder_drive">存储设备：%1$s</string>
+    <string name="download_folder_access_needed">没有存储权限时，下载内容保存在 Zephyr TV 的文件夹中</string>
     <string name="cinemeta_intro">电影和剧集来自这些目录。第一个是主目录：它提供标题的详情、搜索和图片。其他目录会按此顺序把它们的行添加到电影和剧集中。Cinemeta 是 Stremio 的免费资料库。Nuvio Catalog 使用 TMDB，语言与设备一致。</string>
     <string name="cinemeta_default">Cinemeta（默认）</string>
     <string name="catalog_nuvio">Nuvio Catalog (TMDB)</string>

@@ -403,6 +403,8 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 prefs.edit().putBoolean(K.MATCH_FRAME_RATE, !prefs.getBoolean(K.MATCH_FRAME_RATE, false)).apply()
                 renderSettings(WATCH_SECTION * SECTION + 12)
             },
+            // Where Download saves films and episodes (see Downloads): the app's own folder, Download, Movies or a drive.
+            page(getString(R.string.setting_download_folder), downloadFolder()?.name.orEmpty()) { pickDownloadFolder() },
         )
     }
     // The TV's own side: its inputs (HDMI and the like) and its channels, with their logos and guide.
