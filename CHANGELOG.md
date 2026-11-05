@@ -16,6 +16,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 ## Unreleased
 
 - The app icon and the banner show "TV" larger, as the tiles show their names.
+- On a phone or tablet, the background behind the rows now fades in when you scroll the home screen up, as on a TV.
 
 ## 4.0.0-beta.24
 

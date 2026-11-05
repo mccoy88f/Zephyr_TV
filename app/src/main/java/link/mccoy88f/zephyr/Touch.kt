@@ -76,6 +76,7 @@ internal fun MainActivity.homeDrag(e: MotionEvent): Boolean {
                 HomeDrag.Mode.PAGE -> {
                     content.translationY = -(d.from - dy).coerceIn(0f, pageRoom())
                     cardsOnScreen()
+                    veilFromScroll() // the veil behind the rows, as the page goes up
                     true
                 }
                 HomeDrag.Mode.PULL -> {
@@ -98,7 +99,8 @@ internal fun MainActivity.homeDrag(e: MotionEvent): Boolean {
             d.velocity = null
             if (mode == HomeDrag.Mode.PULL) {
                 val far = e.actionMasked == MotionEvent.ACTION_UP && e.rawY - d.y > dp(120)
-                content.animate().translationY(0f).setDuration(200).setInterpolator(DECELERATE).start()
+                content.animate().translationY(0f).setDuration(200).setInterpolator(DECELERATE)
+                    .setUpdateListener { veilFromScroll() }.withEndAction { content.animate().setUpdateListener(null) }.start()
                 if (far) refreshRows()
             }
             if (mode == HomeDrag.Mode.SPOTLIGHT) {
@@ -114,7 +116,7 @@ internal fun MainActivity.homeDrag(e: MotionEvent): Boolean {
                 // A flick goes on a little past the finger, as a list does.
                 val to = (-content.translationY - vy * 0.25f).coerceIn(0f, pageRoom())
                 content.animate().translationY(-to).setDuration(280).setInterpolator(DECELERATE)
-                    .setUpdateListener { cardsOnScreen() }
+                    .setUpdateListener { cardsOnScreen(); veilFromScroll() }
                     .withEndAction { content.animate().setUpdateListener(null) }.start()
             }
             return mode == HomeDrag.Mode.PAGE || mode == HomeDrag.Mode.PULL || mode == HomeDrag.Mode.SPOTLIGHT

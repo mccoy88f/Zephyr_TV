@@ -82,6 +82,16 @@ internal fun MainActivity.foldSpotlight(v: View?): Boolean {
     return true
 }
 
+/**
+ * On a phone or tablet, where a finger moves the page and no focus (so Spotlight never folds): the veil behind the
+ * rows follows how far the page went up, none at its top and whole 120 dp up, as it fades in on a TV.
+ */
+internal fun MainActivity.veilFromScroll() {
+    if (spotlightFolded || !handheld()) return
+    val f = (-findViewById<View>(R.id.content).translationY / dp(120)).coerceIn(0f, 1f)
+    if (f != rowsVeil.folded) rowsVeil.folded = f else if (f > 0f) rowsVeil.invalidate()
+}
+
 /** Spotlight's height and margins down to nothing ([fold]), or back to its own; the veil fading in or out with it. */
 private fun MainActivity.foldAnimation(fold: Boolean) {
     val c = spotlightContainer
@@ -195,7 +205,7 @@ internal fun MainActivity.keepInView(v: View?) {
         }
         // The veil under the apps follows them (see RowsVeil).
         if (shift != -content.translationY) content.animate().translationY(-shift).setDuration(200).setInterpolator(DECELERATE)
-            .setUpdateListener { rowsVeil.invalidate() }.start()
+            .setUpdateListener { rowsVeil.invalidate(); veilFromScroll() }.start()
     }
 }
 

@@ -270,7 +270,7 @@ internal class Scene(private val host: MainActivity) {
             if (!fading && previous != null) dropPrevious()
             frame++
             plate.invalidateSelf()
-            if (host.spotlightFolded) veil?.invalidate()
+            if (host.spotlightFolded || ((veil as? RowsVeil)?.folded ?: 0f) > 0f) veil?.invalidate() // the veil's photo drifts as the sharp one
             if (host.glass && (!fading || frame % 3 == 0)) invalidatePanes(host.findViewById(R.id.root))
             if (current != null && host.sceneAlive) host.ui.postDelayed(this, if (fading) 33L else DRIFT_MS)
         }
