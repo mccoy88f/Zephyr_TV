@@ -16,7 +16,8 @@ function smtp(): Transporter {
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || "ssl0.ovh.net",
     port,
-    secure: port === 465,
+    secure: port === 465, // 465: TLS from the start; any other port: STARTTLS, required (never in clear)
+    requireTLS: port !== 465,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
   });
   return transporter;
