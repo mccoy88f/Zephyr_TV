@@ -139,7 +139,8 @@ internal fun MainActivity.ztvForget() {
  * to), then asked about every few seconds until it's allowed ([linked], the token kept), refused or too old ([status]).
  * [failed]: the site couldn't be reached.
  */
-internal fun MainActivity.linkTv(alive: () -> Boolean, status: TextView, box: (android.view.View) -> Unit, failed: () -> Unit, linked: () -> Unit) {
+internal fun MainActivity.linkTv(alive: () -> Boolean, status: TextView, box: (android.view.View) -> Unit, failed: () -> Unit,
+                                  linked: (token: String, email: String) -> Unit) {
     status.text = getString(R.string.ztv_waiting)
     netIo.execute {
         val start = runCatching { ZtvAccount.start(tvName(), "${Build.MANUFACTURER} ${Build.MODEL}".trim(), myVersion()) }
@@ -158,9 +159,8 @@ internal fun MainActivity.linkTv(alive: () -> Boolean, status: TextView, box: (a
                         if (!alive()) return@post
                         when (answer) {
                             is ZtvAccount.Poll.Linked -> {
-                                prefs.edit().putString(K.ZTV_TOKEN, answer.token).putString(K.ZTV_EMAIL, answer.email).apply()
                                 status.text = getString(R.string.sync_working)
-                                linked()
+                                linked(answer.token, answer.email) // kept once the first sync's choice is made (see firstSync)
                             }
                             ZtvAccount.Poll.Waiting -> ui.postDelayed({ ask() }, start.intervalMs)
                             ZtvAccount.Poll.Denied -> status.text = getString(R.string.ztv_denied)
@@ -182,15 +182,20 @@ private fun MainActivity.ztvLink(backTo: (() -> Unit)? = null) {
     val rows = listOf(page(getString(R.string.dialog_cancel)) { back() })
     showPage(title, rows, back = back)
     linkTv({ pageShowing(title) }, status, { box -> showPage(title, rows, top = box, back = back) },
-        { toast(R.string.ztv_failed); back() }) {
+        { toast(R.string.ztv_failed); back() }) { token, email ->
         toast(R.string.ztv_done, long = false)
-        syncNow { r ->
+        firstSync(token, email, { main, names, choose ->
+            syncChoice(main, names, { t, body, buttons ->
+                val intro = label(body, 14f).apply { setPadding(dp(14), dp(4), dp(14), dp(10)) }
+                showPage(t, buttons.map { (name, act) -> page(name) { act() } }, top = intro, back = { choose(null) })
+            }, choose)
+        }, { r ->
             if (r?.settings == true) {
                 prefs.edit().putInt(K.REOPEN_ROW, accountRow()).apply()
                 Sync.recreatePending = false
                 recreate()
-            } else if (pageShowing(title)) ztvAccountPage(back = backTo)
-        }
+            } else if (ztvEmail() != null) ztvAccountPage(back = backTo) else back()
+        }, back)
     }
 }
 

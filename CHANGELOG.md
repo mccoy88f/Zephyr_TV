@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- When you link a TV to an account that already has a configuration, select what to do: **Use the cloud configuration**, **Use this TV's configuration**, **Merge**, or **Cancel and leave**. Merge keeps the main user of the account and adds all other users of the TV. It also keeps the add-ons of both.
+
 ## 4.0.0-beta.25
 
 - The app icon and the banner show "TV" larger, as the tiles show their names.

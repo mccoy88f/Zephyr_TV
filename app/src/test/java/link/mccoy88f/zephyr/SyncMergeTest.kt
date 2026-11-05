@@ -49,4 +49,23 @@ class SyncMergeTest {
         val out = SyncMerge.merge(emptyMap(), mapOf("theme" to JSONObject().put("s", "light")), mapOf("theme" to JSONObject().put("s", "dark"))) { _, r -> r }
         assertEquals("dark", out.getValue("theme").getString("s"))
     }
+
+    @Test fun mergedConfigurationsJoinTheirLists() {
+        val local = mapOf(
+            K.ADDONS to JSONObject().put("s", "https://a/manifest.json\nhttps://b/manifest.json"),
+            K.ADDONS_OFF to JSONObject().put("set", org.json.JSONArray(listOf("x"))),
+            "theme" to JSONObject().put("s", "light"),
+            "only_here" to JSONObject().put("b", true),
+        )
+        val remote = mapOf(
+            K.ADDONS to JSONObject().put("s", "https://c/manifest.json\nhttps://a/manifest.json"),
+            K.ADDONS_OFF to JSONObject().put("set", org.json.JSONArray(listOf("y"))),
+            "theme" to JSONObject().put("s", "dark"),
+        )
+        val out = SyncMerge.mergeSettings(local, remote)
+        assertEquals("https://c/manifest.json\nhttps://a/manifest.json\nhttps://b/manifest.json", out.getValue(K.ADDONS).getString("s"))
+        assertEquals(2, out.getValue(K.ADDONS_OFF).getJSONArray("set").length())
+        assertEquals("dark", out.getValue("theme").getString("s")) // the account's wins
+        assertTrue(out.getValue("only_here").getBoolean("b")) // this TV's own stays
+    }
 }

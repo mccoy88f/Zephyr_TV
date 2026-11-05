@@ -51,6 +51,42 @@ internal object SyncMerge {
         else -> v.toString()
     }
 
+    /** The settings that are lists, one item a line: joined, not replaced, when two configurations are merged. */
+    val LINE_LISTS = setOf(K.ADDONS, K.CATALOG_SOURCES, K.CATALOGS)
+
+    /**
+     * Two configurations merged (Merge, at the first sync): where both have a setting, the account's; but lists are
+     * joined (sets, and the settings of [LINE_LISTS]: the account's items first, then this TV's others) and JSON objects
+     * too (the account's entries over this TV's), so no add-on or catalog of either is lost.
+     */
+    fun mergeSettings(local: Map<String, JSONObject>, remote: Map<String, JSONObject>): Map<String, JSONObject> {
+        val out = LinkedHashMap(local)
+        for ((k, r) in remote) {
+            val l = local[k]
+            out[k] = when {
+                l == null -> r
+                l.has("set") && r.has("set") -> {
+                    val all = LinkedHashSet<String>()
+                    for (a in listOf(r.getJSONArray("set"), l.getJSONArray("set"))) for (i in 0 until a.length()) all += a.getString(i)
+                    JSONObject().put("set", JSONArray(all.sorted()))
+                }
+                k in LINE_LISTS && l.has("s") && r.has("s") ->
+                    JSONObject().put("s", (r.getString("s").lines() + l.getString("s").lines()).filter { it.isNotBlank() }.distinct().joinToString("\n"))
+                l.has("s") && r.has("s") && r.getString("s").trimStart().startsWith("{") && l.getString("s").trimStart().startsWith("{") -> {
+                    val joined = runCatching {
+                        val o = JSONObject(l.getString("s"))
+                        val ro = JSONObject(r.getString("s"))
+                        for (rk in ro.keys()) o.put(rk, ro.get(rk))
+                        JSONObject().put("s", o.toString())
+                    }.getOrNull()
+                    joined ?: r
+                }
+                else -> r
+            }
+        }
+        return out
+    }
+
     fun toMap(o: JSONObject?): Map<String, JSONObject> =
         o?.keys()?.asSequence()?.mapNotNull { k -> o.optJSONObject(k)?.let { k to it } }?.toMap().orEmpty()
 
@@ -67,6 +103,17 @@ internal object SyncMerge {
 internal object Sync {
     /** What changed here: the settings (the home screen is built again), the users, what they watched. */
     class Result(val settings: Boolean, val users: Boolean, val data: Boolean)
+
+    /**
+     * A TV's first sync with an account that has things already, as chosen when linking it: the account's
+     * configuration here, this TV's removed ([CLOUD]); this TV's on the account, the account's removed ([DEVICE]); or
+     * both ([MERGE]: the account's main user leads, every other user here added, lists joined).
+     */
+    enum class First { CLOUD, DEVICE, MERGE }
+
+    /** Whether the account (as [state] has it) has things already: users, or settings. Then the first sync asks. */
+    fun hasData(state: JSONObject) =
+        (state.optJSONArray("users")?.length() ?: 0) > 0 || (state.optJSONObject("docs")?.optInt("settings") ?: 0) > 0
 
     private val LOCAL_ONLY = setOf(
         K.USERS, K.USER, K.SORT, K.ORDER, K.ROW_HIDDEN, K.ROW_ALIGN, K.NAMES, K.HIDDEN_WATCH,
@@ -86,12 +133,12 @@ internal object Sync {
     internal var tick: Runnable? = null
 
     /** One sync, all of it. Throws offline, or ZtvAccount.Unlinked. */
-    fun run(a: MainActivity, token: String): Result {
+    fun run(a: MainActivity, token: String, first: First? = null): Result {
         val state = ZtvAccount.state(token)
         state.optString("email").takeIf { it.isNotBlank() }?.let { a.prefs.edit().putString(K.ZTV_EMAIL, it).apply() }
         val revs = state.optJSONObject("docs") ?: JSONObject()
-        val users = syncUsers(a, token, state.optJSONArray("users") ?: JSONArray())
-        val settings = syncDoc(token, "settings", revs, File(a.syncDir(), "settings.json"), firstRemote = true) { merge ->
+        val users = syncUsers(a, token, state.optJSONArray("users") ?: JSONArray(), first)
+        val settings = syncDoc(token, "settings", revs, File(a.syncDir(), "settings.json"), first) { merge ->
             val local = SyncMerge.toMap(JSONObject().apply {
                 for ((k, v) in a.prefs.all) if (k in KEYS) Backup.encode(v)?.let { put(k, it) }
             })
@@ -106,8 +153,8 @@ internal object Sync {
         for (u in a.users()) {
             val sid = u.sid ?: continue
             val dir = a.vodDir(u.id)
-            data = syncDoc(token, "watched:$sid", revs, File(a.syncDir(), "watched_$sid.json")) { VodWatched.sync(dir, it) } or data
-            data = syncDoc(token, "progress:$sid", revs, File(a.syncDir(), "progress_$sid.json")) { VodProgress.sync(dir, it) } or data
+            data = syncDoc(token, "watched:$sid", revs, File(a.syncDir(), "watched_$sid.json"), first) { VodWatched.sync(dir, it) } or data
+            data = syncDoc(token, "progress:$sid", revs, File(a.syncDir(), "progress_$sid.json"), first) { VodProgress.sync(dir, it) } or data
         }
         a.prefs.edit().putLong(K.SYNC_AT, System.currentTimeMillis()).apply()
         return Result(settings, users, data)
@@ -117,31 +164,38 @@ internal object Sync {
      * Document [key] in step: the account's (read again only when its revision moved on), this TV's (through [local],
      * which hands it to the merge and writes the merge's answer here when it differs), and the last agreed one in
      * [baseFile]. The merge written to the account when it differs from the account's; changed there meanwhile, again.
-     * [firstRemote]: the first time (nothing agreed yet), the account's value wins where both have one (the account's
-     * settings over a new TV's). Whether it changed here.
+     * The first time (nothing agreed yet) the account's settings win where both have one. [first]: as chosen when
+     * linking (see First): the account's, this TV's, or merged. Whether it changed here.
      */
-    private fun syncDoc(token: String, key: String, revs: JSONObject, baseFile: File, firstRemote: Boolean = false,
+    private fun syncDoc(token: String, key: String, revs: JSONObject, baseFile: File, first: First?,
                         local: (((Map<String, JSONObject>) -> Map<String, JSONObject>?) -> Map<String, JSONObject>)): Boolean {
         val saved = runCatching { JSONObject(baseFile.readText()) }.getOrNull()
         var rev = saved?.optInt("rev") ?: 0
         var base = SyncMerge.toMap(saved?.optJSONObject("data"))
         var remote = base
-        if (revs.optInt(key, 0) != rev) {
+        if (first != null || revs.optInt(key, 0) != rev) {
             val (r, d) = ZtvAccount.doc(token, key)
             rev = r
             remote = SyncMerge.toMap(d)
             if (d == null) base = emptyMap() // none there (or unreadable): everything here goes up, nothing is taken as removed
         }
+        if (first != null) base = emptyMap()
         val prefer: (JSONObject, JSONObject) -> JSONObject = when {
             key != "settings" -> SyncMerge::newer
-            firstRemote && base.isEmpty() -> { _, r -> r }
+            base.isEmpty() -> { _, r -> r }
             else -> { l, _ -> l }
+        }
+        val resolve: (Map<String, JSONObject>, Map<String, JSONObject>) -> Map<String, JSONObject> = when (first) {
+            First.CLOUD -> { _, r -> r }
+            First.DEVICE -> { mine, _ -> mine }
+            First.MERGE -> if (key == "settings") SyncMerge::mergeSettings else { mine, r -> SyncMerge.merge(emptyMap(), mine, r, SyncMerge::newer) }
+            null -> { mine, r -> SyncMerge.merge(base, mine, r, prefer) }
         }
         var changed = false
         repeat(3) {
             var merged: Map<String, JSONObject> = emptyMap()
             local { mine ->
-                merged = SyncMerge.merge(base, mine, remote, prefer)
+                merged = resolve(mine, remote)
                 if (SyncMerge.sameMaps(merged, mine)) null else merged.also { changed = true }
             }
             if (SyncMerge.sameMaps(merged, remote)) return changed.also { saveBase(baseFile, rev, merged) }
@@ -166,20 +220,43 @@ internal object Sync {
      * one side: removed on the other (here, with what they watched; the first user stays, and goes up again). On the
      * account and new here: added here. Whether it changed here.
      */
-    private fun syncUsers(a: MainActivity, token: String, list: JSONArray): Boolean {
+    private fun syncUsers(a: MainActivity, token: String, list: JSONArray, first: First?): Boolean {
         val server = (0 until list.length()).mapNotNull { list.optJSONObject(it) }.associateBy { it.getString("id") }.toMutableMap()
         val snap = runCatching { JSONObject(a.prefs.getString(K.SYNC_USERS, null) ?: "{}") }.getOrDefault(JSONObject())
         val avatarOf = { o: JSONObject -> o.optString("avatar").takeIf { !o.isNull("avatar") && Avatars.parse(it) != null } }
-        val before = a.users()
+        val original = a.users()
+        var before = original
+        val cloudMain = (0 until list.length()).firstNotNullOfOrNull { list.optJSONObject(it) }
+        when (first) {
+            // The account's users here: this TV's others go, with what they watched (the main one becomes the account's).
+            First.CLOUD -> {
+                before.filter { it.id != "" }.forEach { a.vodDir(it.id).deleteRecursively() }
+                before = before.filter { it.id == "" }
+            }
+            // This TV's users on the account: the account's others go there; its main user becomes this TV's.
+            First.DEVICE -> {
+                for (id in server.keys.toList()) if (id != cloudMain?.getString("id")) {
+                    ZtvAccount.removeUser(token, id)
+                    server.remove(id)
+                }
+                val main = before.first()
+                cloudMain?.let {
+                    ZtvAccount.updateUser(token, it.getString("id"), main.name, main.avatar)
+                    it.put("name", main.name).put("avatar", main.avatar ?: JSONObject.NULL)
+                }
+            }
+            else -> {}
+        }
         val claimed = before.mapNotNull { it.sid }.toMutableSet()
         val out = mutableListOf<User>()
         for (u in before) {
             var sid = u.sid
             if (sid == null) {
                 // The main user (the first, sync's owner) is the account's first user; the others by name.
-                val first = (0 until list.length()).firstNotNullOfOrNull { list.optJSONObject(it) }
-                val match = if (u.id == "") first?.takeIf { it.getString("id") !in claimed }
-                    else server.values.firstOrNull { it.getString("id") !in claimed && it.getString("id") != first?.getString("id") && it.optString("name").equals(u.name, ignoreCase = true) }
+                // Chosen at the first sync (see First): every other user here goes up as a user of their own, same name or not.
+                val match = if (u.id == "") cloudMain?.takeIf { it.getString("id") !in claimed && it.getString("id") in server }
+                    else if (first != null) null
+                    else server.values.firstOrNull { it.getString("id") !in claimed && it.getString("id") != cloudMain?.getString("id") && it.optString("name").equals(u.name, ignoreCase = true) }
                 sid = match?.getString("id") ?: ZtvAccount.addUser(token, u.name, u.avatar)?.also {
                     server[it] = JSONObject().put("id", it).put("name", u.name).put("avatar", u.avatar ?: JSONObject.NULL)
                     snap.put(it, JSONObject().put("name", u.name).put("avatar", u.avatar ?: ""))
@@ -232,7 +309,7 @@ internal object Sync {
             snap.put(sid, JSONObject().put("name", u.name).put("avatar", u.avatar ?: ""))
         }
         a.prefs.edit().putString(K.SYNC_USERS, snap.toString()).apply()
-        val changed = out.size != before.size || out.zip(before).any { (x, y) -> x.id != y.id || x.name != y.name || x.avatar != y.avatar || x.sid != y.sid }
+        val changed = out.size != original.size || out.zip(original).any { (x, y) -> x.id != y.id || x.name != y.name || x.avatar != y.avatar || x.sid != y.sid }
         if (changed) a.saveUsers(out, synced = true)
         return changed
     }
@@ -246,12 +323,12 @@ internal fun MainActivity.syncDir() = File(filesDir, "sync")
  * settings, by building the home screen again (once the panel and the first start's cards are closed); the users and
  * what they watched, in place. Found unlinked on the site: unlinked here too.
  */
-internal fun MainActivity.syncNow(then: ((Sync.Result?) -> Unit)? = null) {
+internal fun MainActivity.syncNow(first: Sync.First? = null, then: ((Sync.Result?) -> Unit)? = null) {
     val token = prefs.getString(K.ZTV_TOKEN, null) ?: return run { then?.invoke(null) }
     if (!Sync.running.compareAndSet(false, true)) return run { then?.invoke(null) }
     Sync.last = System.currentTimeMillis()
     netIo.execute {
-        val r = runCatching { Sync.run(this, token) }
+        val r = runCatching { Sync.run(this, token, first) }
         Sync.running.set(false)
         ui.post {
             val e = r.exceptionOrNull()
@@ -294,3 +371,59 @@ internal fun MainActivity.syncOnResume() {
     syncShow()
     if (System.currentTimeMillis() - Sync.last > 60_000L) syncSoon(2_000L)
 }
+
+/**
+ * Just linked ([token], the account's [email]): the account asked first. With things there already (users, settings),
+ * [ask] shows the choice (see Sync.First) and its answer leads: the token kept and the first sync made that way
+ * ([done]), or (null: Cancel and leave) the TV unlinked again on the site ([cancelled]). With nothing there, the first
+ * sync at once. The token is kept only once chosen: no sync meanwhile goes its own way.
+ */
+internal fun MainActivity.firstSync(token: String, email: String,
+                                    ask: (cloudMain: String, users: String, choose: (Sync.First?) -> Unit) -> Unit,
+                                    done: (Sync.Result?) -> Unit, cancelled: () -> Unit) {
+    netIo.execute {
+        val state = runCatching { ZtvAccount.state(token) }.onFailure { warn("first sync: account not read ($it)") }.getOrNull()
+        ui.post {
+            val go = { first: Sync.First? ->
+                prefs.edit().putString(K.ZTV_TOKEN, token).putString(K.ZTV_EMAIL, email).apply()
+                syncNow(first, done)
+            }
+            if (state == null) {
+                netIo.execute { ZtvAccount.unlink(token) }
+                toast(R.string.ztv_failed)
+                return@post cancelled()
+            }
+            if (!Sync.hasData(state)) return@post go(null)
+            val list = state.optJSONArray("users") ?: org.json.JSONArray()
+            val names = (0 until list.length()).mapNotNull { list.optJSONObject(it)?.optString("name") }.filter { it.isNotBlank() }
+            ask(names.firstOrNull() ?: users().first().name, names.joinToString(", ")) { choice ->
+                if (choice == null) {
+                    netIo.execute { ZtvAccount.unlink(token) }
+                    cancelled()
+                } else go(choice)
+            }
+        }
+    }
+}
+
+/**
+ * The first sync's choice, on [show] (the first start's card, or a Settings page: its title, text, and buttons):
+ * the account's configuration, this TV's, merged, or Cancel and leave. The two that remove things are confirmed first.
+ */
+internal fun MainActivity.syncChoice(cloudMain: String, users: String,
+                                     show: (title: String, body: String, buttons: List<Pair<String, () -> Unit>>) -> Unit,
+                                     choose: (Sync.First?) -> Unit) {
+    val title = getString(R.string.sync_choice_title)
+    val body = if (users.isBlank()) getString(R.string.sync_choice_body_settings) else getString(R.string.sync_choice_body, users)
+    fun confirm(text: String, first: Sync.First) = show(title, text, listOf(
+        getString(R.string.sync_confirm_yes) to { choose(first) },
+        getString(R.string.sync_confirm_back) to { syncChoice(cloudMain, users, show, choose) },
+    ))
+    show(title, body, listOf(
+        getString(R.string.sync_choice_cloud) to { confirm(getString(R.string.sync_confirm_cloud, cloudMain), Sync.First.CLOUD) },
+        getString(R.string.sync_choice_device) to { confirm(getString(R.string.sync_confirm_device), Sync.First.DEVICE) },
+        getString(R.string.sync_choice_merge) to { choose(Sync.First.MERGE) },
+        getString(R.string.sync_choice_cancel) to { choose(null) },
+    ))
+}
+

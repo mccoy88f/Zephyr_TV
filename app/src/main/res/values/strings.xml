@@ -838,4 +838,15 @@
     <string name="sync_off">Off: link a Zephyr TV account</string>
     <string name="sync_owned">Sync (%1$s)</string>
     <string name="sync_owner_only">Sync belongs to %1$s, the main user: switch to them to change it.</string>
+    <string name="sync_choice_title">This account already has a configuration</string>
+    <string name="sync_choice_body">Users on the account: %1$s. What do you want to do with this TV?</string>
+    <string name="sync_choice_body_settings">The account already has settings. What do you want to do with this TV?</string>
+    <string name="sync_choice_cloud">Use the cloud configuration (remove this TV\'s)</string>
+    <string name="sync_choice_device">Use this TV\'s configuration (delete the cloud\'s)</string>
+    <string name="sync_choice_merge">Merge (the cloud\'s main user leads)</string>
+    <string name="sync_choice_cancel">Cancel and leave</string>
+    <string name="sync_confirm_cloud">This TV\'s users, settings and what they watched are replaced by the account\'s. This TV\'s main user becomes %1$s.</string>
+    <string name="sync_confirm_device">The account\'s users, settings and what they watched are replaced by this TV\'s, on the other linked TVs too.</string>
+    <string name="sync_confirm_yes">Yes, go on</string>
+    <string name="sync_confirm_back">Back</string>
 </resources>

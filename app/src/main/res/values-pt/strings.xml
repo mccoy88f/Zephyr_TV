@@ -841,4 +841,15 @@
     <string name="sync_off">Desativada: conecte uma conta Zephyr TV</string>
     <string name="sync_owned">Sincronização (%1$s)</string>
     <string name="sync_owner_only">A sincronização é de %1$s, o usuário principal: mude para esse usuário para alterá-la.</string>
+    <string name="sync_choice_title">Esta conta já tem uma configuração</string>
+    <string name="sync_choice_body">Usuários na conta: %1$s. O que você quer fazer com esta TV?</string>
+    <string name="sync_choice_body_settings">A conta já tem configurações. O que você quer fazer com esta TV?</string>
+    <string name="sync_choice_cloud">Usar a configuração na nuvem (remover a local)</string>
+    <string name="sync_choice_device">Usar a configuração do dispositivo (apagar a da nuvem)</string>
+    <string name="sync_choice_merge">Mesclar (o usuário principal da nuvem manda)</string>
+    <string name="sync_choice_cancel">Cancelar e sair</string>
+    <string name="sync_confirm_cloud">Os usuários, configurações e assistidos desta TV são substituídos pelos da conta. O usuário principal desta TV passa a ser %1$s.</string>
+    <string name="sync_confirm_device">Os usuários, configurações e assistidos da conta são substituídos pelos desta TV, também nas outras TVs conectadas.</string>
+    <string name="sync_confirm_yes">Sim, continuar</string>
+    <string name="sync_confirm_back">Voltar</string>
 </resources>

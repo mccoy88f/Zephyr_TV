@@ -835,4 +835,15 @@
     <string name="sync_off">未开启：关联 Zephyr TV 账号</string>
     <string name="sync_owned">同步（%1$s）</string>
     <string name="sync_owner_only">同步属于主用户 %1$s：切换到该用户才能更改。</string>
+    <string name="sync_choice_title">此账号已有配置</string>
+    <string name="sync_choice_body">账号中的用户：%1$s。你想如何处理这台电视？</string>
+    <string name="sync_choice_body_settings">此账号已有设置。你想如何处理这台电视？</string>
+    <string name="sync_choice_cloud">使用云端配置（移除本地配置）</string>
+    <string name="sync_choice_device">使用本设备配置（删除云端配置）</string>
+    <string name="sync_choice_merge">合并（以云端主用户为准）</string>
+    <string name="sync_choice_cancel">取消并退出</string>
+    <string name="sync_confirm_cloud">这台电视的用户、设置和观看记录将被账号中的替换。这台电视的主用户将变为 %1$s。</string>
+    <string name="sync_confirm_device">账号中的用户、设置和观看记录将被这台电视的替换，其他已关联的电视也会如此。</string>
+    <string name="sync_confirm_yes">是，继续</string>
+    <string name="sync_confirm_back">返回</string>
 </resources>

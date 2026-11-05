@@ -838,4 +838,15 @@
     <string name="sync_off">Aus: Zephyr-TV-Konto verbinden</string>
     <string name="sync_owned">Synchronisierung (%1$s)</string>
     <string name="sync_owner_only">Die Synchronisierung gehört %1$s, dem Hauptnutzer: Wechsle zu diesem Nutzer, um sie zu ändern.</string>
+    <string name="sync_choice_title">Dieses Konto hat schon eine Konfiguration</string>
+    <string name="sync_choice_body">Nutzer im Konto: %1$s. Was möchtest du mit diesem Fernseher tun?</string>
+    <string name="sync_choice_body_settings">Das Konto hat schon Einstellungen. Was möchtest du mit diesem Fernseher tun?</string>
+    <string name="sync_choice_cloud">Cloud-Konfiguration verwenden (lokale entfernen)</string>
+    <string name="sync_choice_device">Konfiguration des Geräts verwenden (Cloud-Konfiguration löschen)</string>
+    <string name="sync_choice_merge">Zusammenführen (der Hauptnutzer der Cloud bestimmt)</string>
+    <string name="sync_choice_cancel">Abbrechen und beenden</string>
+    <string name="sync_confirm_cloud">Nutzer, Einstellungen und Gesehenes dieses Fernsehers werden durch die des Kontos ersetzt. Der Hauptnutzer dieses Fernsehers wird %1$s.</string>
+    <string name="sync_confirm_device">Nutzer, Einstellungen und Gesehenes des Kontos werden durch die dieses Fernsehers ersetzt, auch auf den anderen verbundenen Fernsehern.</string>
+    <string name="sync_confirm_yes">Ja, weiter</string>
+    <string name="sync_confirm_back">Zurück</string>
 </resources>

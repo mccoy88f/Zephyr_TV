@@ -188,9 +188,11 @@ private fun MainActivity.setupLink(next: () -> Unit) {
     val status = label("", 14f)
     homePopup(0, title, getString(R.string.ztv_waiting), null, back)
     linkTv({ on && setupDialog != null }, status, { box -> homePopup(0, title, "", box, back) },
-        { toast(R.string.ztv_failed); on = false; accountPopup(next) }) {
-        syncNow { r ->
-            if (!on) return@syncNow
+        { toast(R.string.ztv_failed); on = false; accountPopup(next) }) { token, email ->
+        firstSync(token, email, { main, names, choose ->
+            syncChoice(main, names, { t, body, buttons -> homePopup(0, t, body, null, *buttons.toTypedArray()) }, choose)
+        }, { r ->
+            if (!on) return@firstSync
             on = false
             if (r?.settings == true) {
                 prefs.edit().putBoolean(K.SETUP_RESUME, true).apply()
@@ -198,7 +200,7 @@ private fun MainActivity.setupLink(next: () -> Unit) {
                 setupDialog?.let { setupDialog = null; it.dismiss() }
                 recreate()
             } else next()
-        }
+        }) { on = false; accountPopup(next) }
     }
 }
 
