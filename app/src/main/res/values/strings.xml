@@ -108,10 +108,9 @@
 
     <string name="setting_home_button">Home button</string>
     <string name="setting_home_remote">Remote behavior</string>
-    <string name="home_remote_intro">How the remote works with Zephyr TV: Home, volume, and other keys.\n\nThe Home button service opens Zephyr TV when Home is pressed or Google TV appears. Smooth volume turns key filtering off so Volume, channel and other keys work normally; Home may show Google TV for about a second first.</string>
-    <string name="setting_smooth_volume">Smooth volume</string>
-    <string name="smooth_volume_on">On · Home may flash</string>
-    <string name="help_smooth_volume">Holding Volume and other remote keys work normally. Home may show Google TV for about a second before Zephyr TV. Turn off for instant Home (can make the remote lag on some TVs).</string>
+    <string name="home_remote_intro">How the remote works with Zephyr TV: Home, volume, and other keys.\n\nThe Home button service opens Zephyr TV when Home is pressed or Google TV appears. “Direct remote keys” turns key filtering off so Volume, channel and other keys work normally; Home may show Google TV for about a second first.</string>
+    <string name="setting_direct_keys">Direct remote keys</string>
+    <string name="direct_keys_on">On · Home may flash</string>
     <string name="home_button_on">On</string>
     <string name="home_button_off_prompt">Off: press to turn on</string>
 

@@ -231,6 +231,7 @@ internal class Scene(private val host: MainActivity) {
     private var previousBlur: Bitmap? = null
     private var fadeStart = 0L
     private var moveStart = 0L
+    private var frozenAt = 0L // when the drift was paused (idle, or motion off); 0 while it moves
     private var frame = 0
 
     /** The rows' veil (see RowsVeil): drawn from this photo, so redrawn as it drifts. */
@@ -270,16 +271,24 @@ internal class Scene(private val host: MainActivity) {
             val drift = host.wallpaperDrift()
             // Empty room, or drift off and not mid-fade: freeze so the UI thread rests.
             if (!fading && (!drift || android.os.SystemClock.elapsedRealtime() - host.lastInput > SCENE_IDLE_MS)) {
-                if (!fading && previous != null) dropPrevious()
+                if (previous != null) dropPrevious()
+                if (frozenAt == 0L) frozenAt = now // the photo holds still where it is, and resumes from there
                 plate.invalidateSelf()
+                if (host.spotlightFolded || ((veil as? RowsVeil)?.folded ?: 0f) > 0f) veil?.invalidate()
+                if (host.glass) invalidatePanes(host.findViewById(R.id.root))
                 return
+            }
+            // Moving again after a pause: carry on from the frozen frame instead of jumping ahead.
+            if (frozenAt != 0L) {
+                moveStart += now - frozenAt
+                frozenAt = 0L
             }
             // The previous photo is dropped before this frame is drawn, so a draw never sees a recycled bitmap.
             if (!fading && previous != null) dropPrevious()
             frame++
             plate.invalidateSelf()
             if (host.spotlightFolded || ((veil as? RowsVeil)?.folded ?: 0f) > 0f) veil?.invalidate() // the veil's photo drifts as the sharp one
-            // Glass panes sample the drift: every tick while fading, else every 2 s (cheap enough to track Ken Burns).
+            // Glass panes sample the drift: every third frame while fading, else every other tick (2 s).
             if (host.glass && (fading && frame % 3 == 0 || !fading && frame % 2 == 0)) {
                 invalidatePanes(host.findViewById(R.id.root))
             }
@@ -304,6 +313,7 @@ internal class Scene(private val host: MainActivity) {
         currentBlur = blur
         fadeStart = if (previous == null) 0L else android.os.SystemClock.uptimeMillis()
         moveStart = fadeStart.takeIf { it != 0L } ?: android.os.SystemClock.uptimeMillis()
+        frozenAt = 0L
         if (dropS != null && dropS !== previous && dropS !== current) dropS.recycle()
         if (dropB != null && dropB !== previousBlur && dropB !== currentBlur) dropB.recycle()
         plate.invalidateSelf()
@@ -438,7 +448,8 @@ internal class Scene(private val host: MainActivity) {
             return
         }
         val span = DRIFT_SPAN_MS
-        val u = ((now - moveStart).coerceAtLeast(0L) % (span * 2)).toFloat() / span
+        val at = if (frozenAt != 0L) frozenAt else now // paused: hold the frame it stopped on
+        val u = ((at - moveStart).coerceAtLeast(0L) % (span * 2)).toFloat() / span
         val t = (if (u <= 1f) u else 2f - u).coerceIn(0f, 1f)
         val zoom = 1f + 0.12f * t
         val s = base * zoom

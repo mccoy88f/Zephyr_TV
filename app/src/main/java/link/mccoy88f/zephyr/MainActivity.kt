@@ -1,7 +1,6 @@
 package link.mccoy88f.zephyr
 
 import link.mccoy88f.zephyr.SettingsRows.DARK_WP_ROW
-import link.mccoy88f.zephyr.SettingsRows.DEFAULT_HOME_ROW
 import link.mccoy88f.zephyr.SettingsRows.LIGHT_WP_ROW
 import link.mccoy88f.zephyr.SettingsRows.PHOTO_EVERY_ROW
 import link.mccoy88f.zephyr.SettingsRows.ROW_APPS_ROW
@@ -104,7 +103,7 @@ class MainActivity : Activity() {
     internal var nightShown = false // night mode's dimming is showing
     internal val loading = java.util.Collections.synchronizedSet(HashSet<String>())
     internal val ui = Handler(Looper.getMainLooper())
-    // Cap decoded posters: Plume kept this small; 12 MB is enough for a couple of rows without starving a 2–3 GB TV.
+    // Decoded posters, so rows scrolled back show at once: 12 MB is a couple of rows without starving a 2–3 GB TV.
     internal val posters = object : LruCache<String, Bitmap>(12 * 1024 * 1024) {
         override fun sizeOf(key: String, value: Bitmap) = value.byteCount
     }
@@ -396,7 +395,6 @@ class MainActivity : Activity() {
     override fun onActivityResult(code: Int, result: Int, data: Intent?) {
         if (code == FILE_REQUEST) return fileResult(result, data)
         if (code == VPN_REQUEST) return vpnAnswer(result == RESULT_OK)
-        if (code == ROLE_REQUEST) refreshSettings(DEFAULT_HOME_ROW)
         if (code == ROLE_REQUEST && setupStep == 1) {
             setupStep = 0
             afterHomeRole()

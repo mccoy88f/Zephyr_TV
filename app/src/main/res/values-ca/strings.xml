@@ -108,10 +108,9 @@
 
     <string name="setting_home_button">Botó Inici</string>
     <string name="setting_home_remote">Comportament del comandament</string>
-    <string name="home_remote_intro">Com funciona el comandament amb Zephyr TV: Inici, volum i la resta de tecles.\n\nEl servei del botó Inici obre Zephyr TV quan es prem Inici o apareix Google TV. Volum suau desactiva el filtre de tecles perquè volum, canals i la resta funcionin amb normalitat; Inici pot mostrar Google TV uns instants abans.</string>
-    <string name="setting_smooth_volume">Volum suau</string>
-    <string name="smooth_volume_on">Activat · Inici pot parpellejar</string>
-    <string name="help_smooth_volume">El volum i la resta de tecles del comandament funcionen amb normalitat. Inici pot mostrar Google TV un moment abans de Zephyr TV. Desactiva-ho per a Inici instantani (en alguns TVs el comandament pot anar malament).</string>
+    <string name="home_remote_intro">Com funciona el comandament amb Zephyr TV: Inici, volum i la resta de tecles.\n\nEl servei del botó Inici obre Zephyr TV quan es prem Inici o apareix Google TV. «Tecles del comandament directes» desactiva el filtre de tecles perquè volum, canals i la resta funcionin amb normalitat; Inici pot mostrar Google TV uns instants abans.</string>
+    <string name="setting_direct_keys">Tecles del comandament directes</string>
+    <string name="direct_keys_on">Activat · Inici pot parpellejar</string>
     <string name="home_button_on">Activat</string>
     <string name="home_button_off_prompt">Desactivat: prem per activar-lo</string>
 

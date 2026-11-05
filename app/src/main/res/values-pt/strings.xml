@@ -108,10 +108,9 @@
 
     <string name="setting_home_button">Botão Home</string>
     <string name="setting_home_remote">Comportamento do comando</string>
-    <string name="home_remote_intro">Como o comando funciona com o Zephyr TV: Home, volume e as outras teclas.\n\nO serviço do botão Home abre o Zephyr TV ao premir Home ou quando aparece o Google TV. Volume suave desativa o filtro de teclas para que volume, canais e o resto funcionem normalmente; Home pode mostrar o Google TV por um instante.</string>
-    <string name="setting_smooth_volume">Volume suave</string>
-    <string name="smooth_volume_on">Ativado · Home pode piscar</string>
-    <string name="help_smooth_volume">O volume e as outras teclas do comando funcionam normalmente. Home pode mostrar o Google TV cerca de um segundo antes do Zephyr TV. Desative para Home instantâneo (em algumas TVs o comando pode atrasar).</string>
+    <string name="home_remote_intro">Como o comando funciona com o Zephyr TV: Home, volume e as outras teclas.\n\nO serviço do botão Home abre o Zephyr TV ao premir Home ou quando aparece o Google TV. «Teclas do comando diretas» desativa o filtro de teclas para que volume, canais e o resto funcionem normalmente; Home pode mostrar o Google TV por um instante.</string>
+    <string name="setting_direct_keys">Teclas do comando diretas</string>
+    <string name="direct_keys_on">Ativado · Home pode piscar</string>
     <string name="home_button_on">Ativado</string>
     <string name="home_button_off_prompt">Desativado: pressione para ativar</string>
 

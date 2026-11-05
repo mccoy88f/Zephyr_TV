@@ -108,10 +108,9 @@
 
     <string name="setting_home_button">Botón Inicio</string>
     <string name="setting_home_remote">Comportamiento del mando</string>
-    <string name="home_remote_intro">Cómo funciona el mando con Zephyr TV: Inicio, volumen y el resto de teclas.\n\nEl servicio del botón Inicio abre Zephyr TV al pulsar Inicio o cuando aparece Google TV. Volumen suave desactiva el filtro de teclas para que volumen, canales y el resto funcionen con normalidad; Inicio puede mostrar Google TV un momento antes.</string>
-    <string name="setting_smooth_volume">Volumen suave</string>
-    <string name="smooth_volume_on">Activado · Inicio puede parpadear</string>
-    <string name="help_smooth_volume">El volumen y el resto de teclas del mando funcionan con normalidad. Inicio puede mostrar Google TV un momento antes de Zephyr TV. Desactívalo para Inicio instantáneo (en algunos TVs el mando puede ir mal).</string>
+    <string name="home_remote_intro">Cómo funciona el mando con Zephyr TV: Inicio, volumen y el resto de teclas.\n\nEl servicio del botón Inicio abre Zephyr TV al pulsar Inicio o cuando aparece Google TV. «Teclas del mando directas» desactiva el filtro de teclas para que volumen, canales y el resto funcionen con normalidad; Inicio puede mostrar Google TV un momento antes.</string>
+    <string name="setting_direct_keys">Teclas del mando directas</string>
+    <string name="direct_keys_on">Activado · Inicio puede parpadear</string>
     <string name="home_button_on">Activado</string>
     <string name="home_button_off_prompt">Desactivado: pulsa para activar</string>
 

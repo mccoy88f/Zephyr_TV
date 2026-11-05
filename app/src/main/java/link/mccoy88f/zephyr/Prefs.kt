@@ -149,8 +149,7 @@ internal object K {
 
     // System
     const val HOME_OFF = "home_off"
-    /** Like Plume's Smooth volume: on = no key filter (remote works; Home may flash Google TV). Default off. */
-    const val SMOOTH_VOLUME = "smooth_volume"
+    const val DIRECT_KEYS = "direct_keys" // the Home service doesn't filter the keys (see HomeOverride); off by default
     const val SETUP_SHOWN = "setup_shown"
     const val REOPEN_ROW = "reopen_row"
     const val UPD_VER = "upd_ver"

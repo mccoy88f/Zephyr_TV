@@ -54,9 +54,7 @@ internal object SettingsRows {
     const val TMDB_TYPE_ROW = TMDB_SOURCE_ROW + 2
     const val TMDB_CYCLE_ROW = TMDB_SOURCE_ROW + 3
     const val SCREENSAVER_ROW = SCREENSAVER_SECTION * SECTION
-    const val HOME_BUTTON_ROW = SYSTEM_SECTION * SECTION + 1 // after "Set up Home button"
-    const val SMOOTH_VOLUME_ROW = HOME_BUTTON_ROW + 1 // Smooth volume / key filter (see HomeOverride)
-    const val DEFAULT_HOME_ROW = HOME_BUTTON_ROW + 2
-    const val UPDATE_ROW = HOME_BUTTON_ROW + 3
+    const val HOME_REMOTE_ROW = SYSTEM_SECTION * SECTION // Remote behaviour: Home setup, Home button, keys, launcher (see showHomeRemotePage)
+    const val UPDATE_ROW = HOME_REMOTE_ROW + 1
     const val REMOTE_ROW = UPDATE_ROW + 1 // Remote access, before Backup and restore (see backupRow)
 }

@@ -22,8 +22,7 @@ import android.widget.Toast
 import link.mccoy88f.zephyr.MainActivity.Companion.HELP_URL
 import link.mccoy88f.zephyr.MainActivity.Companion.ROLE_REQUEST
 import link.mccoy88f.zephyr.MainActivity.Companion.WRITE_SECURE
-import link.mccoy88f.zephyr.SettingsRows.SECTION
-import link.mccoy88f.zephyr.SettingsRows.SYSTEM_SECTION
+import link.mccoy88f.zephyr.SettingsRows.HOME_REMOTE_ROW
 
 // Making Home land on Zephyr TV: the Home button service, the default-home role, and the guided setup popups.
 // Functions of MainActivity, kept here by topic; their state lives in MainActivity.
@@ -50,22 +49,23 @@ internal fun MainActivity.homeServiceOn(): Boolean {
 }
 
 internal fun MainActivity.toggleHomeButton() {
-    if (homeServiceOn()) turnOffHomeButton() else turnOnHomeButton()
+    val wasOn = homeServiceOn()
+    if (wasOn) turnOffHomeButton() else turnOnHomeButton()
     showHomeRemotePage(focus = 1)
+    // Not switched from here: Android's Accessibility settings opened. Back from them, the switch as it is then.
+    if (homeServiceOn() == wasOn) pageReturn = { showHomeRemotePage(focus = 1) }
 }
 
-/** Like Plume: on = no accessibility key filter (remote / volume / page keys work; Home may flash Google TV). Default off. */
-internal fun MainActivity.smoothVolume() = prefs.getBoolean(K.SMOOTH_VOLUME, false)
+/** Keys straight to the system, not through the Home service's filter (see HomeOverride). Off by default. */
+internal fun MainActivity.directKeys() = prefs.getBoolean(K.DIRECT_KEYS, false)
 
-internal fun MainActivity.toggleSmoothVolume() {
-    prefs.edit().putBoolean(K.SMOOTH_VOLUME, !smoothVolume()).commit()
-    HomeOverride.running?.applyKeyFilterFromPrefs()
-    showHomeRemotePage(focus = 2) // Smooth volume row
+internal fun MainActivity.toggleDirectKeys() {
+    prefs.edit().putBoolean(K.DIRECT_KEYS, !directKeys()).commit() // committed: the service reads it at once
+    HomeOverride.running?.applyKeyFilter()
+    showHomeRemotePage(focus = 2)
 }
 
-/**
- * Remote behavior: Home button service, Smooth volume (key filter), and default launcher.
- */
+/** Remote behaviour: setting up Home, the Home button service, Direct remote keys and the default launcher. */
 internal fun MainActivity.showHomeRemotePage(focus: Int = 0) {
     val intro = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
@@ -75,24 +75,22 @@ internal fun MainActivity.showHomeRemotePage(focus: Int = 0) {
             setLineSpacing(0f, 1.15f)
         })
     }
-    val smooth = smoothVolume()
     showPage(
         getString(R.string.setting_home_remote),
         listOf(
             page(getString(R.string.setup_home)) { closeLauncherSettings(); startHomeSetup() },
             page(getString(R.string.setting_home_button), toggle(homeServiceOn())) { toggleHomeButton() },
-            page(
-                getString(R.string.setting_smooth_volume),
-                if (smooth) getString(R.string.smooth_volume_on) else getString(R.string.state_off),
-            ) { toggleSmoothVolume() },
-            page(
-                getString(R.string.setting_default_launcher),
-                if (isDefaultHome()) getString(R.string.plume_press_change) else getString(R.string.default_launcher_set_prompt),
-            ) { makeDefaultHome() },
+            page(getString(R.string.setting_direct_keys),
+                if (directKeys()) getString(R.string.direct_keys_on) else getString(R.string.state_off)) { toggleDirectKeys() },
+            page(getString(R.string.setting_default_launcher),
+                if (isDefaultHome()) getString(R.string.plume_press_change) else getString(R.string.default_launcher_set_prompt)) {
+                pageReturn = { showHomeRemotePage(focus = 3) } // back from Android's dialog or Settings: the row as it is now
+                makeDefaultHome()
+            },
         ),
         focus = focus,
         top = intro,
-        back = { renderSettings(SYSTEM_SECTION * SECTION) },
+        back = { renderSettings(HOME_REMOTE_ROW) },
     )
 }
 

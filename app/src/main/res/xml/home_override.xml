@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  No flagRequestFilterKeyEvents: on this Philips (and many TVs) filtering every remote key through
-  the service makes DPAD / channel / page keys unusable. Home is caught by covering Google TV when
-  it appears (onAccessibilityEvent). canRequestFilterKeyEvents stays true so applyKeyFilter() can
-  opt in later without reinstalling.
+  No flagRequestFilterKeyEvents here: HomeOverride.applyKeyFilter() turns it on when the service connects,
+  unless Direct remote keys is on (filtering every key makes the remote lag on some TVs).
+  canRequestFilterKeyEvents stays true so the filter can be switched without reinstalling.
 -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityEventTypes="typeWindowStateChanged"

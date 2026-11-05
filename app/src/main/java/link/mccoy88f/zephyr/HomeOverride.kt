@@ -7,48 +7,45 @@ import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 
 /**
- * Google TV's launcher has to stay enabled (disabling it boot-loops the TV), so we open our home when
- * Google TV's home screens appear. Key filtering follows [K.SMOOTH_VOLUME] (default off = filter on for
- * instant Home). On many TVs filtering makes the remote lag; Smooth volume turns the filter off and
- * Home is caught by the window watcher instead (Google TV may flash briefly).
+ * Google TV's launcher has to stay enabled (disabling it boot-loops the TV), so we take the Home key before
+ * the system sees it and open our home directly; Google TV never flashes up. Holding Home still opens the
+ * Google TV dashboard. Covering Google TV whenever it shows stays as the fallback for anything else that
+ * opens it (e.g. Back out of the last app).
+ *
+ * Taking Home means filtering every key: Android hands each one to [onKeyEvent] and waits for the answer, on
+ * Zephyr TV's main thread. Where that makes the remote lag, Direct remote keys ([K.DIRECT_KEYS]) turns the
+ * filter off: keys go straight to the system, and Home is caught by covering Google TV (it shows for a moment).
  */
 class HomeOverride : AccessibilityService() {
     private val adultRelock = AdultRelock()
 
     override fun onServiceConnected() {
         running = this
-        applyKeyFilterFromPrefs()
+        applyKeyFilter()
         // It runs all the time, the home screen not: standby locks 18+ again while an app is in front too.
         registerReceiver(adultRelock, AdultRelock.FILTER)
     }
 
-    /**
-     * Reads [K.SMOOTH_VOLUME]: when on, turns key filtering off so the remote stays usable; Home is then
-     * caught by the window watcher (Google TV may flash ~1 s). Default off keeps filtering for instant Home.
-     */
-    fun applyKeyFilterFromPrefs() {
-        val smooth = getSharedPreferences(K.FILE, MODE_PRIVATE).getBoolean(K.SMOOTH_VOLUME, false)
-        applyKeyFilter(filter = !smooth)
-    }
-
-    /**
-     * When [filter] is true, Home is taken in [onKeyEvent] before the system sees it (no Google TV flash).
-     * Off: keys go straight to apps; Home is covered when Google TV shows.
-     */
-    fun applyKeyFilter(filter: Boolean) {
+    /** Filters the keys (Home taken at once) unless Direct remote keys is on. The XML starts unfiltered. */
+    fun applyKeyFilter() {
+        val direct = getSharedPreferences(K.FILE, MODE_PRIVATE).getBoolean(K.DIRECT_KEYS, false)
         val info = serviceInfo ?: return
         val flag = AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
-        serviceInfo = info.apply { flags = if (filter) flags or flag else flags and flag.inv() }
+        serviceInfo = info.apply { flags = if (direct) flags and flag.inv() else flags or flag }
     }
 
     /**
-     * Unbind also runs on force-stop and on every APK update — not only when the user turns the service off.
-     * Do not set [K.HOME_OFF] here: that flag is only written from [turnOffHomeButton], so [ensureHomeService]
-     * can put the service back after an install. Otherwise Home stays broken until Accessibility is toggled by hand.
+     * Turned off from Android's Accessibility settings: the app mustn't turn it back on (see ensureHomeService).
+     * Unbinding also comes with a force-stop or an update, though, and those kill the process right after: the
+     * choice is written a moment later, so only an unbind the process outlives counts as the user's.
      */
     override fun onUnbind(intent: Intent?): Boolean {
         running = null
         runCatching { unregisterReceiver(adultRelock) }
+        val app = applicationContext
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            if (running == null) app.getSharedPreferences(K.FILE, MODE_PRIVATE).edit().putBoolean(K.HOME_OFF, true).apply()
+        }, UNBIND_GRACE_MS)
         return super.onUnbind(intent)
     }
 
@@ -83,6 +80,7 @@ class HomeOverride : AccessibilityService() {
             private set
         private const val GOOGLE_TV = "com.google.android.apps.tv.launcherx"
         private const val LONG_PRESS_MS = 500L
+        private const val UNBIND_GRACE_MS = 3000L // a force-stop or an update has killed the process by then
         const val COVER = "link.mccoy88f.zephyr.COVER"
     }
 }

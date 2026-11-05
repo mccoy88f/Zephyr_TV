@@ -13,6 +13,16 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- **Zephyr TV settings → System → Remote behavior** holds **Set up Home button**, **Home button**, **Direct remote keys** and **Default launcher**.
+- **Direct remote keys** sends the remote keys straight to the TV. Use it when the remote is slow. Home can show Google TV for a moment.
+- **Wallpaper motion** turns the slow movement of the wallpaper on or off. The movement stops after 2 minutes without a key press.
+- **Continue Playing** shows or hides the Play queue tile at the start of the apps row.
+- The home screen uses much less processor time. The remote responds faster on small TVs.
+- The apps row no longer moves while the rows below it load.
+- After a force-stop or an update, Zephyr TV turns the **Home button** on again. It stays off when you turn it off.
+
 ## 4.0.4
 
 - When the user is connected to Trakt, the **Play queue** shows **Series to finish**, with the next episode of each, and **Films to finish**, with how far you got. They come from Trakt.

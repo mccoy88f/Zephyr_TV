@@ -108,10 +108,9 @@
 
     <string name="setting_home_button">Bouton Accueil</string>
     <string name="setting_home_remote">Comportement de la télécommande</string>
-    <string name="home_remote_intro">Comment la télécommande fonctionne avec Zephyr TV : Accueil, volume et les autres touches.\n\nLe service du bouton Accueil ouvre Zephyr TV à l\'appui sur Accueil ou quand Google TV apparaît. Volume fluide désactive le filtrage des touches pour que volume, chaînes et le reste fonctionnent normalement ; Accueil peut afficher Google TV un instant avant.</string>
-    <string name="setting_smooth_volume">Volume fluide</string>
-    <string name="smooth_volume_on">Activé · Accueil peut clignoter</string>
-    <string name="help_smooth_volume">Le volume et les autres touches de la télécommande fonctionnent normalement. Accueil peut afficher Google TV environ une seconde avant Zephyr TV. Désactivez pour un Accueil immédiat (peut ralentir la télécommande sur certains téléviseurs).</string>
+    <string name="home_remote_intro">Comment la télécommande fonctionne avec Zephyr TV : Accueil, volume et les autres touches.\n\nLe service du bouton Accueil ouvre Zephyr TV à l\'appui sur Accueil ou quand Google TV apparaît. « Touches de la télécommande directes » désactive le filtrage des touches pour que volume, chaînes et le reste fonctionnent normalement ; Accueil peut afficher Google TV un instant avant.</string>
+    <string name="setting_direct_keys">Touches de la télécommande directes</string>
+    <string name="direct_keys_on">Activé · Accueil peut clignoter</string>
     <string name="home_button_on">Activé</string>
     <string name="home_button_off_prompt">Désactivé : appuyez pour activer</string>
 

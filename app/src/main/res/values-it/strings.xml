@@ -108,10 +108,9 @@
 
     <string name="setting_home_button">Tasto Home</string>
     <string name="setting_home_remote">Comportamento del telecomando</string>
-    <string name="home_remote_intro">Come il telecomando funziona con Zephyr TV: Home, volume e gli altri tasti.\n\nIl servizio del tasto Home apre Zephyr TV quando premi Home o appare Google TV. Volume fluido disattiva il filtro dei tasti così volume, canali e il resto funzionano normalmente; Home può mostrare Google TV un attimo prima.</string>
-    <string name="setting_smooth_volume">Volume fluido</string>
-    <string name="smooth_volume_on">Attivo · Home può lampeggiare</string>
-    <string name="help_smooth_volume">Il volume e gli altri tasti del telecomando funzionano normalmente. Home può mostrare Google TV circa un secondo prima di Zephyr TV. Disattiva per Home istantaneo (su alcuni TV il telecomando può andare a scatti).</string>
+    <string name="home_remote_intro">Come il telecomando funziona con Zephyr TV: Home, volume e gli altri tasti.\n\nIl servizio del tasto Home apre Zephyr TV quando premi Home o appare Google TV. «Tasti del telecomando diretti» disattiva il filtro dei tasti così volume, canali e il resto funzionano normalmente; Home può mostrare Google TV un attimo prima.</string>
+    <string name="setting_direct_keys">Tasti del telecomando diretti</string>
+    <string name="direct_keys_on">Attivo · Home può lampeggiare</string>
     <string name="home_button_on">Attivo</string>
     <string name="home_button_off_prompt">Disattivo: premi per attivare</string>
 
