@@ -15,7 +15,8 @@
   },
   "footer": {
     "source": "Código-fonte",
-    "tmdb": "O Zephyr TV usa a API do TMDB, mas não é endossado nem certificado pelo TMDB."
+    "tmdb": "O Zephyr TV usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.",
+    "projects": "Todos os projetos"
   },
   "home": {
     "hero_title": "A tela inicial que sua Android TV merece",

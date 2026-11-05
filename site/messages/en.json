@@ -15,7 +15,8 @@
   },
   "footer": {
     "source": "Source code",
-    "tmdb": "Zephyr TV uses the TMDB API but is not endorsed or certified by TMDB."
+    "tmdb": "Zephyr TV uses the TMDB API but is not endorsed or certified by TMDB.",
+    "projects": "All projects"
   },
   "home": {
     "hero_title": "The home screen your Android TV deserves",

@@ -15,7 +15,8 @@
   },
   "footer": {
     "source": "源代码",
-    "tmdb": "Zephyr TV 使用 TMDB API，但未获得 TMDB 的认可或认证。"
+    "tmdb": "Zephyr TV 使用 TMDB API，但未获得 TMDB 的认可或认证。",
+    "projects": "所有项目"
   },
   "home": {
     "hero_title": "你的 Android TV 值得拥有的主屏幕",

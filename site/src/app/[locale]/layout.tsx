@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Header } from "@/components/Header";
+import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
@@ -39,6 +40,10 @@ export default async function LocaleLayout({ children, params }: { children: Rea
             <p>
               Zephyr TV · <a href="https://github.com/mccoy88f/Zephyr_TV/blob/main/LICENSE">GPL-3.0</a> ·{" "}
               <a href="https://github.com/mccoy88f/Zephyr_TV">{t("source")}</a>
+            </p>
+            <p>
+              <Link href="/credits">Credits</Link> · GitHub <a href="https://github.com/mccoy88f" rel="me">@mccoy88f</a> ·{" "}
+              {t("projects")}: <a href="https://www.mccoy88f.link">www.mccoy88f.link</a>
             </p>
             <p className="muted">{t("tmdb")}</p>
           </footer>

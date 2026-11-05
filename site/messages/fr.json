@@ -15,7 +15,8 @@
   },
   "footer": {
     "source": "Code source",
-    "tmdb": "Zephyr TV utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB."
+    "tmdb": "Zephyr TV utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.",
+    "projects": "Tous les projets"
   },
   "home": {
     "hero_title": "L'écran d'accueil que votre Android TV mérite",

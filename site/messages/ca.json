@@ -15,7 +15,8 @@
   },
   "footer": {
     "source": "Codi font",
-    "tmdb": "Zephyr TV fa servir l'API de TMDB però no té l'aval ni la certificació de TMDB."
+    "tmdb": "Zephyr TV fa servir l'API de TMDB però no té l'aval ni la certificació de TMDB.",
+    "projects": "Tots els projectes"
   },
   "home": {
     "hero_title": "La pantalla d'inici que el teu Android TV es mereix",

@@ -15,7 +15,8 @@
   },
   "footer": {
     "source": "Codice sorgente",
-    "tmdb": "Zephyr TV usa le API di TMDB ma non è approvato né certificato da TMDB."
+    "tmdb": "Zephyr TV usa le API di TMDB ma non è approvato né certificato da TMDB.",
+    "projects": "Tutti i progetti"
   },
   "home": {
     "hero_title": "La schermata Home che il tuo Android TV merita",
