@@ -32,6 +32,8 @@
     <string name="setting_light_wallpaper">Fondo del tema claro</string>
     <string name="setting_dark_wallpaper">Fondo del tema oscuro</string>
     <string name="setting_photo_fade">Fundido de fotos</string>
+    <string name="setting_wallpaper_drift">Movimiento del fondo</string>
+    <string name="setting_continue_playing">Seguir reproduciendo</string>
     <string name="setting_folder_photo_changes">Cambio de foto de la carpeta</string>
     <string name="setting_sort_apps">Ordenar apps</string>
     <string name="setting_sort_manual">Manual</string>
@@ -105,6 +107,11 @@
     <string name="setting_screensaver_timing">Tiempo del salvapantallas</string>
 
     <string name="setting_home_button">Botón Inicio</string>
+    <string name="setting_home_remote">Comportamiento del mando</string>
+    <string name="home_remote_intro">Cómo funciona el mando con Zephyr TV: Inicio, volumen y el resto de teclas.\n\nEl servicio del botón Inicio abre Zephyr TV al pulsar Inicio o cuando aparece Google TV. Volumen suave desactiva el filtro de teclas para que volumen, canales y el resto funcionen con normalidad; Inicio puede mostrar Google TV un momento antes.</string>
+    <string name="setting_smooth_volume">Volumen suave</string>
+    <string name="smooth_volume_on">Activado · Inicio puede parpadear</string>
+    <string name="help_smooth_volume">El volumen y el resto de teclas del mando funcionan con normalidad. Inicio puede mostrar Google TV un momento antes de Zephyr TV. Desactívalo para Inicio instantáneo (en algunos TVs el mando puede ir mal).</string>
     <string name="home_button_on">Activado</string>
     <string name="home_button_off_prompt">Desactivado: pulsa para activar</string>
 

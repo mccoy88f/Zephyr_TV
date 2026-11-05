@@ -140,35 +140,49 @@ internal fun MainActivity.watchSessions() {
     if (watching || !listenerAllowed()) return // already, or not allowed yet: tried again on each return home
     val sessions = getSystemService(MediaSessionManager::class.java) ?: return
     fun follow(list: List<MediaController>?) = list.orEmpty().forEach { c ->
-        if (!followed.add(c.sessionToken)) return@forEach
+        if (c.sessionToken in followed) return@forEach
         var last = c.playbackState?.state
+        val cb = object : MediaController.Callback() {
+            override fun onMetadataChanged(metadata: MediaMetadata?) = playingChanged()
+            override fun onPlaybackStateChanged(state: PlaybackState?) {
+                if (state?.state == last) return // the position moving on: nothing to redraw
+                last = state?.state
+                playingChanged()
+            }
+            override fun onSessionDestroyed() {
+                followed.remove(c.sessionToken)?.first?.let { runCatching { it.unregisterCallback(this) } }
+                playingChanged()
+            }
+        }
         runCatching {
-            c.registerCallback(object : MediaController.Callback() {
-                override fun onMetadataChanged(metadata: MediaMetadata?) {
-                    android.util.Log.d("ZephyrPlaying", "metadata changed: ${c.packageName}")
-                    playingChanged()
-                }
-                override fun onPlaybackStateChanged(state: PlaybackState?) {
-                    if (state?.state == last) return // the position moving on: nothing to redraw
-                    last = state?.state
-                    playingChanged()
-                }
-                override fun onSessionDestroyed() {
-                    followed.remove(c.sessionToken)
-                    playingChanged()
-                }
-            }, ui)
+            c.registerCallback(cb, ui)
+            followed[c.sessionToken] = c to cb
         }
     }
+    val listener = MediaSessionManager.OnActiveSessionsChangedListener { list -> follow(list); playingChanged() }
     runCatching {
-        sessions.addOnActiveSessionsChangedListener({ list -> follow(list); playingChanged() }, listenerComponent(), ui)
+        sessions.addOnActiveSessionsChangedListener(listener, listenerComponent(), ui)
+        sessionsListener = listener
         follow(mediaSessions())
         watching = true
     }.onFailure { warn("can't follow the media sessions ($it)") }
 }
 
+/** Drop session listeners so a recreate() doesn't keep the old activity alive through media callbacks. */
+internal fun MainActivity.unwatchSessions() {
+    val sessions = getSystemService(MediaSessionManager::class.java)
+    sessionsListener?.let { listener ->
+        runCatching { sessions?.removeOnActiveSessionsChangedListener(listener) }
+    }
+    sessionsListener = null
+    followed.values.forEach { (c, cb) -> runCatching { c.unregisterCallback(cb) } }
+    followed.clear()
+    watching = false
+}
+
 private var watching = false
-private val followed = HashSet<android.media.session.MediaSession.Token>()
+private var sessionsListener: MediaSessionManager.OnActiveSessionsChangedListener? = null
+private val followed = HashMap<android.media.session.MediaSession.Token, Pair<MediaController, MediaController.Callback>>()
 
 private fun MainActivity.playingChanged() {
     ui.removeCallbacks(playingRefresh)

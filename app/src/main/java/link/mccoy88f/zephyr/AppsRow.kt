@@ -107,15 +107,17 @@ internal fun MainActivity.renderApps() {
     val width = (resources.displayMetrics.widthPixels - dp(96) - gap * (ROW_TILES - 1)) / ROW_TILES
     appRow.removeAllViews()
     val hidden = rowHiddenSet()
-    // Fixed first tile: "Continue Watching" hub
-    val cwDrawable = getDrawable(R.drawable.ic_continue_watching) ?: getDrawable(R.drawable.ic_apps)!!
-    // Tinted with the theme's foreground like the other marks: a white disc vanishes on the light theme's white focused card.
-    val cwTile = tile(null, cwDrawable, mono = true, CW_PKG) {
-        watchTitle.text = getString(R.string.continue_watching)
-        tmdbLastFocusApp = null
-        queryAppChannels(null)
-    }.apply {
-        contentDescription = getString(R.string.play_queue)
+    // Fixed first tile: "Continue Watching" hub (optional: see continuePlaying())
+    val cwTile = if (!continuePlaying()) null else {
+        val cwDrawable = getDrawable(R.drawable.ic_continue_watching) ?: getDrawable(R.drawable.ic_apps)!!
+        // Tinted with the theme's foreground like the other marks: a white disc vanishes on the light theme's white focused card.
+        tile(null, cwDrawable, mono = true, CW_PKG) {
+            watchTitle.text = getString(R.string.continue_watching)
+            tmdbLastFocusApp = null
+            queryAppChannels(null)
+        }.apply {
+            contentDescription = getString(R.string.play_queue)
+        }
     }
 
     val searchTile = searchQuery?.let { q ->

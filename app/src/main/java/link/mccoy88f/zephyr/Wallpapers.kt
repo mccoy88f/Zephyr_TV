@@ -50,6 +50,12 @@ internal fun MainActivity.currentWallpaper(forDark: Boolean = dark) = chooseWall
 /** Fade your own photos into the background at the bottom. Bundled wallpapers have it baked in either way. */
 internal fun MainActivity.wallpaperFade() = prefs.getBoolean(K.WP_FADE, true)
 
+/** Slow Ken Burns zoom/pan on the home wallpaper. Off freezes the photo and stops the Scene redraw loop. Default off: the redraw loop fights the remote on modest TVs. */
+internal fun MainActivity.wallpaperDrift() = prefs.getBoolean(K.WP_DRIFT, false)
+
+/** Continue Playing tile + Watch Next / now-playing work. Off skips those queries. */
+internal fun MainActivity.continuePlaying() = prefs.getBoolean(K.CW_ROW, true)
+
 internal fun MainActivity.wallpaperName(choice: String) = when {
     choice == "tmdb:trending" -> getString(R.string.wallpaper_tmdb_trending)
     choice.startsWith("folder:") -> getString(R.string.wallpaper_prefix_folder, choice.substringAfter(':').substringAfter(':'))

@@ -32,6 +32,8 @@
     <string name="setting_light_wallpaper">Hintergrund im hellen Modus</string>
     <string name="setting_dark_wallpaper">Hintergrund im dunklen Modus</string>
     <string name="setting_photo_fade">Foto-Überblendung</string>
+    <string name="setting_wallpaper_drift">Hintergrundbewegung</string>
+    <string name="setting_continue_playing">Weiter abspielen</string>
     <string name="setting_folder_photo_changes">Wechsel der Ordnerfotos</string>
     <string name="setting_sort_apps">Apps sortieren</string>
     <string name="setting_sort_manual">Manuell</string>
@@ -105,6 +107,11 @@
     <string name="setting_screensaver_timing">Zeit des Bildschirmschoners</string>
 
     <string name="setting_home_button">Home-Taste</string>
+    <string name="setting_home_remote">Fernbedienungsverhalten</string>
+    <string name="home_remote_intro">So arbeitet die Fernbedienung mit Zephyr TV: Home, Lautstärke und andere Tasten.\n\nDer Home-Tasten-Dienst öffnet Zephyr TV bei Home oder wenn Google TV erscheint. Sanfte Lautstärke schaltet die Tastenfilterung aus, damit Lautstärke, Sender und andere Tasten normal funktionieren; Home kann Google TV kurz zeigen.</string>
+    <string name="setting_smooth_volume">Sanfte Lautstärke</string>
+    <string name="smooth_volume_on">An · Home kann aufblitzen</string>
+    <string name="help_smooth_volume">Lautstärke und andere Fernbedienungstasten funktionieren normal. Home kann Google TV etwa eine Sekunde vor Zephyr TV zeigen. Ausschalten für sofortiges Home (kann auf manchen TVs die Fernbedienung verzögern).</string>
     <string name="home_button_on">An</string>
     <string name="home_button_off_prompt">Aus: drücken zum Einschalten</string>
 

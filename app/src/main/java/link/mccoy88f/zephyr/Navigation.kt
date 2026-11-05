@@ -361,11 +361,7 @@ internal fun MainActivity.homeFocusable(on: Boolean) {
 
 /** A key on the home screen: true when Zephyr TV took it; false lets Android handle it (see dispatchKeyEvent). */
 internal fun MainActivity.handleKey(e: KeyEvent): Boolean {
-    lastInput = SystemClock.elapsedRealtime()
-    if (spotlightIdle) {
-        spotlightIdle = false
-        restartSpotlightTick()
-    }
+    noteInput()
     val confirm = e.keyCode == KeyEvent.KEYCODE_DPAD_CENTER || e.keyCode == KeyEvent.KEYCODE_ENTER ||
         e.keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER
     if (confirm) {

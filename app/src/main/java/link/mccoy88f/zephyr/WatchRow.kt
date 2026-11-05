@@ -44,6 +44,10 @@ import link.mccoy88f.zephyr.MainActivity.Prog
 // ---------- continue watching (Android TV Watch Next) ----------
 
 internal fun MainActivity.refreshWatchNext() {
+    if (!continuePlaying()) {
+        showWatchNext(emptyList())
+        return
+    }
     if (checkSelfPermission(TV_LISTINGS) != PackageManager.PERMISSION_GRANTED) {
         showWatchNext(emptyList())
         return
@@ -546,9 +550,13 @@ internal fun MainActivity.placeholderCard(gapBefore: Boolean, delay: Long): View
     val w = (resources.displayMetrics.widthPixels - dp(96) - gap * (n - 1)) / n
     fun shape(color: Int, corner: Int) = GradientDrawable().apply { cornerRadius = dp(corner).toFloat(); setColor(color) }
     val bar = if (dark) 0x33FFFFFF else 0x26000000
-    // A text line's height (an invisible label), with a bar across part of it.
-    fun line(size: Float, top: Int, width: Float) = FrameLayout(this).apply {
-        addView(label(" ", size).apply { visibility = View.INVISIBLE; setPadding(0, dp(top), 0, 0) })
+    // Same metrics as [watchCard] (15sp medium title + 12sp detail): a mismatch here shifts the apps row a few px.
+    fun line(size: Float, top: Int, width: Float, medium: Boolean = false) = FrameLayout(this).apply {
+        addView(label(" ", size).apply {
+            visibility = View.INVISIBLE
+            setPadding(0, dp(top), 0, 0)
+            if (medium) typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
+        })
         addView(View(context).apply { background = shape(bar, 4) },
             FrameLayout.LayoutParams((w * width).toInt(), dp(size.toInt() * 2 / 3), Gravity.BOTTOM).apply { bottomMargin = dp(4) })
     }
@@ -560,7 +568,7 @@ internal fun MainActivity.placeholderCard(gapBefore: Boolean, delay: Long): View
         addView(View(context).apply { background = shape(if (dark) 0xFF18181A.toInt() else 0xFFDDE1E5.toInt(), 8) },
             LinearLayout.LayoutParams(w, w * 9 / 16))
         addView(View(context), LinearLayout.LayoutParams(w, dp(3)).apply { topMargin = dp(6) }) // the progress bar's room
-        addView(line(14f, 6, 0.7f))
+        addView(line(15f, 6, 0.7f, medium = true))
         addView(line(12f, 2, 0.4f))
     }
     val pulse = ObjectAnimator.ofFloat(col, View.ALPHA, 1f, 0.4f).apply {
@@ -895,23 +903,25 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
     }
     col.addView(bar, LinearLayout.LayoutParams(w, dp(3)).apply { topMargin = dp(6) })
     col.addView(title)
+    // Always reserve the detail line (invisible when empty), like the progress bar: otherwise placeholder →
+    // real cards without a subtitle shrink a few px and the apps row jumps.
     val icon = sourceIcon(p.icon ?: p.pkg)
-    if (p.sub.isNotEmpty() || icon != null || p.addon != null) {
-        col.addView(label(p.sub, 12f).apply {
-            text = blueTicks(p.sub) // a watched title's ✓ in blue
-            details = this
-            alpha = 0.8f
-            setPadding(0, dp(2), 0, 0)
-            isSingleLine = true
-            ellipsize = TextUtils.TruncateAt.MARQUEE
-            marqueeRepeatLimit = -1
-            icon?.let {
-                it.setBounds(0, 0, dp(12), dp(12))
-                setCompoundDrawablesRelative(it, null, null, null)
-                compoundDrawablePadding = dp(6)
-            }
-        })
-    }
+    val hasDetail = p.sub.isNotEmpty() || icon != null || p.addon != null
+    col.addView(label(p.sub, 12f).apply {
+        text = blueTicks(p.sub) // a watched title's ✓ in blue
+        details = this
+        alpha = 0.8f
+        setPadding(0, dp(2), 0, 0)
+        isSingleLine = true
+        ellipsize = TextUtils.TruncateAt.MARQUEE
+        marqueeRepeatLimit = -1
+        visibility = if (hasDetail) View.VISIBLE else View.INVISIBLE
+        icon?.let {
+            it.setBounds(0, 0, dp(12), dp(12))
+            setCompoundDrawablesRelative(it, null, null, null)
+            compoundDrawablePadding = dp(6)
+        }
+    })
     if (p.badge == null && p.channelId == null && p.vod == null) loadPoster(img, p.image)
     // An add-on's channel: what's on as the player shows it (its times, so its bar), once the add-on tells.
     p.addon?.let { c ->

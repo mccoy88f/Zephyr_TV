@@ -32,6 +32,8 @@
     <string name="setting_light_wallpaper">浅色模式壁纸</string>
     <string name="setting_dark_wallpaper">深色模式壁纸</string>
     <string name="setting_photo_fade">照片淡入淡出</string>
+    <string name="setting_wallpaper_drift">壁纸动态</string>
+    <string name="setting_continue_playing">继续播放</string>
     <string name="setting_folder_photo_changes">文件夹照片切换</string>
     <string name="setting_sort_apps">应用排序</string>
     <string name="setting_sort_manual">手动</string>
@@ -105,6 +107,11 @@
     <string name="setting_screensaver_timing">屏幕保护程序时间</string>
 
     <string name="setting_home_button">主页键</string>
+    <string name="setting_home_remote">遥控器行为</string>
+    <string name="home_remote_intro">遥控器与 Zephyr TV 的配合方式：主页、音量及其他按键。\n\n主页键服务会在按下主页或出现 Google TV 时打开 Zephyr TV。流畅音量会关闭按键过滤，使音量、频道等按键正常工作；主页可能会先短暂显示 Google TV。</string>
+    <string name="setting_smooth_volume">流畅音量</string>
+    <string name="smooth_volume_on">开 · 主页可能闪一下</string>
+    <string name="help_smooth_volume">音量及其他遥控器按键正常工作。主页可能会先显示约一秒 Google TV，再打开 Zephyr TV。关闭可获得即时主页（在部分电视上可能导致遥控器延迟）。</string>
     <string name="home_button_on">开启</string>
     <string name="home_button_off_prompt">关闭：按下以开启</string>
 

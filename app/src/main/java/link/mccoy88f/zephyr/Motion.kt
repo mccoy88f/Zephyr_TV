@@ -14,8 +14,11 @@ internal const val GLINT_WAIT_MS = 400L
 internal const val SAFE_CRASHES = 3
 internal const val SAFE_WINDOW_MS = 5 * 60_000L
 
-/** Calm drift: twice a second. A step of well under a pixel, so the eye reads it as continuous. */
-internal const val DRIFT_MS = 500L
+/** Calm drift: once a second. Ken Burns spans minutes, so a 1 s step still reads as continuous and costs half the redraws. */
+internal const val DRIFT_MS = 1000L
+
+/** Stop drifting (and Glass pane redraws) after this long without a key/touch; the next input arms Scene again. */
+internal const val SCENE_IDLE_MS = 2 * 60_000L
 
 /** One slow out-and-back of the wallpaper, so the photo never jumps when the move repeats. */
 internal const val DRIFT_SPAN_MS = 180_000L

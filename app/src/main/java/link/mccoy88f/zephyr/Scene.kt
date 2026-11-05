@@ -24,9 +24,9 @@ import android.widget.ImageView
 
 /**
  * The home photograph, drifting, and the Glass panes that sample a tiny blurred copy of it.
- * The blur is made once, at 1/22, when the photo arrives. A pane costs one draw. The drift is redrawn twice a
+ * The blur is made once, at 1/22, when the photo arrives. A pane costs one draw. The drift is redrawn once a
  * second (a step of under a pixel). Through a crossfade the panes follow every third frame: two dozen of them
- * on every frame is what makes a fade stutter on a small TV.
+ * on every frame is what makes a fade stutter on a small TV. While idle, the tick stops so the main thread rests.
  */
 
 private const val BLUR_DIV = 22
@@ -264,15 +264,26 @@ internal class Scene(private val host: MainActivity) {
 
     private val tick = object : Runnable {
         override fun run() {
+            if (!host.sceneAlive || current == null) return
             val now = android.os.SystemClock.uptimeMillis()
             val fading = fading(now)
+            val drift = host.wallpaperDrift()
+            // Empty room, or drift off and not mid-fade: freeze so the UI thread rests.
+            if (!fading && (!drift || android.os.SystemClock.elapsedRealtime() - host.lastInput > SCENE_IDLE_MS)) {
+                if (!fading && previous != null) dropPrevious()
+                plate.invalidateSelf()
+                return
+            }
             // The previous photo is dropped before this frame is drawn, so a draw never sees a recycled bitmap.
             if (!fading && previous != null) dropPrevious()
             frame++
             plate.invalidateSelf()
             if (host.spotlightFolded || ((veil as? RowsVeil)?.folded ?: 0f) > 0f) veil?.invalidate() // the veil's photo drifts as the sharp one
-            if (host.glass && (!fading || frame % 3 == 0)) invalidatePanes(host.findViewById(R.id.root))
-            if (current != null && host.sceneAlive) host.ui.postDelayed(this, if (fading) 33L else DRIFT_MS)
+            // Glass panes sample the drift: every tick while fading, else every 2 s (cheap enough to track Ken Burns).
+            if (host.glass && (fading && frame % 3 == 0 || !fading && frame % 2 == 0)) {
+                invalidatePanes(host.findViewById(R.id.root))
+            }
+            host.ui.postDelayed(this, if (fading) 33L else DRIFT_MS)
         }
     }
 
@@ -418,13 +429,18 @@ internal class Scene(private val host: MainActivity) {
         return prevShader!!
     }
 
-    /** Centre-crop, then a slow zoom and a drift that stays inside the spare margin, so no edge shows. */
+    /** Centre-crop, then (when drift is on) a slow zoom and pan that stays inside the spare margin. */
     private fun place(bmp: Bitmap, viewW: Int, viewH: Int, now: Long) {
+        val base = maxOf(viewW / bmp.width.toFloat(), viewH / bmp.height.toFloat())
+        if (!host.wallpaperDrift()) {
+            m.setScale(base, base)
+            m.postTranslate((viewW - bmp.width * base) / 2f, (viewH - bmp.height * base) / 2f)
+            return
+        }
         val span = DRIFT_SPAN_MS
         val u = ((now - moveStart).coerceAtLeast(0L) % (span * 2)).toFloat() / span
         val t = (if (u <= 1f) u else 2f - u).coerceIn(0f, 1f)
         val zoom = 1f + 0.12f * t
-        val base = maxOf(viewW / bmp.width.toFloat(), viewH / bmp.height.toFloat())
         val s = base * zoom
         val extraX = (bmp.width * s - viewW) / 2f
         val extraY = (bmp.height * s - viewH) / 2f

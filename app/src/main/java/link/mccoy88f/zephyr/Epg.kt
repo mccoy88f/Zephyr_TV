@@ -29,6 +29,9 @@ internal object Epg {
     private val guides = java.util.concurrent.ConcurrentHashMap<String, Guide>() // by the file they're kept in
     private val updating: MutableSet<String> = java.util.concurrent.ConcurrentHashMap.newKeySet()
 
+    /** Drop the in-memory guide when the UI is hidden or memory is tight; next read reloads from the file. */
+    fun release() { guides.clear() }
+
     /** Where the guide at [url] is kept: the one of Zephyr TV settings ([own]) in epg.tsv, an extension's in a file each. */
     private fun file(dir: File, url: String, own: Boolean) = if (own) File(dir, "epg.tsv")
         else File(dir, "epg_" + java.security.MessageDigest.getInstance("SHA-1").digest(url.toByteArray()).joinToString("") { "%02x".format(it) }.take(16) + ".tsv")
