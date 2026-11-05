@@ -16,6 +16,7 @@ export async function Header() {
       </Link>
       <nav className="nav">
         <Link href="/download">{t("download")}</Link>
+        <Link href="/extensions">{t("extensions")}</Link>
         <Link href="/credits">{t("credits")}</Link>
         {account?.role === "superadmin" && <Link href="/admin">{t("admin")}</Link>}
         {account && <Link href="/account">{t("account")}</Link>}

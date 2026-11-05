@@ -10,7 +10,8 @@
     "login": "Sign in",
     "logout": "Sign out",
     "language": "Language",
-    "account": "Account"
+    "account": "Account",
+    "extensions": "Extensions"
   },
   "footer": {
     "source": "Source code",
@@ -103,9 +104,10 @@
     "verified": "Verified",
     "superadmins": "Superadmins",
     "sessions": "Active sessions",
-    "soon": "Zephyr TV users, TVs, sync and extensions come next.",
+    "soon": "Sync between TVs comes next.",
     "manage_accounts": "Manage accounts",
-    "no_mail": "Email isn't set up (SMTP_PASSWORD): new accounts can't confirm their email."
+    "no_mail": "Email isn't set up (SMTP_PASSWORD): new accounts can't confirm their email.",
+    "manage_extensions": "Extensions to review ({n})"
   },
   "share": {
     "watch": "To watch on Zephyr TV",
@@ -143,7 +145,16 @@
     "mail": "The email couldn't be sent. Try again later.",
     "link_bad": "This link is too old or was already used. Ask for a new one.",
     "email_taken": "This email already has an account.",
-    "superadmin": "The superadmin's account can't be deleted here."
+    "superadmin": "The superadmin's account can't be deleted here.",
+    "signed_out": "Sign in first.",
+    "cat_address": "Enter the HTTPS address of a manifest-zephyrtv.json or repository-zephyrtv.json (or of the folder it's in).",
+    "cat_too_many": "You have 5 proposals waiting for review: wait for an answer first.",
+    "cat_known": "This address is already in the catalogue or waiting for review.",
+    "cat_unreachable": "The address couldn't be reached, or it isn't on the public internet.",
+    "cat_not_json": "The address doesn't give JSON.",
+    "cat_not_extension": "This isn't a Zephyr TV extension or repository: check its manifest.",
+    "cat_newer": "It needs a newer Zephyr TV than the latest one.",
+    "cat_too_large": "The manifest is too large (256 KB at most)."
   },
   "register": {
     "title": "Create an account",
@@ -264,5 +275,47 @@
     "pick": "Choose this avatar",
     "no_avatar": "No avatar",
     "dicebear": "Avatars by DiceBear: only a random code goes to it, never a name."
+  },
+  "catalog": {
+    "title": "Extensions",
+    "lead": "Extensions add channels, films, radio and more to Zephyr TV. Each one here was reviewed before being published.",
+    "submit": "Propose your extension",
+    "docs": "How to write one",
+    "list_title": "Catalogue",
+    "empty": "No extension published yet.",
+    "repository": "{n, plural, one {Repository · # extension} other {Repository · # extensions}}",
+    "by": "by {author}",
+    "install": "Install in Zephyr TV",
+    "homepage": "Website",
+    "disclaimer": "Extensions are made by their authors, not by Zephyr TV. The review checks them when published: what they show later is up to their authors.",
+    "submit_intro": "Give the address of your extension's manifest-zephyrtv.json, or of a repository-zephyrtv.json with several. The site reads it now; after a review it appears in the catalogue.",
+    "send": "Send for review",
+    "sent": "Sent: it's waiting for review.",
+    "url": "Address",
+    "note": "Note for the review (optional)",
+    "rules": "It must be HTTPS and on the public internet. Only legal content: an extension that gives access to pirated content is refused.",
+    "mine": "Your proposals",
+    "mine_none": "You haven't proposed any extension yet.",
+    "status_pending": "Waiting for review",
+    "status_approved": "Published",
+    "status_rejected": "Refused",
+    "status_removed": "Removed",
+    "review_note": "Review: {note}",
+    "withdraw": "Withdraw"
+  },
+  "catalogAdmin": {
+    "title": "Extensions to review",
+    "back": "Admin",
+    "none": "Nothing proposed yet.",
+    "note": "Note (shown to who proposed it)",
+    "by": "Proposed by {email}, {date}",
+    "their_note": "Their note: {note}",
+    "review": "Review note: {note}",
+    "checked": "Read {date}",
+    "approve": "Publish",
+    "reject": "Refuse",
+    "remove": "Remove",
+    "recheck": "Read again",
+    "delete": "Delete"
   }
 }

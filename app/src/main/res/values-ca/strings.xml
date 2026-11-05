@@ -822,4 +822,9 @@
     <string name="ztv_unlink">Desvincula aquest televisor</string>
     <string name="ztv_unlinked">Televisor desvinculat</string>
     <string name="ztv_manage">Gestiona usuaris i televisors a %1$s.</string>
+    <string name="ext_catalog">Catàleg de Zephyr TV</string>
+    <string name="ext_catalog_intro">Extensions revisades al lloc de Zephyr TV. Proposa la teva a %1$s.</string>
+    <string name="ext_catalog_installed">Instal·lada</string>
+    <string name="ext_catalog_repo">Repositori · %1$d</string>
+    <string name="ext_catalog_empty">Encara no hi ha cap extensió al catàleg.</string>
 </resources>

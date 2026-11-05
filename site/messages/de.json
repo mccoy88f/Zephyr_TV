@@ -10,7 +10,8 @@
     "login": "Anmelden",
     "logout": "Abmelden",
     "language": "Sprache",
-    "account": "Konto"
+    "account": "Konto",
+    "extensions": "Erweiterungen"
   },
   "footer": {
     "source": "Quellcode",
@@ -103,9 +104,10 @@
     "verified": "Bestätigt",
     "superadmins": "Superadmins",
     "sessions": "Aktive Sitzungen",
-    "soon": "Zephyr-TV-Nutzer, Fernseher, Synchronisierung und Erweiterungen kommen danach.",
+    "soon": "Als Nächstes kommt die Synchronisierung zwischen Fernsehern.",
     "manage_accounts": "Konten verwalten",
-    "no_mail": "E-Mail ist nicht eingerichtet (SMTP_PASSWORD): Neue Konten können ihre E-Mail nicht bestätigen."
+    "no_mail": "E-Mail ist nicht eingerichtet (SMTP_PASSWORD): Neue Konten können ihre E-Mail nicht bestätigen.",
+    "manage_extensions": "Zu prüfende Erweiterungen ({n})"
   },
   "share": {
     "watch": "Zum Anschauen in Zephyr TV",
@@ -143,7 +145,16 @@
     "mail": "Die E-Mail konnte nicht gesendet werden. Versuche es später erneut.",
     "link_bad": "Dieser Link ist abgelaufen oder wurde schon benutzt. Fordere einen neuen an.",
     "email_taken": "Diese E-Mail hat schon ein Konto.",
-    "superadmin": "Das Konto des Superadmins kann hier nicht gelöscht werden."
+    "superadmin": "Das Konto des Superadmins kann hier nicht gelöscht werden.",
+    "signed_out": "Melde dich zuerst an.",
+    "cat_address": "Gib die HTTPS-Adresse einer manifest-zephyrtv.json oder repository-zephyrtv.json ein (oder ihres Ordners).",
+    "cat_too_many": "Du hast 5 Vorschläge in Prüfung: Warte zuerst auf eine Antwort.",
+    "cat_known": "Diese Adresse ist schon im Katalog oder in Prüfung.",
+    "cat_unreachable": "Die Adresse ist nicht erreichbar oder nicht im öffentlichen Internet.",
+    "cat_not_json": "Die Adresse liefert kein JSON.",
+    "cat_not_extension": "Das ist keine Zephyr-TV-Erweiterung und kein Repository: Prüfe das Manifest.",
+    "cat_newer": "Sie braucht ein neueres Zephyr TV als das aktuelle.",
+    "cat_too_large": "Das Manifest ist zu groß (höchstens 256 KB)."
   },
   "register": {
     "title": "Konto erstellen",
@@ -264,5 +275,47 @@
     "pick": "Diesen Avatar wählen",
     "no_avatar": "Kein Avatar",
     "dicebear": "Avatare von DiceBear: Es erhält nur einen zufälligen Code, nie einen Namen."
+  },
+  "catalog": {
+    "title": "Erweiterungen",
+    "lead": "Erweiterungen bringen Sender, Filme, Radio und mehr zu Zephyr TV. Jede hier wurde vor der Veröffentlichung geprüft.",
+    "submit": "Eigene Erweiterung vorschlagen",
+    "docs": "So schreibst du eine",
+    "list_title": "Katalog",
+    "empty": "Noch keine Erweiterung veröffentlicht.",
+    "repository": "{n, plural, one {Repository · # Erweiterung} other {Repository · # Erweiterungen}}",
+    "by": "von {author}",
+    "install": "In Zephyr TV installieren",
+    "homepage": "Website",
+    "disclaimer": "Erweiterungen stammen von ihren Autoren, nicht von Zephyr TV. Die Prüfung kontrolliert sie bei der Veröffentlichung: Was sie später zeigen, liegt bei den Autoren.",
+    "submit_intro": "Gib die Adresse der manifest-zephyrtv.json deiner Erweiterung an, oder einer repository-zephyrtv.json mit mehreren. Die Website liest sie sofort; nach der Prüfung erscheint sie im Katalog.",
+    "send": "Zur Prüfung senden",
+    "sent": "Gesendet: Sie wartet auf die Prüfung.",
+    "url": "Adresse",
+    "note": "Hinweis für die Prüfung (optional)",
+    "rules": "Sie muss HTTPS nutzen und im öffentlichen Internet sein. Nur legale Inhalte: Eine Erweiterung mit Zugang zu Raubkopien wird abgelehnt.",
+    "mine": "Deine Vorschläge",
+    "mine_none": "Du hast noch keine Erweiterung vorgeschlagen.",
+    "status_pending": "Wartet auf Prüfung",
+    "status_approved": "Veröffentlicht",
+    "status_rejected": "Abgelehnt",
+    "status_removed": "Entfernt",
+    "review_note": "Prüfung: {note}",
+    "withdraw": "Zurückziehen"
+  },
+  "catalogAdmin": {
+    "title": "Zu prüfende Erweiterungen",
+    "back": "Admin",
+    "none": "Noch nichts vorgeschlagen.",
+    "note": "Hinweis (sichtbar für den Vorschlagenden)",
+    "by": "Vorgeschlagen von {email}, {date}",
+    "their_note": "Sein Hinweis: {note}",
+    "review": "Prüfhinweis: {note}",
+    "checked": "Gelesen am {date}",
+    "approve": "Veröffentlichen",
+    "reject": "Ablehnen",
+    "remove": "Entfernen",
+    "recheck": "Neu lesen",
+    "delete": "Löschen"
   }
 }

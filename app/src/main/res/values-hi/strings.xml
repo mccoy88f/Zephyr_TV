@@ -819,4 +819,9 @@
     <string name="ztv_unlink">इस टीवी को अलग करें</string>
     <string name="ztv_unlinked">टीवी अलग किया गया</string>
     <string name="ztv_manage">यूज़र और टीवी %1$s पर संभालें।</string>
+    <string name="ext_catalog">Zephyr TV कैटलॉग</string>
+    <string name="ext_catalog_intro">Zephyr TV की साइट पर जाँचे गए एक्सटेंशन। अपना %1$s पर प्रस्तावित करें।</string>
+    <string name="ext_catalog_installed">इंस्टॉल है</string>
+    <string name="ext_catalog_repo">रिपॉज़िटरी · %1$d</string>
+    <string name="ext_catalog_empty">कैटलॉग में अभी कोई एक्सटेंशन नहीं।</string>
 </resources>

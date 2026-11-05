@@ -10,7 +10,8 @@
     "login": "Entrar",
     "logout": "Sair",
     "language": "Idioma",
-    "account": "Conta"
+    "account": "Conta",
+    "extensions": "Extensões"
   },
   "footer": {
     "source": "Código-fonte",
@@ -103,9 +104,10 @@
     "verified": "Verificadas",
     "superadmins": "Superadmins",
     "sessions": "Sessões ativas",
-    "soon": "Usuários do Zephyr TV, TVs, sincronização e extensões vêm depois.",
+    "soon": "Depois vem a sincronização entre TVs.",
     "manage_accounts": "Gerenciar contas",
-    "no_mail": "O e-mail não está configurado (SMTP_PASSWORD): contas novas não podem confirmar o e-mail."
+    "no_mail": "O e-mail não está configurado (SMTP_PASSWORD): contas novas não podem confirmar o e-mail.",
+    "manage_extensions": "Extensões para revisar ({n})"
   },
   "share": {
     "watch": "Para assistir no Zephyr TV",
@@ -143,7 +145,16 @@
     "mail": "Não foi possível enviar o e-mail. Tente mais tarde.",
     "link_bad": "Este link expirou ou já foi usado. Peça um novo.",
     "email_taken": "Este e-mail já tem uma conta.",
-    "superadmin": "A conta do superadmin não pode ser excluída aqui."
+    "superadmin": "A conta do superadmin não pode ser excluída aqui.",
+    "signed_out": "Entre primeiro.",
+    "cat_address": "Digite o endereço HTTPS de um manifest-zephyrtv.json ou repository-zephyrtv.json (ou da pasta dele).",
+    "cat_too_many": "Você tem 5 propostas aguardando revisão: espere uma resposta primeiro.",
+    "cat_known": "Este endereço já está no catálogo ou aguardando revisão.",
+    "cat_unreachable": "Não foi possível acessar o endereço, ou ele não está na internet pública.",
+    "cat_not_json": "O endereço não retorna JSON.",
+    "cat_not_extension": "Não é uma extensão nem um repositório do Zephyr TV: verifique o manifesto.",
+    "cat_newer": "Ela precisa de um Zephyr TV mais novo que o atual.",
+    "cat_too_large": "O manifesto é grande demais (no máximo 256 KB)."
   },
   "register": {
     "title": "Criar uma conta",
@@ -264,5 +275,47 @@
     "pick": "Escolher este avatar",
     "no_avatar": "Sem avatar",
     "dicebear": "Avatares do DiceBear: ele recebe só um código aleatório, nunca um nome."
+  },
+  "catalog": {
+    "title": "Extensões",
+    "lead": "As extensões adicionam ao Zephyr TV canais, filmes, rádio e mais. Cada uma aqui foi revisada antes de ser publicada.",
+    "submit": "Proponha sua extensão",
+    "docs": "Como escrever uma",
+    "list_title": "Catálogo",
+    "empty": "Nenhuma extensão publicada ainda.",
+    "repository": "{n, plural, one {Repositório · # extensão} other {Repositório · # extensões}}",
+    "by": "de {author}",
+    "install": "Instalar no Zephyr TV",
+    "homepage": "Site",
+    "disclaimer": "As extensões são feitas por seus autores, não pelo Zephyr TV. A revisão as verifica na publicação: o que mostram depois depende dos autores.",
+    "submit_intro": "Informe o endereço do manifest-zephyrtv.json da sua extensão, ou de um repository-zephyrtv.json com várias. O site lê agora; após a revisão, aparece no catálogo.",
+    "send": "Enviar para revisão",
+    "sent": "Enviada: aguardando revisão.",
+    "url": "Endereço",
+    "note": "Nota para a revisão (opcional)",
+    "rules": "Precisa ser HTTPS e estar na internet pública. Só conteúdo legal: uma extensão que dá acesso a conteúdo pirata é recusada.",
+    "mine": "Suas propostas",
+    "mine_none": "Você ainda não propôs nenhuma extensão.",
+    "status_pending": "Aguardando revisão",
+    "status_approved": "Publicada",
+    "status_rejected": "Recusada",
+    "status_removed": "Removida",
+    "review_note": "Revisão: {note}",
+    "withdraw": "Retirar"
+  },
+  "catalogAdmin": {
+    "title": "Extensões para revisar",
+    "back": "Admin",
+    "none": "Nada proposto ainda.",
+    "note": "Nota (visível para quem propôs)",
+    "by": "Proposta por {email}, {date}",
+    "their_note": "Nota da pessoa: {note}",
+    "review": "Nota de revisão: {note}",
+    "checked": "Lida em {date}",
+    "approve": "Publicar",
+    "reject": "Recusar",
+    "remove": "Remover",
+    "recheck": "Ler de novo",
+    "delete": "Excluir"
   }
 }

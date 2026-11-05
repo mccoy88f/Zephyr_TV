@@ -158,6 +158,19 @@ th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--lin
 .actions.left { justify-content: flex-start; }
 .actions form { margin: 0; }
 
+/* The extensions' catalogue. */
+.ext { display: grid; gap: 10px; align-content: start; }
+.ext-head { display: flex; gap: 12px; align-items: center; }
+.ext-head img { border-radius: 10px; flex: none; }
+.ext-head h3 { margin: 0; }
+.ext-head .tag { margin-left: 0; margin-right: 6px; }
+.ext-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ext-actions .button { padding: 8px 14px; }
+code.url { word-break: break-all; font-size: 13px; }
+.review { display: flex; gap: 6px; flex-wrap: wrap; margin: 0; }
+.review input { font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--panel); color: var(--fg); min-width: 160px; }
+.review .button, .ext .row-actions .button { padding: 8px 14px; }
+
 .footer { border-top: 1px solid var(--line); padding: 24px; text-align: center; font-size: 14px; }
 .footer p { margin: 4px 0; }
 

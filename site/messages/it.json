@@ -10,7 +10,8 @@
     "login": "Accedi",
     "logout": "Esci",
     "language": "Lingua",
-    "account": "Account"
+    "account": "Account",
+    "extensions": "Estensioni"
   },
   "footer": {
     "source": "Codice sorgente",
@@ -103,9 +104,10 @@
     "verified": "Verificati",
     "superadmins": "Superadmin",
     "sessions": "Sessioni attive",
-    "soon": "Utenti Zephyr TV, TV, sincronizzazione ed estensioni arrivano dopo.",
+    "soon": "Poi arriva la sincronizzazione tra i TV.",
     "manage_accounts": "Gestisci gli account",
-    "no_mail": "L'email non è configurata (SMTP_PASSWORD): i nuovi account non possono confermare l'email."
+    "no_mail": "L'email non è configurata (SMTP_PASSWORD): i nuovi account non possono confermare l'email.",
+    "manage_extensions": "Estensioni da rivedere ({n})"
   },
   "share": {
     "watch": "Da guardare su Zephyr TV",
@@ -143,7 +145,16 @@
     "mail": "Non è stato possibile mandare l'email. Riprova più tardi.",
     "link_bad": "Questo link è scaduto o è già stato usato. Chiedine uno nuovo.",
     "email_taken": "Questa email ha già un account.",
-    "superadmin": "L'account del superadmin non si può eliminare da qui."
+    "superadmin": "L'account del superadmin non si può eliminare da qui.",
+    "signed_out": "Prima accedi.",
+    "cat_address": "Inserisci l'indirizzo HTTPS di un manifest-zephyrtv.json o repository-zephyrtv.json (o della cartella in cui si trova).",
+    "cat_too_many": "Hai 5 proposte in attesa di revisione: aspetta prima una risposta.",
+    "cat_known": "Questo indirizzo è già nel catalogo o in attesa di revisione.",
+    "cat_unreachable": "Non riesco a raggiungere l'indirizzo, oppure non è su internet pubblico.",
+    "cat_not_json": "L'indirizzo non restituisce JSON.",
+    "cat_not_extension": "Non è un'estensione o un repository di Zephyr TV: controlla il manifest.",
+    "cat_newer": "Richiede una versione di Zephyr TV più nuova dell'ultima.",
+    "cat_too_large": "Il manifest è troppo grande (al massimo 256 KB)."
   },
   "register": {
     "title": "Crea un account",
@@ -264,5 +275,47 @@
     "pick": "Scegli questo avatar",
     "no_avatar": "Nessun avatar",
     "dicebear": "Avatar di DiceBear: gli arriva solo un codice casuale, mai un nome."
+  },
+  "catalog": {
+    "title": "Estensioni",
+    "lead": "Le estensioni aggiungono a Zephyr TV canali, film, radio e altro. Ognuna qui è stata rivista prima di essere pubblicata.",
+    "submit": "Proponi la tua estensione",
+    "docs": "Come scriverne una",
+    "list_title": "Catalogo",
+    "empty": "Ancora nessuna estensione pubblicata.",
+    "repository": "{n, plural, one {Repository · # estensione} other {Repository · # estensioni}}",
+    "by": "di {author}",
+    "install": "Installa in Zephyr TV",
+    "homepage": "Sito",
+    "disclaimer": "Le estensioni sono fatte dai loro autori, non da Zephyr TV. La revisione le controlla alla pubblicazione: quello che mostrano dopo dipende dagli autori.",
+    "submit_intro": "Indica l'indirizzo del manifest-zephyrtv.json della tua estensione, o di un repository-zephyrtv.json con più estensioni. Il sito lo legge subito; dopo la revisione compare nel catalogo.",
+    "send": "Invia per la revisione",
+    "sent": "Inviata: è in attesa di revisione.",
+    "url": "Indirizzo",
+    "note": "Nota per la revisione (facoltativa)",
+    "rules": "Deve essere HTTPS e su internet pubblico. Solo contenuti legali: un'estensione che dà accesso a contenuti pirata viene rifiutata.",
+    "mine": "Le tue proposte",
+    "mine_none": "Non hai ancora proposto estensioni.",
+    "status_pending": "In attesa di revisione",
+    "status_approved": "Pubblicata",
+    "status_rejected": "Rifiutata",
+    "status_removed": "Rimossa",
+    "review_note": "Revisione: {note}",
+    "withdraw": "Ritira"
+  },
+  "catalogAdmin": {
+    "title": "Estensioni da rivedere",
+    "back": "Admin",
+    "none": "Nessuna proposta.",
+    "note": "Nota (visibile a chi l'ha proposta)",
+    "by": "Proposta da {email}, {date}",
+    "their_note": "La sua nota: {note}",
+    "review": "Nota di revisione: {note}",
+    "checked": "Letta il {date}",
+    "approve": "Pubblica",
+    "reject": "Rifiuta",
+    "remove": "Rimuovi",
+    "recheck": "Rileggi",
+    "delete": "Elimina"
   }
 }

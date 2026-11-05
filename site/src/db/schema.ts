@@ -1,4 +1,4 @@
-import { index, integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 /** What an account may do: a user's own things, or everything (the superadmin's panel). */
 export const role = pgEnum("role", ["user", "superadmin"]);
@@ -127,4 +127,39 @@ export const linkCodes = pgTable("link_codes", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
 });
+
+/** Where a proposed extension is: waiting for review, in the catalogue, refused, or taken out of it. */
+export const catalogStatus = pgEnum("catalog_status", ["pending", "approved", "rejected", "removed"]);
+export const catalogKind = pgEnum("catalog_kind", ["extension", "repository"]);
+
+/**
+ * The extensions' catalogue: an extension (its manifest-zephyrtv.json) or a repository (its repository-zephyrtv.json)
+ * someone proposed, as read from its address when proposed or checked again, and the superadmin's review. Only the
+ * approved ones are shown.
+ */
+export const catalog = pgTable(
+  "catalog",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    url: text("url").notNull().unique(),
+    kind: catalogKind("kind").notNull(),
+    extId: text("ext_id"),
+    name: text("name").notNull(),
+    description: text("description"),
+    author: text("author"),
+    icon: text("icon"),
+    version: text("version"),
+    count: integer("count"),
+    adult: boolean("adult").notNull().default(false),
+    homepage: text("homepage"),
+    note: text("note"),
+    status: catalogStatus("status").notNull().default("pending"),
+    review: text("review"),
+    submittedBy: uuid("submitted_by").references(() => accounts.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    checkedAt: timestamp("checked_at", { withTimezone: true }).notNull().defaultNow(),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  },
+  (t) => [index("catalog_status").on(t.status), index("catalog_by").on(t.submittedBy)],
+);
 

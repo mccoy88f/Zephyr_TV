@@ -10,7 +10,8 @@
     "login": "Inicia la sessió",
     "logout": "Tanca la sessió",
     "language": "Idioma",
-    "account": "Compte"
+    "account": "Compte",
+    "extensions": "Extensions"
   },
   "footer": {
     "source": "Codi font",
@@ -103,9 +104,10 @@
     "verified": "Verificats",
     "superadmins": "Superadmins",
     "sessions": "Sessions actives",
-    "soon": "Usuaris de Zephyr TV, televisors, sincronització i extensions arriben després.",
+    "soon": "Després arriba la sincronització entre televisors.",
     "manage_accounts": "Gestiona els comptes",
-    "no_mail": "El correu no està configurat (SMTP_PASSWORD): els comptes nous no poden confirmar el correu."
+    "no_mail": "El correu no està configurat (SMTP_PASSWORD): els comptes nous no poden confirmar el correu.",
+    "manage_extensions": "Extensions per revisar ({n})"
   },
   "share": {
     "watch": "Per mirar a Zephyr TV",
@@ -143,7 +145,16 @@
     "mail": "No s'ha pogut enviar el correu. Torna-ho a provar més tard.",
     "link_bad": "Aquest enllaç ha caducat o ja s'ha fet servir. Demana'n un de nou.",
     "email_taken": "Aquest correu ja té un compte.",
-    "superadmin": "El compte del superadmin no es pot eliminar des d'aquí."
+    "superadmin": "El compte del superadmin no es pot eliminar des d'aquí.",
+    "signed_out": "Inicia la sessió primer.",
+    "cat_address": "Escriu l'adreça HTTPS d'un manifest-zephyrtv.json o repository-zephyrtv.json (o de la seva carpeta).",
+    "cat_too_many": "Tens 5 propostes esperant revisió: espera primer una resposta.",
+    "cat_known": "Aquesta adreça ja és al catàleg o esperant revisió.",
+    "cat_unreachable": "No s'ha pogut accedir a l'adreça, o no és a internet pública.",
+    "cat_not_json": "L'adreça no retorna JSON.",
+    "cat_not_extension": "No és una extensió ni un repositori de Zephyr TV: revisa'n el manifest.",
+    "cat_newer": "Necessita un Zephyr TV més nou que l'últim.",
+    "cat_too_large": "El manifest és massa gran (256 KB com a màxim)."
   },
   "register": {
     "title": "Crea un compte",
@@ -264,5 +275,47 @@
     "pick": "Tria aquest avatar",
     "no_avatar": "Sense avatar",
     "dicebear": "Avatars de DiceBear: només rep un codi aleatori, mai un nom."
+  },
+  "catalog": {
+    "title": "Extensions",
+    "lead": "Les extensions afegeixen a Zephyr TV canals, pel·lícules, ràdio i més. Cadascuna d'aquí s'ha revisat abans de publicar-se.",
+    "submit": "Proposa la teva extensió",
+    "docs": "Com escriure'n una",
+    "list_title": "Catàleg",
+    "empty": "Encara no hi ha cap extensió publicada.",
+    "repository": "{n, plural, one {Repositori · # extensió} other {Repositori · # extensions}}",
+    "by": "de {author}",
+    "install": "Instal·la a Zephyr TV",
+    "homepage": "Lloc web",
+    "disclaimer": "Les extensions les fan els seus autors, no Zephyr TV. La revisió les comprova en publicar-les: el que mostrin després depèn dels autors.",
+    "submit_intro": "Indica l'adreça del manifest-zephyrtv.json de la teva extensió, o d'un repository-zephyrtv.json amb diverses. El lloc el llegeix ara; després de la revisió apareix al catàleg.",
+    "send": "Envia a revisió",
+    "sent": "Enviada: espera revisió.",
+    "url": "Adreça",
+    "note": "Nota per a la revisió (opcional)",
+    "rules": "Ha de ser HTTPS i a internet pública. Només contingut legal: es rebutja una extensió que doni accés a contingut pirata.",
+    "mine": "Les teves propostes",
+    "mine_none": "Encara no has proposat cap extensió.",
+    "status_pending": "Esperant revisió",
+    "status_approved": "Publicada",
+    "status_rejected": "Rebutjada",
+    "status_removed": "Retirada",
+    "review_note": "Revisió: {note}",
+    "withdraw": "Retira"
+  },
+  "catalogAdmin": {
+    "title": "Extensions per revisar",
+    "back": "Admin",
+    "none": "Encara no s'ha proposat res.",
+    "note": "Nota (la veu qui l'ha proposada)",
+    "by": "Proposada per {email}, {date}",
+    "their_note": "La seva nota: {note}",
+    "review": "Nota de revisió: {note}",
+    "checked": "Llegida el {date}",
+    "approve": "Publica",
+    "reject": "Rebutja",
+    "remove": "Retira",
+    "recheck": "Torna a llegir",
+    "delete": "Elimina"
   }
 }

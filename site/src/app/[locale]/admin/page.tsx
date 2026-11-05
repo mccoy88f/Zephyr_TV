@@ -1,7 +1,7 @@
 import { count, eq, gt, isNotNull } from "drizzle-orm";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { db } from "@/db";
-import { accounts, sessions } from "@/db/schema";
+import { accounts, catalog, sessions } from "@/db/schema";
 import { Link, redirect } from "@/i18n/navigation";
 import { mailReady } from "@/server/mail";
 import { currentAccount } from "@/server/session";
@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: (await getTranslations({ locale, namespace: "admin" }))("title"), robots: { index: false } };
 }
 
-/** The superadmin's panel: for now what the site holds; users, TVs, sync and extensions come in the next phases. */
+/** The superadmin's panel: what the site holds, the accounts, and the extensions waiting for review. */
 export default async function Admin({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -24,6 +24,7 @@ export default async function Admin({ params }: { params: Promise<{ locale: stri
     db.select({ n: count() }).from(sessions).where(gt(sessions.expiresAt, new Date())),
   ]);
   const [admins] = await db.select({ n: count() }).from(accounts).where(eq(accounts.role, "superadmin"));
+  const [pending] = await db.select({ n: count() }).from(catalog).where(eq(catalog.status, "pending"));
   return (
     <section>
       <h1>{t("title")}</h1>
@@ -34,7 +35,10 @@ export default async function Admin({ params }: { params: Promise<{ locale: stri
         <article className="card stat"><strong>{admins.n}</strong><span>{t("superadmins")}</span></article>
         <article className="card stat"><strong>{live.n}</strong><span>{t("sessions")}</span></article>
       </div>
-      <p><Link className="button" href="/admin/accounts">{t("manage_accounts")}</Link></p>
+      <div className="actions left">
+        <Link className="button" href="/admin/accounts">{t("manage_accounts")}</Link>
+        <Link className={`button${pending.n ? " primary" : ""}`} href="/admin/extensions">{t("manage_extensions", { n: pending.n })}</Link>
+      </div>
       {!mailReady() && <p className="error">{t("no_mail")}</p>}
       <p className="muted">{t("soon")}</p>
     </section>

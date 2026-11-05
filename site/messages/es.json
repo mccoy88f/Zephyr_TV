@@ -10,7 +10,8 @@
     "login": "Iniciar sesión",
     "logout": "Cerrar sesión",
     "language": "Idioma",
-    "account": "Cuenta"
+    "account": "Cuenta",
+    "extensions": "Extensiones"
   },
   "footer": {
     "source": "Código fuente",
@@ -103,9 +104,10 @@
     "verified": "Verificadas",
     "superadmins": "Superadmins",
     "sessions": "Sesiones activas",
-    "soon": "Los usuarios de Zephyr TV, las TV, la sincronización y las extensiones llegan después.",
+    "soon": "Después llega la sincronización entre TV.",
     "manage_accounts": "Gestionar cuentas",
-    "no_mail": "El correo no está configurado (SMTP_PASSWORD): las cuentas nuevas no pueden confirmar su correo."
+    "no_mail": "El correo no está configurado (SMTP_PASSWORD): las cuentas nuevas no pueden confirmar su correo.",
+    "manage_extensions": "Extensiones por revisar ({n})"
   },
   "share": {
     "watch": "Para ver en Zephyr TV",
@@ -143,7 +145,16 @@
     "mail": "No se pudo enviar el correo. Vuelve a intentarlo más tarde.",
     "link_bad": "Este enlace caducó o ya se usó. Pide uno nuevo.",
     "email_taken": "Este correo ya tiene una cuenta.",
-    "superadmin": "La cuenta del superadmin no se puede eliminar desde aquí."
+    "superadmin": "La cuenta del superadmin no se puede eliminar desde aquí.",
+    "signed_out": "Inicia sesión primero.",
+    "cat_address": "Escribe la dirección HTTPS de un manifest-zephyrtv.json o repository-zephyrtv.json (o de su carpeta).",
+    "cat_too_many": "Tienes 5 propuestas esperando revisión: espera primero una respuesta.",
+    "cat_known": "Esta dirección ya está en el catálogo o esperando revisión.",
+    "cat_unreachable": "No se pudo acceder a la dirección, o no está en internet pública.",
+    "cat_not_json": "La dirección no devuelve JSON.",
+    "cat_not_extension": "No es una extensión ni un repositorio de Zephyr TV: revisa su manifiesto.",
+    "cat_newer": "Necesita una versión de Zephyr TV más nueva que la última.",
+    "cat_too_large": "El manifiesto es demasiado grande (256 KB como máximo)."
   },
   "register": {
     "title": "Crear una cuenta",
@@ -264,5 +275,47 @@
     "pick": "Elegir este avatar",
     "no_avatar": "Sin avatar",
     "dicebear": "Avatares de DiceBear: solo recibe un código aleatorio, nunca un nombre."
+  },
+  "catalog": {
+    "title": "Extensiones",
+    "lead": "Las extensiones añaden a Zephyr TV canales, películas, radio y más. Cada una de aquí se revisó antes de publicarse.",
+    "submit": "Propón tu extensión",
+    "docs": "Cómo escribir una",
+    "list_title": "Catálogo",
+    "empty": "Aún no hay extensiones publicadas.",
+    "repository": "{n, plural, one {Repositorio · # extensión} other {Repositorio · # extensiones}}",
+    "by": "de {author}",
+    "install": "Instalar en Zephyr TV",
+    "homepage": "Sitio web",
+    "disclaimer": "Las extensiones las hacen sus autores, no Zephyr TV. La revisión las comprueba al publicarlas: lo que muestren después depende de sus autores.",
+    "submit_intro": "Indica la dirección del manifest-zephyrtv.json de tu extensión, o de un repository-zephyrtv.json con varias. El sitio lo lee ahora; tras la revisión aparece en el catálogo.",
+    "send": "Enviar a revisión",
+    "sent": "Enviada: está esperando revisión.",
+    "url": "Dirección",
+    "note": "Nota para la revisión (opcional)",
+    "rules": "Debe ser HTTPS y estar en internet pública. Solo contenido legal: se rechaza una extensión que dé acceso a contenido pirata.",
+    "mine": "Tus propuestas",
+    "mine_none": "Aún no has propuesto ninguna extensión.",
+    "status_pending": "Esperando revisión",
+    "status_approved": "Publicada",
+    "status_rejected": "Rechazada",
+    "status_removed": "Retirada",
+    "review_note": "Revisión: {note}",
+    "withdraw": "Retirar"
+  },
+  "catalogAdmin": {
+    "title": "Extensiones por revisar",
+    "back": "Admin",
+    "none": "Nada propuesto aún.",
+    "note": "Nota (la ve quien la propuso)",
+    "by": "Propuesta por {email}, {date}",
+    "their_note": "Su nota: {note}",
+    "review": "Nota de revisión: {note}",
+    "checked": "Leída el {date}",
+    "approve": "Publicar",
+    "reject": "Rechazar",
+    "remove": "Retirar",
+    "recheck": "Volver a leer",
+    "delete": "Eliminar"
   }
 }

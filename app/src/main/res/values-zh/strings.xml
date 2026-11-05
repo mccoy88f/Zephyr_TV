@@ -816,4 +816,9 @@
     <string name="ztv_unlink">取消关联这台电视</string>
     <string name="ztv_unlinked">已取消关联</string>
     <string name="ztv_manage">在 %1$s 管理用户和电视。</string>
+    <string name="ext_catalog">Zephyr TV 目录</string>
+    <string name="ext_catalog_intro">在 Zephyr TV 网站上审核过的扩展。在 %1$s 提交你的扩展。</string>
+    <string name="ext_catalog_installed">已安装</string>
+    <string name="ext_catalog_repo">仓库 · %1$d</string>
+    <string name="ext_catalog_empty">目录中尚无扩展。</string>
 </resources>

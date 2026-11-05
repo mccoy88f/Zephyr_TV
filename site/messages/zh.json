@@ -10,7 +10,8 @@
     "login": "登录",
     "logout": "退出",
     "language": "语言",
-    "account": "账号"
+    "account": "账号",
+    "extensions": "扩展"
   },
   "footer": {
     "source": "源代码",
@@ -103,9 +104,10 @@
     "verified": "已验证",
     "superadmins": "超级管理员",
     "sessions": "活动会话",
-    "soon": "Zephyr TV 用户、电视、同步和扩展随后推出。",
+    "soon": "接下来是电视之间的同步。",
     "manage_accounts": "管理账号",
-    "no_mail": "电子邮件未配置（SMTP_PASSWORD）：新账号无法确认电子邮件。"
+    "no_mail": "电子邮件未配置（SMTP_PASSWORD）：新账号无法确认电子邮件。",
+    "manage_extensions": "待审核的扩展（{n}）"
   },
   "share": {
     "watch": "在 Zephyr TV 上观看",
@@ -143,7 +145,16 @@
     "mail": "无法发送电子邮件。请稍后重试。",
     "link_bad": "此链接已过期或已被使用。请重新申请。",
     "email_taken": "此电子邮件已有账号。",
-    "superadmin": "无法在这里删除超级管理员账号。"
+    "superadmin": "无法在这里删除超级管理员账号。",
+    "signed_out": "请先登录。",
+    "cat_address": "输入 manifest-zephyrtv.json 或 repository-zephyrtv.json（或其所在文件夹）的 HTTPS 地址。",
+    "cat_too_many": "你有 5 个提交正在等待审核：请先等待回复。",
+    "cat_known": "此地址已在目录中或正在等待审核。",
+    "cat_unreachable": "无法访问该地址，或它不在公共互联网上。",
+    "cat_not_json": "该地址没有返回 JSON。",
+    "cat_not_extension": "这不是 Zephyr TV 扩展或仓库：请检查其清单。",
+    "cat_newer": "它需要比最新版更新的 Zephyr TV。",
+    "cat_too_large": "清单过大（最多 256 KB）。"
   },
   "register": {
     "title": "创建账号",
@@ -264,5 +275,47 @@
     "pick": "选择此头像",
     "no_avatar": "不使用头像",
     "dicebear": "头像由 DiceBear 生成：它只收到一个随机代码，从不收到名字。"
+  },
+  "catalog": {
+    "title": "扩展",
+    "lead": "扩展为 Zephyr TV 添加频道、电影、电台等内容。这里的每个扩展在发布前都经过审核。",
+    "submit": "提交你的扩展",
+    "docs": "如何编写扩展",
+    "list_title": "目录",
+    "empty": "尚未发布任何扩展。",
+    "repository": "{n, plural, other {仓库 · # 个扩展}}",
+    "by": "作者：{author}",
+    "install": "在 Zephyr TV 中安装",
+    "homepage": "网站",
+    "disclaimer": "扩展由其作者制作，而非 Zephyr TV。审核在发布时检查它们：之后显示的内容由作者负责。",
+    "submit_intro": "提供你的扩展的 manifest-zephyrtv.json 地址，或包含多个扩展的 repository-zephyrtv.json 地址。网站会立即读取；审核后出现在目录中。",
+    "send": "提交审核",
+    "sent": "已提交：正在等待审核。",
+    "url": "地址",
+    "note": "给审核的备注（可选）",
+    "rules": "必须是 HTTPS 且位于公共互联网。仅限合法内容：提供盗版内容访问的扩展会被拒绝。",
+    "mine": "你的提交",
+    "mine_none": "你还没有提交任何扩展。",
+    "status_pending": "等待审核",
+    "status_approved": "已发布",
+    "status_rejected": "已拒绝",
+    "status_removed": "已移除",
+    "review_note": "审核：{note}",
+    "withdraw": "撤回"
+  },
+  "catalogAdmin": {
+    "title": "待审核的扩展",
+    "back": "管理",
+    "none": "尚无提交。",
+    "note": "备注（提交者可见）",
+    "by": "由 {email} 于 {date} 提交",
+    "their_note": "提交者备注：{note}",
+    "review": "审核备注：{note}",
+    "checked": "读取于 {date}",
+    "approve": "发布",
+    "reject": "拒绝",
+    "remove": "移除",
+    "recheck": "重新读取",
+    "delete": "删除"
   }
 }

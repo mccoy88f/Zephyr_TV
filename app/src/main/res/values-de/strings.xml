@@ -819,4 +819,9 @@
     <string name="ztv_unlink">Diesen Fernseher trennen</string>
     <string name="ztv_unlinked">Fernseher getrennt</string>
     <string name="ztv_manage">Nutzer und Fernseher verwaltest du auf %1$s.</string>
+    <string name="ext_catalog">Zephyr-TV-Katalog</string>
+    <string name="ext_catalog_intro">Auf der Website von Zephyr TV geprüfte Erweiterungen. Schlage deine auf %1$s vor.</string>
+    <string name="ext_catalog_installed">Installiert</string>
+    <string name="ext_catalog_repo">Repository · %1$d</string>
+    <string name="ext_catalog_empty">Noch keine Erweiterung im Katalog.</string>
 </resources>

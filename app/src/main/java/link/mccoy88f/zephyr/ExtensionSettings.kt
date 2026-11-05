@@ -246,6 +246,7 @@ internal fun MainActivity.extensionsPage(focus: Int = 0) {
         page(e.name, if (extensionOn(prefs, e.id)) SUBMENU else getString(R.string.state_off)) { extensionPage(e.id) }
     } + suggested.map { i -> page(i.name, getString(R.string.ext_install)) { extensionFromAddress(i.url) } } +
         repos.map { (url, r) -> page(getString(R.string.ext_repo_row, r?.name ?: url.substringAfter("://").substringBefore('/')), r?.items?.size?.toString() ?: "…") { repoPage(url) } } + listOf(
+        page(getString(R.string.ext_catalog), SUBMENU) { extensionCatalog() },
         page(getString(R.string.ext_add), SUBMENU) { extensionFromPhone() },
         page(getString(R.string.ext_check)) {
             toast(R.string.ext_reading, long = false)
@@ -256,7 +257,7 @@ internal fun MainActivity.extensionsPage(focus: Int = 0) {
                     n == 0 -> getString(R.string.ext_none_updated)
                     else -> getString(R.string.ext_some_updated, n)
                 }, Toast.LENGTH_LONG).show()
-                if (pageShowing(getString(R.string.ext_title))) extensionsPage(all.size + suggested.size + repos.size + 1)
+                if (pageShowing(getString(R.string.ext_title))) extensionsPage(all.size + suggested.size + repos.size + 2)
             }
             refreshRepos(force = true) { changed -> if (changed && pageShowing(getString(R.string.ext_title))) extensionsPage(focusedRow() ?: 0) }
         },
@@ -833,4 +834,40 @@ internal fun MainActivity.extensionGuides(url: String, pkg: String): List<Epg.Gu
         }
     }
     return sources.orEmpty().mapNotNull { Epg.saved(filesDir, it, own = false) }
+}
+
+/**
+ * The catalogue on Zephyr TV's site (SITE/extensions): the extensions and repositories reviewed there, by name. One
+ * picked is read from its own address and shown before installing, as any other (the site isn't trusted in its place).
+ * Those for adults only once unlocked; those already here say so.
+ */
+private fun MainActivity.extensionCatalog() {
+    val title = getString(R.string.ext_catalog)
+    val back = { extensionsPage(extensions(prefs, filesDir).size) }
+    val intro = label(getString(R.string.ext_catalog_intro, "$SITE/extensions"), 13f).apply { alpha = 0.7f; setPadding(dp(14), dp(4), dp(14), dp(10)) }
+    showPage(title, listOf(page(getString(R.string.ext_reading)) {}), top = intro, back = back)
+    netIo.execute {
+        val list = runCatching { Http.json("$SITE/api/v1/catalog").getJSONArray("extensions") }
+            .onFailure { warn("catalogue failed ($it)") }.getOrNull()
+        ui.post {
+            if (!pageShowing(title)) return@post
+            if (list == null) return@post showPage(title, listOf(page(getString(R.string.ztv_failed)) { extensionCatalog() }), top = intro, back = back)
+            val have = extensions(prefs, filesDir).map { it.id }.toSet()
+            val repos = extensionRepos(prefs).toSet()
+            val rows = (0 until list.length()).mapNotNull { list.optJSONObject(it) }
+                .filter { !it.optBoolean("adult") || adultUnlocked() }
+                .mapNotNull { o ->
+                    val url = o.optString("url").takeIf { it.startsWith("https://") } ?: return@mapNotNull null
+                    val repo = o.optString("kind") == "repository"
+                    val installed = if (repo) url in repos else o.optString("id") in have
+                    val value = when {
+                        installed -> getString(R.string.ext_catalog_installed)
+                        repo -> getString(R.string.ext_catalog_repo, o.optInt("count"))
+                        else -> o.optString("version").takeIf { it.isNotBlank() }?.let { "v$it" } ?: ""
+                    }
+                    page(o.optString("name").ifBlank { url }, value) { extensionFromAddress(url) }
+                }
+            showPage(title, rows.ifEmpty { listOf(page(getString(R.string.ext_catalog_empty)) {}) }, top = intro, back = back)
+        }
+    }
 }

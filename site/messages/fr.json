@@ -10,7 +10,8 @@
     "login": "Se connecter",
     "logout": "Se déconnecter",
     "language": "Langue",
-    "account": "Compte"
+    "account": "Compte",
+    "extensions": "Extensions"
   },
   "footer": {
     "source": "Code source",
@@ -103,9 +104,10 @@
     "verified": "Vérifiés",
     "superadmins": "Superadmins",
     "sessions": "Sessions actives",
-    "soon": "Utilisateurs Zephyr TV, TV, synchronisation et extensions arrivent ensuite.",
+    "soon": "Ensuite vient la synchronisation entre TV.",
     "manage_accounts": "Gérer les comptes",
-    "no_mail": "L'e-mail n'est pas configuré (SMTP_PASSWORD) : les nouveaux comptes ne peuvent pas confirmer leur e-mail."
+    "no_mail": "L'e-mail n'est pas configuré (SMTP_PASSWORD) : les nouveaux comptes ne peuvent pas confirmer leur e-mail.",
+    "manage_extensions": "Extensions à examiner ({n})"
   },
   "share": {
     "watch": "À regarder sur Zephyr TV",
@@ -143,7 +145,16 @@
     "mail": "L'e-mail n'a pas pu être envoyé. Réessayez plus tard.",
     "link_bad": "Ce lien a expiré ou a déjà été utilisé. Demandez-en un nouveau.",
     "email_taken": "Cet e-mail a déjà un compte.",
-    "superadmin": "Le compte du superadmin ne peut pas être supprimé ici."
+    "superadmin": "Le compte du superadmin ne peut pas être supprimé ici.",
+    "signed_out": "Connectez-vous d'abord.",
+    "cat_address": "Saisissez l'adresse HTTPS d'un manifest-zephyrtv.json ou repository-zephyrtv.json (ou de son dossier).",
+    "cat_too_many": "Vous avez 5 propositions en attente d'examen : attendez d'abord une réponse.",
+    "cat_known": "Cette adresse est déjà dans le catalogue ou en attente d'examen.",
+    "cat_unreachable": "L'adresse est injoignable, ou elle n'est pas sur l'internet public.",
+    "cat_not_json": "L'adresse ne renvoie pas de JSON.",
+    "cat_not_extension": "Ce n'est pas une extension ni un dépôt Zephyr TV : vérifiez son manifeste.",
+    "cat_newer": "Elle demande une version de Zephyr TV plus récente que la dernière.",
+    "cat_too_large": "Le manifeste est trop gros (256 Ko au maximum)."
   },
   "register": {
     "title": "Créer un compte",
@@ -264,5 +275,47 @@
     "pick": "Choisir cet avatar",
     "no_avatar": "Aucun avatar",
     "dicebear": "Avatars de DiceBear : il ne reçoit qu'un code aléatoire, jamais un nom."
+  },
+  "catalog": {
+    "title": "Extensions",
+    "lead": "Les extensions ajoutent à Zephyr TV des chaînes, des films, la radio et plus. Chacune ici a été examinée avant publication.",
+    "submit": "Proposer votre extension",
+    "docs": "Comment en écrire une",
+    "list_title": "Catalogue",
+    "empty": "Aucune extension publiée pour l'instant.",
+    "repository": "{n, plural, one {Dépôt · # extension} other {Dépôt · # extensions}}",
+    "by": "par {author}",
+    "install": "Installer dans Zephyr TV",
+    "homepage": "Site web",
+    "disclaimer": "Les extensions sont faites par leurs auteurs, pas par Zephyr TV. L'examen les vérifie à la publication : ce qu'elles montrent ensuite dépend de leurs auteurs.",
+    "submit_intro": "Donnez l'adresse du manifest-zephyrtv.json de votre extension, ou d'un repository-zephyrtv.json qui en réunit plusieurs. Le site le lit maintenant ; après examen, il apparaît dans le catalogue.",
+    "send": "Envoyer pour examen",
+    "sent": "Envoyée : elle attend l'examen.",
+    "url": "Adresse",
+    "note": "Note pour l'examen (facultative)",
+    "rules": "Elle doit être en HTTPS et sur l'internet public. Contenu légal seulement : une extension donnant accès à du contenu piraté est refusée.",
+    "mine": "Vos propositions",
+    "mine_none": "Vous n'avez encore proposé aucune extension.",
+    "status_pending": "En attente d'examen",
+    "status_approved": "Publiée",
+    "status_rejected": "Refusée",
+    "status_removed": "Retirée",
+    "review_note": "Examen : {note}",
+    "withdraw": "Retirer"
+  },
+  "catalogAdmin": {
+    "title": "Extensions à examiner",
+    "back": "Admin",
+    "none": "Rien de proposé pour l'instant.",
+    "note": "Note (visible par l'auteur de la proposition)",
+    "by": "Proposée par {email}, {date}",
+    "their_note": "Sa note : {note}",
+    "review": "Note d'examen : {note}",
+    "checked": "Lue le {date}",
+    "approve": "Publier",
+    "reject": "Refuser",
+    "remove": "Retirer",
+    "recheck": "Relire",
+    "delete": "Supprimer"
   }
 }

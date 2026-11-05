@@ -822,4 +822,9 @@
     <string name="ztv_unlink">Délier cette TV</string>
     <string name="ztv_unlinked">TV déliée</string>
     <string name="ztv_manage">Gérez utilisateurs et TV sur %1$s.</string>
+    <string name="ext_catalog">Catalogue Zephyr TV</string>
+    <string name="ext_catalog_intro">Extensions examinées sur le site de Zephyr TV. Proposez la vôtre sur %1$s.</string>
+    <string name="ext_catalog_installed">Installée</string>
+    <string name="ext_catalog_repo">Dépôt · %1$d</string>
+    <string name="ext_catalog_empty">Aucune extension dans le catalogue pour l\'instant.</string>
 </resources>
