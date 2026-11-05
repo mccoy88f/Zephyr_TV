@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.0.2
 
 - The icons at the top right have the same shadow as the clock and Spotlight. They are easy to see on any wallpaper.
 - **Connect Trakt** no longer closes Zephyr TV. Its address had become too long for the QR code.
