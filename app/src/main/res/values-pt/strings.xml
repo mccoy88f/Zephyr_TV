@@ -668,6 +668,9 @@
     <string name="download_waiting">À espera para transferir</string>
     <string name="download_failed_status">A transferência falhou</string>
     <string name="download_missing">O ficheiro transferido já não existe</string>
+    <string name="downloads_delete_all">Eliminar todas</string>
+    <string name="downloads_delete_all_sure">Prima de novo para eliminar todas</string>
+    <string name="download_no_page">Esta transferência não consegue abrir a página: foi feita por uma versão anterior. Elimine-a e transfira-a de novo.</string>
     <string name="download_local">Ficheiro transferido</string>
     <string name="download_where">Guardado em</string>
     <string name="share_link">Ligação para o título</string>

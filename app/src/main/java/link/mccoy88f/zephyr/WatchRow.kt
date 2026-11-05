@@ -921,6 +921,8 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
             setCompoundDrawablesRelative(it, null, null, null)
             compoundDrawablePadding = dp(6)
         }
+        // Downloaded: the blue download mark at its end, red-dotted while it downloads (see markDownloaded).
+        p.vod?.let { markDownloaded(this, it) }
     })
     if (p.badge == null && p.channelId == null && p.vod == null) loadPoster(img, p.image)
     // An add-on's channel: what's on as the player shows it (its times, so its bar), once the add-on tells.

@@ -24,8 +24,14 @@ import java.io.File
 
 /** The films and episodes downloaded, by their id (the film's, or the episode's), in downloads.json. */
 internal object Downloads {
-    /** [dm]: the download manager's id for it; [name]: what it's called; [file]: its file's name, extension and all. */
-    internal class Entry(val id: String, val dm: Long, val name: String, val file: String)
+    /**
+     * [dm]: the download manager's id for it; [name]: what it's called ("Series S1E2"); [file]: its file's name, extension
+     * and all. The rest opens its page again from the downloads' menu: the film's or series' [meta] id, [type] and
+     * [title], its art, the add-on it came from. (Empty in those downloaded by 4.1.0: no page to open.)
+     */
+    internal class Entry(val id: String, val dm: Long, val name: String, val file: String, val meta: String = "", val type: String = "",
+                         val title: String = "", val poster: String? = null, val background: String? = null, val logo: String? = null,
+                         val source: String? = null)
 
     private fun file(dir: File) = File(dir, "downloads.json")
 
@@ -33,7 +39,11 @@ internal object Downloads {
     fun all(dir: File): Map<String, Entry> = runCatching {
         val a = JSONArray(file(dir).readText())
         (0 until a.length()).mapNotNull { a.optJSONObject(it) }
-            .map { Entry(it.getString("id"), it.getLong("dm"), it.optString("name"), it.optString("file").ifEmpty { it.optString("name") + ".mkv" }) }
+            .map { o ->
+                fun opt(k: String) = o.optString(k).takeIf { !o.isNull(k) && it.isNotEmpty() }
+                Entry(o.getString("id"), o.getLong("dm"), o.optString("name"), o.optString("file").ifEmpty { o.optString("name") + ".mkv" },
+                    o.optString("meta"), o.optString("type"), o.optString("title"), opt("poster"), opt("background"), opt("logo"), opt("source"))
+            }
             .associateBy { it.id }
     }.getOrDefault(emptyMap())
 
@@ -45,7 +55,11 @@ internal object Downloads {
 
     private fun write(dir: File, entries: Map<String, Entry>) {
         val a = JSONArray()
-        entries.values.forEach { a.put(JSONObject().put("id", it.id).put("dm", it.dm).put("name", it.name).put("file", it.file)) }
+        entries.values.forEach {
+            a.put(JSONObject().put("id", it.id).put("dm", it.dm).put("name", it.name).put("file", it.file).put("meta", it.meta)
+                .put("type", it.type).put("title", it.title).put("poster", it.poster).put("background", it.background)
+                .put("logo", it.logo).put("source", it.source))
+        }
         runCatching { file(dir).writeText(a.toString()) }
     }
 }
@@ -151,6 +165,35 @@ private fun MainActivity.downloadState(e: Downloads.Entry): DownloadState? {
     }.getOrNull()
 }
 
+/** Where a download is at, as the downloads' menu, the cards and the pages show it (see DownloadsUi). */
+internal class DlStatus(val status: Int, val done: Long, val total: Long) {
+    val running get() = status == DownloadManager.STATUS_RUNNING || status == DownloadManager.STATUS_PENDING || status == DownloadManager.STATUS_PAUSED
+    val complete get() = status == DownloadManager.STATUS_SUCCESSFUL
+    val failed get() = status == DownloadManager.STATUS_FAILED
+    val percent get() = if (total > 0) (done * 100 / total).toInt() else 0
+}
+
+/**
+ * How each of [entries] is, by its id: one question to the download manager for them all. Null when it can't be asked
+ * (then nothing is to be forgotten); a download it no longer knows (removed in Android's own list) is left out.
+ */
+internal fun MainActivity.downloadStatuses(entries: Map<String, Downloads.Entry>): Map<String, DlStatus>? {
+    if (entries.isEmpty()) return emptyMap()
+    val dm = getSystemService(DownloadManager::class.java) ?: return null
+    val byDm = entries.values.associateBy { it.dm }
+    return runCatching<Map<String, DlStatus>> {
+        val out = HashMap<String, DlStatus>()
+        dm.query(DownloadManager.Query().setFilterById(*byDm.keys.toLongArray()))?.use { c ->
+            val id = c.getColumnIndexOrThrow(DownloadManager.COLUMN_ID)
+            val status = c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)
+            val done = c.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
+            val total = c.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
+            while (c.moveToNext()) byDm[c.getLong(id)]?.let { e -> out[e.id] = DlStatus(c.getInt(status), c.getLong(done), c.getLong(total)) }
+        }
+        out
+    }.getOrNull()
+}
+
 /** The downloads that are complete, by the film's or episode's id: one question to the download manager for them all. */
 internal fun MainActivity.localDownloads(): Map<String, Downloads.Entry> {
     val all = Downloads.all(filesDir)
@@ -195,7 +238,17 @@ internal fun MainActivity.downloadButton(ref: TitleRef, meta: Stremio.TitleMeta,
     val id = episode?.id ?: t.id
     if (streamSources(t.type, id).isEmpty() && Downloads.all(filesDir)[id] == null) return null
     val icon = getDrawable(R.drawable.ic_download) ?: return null
-    return BarButton(icon, getString(R.string.download)) { downloadPage(ref, meta, episode, back) }
+    // Live: a red dot while it downloads; done, the page again (Watch then says Downloaded file).
+    var going: Boolean? = null
+    val attach = { v: View ->
+        watchDownloads(v) { _, statuses ->
+            val now = statuses[id]?.running == true
+            downloadDot(v, now)
+            if (going == true && !now && v.isAttachedToWindow && statuses[id]?.complete == true) back()
+            going = now
+        }
+    }
+    return BarButton(icon, getString(R.string.download), attach) { downloadPage(ref, meta, episode, back) }
 }
 
 /**
@@ -229,12 +282,17 @@ internal fun MainActivity.downloadPage(ref: TitleRef, meta: Stremio.TitleMeta, e
     // Removed in Android's own list of downloads: as if never downloaded.
     if (entry != null && state == null) Downloads.remove(filesDir, id)
     fun pick() = pickStream(ref, meta, episode, title = getString(R.string.download_pick_title), accept = ::downloadableStream,
-        none = getString(R.string.download_none), picked = { s -> startDownload(id, name, s, back) }, back = back)
+        none = getString(R.string.download_none), picked = { s ->
+            val t = meta.title
+            startDownload(Downloads.Entry(id, 0, name, "", t.id, t.type, t.name, ref.poster ?: t.poster, ref.background ?: t.background,
+                ref.logo ?: t.logo, ref.source), s, back)
+        }, back = back)
     if (entry == null || state == null) return pick()
     val dm = getSystemService(DownloadManager::class.java)
     fun delete() {
         dm?.let { runCatching { it.remove(entry.dm) } } // its file too
         Downloads.remove(filesDir, id)
+        refreshDownloads()
         back()
     }
     val again = { downloadPage(ref, meta, episode, back) }
@@ -264,7 +322,20 @@ internal fun MainActivity.downloadPage(ref: TitleRef, meta: Stremio.TitleMeta, e
             page(getString(R.string.download_cancel)) { delete() },
         )
     }
-    overTitlePage(getString(R.string.download) + " · " + name, rows, back)
+    val title = getString(R.string.download) + " · " + name
+    overTitlePage(title, rows, back)
+    // Live, once a second while it goes (see refreshDownloads): how far, in its row; done or failed, the page again.
+    val first = (0 until settingsList.childCount).map { settingsList.getChildAt(it) }.firstOrNull { it.isFocusable } ?: return
+    val wasRunning = state.status != DownloadManager.STATUS_SUCCESSFUL && state.status != DownloadManager.STATUS_FAILED
+    watchDownloads(first) { _, now ->
+        if (!pageShowing(title)) return@watchDownloads
+        val s = now[id] ?: return@watchDownloads
+        if (wasRunning && !s.running) return@watchDownloads downloadPage(ref, meta, episode, back) // finished, or failed
+        if (!s.running) return@watchDownloads
+        val row = first as? LinearLayout ?: return@watchDownloads
+        (row.getChildAt(0) as? TextView)?.text = getString(if (s.status == DownloadManager.STATUS_RUNNING) R.string.download_running else R.string.download_waiting)
+        (row.getChildAt(1) as? TextView)?.text = if (s.total > 0) "${s.percent}% · ${sizeName(s.total)}" else sizeName(s.done)
+    }
 }
 
 /**
@@ -293,7 +364,8 @@ private fun MainActivity.shareDownload(e: Downloads.Entry) {
  * The stream picked handed to Android's download manager, with the headers it plays with, into the folder chosen. Its
  * address is asked first: a playlist of pieces (HLS, DASH) behind an address that doesn't say so isn't downloaded.
  */
-private fun MainActivity.startDownload(id: String, name: String, s: Stremio.Stream, back: () -> Unit) {
+private fun MainActivity.startDownload(what: Downloads.Entry, s: Stremio.Stream, back: () -> Unit) {
+    val name = what.name
     toast(R.string.download_checking, long = false)
     netIo.execute {
         val format = runCatching { Stremio.probe(s.url, s.headers) }.getOrNull()?.format
@@ -327,7 +399,9 @@ private fun MainActivity.startDownload(id: String, name: String, s: Stremio.Stre
                 warn("download didn't start ($it)")
                 return@post toast(R.string.download_failed)
             }
-            Downloads.put(filesDir, Downloads.Entry(id, at, name, file))
+            Downloads.put(filesDir, Downloads.Entry(what.id, at, name, file, what.meta, what.type, what.title, what.poster,
+                what.background, what.logo, what.source))
+            refreshDownloads() // the top bar's icon, its red dot, and the cards
             Toast.makeText(this, getString(R.string.download_started, name), Toast.LENGTH_LONG).show()
             back()
         }
@@ -337,7 +411,7 @@ private fun MainActivity.startDownload(id: String, name: String, s: Stremio.Stre
 private val VIDEO_EXTENSIONS = setOf("mp4", "mkv", "m4v", "mov", "avi", "webm", "ts", "m2ts", "wmv", "flv", "mpg", "mpeg")
 
 /** A size as people read it: 1.4 GB, 700 MB. */
-private fun sizeName(bytes: Long): String = when {
+internal fun sizeName(bytes: Long): String = when {
     bytes <= 0 -> ""
     bytes >= 1L shl 30 -> String.format(java.util.Locale.getDefault(), "%.1f GB", bytes / (1L shl 30).toDouble())
     else -> "${bytes / (1L shl 20)} MB"

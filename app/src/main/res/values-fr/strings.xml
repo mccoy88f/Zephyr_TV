@@ -668,6 +668,9 @@
     <string name="download_waiting">En attente de téléchargement</string>
     <string name="download_failed_status">Le téléchargement a échoué</string>
     <string name="download_missing">Le fichier téléchargé n\'est plus là</string>
+    <string name="downloads_delete_all">Tout supprimer</string>
+    <string name="downloads_delete_all_sure">Appuyez encore pour tout supprimer</string>
+    <string name="download_no_page">Ce téléchargement ne peut pas ouvrir sa page : il a été fait par une version précédente. Supprimez-le et téléchargez-le à nouveau.</string>
     <string name="download_local">Fichier téléchargé</string>
     <string name="download_where">Enregistré dans</string>
     <string name="share_link">Lien vers le titre</string>

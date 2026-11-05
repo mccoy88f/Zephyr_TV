@@ -668,6 +668,9 @@
     <string name="download_waiting">Esperant per baixar</string>
     <string name="download_failed_status">La baixada ha fallat</string>
     <string name="download_missing">El fitxer baixat ja no hi és</string>
+    <string name="downloads_delete_all">Esborra-les totes</string>
+    <string name="downloads_delete_all_sure">Prem un altre cop per esborrar-les totes</string>
+    <string name="download_no_page">Aquesta baixada no pot obrir la seva pàgina: la va fer una versió anterior. Esborra-la i torna-la a baixar.</string>
     <string name="download_local">Fitxer baixat</string>
     <string name="download_where">Desat a</string>
     <string name="share_link">Enllaç al títol</string>

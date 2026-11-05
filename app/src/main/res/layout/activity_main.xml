@@ -94,6 +94,18 @@
                 android:padding="8dp"
                 android:src="@drawable/ic_search" />
 
+            <!-- The downloads (see DownloadsUi): there once something is downloaded, red-dotted while one goes. -->
+            <link.mccoy88f.zephyr.HaloImageView
+                android:id="@+id/downloadsButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="@string/download"
+                android:focusable="true"
+                android:padding="8dp"
+                android:src="@drawable/ic_download"
+                android:visibility="gone" />
+
             <link.mccoy88f.zephyr.HaloImageView
                 android:id="@+id/wifi"
                 android:layout_width="36dp"

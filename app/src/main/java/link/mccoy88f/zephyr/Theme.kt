@@ -50,7 +50,7 @@ internal fun MainActivity.applyTheme() {
         }
     }
     // The top bar's icons get the same halo round their shapes (see HaloImageView).
-    for (id in intArrayOf(R.id.usersButton, R.id.searchButton, R.id.wifi, R.id.allAppsButton, R.id.tvInputsButton, R.id.systemSettings, R.id.launcherSettings))
+    for (id in intArrayOf(R.id.usersButton, R.id.searchButton, R.id.downloadsButton, R.id.wifi, R.id.allAppsButton, R.id.tvInputsButton, R.id.systemSettings, R.id.launcherSettings))
         (findViewById<View>(id) as? HaloImageView)?.halo(textShadow, dp(if (glass) 4 else 3).toFloat(), if (dark) dp(1).toFloat() else 0f)
     wifi.setColorFilter(fg)
     spotlightPrev.setColorFilter(fg)

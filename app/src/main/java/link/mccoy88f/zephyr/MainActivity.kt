@@ -339,6 +339,7 @@ class MainActivity : Activity() {
             ui.removeCallbacks(playingTick)
         }
         refreshExtensions() // the preinstalled ones, and a newer version of each, once a day
+        refreshDownloads() // the top bar's Download icon and the cards' marks, live while one goes
         showWeather()
         ui.removeCallbacks(weatherTick)
         ui.post(weatherTick)
@@ -410,6 +411,7 @@ class MainActivity : Activity() {
 
     override fun onPause() {
         if (Screen.activity === this) Screen.activity = null
+        ui.removeCallbacks(downloadsTick)
         sceneAlive = false
         scene.stop()
         ui.removeCallbacks(holdTick)
@@ -619,6 +621,7 @@ class MainActivity : Activity() {
         }
     }
 
+    internal val downloadsTick = Runnable { refreshDownloads() } // once a second while a download goes (see DownloadsUi)
     internal val inputsDot by lazy { GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(INPUTS_ON) } }
 
     /**

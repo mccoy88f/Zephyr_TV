@@ -667,6 +667,9 @@
     <string name="download_waiting">डाउनलोड की प्रतीक्षा</string>
     <string name="download_failed_status">डाउनलोड विफल रहा</string>
     <string name="download_missing">डाउनलोड की गई फ़ाइल अब नहीं है</string>
+    <string name="downloads_delete_all">सभी हटाएँ</string>
+    <string name="downloads_delete_all_sure">सभी हटाने के लिए फिर से दबाएँ</string>
+    <string name="download_no_page">यह डाउनलोड अपना पेज नहीं खोल सकता: इसे पुराने संस्करण ने बनाया था। इसे हटाकर फिर से डाउनलोड करें।</string>
     <string name="download_local">डाउनलोड की गई फ़ाइल</string>
     <string name="download_where">यहाँ सहेजा गया</string>
     <string name="share_link">शीर्षक का लिंक</string>

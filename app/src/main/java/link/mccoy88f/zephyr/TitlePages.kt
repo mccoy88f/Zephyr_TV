@@ -23,7 +23,8 @@ import android.widget.Toast
  * OK on a film's or series' card: its page, from the add-on it came from if that one has pages for it, else the
  * first that does (Cinemeta, for IMDb ids). A card from Continue Playing goes on playing instead.
  */
-internal fun MainActivity.openTitle(ref: TitleRef) {
+internal fun MainActivity.openTitle(ref: TitleRef, episode: String? = null) {
+    // [episode]: that episode's page, once the series' is in (the downloads' menu).
     if (ref.video != null) return resumeTitle(ref)
     // The page at once, with the card's art, what it's about as the card knows it, and Loading…; then the add-on's page
     // as it answers (in the TV's language as far as it's known already); then all of it in the TV's language (a
@@ -37,7 +38,7 @@ internal fun MainActivity.openTitle(ref: TitleRef) {
         ui.post {
             if (!pageShowing(ref.name)) return@post // closed meanwhile
             when {
-                known != null -> showVodTitle(known, ref)
+                known != null -> known.episodes.firstOrNull { it.id == episode }?.let { showVodEpisode(known, ref, it) } ?: showVodTitle(known, ref)
                 ref.type != "series" -> { closeLauncherSettings(); playTitle(ref, null, null) }
                 else -> showPage(ref.name, listOf(page(getString(R.string.title_no_page)) { closeLauncherSettings() }), back = { closeLauncherSettings() })
             }
@@ -831,7 +832,8 @@ private class Services(val known: Set<String>?,
                        val later: (((Set<String>) -> Unit) -> Unit))
 
 /** A button of the apps' bar that isn't an app: [icon] tinted as the page's text, [label] for TalkBack. */
-internal class BarButton(val icon: android.graphics.drawable.Drawable, val label: String, val action: () -> Unit)
+internal class BarButton(val icon: android.graphics.drawable.Drawable, val label: String, val attach: ((View) -> Unit)? = null,
+                         val action: () -> Unit) // attach: given the button once it's made (Download: its live red dot)
 
 /** [extra]: a button of Zephyr TV's own (Download) first in the bar, before the apps; with no apps, the bar is it alone. */
 private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?, extra: BarButton? = null): Pair<View?, Services> {
@@ -844,9 +846,9 @@ private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?, e
     val apps = offered.filterNot { TmdbClient.isYouTube(it.pkg) }
     val trailer = offered.firstOrNull { TmdbClient.isYouTube(it.pkg) }?.let { yt -> yt.icon to { closeLauncherSettings(); openInApp(yt, item!!) } }
     // Each button: its icon, whether it's tinted (Zephyr TV's own) or an app's own colours, what it says, what OK does.
-    class Btn(val icon: android.graphics.drawable.Drawable?, val mono: Boolean, val label: String, val action: () -> Unit)
-    val buttons = listOfNotNull(extra?.let { Btn(it.icon.mutate(), true, it.label, it.action) }) +
-        apps.map { a -> Btn(a.icon, false, a.label) { closeLauncherSettings(); openInApp(a, item!!) } }
+    class Btn(val icon: android.graphics.drawable.Drawable?, val mono: Boolean, val label: String, val attach: ((View) -> Unit)?, val action: () -> Unit)
+    val buttons = listOfNotNull(extra?.let { Btn(it.icon.mutate(), true, it.label, it.attach, it.action) }) +
+        apps.map { a -> Btn(a.icon, false, a.label, null) { closeLauncherSettings(); openInApp(a, item!!) } }
 
     val barView = if (buttons.isEmpty()) null else {
         android.widget.HorizontalScrollView(this).apply {
@@ -897,6 +899,7 @@ private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?, e
                         }
                     }
                     setOnClickListener { a.action() }
+                    a.attach?.invoke(this)
                 }
                 container.addView(btn, LinearLayout.LayoutParams(dp(42), dp(42)).apply {
                     marginStart = if (idx > 0) dp(8) else 0

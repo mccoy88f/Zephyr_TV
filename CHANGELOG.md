@@ -13,6 +13,14 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- When a film or an episode is downloaded, a **Download** icon shows after **Search** at the top right. A red dot on it shows that a download is in progress.
+- Select the **Download** icon to see all downloads, with their progress. Select a download to open its page, where you can play or delete it. Select the bin to delete it.
+- At the bottom of the window, **Delete all** deletes all downloads. Press it two times. **Close** closes the window.
+- The card of a downloaded film or episode shows a blue download icon, as a watched one shows a blue ✓. A red dot on it shows that it is downloading.
+- The progress of a download updates every second, on its page and on the home screen.
+
 ## 4.1.0
 
 - **Zephyr TV settings → System → Remote behavior** holds **Set up Home button**, **Home button**, **Direct remote keys** and **Default launcher**.

@@ -61,6 +61,7 @@ internal fun MainActivity.setupTopBar() {
     for ((id, action) in listOf<Pair<Int, () -> Unit>>(
         R.id.usersButton to { openUsersMenu(findViewById(R.id.usersButton)) },
         R.id.searchButton to { openSearch(if (searchQuery != null) lastSearchWord else "") },
+        R.id.downloadsButton to { openDownloadsMenu(findViewById(R.id.downloadsButton)) },
         R.id.wifi to { openSettings(Settings.ACTION_WIFI_SETTINGS) },
         R.id.allAppsButton to { openAllApps() },
         R.id.tvInputsButton to { openInputsMenu(findViewById(R.id.tvInputsButton)) },

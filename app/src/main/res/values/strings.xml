@@ -667,6 +667,9 @@
     <string name="download_waiting">Waiting to download</string>
     <string name="download_failed_status">The download failed</string>
     <string name="download_missing">The downloaded file is no longer there</string>
+    <string name="downloads_delete_all">Delete all</string>
+    <string name="downloads_delete_all_sure">Press again to delete all</string>
+    <string name="download_no_page">This download can\'t open its page: it was made by an older version. Delete it and download it again.</string>
     <string name="download_local">Downloaded file</string>
     <string name="download_where">Saved in</string>
     <string name="share_link">Link to the title</string>
