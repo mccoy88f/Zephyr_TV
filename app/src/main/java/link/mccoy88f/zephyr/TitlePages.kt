@@ -798,8 +798,9 @@ internal fun MainActivity.rowIcons(icons: Map<Int, android.graphics.drawable.Dra
  * [known]: the services TMDB lists it on, when it has answered. [later] asks it when it hasn't,
  * and calls back with the answer.
  */
-private class Services(val known: Set<String>?, val later: (((Set<String>) -> Unit) -> Unit),
-                       val trailer: Pair<android.graphics.drawable.Drawable, () -> Unit>? = null) // YouTube's icon, and Watch trailer
+private class Services(val known: Set<String>?,
+                       val trailer: Pair<android.graphics.drawable.Drawable, () -> Unit>? = null, // YouTube's icon, and Watch trailer
+                       val later: (((Set<String>) -> Unit) -> Unit))
 
 private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?): Pair<View?, Services> {
     val item = tmdbItemOf(t) ?: return null to Services(available) { }
