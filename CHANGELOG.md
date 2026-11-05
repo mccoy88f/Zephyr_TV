@@ -20,6 +20,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - At the bottom of the window, **Delete all** deletes all downloads. Press it two times. **Close** closes the window.
 - The card of a downloaded film or episode shows a blue download icon, as a watched one shows a blue ✓. A red dot on it shows that it is downloading.
 - The progress of a download updates every second, on its page and on the home screen.
+- The search filters have **Only downloaded items**. It is off by default. When it is on, the search shows only the films and series that you downloaded.
 
 ## 4.1.0
 

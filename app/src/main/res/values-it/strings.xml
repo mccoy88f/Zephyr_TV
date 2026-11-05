@@ -819,6 +819,7 @@
     <string name="trakt_refused">Trakt non ha accettato l\'accesso. Riapri questa pagina e riprova.</string>
     <string name="title_hold_hint">Tieni premuto OK su un episodio per segnarlo come visto o non visto.</string>
     <string name="search_filter_clear">Azzera i filtri</string>
+    <string name="search_filter_downloaded">Solo elementi scaricati</string>
     <!-- Coming from Piume -->
     <string name="piume_taken">Impostazioni, utenti e cronologia sono arrivati da Piume.</string>
     <string name="piume_failed">Non è stato possibile prendere le impostazioni da Piume. Per portarle, ripristina un backup di Piume.</string>

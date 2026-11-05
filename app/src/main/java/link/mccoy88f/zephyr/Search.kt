@@ -137,7 +137,8 @@ internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
         else listOfNotNull(if (f.type != "all") typeName(f.type) else null, f.year, f.genre?.let { genreName(it) },
             f.director?.let { "${getString(R.string.search_filter_director)}: $it" },
             f.actor?.let { "${getString(R.string.search_filter_actor)}: $it" },
-            f.adult.takeIf { it != SearchFilter.ADULT_SHOW && adultSearchOffered() }?.let { adultFilterName(it) }).joinToString(" · ")
+            f.adult.takeIf { it != SearchFilter.ADULT_SHOW && adultSearchOffered() }?.let { adultFilterName(it) },
+            if (f.downloaded) getString(R.string.search_filter_downloaded) else null).joinToString(" · ")
     fun typed() = input.text?.toString().orEmpty()
     val filterRows = if (!searchFiltersExpanded) emptyList() else listOfNotNull(
         page(getString(R.string.search_filter_type), typeName(f.type)) { pickType(typed()) },
@@ -148,8 +149,13 @@ internal fun MainActivity.openSearch(text: String = "", focus: Int? = null) {
         // Adult content: only while 18+ shows (unlocked, or no lock) and there's an adult add-on.
         if (!adultSearchOffered()) null else page(getString(R.string.adult_app), adultFilterName(f.adult)) {
             val modes = listOf(SearchFilter.ADULT_SHOW, SearchFilter.ADULT_HIDE, SearchFilter.ADULT_ONLY)
-            searchFilter = SearchFilter(f.type, f.year, f.genre, modes[(modes.indexOf(f.adult) + 1) % modes.size], f.director, f.actor)
+            searchFilter = SearchFilter(f.type, f.year, f.genre, modes[(modes.indexOf(f.adult) + 1) % modes.size], f.director, f.actor, downloaded = f.downloaded)
             openSearch(typed(), 6)
+        },
+        // Only what's downloaded (see Downloads): off by default.
+        page(getString(R.string.search_filter_downloaded), toggle(f.downloaded)) {
+            searchFilter = SearchFilter(f.type, f.year, f.genre, f.adult, f.director, f.actor, downloaded = !f.downloaded)
+            openSearch(typed(), if (adultSearchOffered()) 7 else 6)
         },
         if (!f.any) null else page(getString(R.string.search_filter_clear)) {
             searchFilter = SearchFilter()
@@ -292,6 +298,7 @@ internal fun MainActivity.searchTmdb(query: String) {
     spotlightIo.execute {
         // TV channels and radio channels
         val channels = when {
+            filter.downloaded -> emptyList() // channels are never downloaded
             filter.type in setOf("all", "tv", "radio") -> runCatching {
                 val all = if (query.isBlank()) {
                     if (filter.type == "radio") findAddonChannels("").filter { isRadioChannel(it) }
@@ -307,6 +314,7 @@ internal fun MainActivity.searchTmdb(query: String) {
         }
         val titles = runCatching {
             when {
+                filter.downloaded -> downloadedTitles(query, filter)
                 filter.type in setOf("tv", "radio") -> emptyList()
                 query.isBlank() -> {
                     when {
@@ -611,7 +619,7 @@ private fun MainActivity.pickType(text: String) {
     val f = searchFilter
     showPage(getString(R.string.search_filter_type), types.map { t ->
         page(typeName(t), if (t == f.type) CHOSEN else "") {
-            searchFilter = SearchFilter(t, f.year, f.genre, f.adult, f.director, f.actor)
+            searchFilter = SearchFilter(t, f.year, f.genre, f.adult, f.director, f.actor, downloaded = f.downloaded)
             openSearch(text, 1)
         }
     }, types.indexOf(f.type).coerceAtLeast(0)) { openSearch(text, 1) }
@@ -649,7 +657,8 @@ private fun MainActivity.filterLabel(f: SearchFilter): String {
         f.genre?.let { genreName(it) },
         f.director?.let { "${getString(R.string.search_filter_director)}: $it" },
         f.actor?.let { "${getString(R.string.search_filter_actor)}: $it" },
-        f.adult.takeIf { it != SearchFilter.ADULT_SHOW && adultSearchOffered() }?.let { adultFilterName(it) }
+        f.adult.takeIf { it != SearchFilter.ADULT_SHOW && adultSearchOffered() }?.let { adultFilterName(it) },
+        if (f.downloaded) getString(R.string.search_filter_downloaded) else null
     ).joinToString(" · ")
     if (filterText.isNotEmpty()) return filterText
 
@@ -661,6 +670,17 @@ private fun MainActivity.filterLabel(f: SearchFilter): String {
         else -> "${primary.name}: ${getString(R.string.tmdb_source_popular)}"
     }
 }
+
+/**
+ * "Only downloaded": the films and series with something downloaded (see Downloads), named with [query]'s words if any,
+ * of the type chosen; a series once, however many of its episodes are. Year, genre and people aren't kept with a
+ * download, so those filters don't narrow it.
+ */
+private fun MainActivity.downloadedTitles(query: String, filter: SearchFilter): List<Pair<Stremio.Title, String>> =
+    Downloads.all(filesDir).values.filter { it.meta.isNotEmpty() }.distinctBy { it.meta }
+        .filter { e -> query.isBlank() || e.title.contains(query, ignoreCase = true) || e.name.contains(query, ignoreCase = true) }
+        .filter { e -> filter.type == "all" || collectorOf(e.type) == collectorOf(filter.type) }
+        .map { e -> Stremio.Title(e.type, e.meta, e.title.ifEmpty { e.name }, e.poster, e.background, e.logo, null) to (e.source ?: cinemetaUrl()) }
 
 /** Adult content alone, without words: the adult add-ons' rows as last read, those [filter] lets through. Off the UI thread. */
 private fun MainActivity.browseAdult(filter: SearchFilter): List<Pair<Stremio.Title, String>> =
@@ -693,7 +713,7 @@ private fun MainActivity.pickYear(text: String) {
     val f = searchFilter
     showPage(getString(R.string.search_filter_year), years.map { y ->
         page(y ?: getString(R.string.search_filter_any), if (y == f.year) CHOSEN else "") {
-            searchFilter = SearchFilter(f.type, y, f.genre, f.adult, f.director, f.actor)
+            searchFilter = SearchFilter(f.type, y, f.genre, f.adult, f.director, f.actor, downloaded = f.downloaded)
             openSearch(text, 2)
         }
     }, years.indexOf(f.year).coerceAtLeast(0)) { openSearch(text, 2) }
@@ -707,7 +727,7 @@ private fun MainActivity.pickGenre(text: String) {
     val f = searchFilter
     showPage(getString(R.string.search_filter_genre), genres.map { g ->
         page(g?.let { genreName(it) } ?: getString(R.string.search_filter_any), if (g == f.genre) CHOSEN else "") {
-            searchFilter = SearchFilter(f.type, f.year, g, f.adult, f.director, f.actor)
+            searchFilter = SearchFilter(f.type, f.year, g, f.adult, f.director, f.actor, downloaded = f.downloaded)
             openSearch(text, 3)
         }
     }, genres.indexOf(f.genre).coerceAtLeast(0)) { openSearch(text, 3) }
@@ -721,13 +741,13 @@ private fun MainActivity.pickPersonFilter(isDirector: Boolean, text: String) {
         listOfNotNull(
             page(getString(R.string.dialog_save)) {
                 val value = typed().ifBlank { null }
-                searchFilter = if (isDirector) SearchFilter(f.type, f.year, f.genre, f.adult, director = value, actor = f.actor)
-                else SearchFilter(f.type, f.year, f.genre, f.adult, director = f.director, actor = value)
+                searchFilter = if (isDirector) SearchFilter(f.type, f.year, f.genre, f.adult, director = value, actor = f.actor, downloaded = f.downloaded)
+                else SearchFilter(f.type, f.year, f.genre, f.adult, director = f.director, actor = value, downloaded = f.downloaded)
                 openSearch(text, if (isDirector) 4 else 5)
             },
             if (current != null) page(getString(R.string.search_filter_any)) {
-                searchFilter = if (isDirector) SearchFilter(f.type, f.year, f.genre, f.adult, director = null, actor = f.actor)
-                else SearchFilter(f.type, f.year, f.genre, f.adult, director = f.director, actor = null)
+                searchFilter = if (isDirector) SearchFilter(f.type, f.year, f.genre, f.adult, director = null, actor = f.actor, downloaded = f.downloaded)
+                else SearchFilter(f.type, f.year, f.genre, f.adult, director = f.director, actor = null, downloaded = f.downloaded)
                 openSearch(text, if (isDirector) 4 else 5)
             } else null
         )

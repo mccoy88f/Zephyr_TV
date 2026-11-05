@@ -819,6 +819,7 @@
     <string name="trakt_refused">Trakt n\'a pas accepté la connexion. Rouvrez cette page et réessayez.</string>
     <string name="title_hold_hint">Maintenez OK sur un épisode pour le marquer comme vu ou non vu.</string>
     <string name="search_filter_clear">Effacer les filtres</string>
+    <string name="search_filter_downloaded">Uniquement les éléments téléchargés</string>
     <!-- Coming from Piume -->
     <string name="piume_taken">Vos paramètres, utilisateurs et historique sont arrivés depuis Piume.</string>
     <string name="piume_failed">Impossible de reprendre les paramètres de Piume. Pour les récupérer, restaurez une sauvegarde de Piume.</string>

@@ -819,6 +819,7 @@
     <string name="trakt_refused">O Trakt não aceitou o login. Abra esta página de novo e tente mais uma vez.</string>
     <string name="title_hold_hint">Mantenha OK pressionado em um episódio para marcá-lo como assistido ou não assistido.</string>
     <string name="search_filter_clear">Limpar os filtros</string>
+    <string name="search_filter_downloaded">Só itens transferidos</string>
     <!-- Coming from Piume -->
     <string name="piume_taken">Suas configurações, usuários e histórico vieram do Piume.</string>
     <string name="piume_failed">Não foi possível trazer as configurações do Piume. Para trazê-las, restaure um backup do Piume.</string>

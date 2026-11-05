@@ -816,6 +816,7 @@
     <string name="trakt_refused">Trakt didn\'t accept the sign-in. Open this page again and try once more.</string>
     <string name="title_hold_hint">Hold OK on an episode to mark it as watched or not watched.</string>
     <string name="search_filter_clear">Clear the filters</string>
+    <string name="search_filter_downloaded">Only downloaded items</string>
     <!-- Coming from Piume -->
     <string name="piume_taken">Your settings, users and history are here from Piume.</string>
     <string name="piume_failed">Piume\'s settings could not be taken. To bring them, restore a backup of Piume.</string>

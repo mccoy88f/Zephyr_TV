@@ -819,6 +819,7 @@
     <string name="trakt_refused">Trakt no ha acceptat l\'inici de sessió. Torna a obrir aquesta pàgina i prova-ho un cop més.</string>
     <string name="title_hold_hint">Mantén premut OK sobre un episodi per marcar-lo com a vist o no vist.</string>
     <string name="search_filter_clear">Esborra els filtres</string>
+    <string name="search_filter_downloaded">Només elements baixats</string>
     <!-- Coming from Piume -->
     <string name="piume_taken">Els teus ajustos, usuaris i historial són aquí des de Piume.</string>
     <string name="piume_failed">No s\'han pogut agafar els ajustos de Piume. Per portar-los, restaura una còpia de seguretat de Piume.</string>

@@ -816,6 +816,7 @@
     <string name="trakt_refused">Trakt hat die Anmeldung nicht akzeptiert. Öffne diese Seite erneut und versuche es noch einmal.</string>
     <string name="title_hold_hint">Halte OK auf einer Folge gedrückt, um sie als gesehen oder nicht gesehen zu markieren.</string>
     <string name="search_filter_clear">Filter löschen</string>
+    <string name="search_filter_downloaded">Nur heruntergeladene Inhalte</string>
     <!-- Coming from Piume -->
     <string name="piume_taken">Deine Einstellungen, Benutzer und dein Verlauf sind aus Piume übernommen.</string>
     <string name="piume_failed">Die Einstellungen von Piume konnten nicht übernommen werden. Stelle dafür eine Sicherung von Piume wieder her.</string>

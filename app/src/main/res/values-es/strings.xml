@@ -819,6 +819,7 @@
     <string name="trakt_refused">Trakt no aceptó el inicio de sesión. Vuelve a abrir esta página e inténtalo de nuevo.</string>
     <string name="title_hold_hint">Mantén pulsado OK en un episodio para marcarlo como visto o no visto.</string>
     <string name="search_filter_clear">Quitar los filtros</string>
+    <string name="search_filter_downloaded">Solo elementos descargados</string>
     <!-- Coming from Piume -->
     <string name="piume_taken">Tus ajustes, usuarios e historial han llegado desde Piume.</string>
     <string name="piume_failed">No se pudieron tomar los ajustes de Piume. Para traerlos, restaura una copia de seguridad de Piume.</string>

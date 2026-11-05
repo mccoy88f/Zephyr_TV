@@ -76,8 +76,9 @@ internal fun MainActivity.searchPersonTitles(personName: String, isDirector: Boo
  * names, English: "Sci-Fi"), [director] and [actor] names, each null for any.
  */
 internal class SearchFilter(val type: String = "all", val year: String? = null, val genre: String? = null,
-                            val adult: String = ADULT_SHOW, val director: String? = null, val actor: String? = null) {
-    val any get() = type != "all" || year != null || genre != null || adult != ADULT_SHOW || director != null || actor != null
+                            val adult: String = ADULT_SHOW, val director: String? = null, val actor: String? = null,
+                            val downloaded: Boolean = false) { // downloaded: only what's downloaded (see Downloads), off by default
+    val any get() = type != "all" || year != null || genre != null || adult != ADULT_SHOW || director != null || actor != null || downloaded
 
     companion object {
         // Adult content in the results (offered only while 18+ shows: see adultSearch): with the rest, left out, or alone.

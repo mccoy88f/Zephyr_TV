@@ -813,6 +813,7 @@
     <string name="trakt_refused">Trakt 不接受此次登录。请重新打开此页面再试一次。</string>
     <string name="title_hold_hint">在某一集上按住 OK，可将其标为已看过或未看过。</string>
     <string name="search_filter_clear">清除筛选</string>
+    <string name="search_filter_downloaded">仅显示已下载内容</string>
     <!-- Coming from Piume -->
     <string name="piume_taken">你的设置、用户和历史记录已从 Piume 迁移过来。</string>
     <string name="piume_failed">无法迁移 Piume 的设置。要迁移它们，请恢复 Piume 的备份。</string>

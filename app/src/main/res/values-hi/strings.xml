@@ -816,6 +816,7 @@
     <string name="trakt_refused">Trakt ने साइन-इन नहीं माना। यह पेज फिर खोलें और एक बार और कोशिश करें।</string>
     <string name="title_hold_hint">किसी एपिसोड को देखा हुआ या न देखा हुआ मार्क करने के लिए उस पर OK दबाकर रखें।</string>
     <string name="search_filter_clear">फ़िल्टर साफ़ करें</string>
+    <string name="search_filter_downloaded">केवल डाउनलोड किए गए आइटम</string>
     <!-- Coming from Piume -->
     <string name="piume_taken">आपकी सेटिंग, उपयोगकर्ता और इतिहास Piume से यहाँ आ गए हैं।</string>
     <string name="piume_failed">Piume की सेटिंग नहीं लाई जा सकीं। इन्हें लाने के लिए Piume का बैकअप वापस लाएँ।</string>
