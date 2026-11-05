@@ -1,7 +1,6 @@
 package link.mccoy88f.zephyr
 
 import android.os.Build
-import android.provider.Settings
 import org.json.JSONObject
 
 /**
@@ -63,10 +62,6 @@ internal fun MainActivity.ztvValue(): String = ztvEmail() ?: getString(R.string.
 
 /** Settings → System → Zephyr TV account: linked, its page; else linking it. */
 internal fun MainActivity.ztvAccount() = if (ztvEmail() != null) ztvAccountPage() else ztvLink()
-
-/** This TV's name as the site shows it: the name set in Android's settings, else its model. */
-private fun MainActivity.tvName() =
-    runCatching { Settings.Global.getString(contentResolver, "device_name") }.getOrNull()?.takeIf { it.isNotBlank() } ?: Build.MODEL
 
 /** Linking: a code from the site, shown with a QR code of its page; asked about until it's allowed, refused or too old. */
 private fun MainActivity.ztvLink() {
