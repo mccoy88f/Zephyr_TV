@@ -258,7 +258,8 @@ class PlayerActivity : Activity() {
         channels = ids.indices.map { i ->
             Channel(list(TYPES).getOrNull(i)?.ifEmpty { null } ?: "tv", ids[i], list(NAMES).getOrNull(i).orEmpty(),
                 listOfNotNull(list(LOGOS).getOrNull(i), list(FALLBACK_LOGOS).getOrNull(i)).filter { it.isNotEmpty() }.distinct(),
-                list(NOWS).getOrNull(i)?.ifEmpty { null })
+                // A film's or series' year alone isn't shown (Continue Playing kept it as the line under the name).
+                list(NOWS).getOrNull(i)?.takeUnless { vod && Regex("\\d{4}").matches(it.trim()) }?.ifEmpty { null })
         }
         if (channels.isEmpty()) return finish()
         // A stream picked by hand (see pickStream), or the one it played when it's resumed: the one the first episode or

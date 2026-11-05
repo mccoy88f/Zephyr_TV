@@ -1010,7 +1010,7 @@ internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, epi
             .putStringArrayListExtra(PlayerActivity.TYPES, strings { type })
             .putStringArrayListExtra(PlayerActivity.IDS, strings { it.first })
             .putStringArrayListExtra(PlayerActivity.NAMES, strings { it.second })
-            .putStringArrayListExtra(PlayerActivity.NOWS, strings { it.third?.let { e -> listOf(episodeLine(e), e.name).filter { n -> n.isNotBlank() }.joinToString(" · ") } ?: t?.year ?: "" })
+            .putStringArrayListExtra(PlayerActivity.NOWS, strings { it.third?.let { e -> listOf(episodeLine(e), e.name).filter { n -> n.isNotBlank() }.joinToString(" · ") } ?: "" }) // a film: its name only (no year)
             // In the player the art across: the backdrop (an episode's still without one), with the title's logo on it.
             .putStringArrayListExtra(PlayerActivity.LOGOS, strings { bg ?: it.third?.thumbnail ?: poster })
             .putStringArrayListExtra(PlayerActivity.FALLBACK_LOGOS, strings { it.third?.thumbnail ?: poster ?: "" })

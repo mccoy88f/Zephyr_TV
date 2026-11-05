@@ -16,6 +16,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 ## Unreleased
 
 - When Spotlight folds away, a space stays between the favourites row and the top bar with the weather.
+- The player does not show the year of a film or series.
 
 ## 4.0.0
 
