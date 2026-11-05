@@ -130,9 +130,11 @@ internal object Trakt {
                 save(dir, Account(a.access, a.refresh, a.expires, name))
                 SignIn.DONE
             }
-            202, 429 -> SignIn.WAITING // 429: asked too often (another TV behind the same address): ask again later
+            // 404: the site doesn't know this sign-in yet, as the phone hasn't opened the QR code's link: still waiting
+            // (the page gives up after its own 10 minutes). 429: asked too often (another TV behind the same address).
+            202, 404, 429 -> SignIn.WAITING
             410 -> SignIn.REFUSED
-            else -> SignIn.EXPIRED
+            else -> SignIn.WAITING // the site down for a moment: asked again
         }
     }
 

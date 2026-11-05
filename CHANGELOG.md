@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- **Connect Trakt** waits for you to scan the QR code. Before, it said that the code had expired after a few seconds, and the TV did not connect.
+
 ## 4.0.2
 
 - The icons at the top right have the same shadow as the clock and Spotlight. They are easy to see on any wallpaper.
