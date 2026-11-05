@@ -46,7 +46,9 @@ const masked = (to: string) => to.replace(/^(.{2})[^@]*/, "$1…");
  * [text] (and [html]) to [to], from sender(): the SMTP server's answer
  * ("250 … queued as …"), also in the log either way. Throws when it can't be sent.
  */
-export async function sendMail(to: string, subject: string, text: string, html: string): Promise<string> {
+export type Attachment = { filename: string; path: string; cid: string };
+
+export async function sendMail(to: string, subject: string, text: string, html: string, attachments: Attachment[] = []): Promise<string> {
   if (!mailReady()) {
     console.warn(`[mail] not sent to ${masked(to)}: SMTP_USER and SMTP_PASSWORD are not set`);
     throw new Error("SMTP_USER and SMTP_PASSWORD are not set");
@@ -54,7 +56,7 @@ export async function sendMail(to: string, subject: string, text: string, html: 
   try {
     const s = sender();
     if (s.mismatch) console.warn(`[mail] MAIL_FROM's address (${s.configured}) isn't SMTP_USER: sent from ${s.from}`);
-    const info = await smtp().sendMail({ from: s.from, to, subject, text, html });
+    const info = await smtp().sendMail({ from: s.from, to, subject, text, html, attachments });
     const answer = `${info.response ?? ""}`.slice(0, 200);
     console.info(`[mail] "${subject}" to ${masked(to)}: accepted ${info.accepted?.length ?? 0}, refused ${info.rejected?.length ?? 0} · ${answer}`);
     if (info.rejected?.length) throw new Error(`refused: ${answer}`);

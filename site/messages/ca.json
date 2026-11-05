@@ -179,7 +179,11 @@
     "done": "Gairebé fet: obre l'enllaç que hem enviat al teu correu per confirmar-lo. Mira també el correu brossa.",
     "rules": "Almenys 10 caràcters. No s'accepten contrasenyes filtrades.",
     "have_account": "Ja tinc un compte",
-    "resend": "Torna a enviar el correu de confirmació"
+    "resend": "Torna a enviar el correu de confirmació",
+    "done_title": "Revisa el teu correu",
+    "done_text": "Hem enviat l'enllaç d'activació a <b>{email}</b>. Obre'l en 24 hores per activar el compte.",
+    "done_spam": "No el trobes? Mira al correu brossa o a promocions.",
+    "done_login": "Vés a iniciar la sessió"
   },
   "verify": {
     "title": "Confirma el teu correu",
@@ -259,7 +263,9 @@
     "reset_button": "Tria una contrasenya nova",
     "change_subject": "Confirma el teu correu nou",
     "change_text": "Confirma aquest correu per moure-hi el teu compte de Zephyr TV. L'enllaç val {hours} hores.",
-    "change_button": "Confirma el correu nou"
+    "change_button": "Confirma el correu nou",
+    "link_hint": "El botó no funciona? Copia aquesta adreça al navegador:",
+    "tagline": "Zephyr TV · la pantalla d'inici per a Android TV"
   },
   "link": {
     "title": "Vincula un televisor",

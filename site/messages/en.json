@@ -179,7 +179,11 @@
     "done": "Almost done: open the link we sent to your email to confirm it. Check the spam folder too.",
     "rules": "At least 10 characters. Passwords found in data breaches aren't accepted.",
     "have_account": "I have an account",
-    "resend": "Confirmation email again"
+    "resend": "Confirmation email again",
+    "done_title": "Check your email",
+    "done_text": "We sent the activation link to <b>{email}</b>. Open it within 24 hours to activate your account.",
+    "done_spam": "Can't find it? Look in spam or promotions.",
+    "done_login": "Go to sign in"
   },
   "verify": {
     "title": "Confirm your email",
@@ -259,7 +263,9 @@
     "reset_button": "Choose a new password",
     "change_subject": "Confirm your new email",
     "change_text": "Confirm this email to move your Zephyr TV account here. The link works for {hours} hours.",
-    "change_button": "Confirm the new email"
+    "change_button": "Confirm the new email",
+    "link_hint": "Doesn't the button work? Copy this address into your browser:",
+    "tagline": "Zephyr TV · the home screen for Android TV"
   },
   "link": {
     "title": "Link a TV",

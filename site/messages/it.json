@@ -179,7 +179,11 @@
     "done": "Quasi fatto: apri il link che abbiamo mandato alla tua email per confermarla. Controlla anche lo spam.",
     "rules": "Almeno 10 caratteri. Le password trovate in furti di dati non sono accettate.",
     "have_account": "Ho già un account",
-    "resend": "Rimanda l'email di conferma"
+    "resend": "Rimanda l'email di conferma",
+    "done_title": "Controlla la tua email",
+    "done_text": "Abbiamo mandato il link di attivazione a <b>{email}</b>. Aprilo entro 24 ore per attivare l'account.",
+    "done_spam": "Non la trovi? Guarda nello spam o nelle promozioni.",
+    "done_login": "Vai all'accesso"
   },
   "verify": {
     "title": "Conferma la tua email",
@@ -259,7 +263,9 @@
     "reset_button": "Scegli una nuova password",
     "change_subject": "Conferma la tua nuova email",
     "change_text": "Conferma questa email per spostare qui il tuo account Zephyr TV. Il link vale {hours} ore.",
-    "change_button": "Conferma la nuova email"
+    "change_button": "Conferma la nuova email",
+    "link_hint": "Il pulsante non funziona? Copia questo indirizzo nel browser:",
+    "tagline": "Zephyr TV · la schermata Home per Android TV"
   },
   "link": {
     "title": "Collega un TV",

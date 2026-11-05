@@ -179,7 +179,11 @@
     "done": "Fast fertig: Öffne den Link, den wir an deine E-Mail geschickt haben, um sie zu bestätigen. Sieh auch im Spam nach.",
     "rules": "Mindestens 10 Zeichen. Passwörter aus Datenlecks werden nicht angenommen.",
     "have_account": "Ich habe ein Konto",
-    "resend": "Bestätigungs-E-Mail erneut senden"
+    "resend": "Bestätigungs-E-Mail erneut senden",
+    "done_title": "Sieh in deine E-Mails",
+    "done_text": "Wir haben den Aktivierungslink an <b>{email}</b> gesendet. Öffne ihn innerhalb von 24 Stunden, um dein Konto zu aktivieren.",
+    "done_spam": "Nicht gefunden? Sieh im Spam oder bei Werbung nach.",
+    "done_login": "Zur Anmeldung"
   },
   "verify": {
     "title": "Bestätige deine E-Mail",
@@ -259,7 +263,9 @@
     "reset_button": "Neues Passwort wählen",
     "change_subject": "Bestätige deine neue E-Mail",
     "change_text": "Bestätige diese E-Mail, um dein Zephyr-TV-Konto hierher umzuziehen. Der Link gilt {hours} Stunden.",
-    "change_button": "Neue E-Mail bestätigen"
+    "change_button": "Neue E-Mail bestätigen",
+    "link_hint": "Der Button funktioniert nicht? Kopiere diese Adresse in deinen Browser:",
+    "tagline": "Zephyr TV · der Startbildschirm für Android TV"
   },
   "link": {
     "title": "Fernseher verbinden",

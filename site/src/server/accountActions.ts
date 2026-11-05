@@ -15,7 +15,7 @@ import { checkNewPassword } from "./passwords";
 import { currentAccount, endAllSessions, endOtherSessions, endSession, startSession } from "./session";
 
 /** A form's answer: done, or what went wrong (a key of the "forms" messages). */
-export type FormState = { ok?: boolean; error?: string };
+export type FormState = { ok?: boolean; error?: string; email?: string };
 
 const email = z.string().trim().toLowerCase().email().max(254);
 const ip = async () => (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "?";
@@ -42,7 +42,7 @@ export async function register(_: FormState, data: FormData): Promise<FormState>
   if (problem) return { error: problem };
   const locale = await getLocale();
   const [found] = await db.select().from(accounts).where(eq(accounts.email, parsed.data));
-  if (found?.emailVerifiedAt) return { ok: true };
+  if (found?.emailVerifiedAt) return { ok: true, email: parsed.data }; // the same answer: it never says which emails have an account
   const passwordHash = await hashPassword(password);
   const [account] = found
     ? await db.update(accounts).set({ passwordHash, locale }).where(eq(accounts.id, found.id)).returning()
@@ -53,7 +53,7 @@ export async function register(_: FormState, data: FormData): Promise<FormState>
     console.warn("verify email failed", e);
     return { error: "mail" };
   }
-  return { ok: true };
+  return { ok: true, email: parsed.data };
 }
 
 /** The confirmation link sent again to an unconfirmed account's email: at most once in 2 minutes. Same answer for any email. */

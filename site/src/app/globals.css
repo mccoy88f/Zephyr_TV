@@ -192,6 +192,10 @@ code.url { word-break: break-all; font-size: 13px; }
 .card.cta h2 { margin: 0; }
 .card.cta.wide { text-align: center; justify-items: center; padding: 28px; }
 .card.cta.wide p { max-width: 620px; }
+.card.cta.sent { justify-items: center; text-align: center; padding: 28px 24px; }
+.card.cta.sent .actions { justify-content: center; margin-top: 4px; }
+.sent-icon { font-size: 44px; line-height: 1; width: 76px; height: 76px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(135deg, var(--accent-2), var(--accent)); color: #fff; }
+.sent-email { color: var(--fg); overflow-wrap: anywhere; }
 .button.small-button { padding: 7px 14px; font-size: 15px; }
 
 .footer { border-top: 1px solid var(--line); padding: 24px; text-align: center; font-size: 14px; }

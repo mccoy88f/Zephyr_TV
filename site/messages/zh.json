@@ -179,7 +179,11 @@
     "done": "快完成了：打开我们发送到你邮箱的链接以确认。也请检查垃圾邮件。",
     "rules": "至少 10 个字符。不接受已泄露的密码。",
     "have_account": "我已有账号",
-    "resend": "重新发送确认邮件"
+    "resend": "重新发送确认邮件",
+    "done_title": "请查看你的邮箱",
+    "done_text": "我们已将激活链接发送到 <b>{email}</b>。请在 24 小时内打开以激活账号。",
+    "done_spam": "找不到？请查看垃圾邮件或推广邮件。",
+    "done_login": "前往登录"
   },
   "verify": {
     "title": "确认你的电子邮件",
@@ -259,7 +263,9 @@
     "reset_button": "设置新密码",
     "change_subject": "确认你的新电子邮件",
     "change_text": "确认此电子邮件以将 Zephyr TV 账号迁移到这里。链接 {hours} 小时内有效。",
-    "change_button": "确认新电子邮件"
+    "change_button": "确认新电子邮件",
+    "link_hint": "按钮无法使用？请将此地址复制到浏览器：",
+    "tagline": "Zephyr TV · Android TV 主屏幕"
   },
   "link": {
     "title": "关联电视",

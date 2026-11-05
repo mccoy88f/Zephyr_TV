@@ -179,7 +179,11 @@
     "done": "Presque fini : ouvrez le lien envoyé à votre e-mail pour le confirmer. Vérifiez aussi les spams.",
     "rules": "Au moins 10 caractères. Les mots de passe issus de fuites ne sont pas acceptés.",
     "have_account": "J'ai déjà un compte",
-    "resend": "Renvoyer l'e-mail de confirmation"
+    "resend": "Renvoyer l'e-mail de confirmation",
+    "done_title": "Vérifiez vos e-mails",
+    "done_text": "Nous avons envoyé le lien d'activation à <b>{email}</b>. Ouvrez-le dans les 24 heures pour activer votre compte.",
+    "done_spam": "Vous ne le trouvez pas ? Regardez dans les spams ou les promotions.",
+    "done_login": "Aller à la connexion"
   },
   "verify": {
     "title": "Confirmez votre e-mail",
@@ -259,7 +263,9 @@
     "reset_button": "Choisir un nouveau mot de passe",
     "change_subject": "Confirmez votre nouvel e-mail",
     "change_text": "Confirmez cet e-mail pour y transférer votre compte Zephyr TV. Le lien est valable {hours} heures.",
-    "change_button": "Confirmer le nouvel e-mail"
+    "change_button": "Confirmer le nouvel e-mail",
+    "link_hint": "Le bouton ne fonctionne pas ? Copiez cette adresse dans votre navigateur :",
+    "tagline": "Zephyr TV · l'écran d'accueil pour Android TV"
   },
   "link": {
     "title": "Relier une TV",
