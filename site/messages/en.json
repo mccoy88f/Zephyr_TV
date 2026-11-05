@@ -107,7 +107,13 @@
     "soon": "Sync between TVs comes next.",
     "manage_accounts": "Manage accounts",
     "no_mail": "Email isn't set up (SMTP_PASSWORD): new accounts can't confirm their email.",
-    "manage_extensions": "Extensions to review ({n})"
+    "manage_extensions": "Extensions to review ({n})",
+    "mail_title": "Email",
+    "mail_text": "Sent through {host}:{port} as {user}.",
+    "mail_to": "Send to",
+    "mail_send": "Send a test email",
+    "mail_ok": "Sent to {to}: if it doesn't arrive, look in spam.",
+    "mail_failed": "The SMTP server refused it:"
   },
   "share": {
     "watch": "To watch on Zephyr TV",

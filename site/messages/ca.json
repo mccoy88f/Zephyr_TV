@@ -107,7 +107,13 @@
     "soon": "Després arriba la sincronització entre televisors.",
     "manage_accounts": "Gestiona els comptes",
     "no_mail": "El correu no està configurat (SMTP_PASSWORD): els comptes nous no poden confirmar el correu.",
-    "manage_extensions": "Extensions per revisar ({n})"
+    "manage_extensions": "Extensions per revisar ({n})",
+    "mail_title": "Correu",
+    "mail_text": "S'envien per {host}:{port} com a {user}.",
+    "mail_to": "Envia a",
+    "mail_send": "Envia un correu de prova",
+    "mail_ok": "Enviat a {to}: si no arriba, mira al correu brossa.",
+    "mail_failed": "El servidor SMTP l'ha rebutjat:"
   },
   "share": {
     "watch": "Per mirar a Zephyr TV",

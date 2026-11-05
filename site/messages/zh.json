@@ -107,7 +107,13 @@
     "soon": "接下来是电视之间的同步。",
     "manage_accounts": "管理账号",
     "no_mail": "电子邮件未配置（SMTP_PASSWORD）：新账号无法确认电子邮件。",
-    "manage_extensions": "待审核的扩展（{n}）"
+    "manage_extensions": "待审核的扩展（{n}）",
+    "mail_title": "邮件",
+    "mail_text": "通过 {host}:{port} 以 {user} 发送。",
+    "mail_to": "发送到",
+    "mail_send": "发送测试邮件",
+    "mail_ok": "已发送到 {to}：如果没收到，请查看垃圾邮件。",
+    "mail_failed": "SMTP 服务器拒绝了："
   },
   "share": {
     "watch": "在 Zephyr TV 上观看",

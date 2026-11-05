@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { accounts, catalog, sessions } from "@/db/schema";
 import { Link, redirect } from "@/i18n/navigation";
 import { mailReady } from "@/server/mail";
+import { testMail } from "./actions";
 import { currentAccount } from "@/server/session";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -12,8 +13,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /** The superadmin's panel: what the site holds, the accounts, and the extensions waiting for review. */
-export default async function Admin({ params }: { params: Promise<{ locale: string }> }) {
+export default async function Admin({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ mail?: string; to?: string }> }) {
   const { locale } = await params;
+  const { mail, to } = await searchParams;
   setRequestLocale(locale);
   const account = await currentAccount();
   if (account?.role !== "superadmin") return redirect({ href: "/login", locale });
@@ -40,6 +42,17 @@ export default async function Admin({ params }: { params: Promise<{ locale: stri
         <Link className={`button${pending.n ? " primary" : ""}`} href="/admin/extensions">{t("manage_extensions", { n: pending.n })}</Link>
       </div>
       {!mailReady() && <p className="error">{t("no_mail")}</p>}
+      <article className="card">
+        <h2>{t("mail_title")}</h2>
+        <p>{t("mail_text", { host: process.env.SMTP_HOST || "ssl0.ovh.net", port: process.env.SMTP_PORT || "465", user: process.env.SMTP_USER || "—" })}</p>
+        <form className="search" action={testMail}>
+          <input name="to" type="email" placeholder={account.email} aria-label={t("mail_to")} defaultValue={to ?? ""} />
+          <button className="button" type="submit">{t("mail_send")}</button>
+        </form>
+        {mail && (mail === "ok"
+          ? <p className="okmsg" role="status">{t("mail_ok", { to: to ?? "" })}</p>
+          : <p className="error" role="alert">{t("mail_failed")} <code>{mail}</code></p>)}
+      </article>
       <p className="muted">{t("soon")}</p>
     </section>
   );

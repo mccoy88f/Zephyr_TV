@@ -107,7 +107,13 @@
     "soon": "Als Nächstes kommt die Synchronisierung zwischen Fernsehern.",
     "manage_accounts": "Konten verwalten",
     "no_mail": "E-Mail ist nicht eingerichtet (SMTP_PASSWORD): Neue Konten können ihre E-Mail nicht bestätigen.",
-    "manage_extensions": "Zu prüfende Erweiterungen ({n})"
+    "manage_extensions": "Zu prüfende Erweiterungen ({n})",
+    "mail_title": "E-Mail",
+    "mail_text": "Versand über {host}:{port} als {user}.",
+    "mail_to": "Senden an",
+    "mail_send": "Test-E-Mail senden",
+    "mail_ok": "An {to} gesendet: Falls sie nicht ankommt, sieh im Spam nach.",
+    "mail_failed": "Der SMTP-Server hat sie abgelehnt:"
   },
   "share": {
     "watch": "Zum Anschauen in Zephyr TV",

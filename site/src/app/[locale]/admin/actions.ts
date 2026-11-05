@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { accounts } from "@/db/schema";
 import { redirect } from "@/i18n/navigation";
 import { currentAccount, endAllSessions } from "@/server/session";
+import { sendMail } from "@/server/mail";
 
 /** The account [data] names, if the one asking is the superadmin and it isn't their own; else back to sign in. */
 async function target(data: FormData) {
@@ -49,3 +50,27 @@ export async function remove(data: FormData) {
   if (id) await db.delete(accounts).where(eq(accounts.id, id));
   await back();
 }
+
+/**
+ * A test email to the address given (the superadmin's own by default): sent, or the SMTP server's own answer (what
+ * failed: no password set, port closed, wrong password…), shown on the panel. No password or address in it.
+ */
+export async function testMail(data: FormData) {
+  const me = await currentAccount();
+  const locale = await getLocale();
+  if (me?.role !== "superadmin") return redirect({ href: "/login", locale });
+  const to = String(data.get("to") ?? "").trim() || me.email;
+  let result = "ok";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) result = "invalid address";
+  else {
+    try {
+      await sendMail(to, "Zephyr TV: test", `Test email from ${process.env.SITE_URL || "the site"}.`, "<p>Test email from Zephyr TV's site.</p>");
+    } catch (e) {
+      const err = e as { code?: string; responseCode?: number; response?: string; message?: string };
+      result = [err.code, err.responseCode, err.response ?? err.message].filter(Boolean).join(" · ").slice(0, 300) || "error";
+      console.warn("test mail failed", e);
+    }
+  }
+  redirect({ href: `/admin?mail=${encodeURIComponent(result)}&to=${encodeURIComponent(to)}`, locale });
+}
+

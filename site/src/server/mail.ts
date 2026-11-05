@@ -18,6 +18,9 @@ function smtp(): Transporter {
     port,
     secure: port === 465, // 465: TLS from the start; any other port: STARTTLS, required (never in clear)
     requireTLS: port !== 465,
+    connectionTimeout: 15_000, // a port blocked on the way out: an answer in seconds, not minutes
+    greetingTimeout: 10_000,
+    socketTimeout: 30_000,
     auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
   });
   return transporter;
