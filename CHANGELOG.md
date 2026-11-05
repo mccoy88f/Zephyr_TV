@@ -17,6 +17,9 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 - When Spotlight folds away, a space stays between the favourites row and the top bar with the weather.
 - The player does not show the year of a film or series.
+- The star of a rating is red under 6, yellow from 6 to 7.9 and green from 8. This is so on the cards, on the title pages and in Spotlight.
+- On a title's page, **Watch trailer** is a row with the YouTube icon, as **Mark as watched** is.
+- The ✓ of a watched title is blue.
 
 ## 4.0.0
 

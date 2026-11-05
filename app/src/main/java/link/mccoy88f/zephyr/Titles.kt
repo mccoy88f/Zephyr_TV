@@ -297,3 +297,39 @@ internal fun MainActivity.titleProgressCards(hidden: Set<String>): List<Pair<Lon
             vod = TitleRef(e.type, e.metaId, e.name.substringBefore(" · "), poster, wide, video = e.id, logo = logo))
     }
 }
+
+/** The blue of a "watched" tick (✓), wherever it shows: the cards, the title pages, their rows. */
+internal const val TICK_BLUE = 0xFF3B82F6.toInt()
+
+/** [text] with each ✓ in it blue (see TICK_BLUE). */
+internal fun blueTicks(text: CharSequence): CharSequence {
+    if (!text.contains('✓')) return text
+    val s = android.text.SpannableString(text)
+    var i = text.indexOf('✓')
+    while (i >= 0) {
+        s.setSpan(android.text.style.ForegroundColorSpan(TICK_BLUE), i, i + 1, 0)
+        i = text.indexOf('✓', i + 1)
+    }
+    return s
+}
+
+/** A rating's star colour: red under 6, yellow from 6 to 7.9, green from 8 (gold when it can't be read). */
+internal fun starColor(rating: String?): Int {
+    val v = rating?.trim()?.replace(',', '.')?.toDoubleOrNull() ?: return 0xFFFFC83D.toInt()
+    return when {
+        v < 6.0 -> 0xFFEF4444.toInt()
+        v < 8.0 -> 0xFFFACC15.toInt()
+        else -> 0xFF22C55E.toInt()
+    }
+}
+
+/** [text] with its ★ coloured by the rating after it (see starColor), and its ✓ blue. */
+internal fun starred(text: CharSequence): CharSequence {
+    val at = text.indexOf('★')
+    if (at < 0) return blueTicks(text)
+    val number = Regex("""\d+(?:[.,]\d+)?""").find(text, at)?.value
+    val s = android.text.SpannableString(blueTicks(text))
+    s.setSpan(android.text.style.ForegroundColorSpan(starColor(number)), at, at + 1, 0)
+    return s
+}
+

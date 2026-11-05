@@ -851,4 +851,5 @@
     <string name="sync_confirm_back">Back</string>
     <string name="open_link">Open link</string>
     <string name="open_link_failed">No browser could open the link.</string>
+    <string name="title_trailer">Watch trailer</string>
 </resources>

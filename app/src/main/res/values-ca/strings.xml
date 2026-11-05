@@ -854,4 +854,5 @@
     <string name="sync_confirm_back">Enrere</string>
     <string name="open_link">Obre l\'enllaç</string>
     <string name="open_link_failed">Cap navegador no ha pogut obrir l\'enllaç.</string>
+    <string name="title_trailer">Mira el tràiler</string>
 </resources>

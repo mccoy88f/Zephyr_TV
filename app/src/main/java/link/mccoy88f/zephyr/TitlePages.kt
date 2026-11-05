@@ -183,6 +183,9 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
         }
     }
 
+    // The trailer, on YouTube: a row as Mark watched is, with YouTube's icon.
+    services.trailer?.let { (icon, open) -> icons[rows.size] = icon; rows += page(getString(R.string.title_trailer)) { open() } }
+
     // A phone or tablet: the page shared, as a link that opens it in Zephyr TV (see Links).
     if (handheld()) rows += page(getString(R.string.share)) { shareTitle(t.type, t.id, t.name, image = ref.poster ?: t.poster ?: t.background) }
     val focus = focusRow ?: if (top.descView != null) -1 else 0
@@ -250,6 +253,8 @@ internal fun MainActivity.showVodSeason(given: Stremio.TitleMeta, ref: TitleRef,
     val pageTitle = "${t.name} · ${seasonName(shown)}"
     titleRedrawFor = t.id
     titleRedraw = { if (pageShowing(pageTitle)) showVodSeason(meta, ref, shown, available, episode, focusedRow() ?: focusRow) }
+    // The trailer, on YouTube: a row as Mark watched is, with YouTube's icon.
+    services.trailer?.let { (icon, open) -> icons[rows.size] = icon; rows += page(getString(R.string.title_trailer)) { open() } }
     titlePage(pageTitle, art, ref.fallback, t.name, top, rows, focus, icons, holds, servicesBar = servicesBar) {
         showVodTitle(meta, ref, services.known)
     }
@@ -318,6 +323,8 @@ internal fun MainActivity.showVodEpisode(given: Stremio.TitleMeta, ref: TitleRef
     }
     if (handheld()) rows += page(getString(R.string.share)) { shareTitle(t.type, t.id, t.name, e.season, e.episode, image = ref.poster ?: t.poster ?: e.thumbnail) }
     val targetFocus = if (focus < 0 && top.descView != null) -1 else if (focus < 0) 0 else focus
+    // The trailer, on YouTube: a row as Mark watched is, with YouTube's icon.
+    services.trailer?.let { (icon, open) -> icons[rows.size] = icon; rows += page(getString(R.string.title_trailer)) { open() } }
     titlePage(title, art, ref.fallback, t.name, top, rows, targetFocus, icons, holds, servicesBar = servicesBar) {
         if (t.type != "series") showVodTitle(meta, ref, services.known)
         else showVodSeason(meta, ref, e.season, services.known, e.id)
@@ -501,12 +508,14 @@ private fun MainActivity.titleTop(info: String, name: String?, about: String?, s
             maxLines = 2
         }) }
         addView(label(info, 13f).apply {
+            text = starred(info) // the rating's star in its colour
             alpha = 0.7f
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             isSingleLine = false
             maxLines = 2
         })
         seen?.let { addView(label("✓  $it", 13f).apply {
+            text = blueTicks(text)
             setPadding(0, dp(4), 0, 0)
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
         }) }
@@ -789,13 +798,17 @@ internal fun MainActivity.rowIcons(icons: Map<Int, android.graphics.drawable.Dra
  * [known]: the services TMDB lists it on, when it has answered. [later] asks it when it hasn't,
  * and calls back with the answer.
  */
-private class Services(val known: Set<String>?, val later: (((Set<String>) -> Unit) -> Unit))
+private class Services(val known: Set<String>?, val later: (((Set<String>) -> Unit) -> Unit),
+                       val trailer: Pair<android.graphics.drawable.Drawable, () -> Unit>? = null) // YouTube's icon, and Watch trailer
 
 private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?): Pair<View?, Services> {
     val item = tmdbItemOf(t) ?: return null to Services(available) { }
     val region = TmdbClient.region(tmdbLang())
     val known = available ?: TmdbClient.cachedProviders(item, region)
-    val apps = titleApps().filter { TmdbClient.offers(it.pkg, known) }
+    val offered = titleApps().filter { TmdbClient.offers(it.pkg, known) }
+    // The trailer is a row of the page of its own (Watch trailer, YouTube's icon), not one of the apps' buttons.
+    val apps = offered.filterNot { TmdbClient.isYouTube(it.pkg) }
+    val trailer = offered.firstOrNull { TmdbClient.isYouTube(it.pkg) }?.let { yt -> yt.icon to { closeLauncherSettings(); openInApp(yt, item) } }
 
     val barView = if (apps.isEmpty()) null else {
         android.widget.HorizontalScrollView(this).apply {
@@ -858,7 +871,7 @@ private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?): 
     }
 
     val title = findViewById<android.widget.TextView>(R.id.settingsTitle)
-    val services = Services(known) { again ->
+    val services = Services(known, trailer = trailer) { again ->
         val key = tmdbKey()
         if (known == null && providersOn() && key != null) {
             val shown = title?.text?.toString() ?: ""

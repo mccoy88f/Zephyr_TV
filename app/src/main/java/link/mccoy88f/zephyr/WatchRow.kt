@@ -425,7 +425,7 @@ internal fun MainActivity.fillGuide(pkg: String) = io.execute {
                 val p = cards.items.getOrNull(i)?.takeIf { it.progress > 0 } ?: continue
                 col.getChildAt(0)?.setTag(R.id.watchRow, p)
                 (col.getChildAt(1) as? ProgressBar)?.apply { progress = p.progress; visibility = View.VISIBLE }
-                (col.getChildAt(3) as? TextView)?.text = p.sub
+                (col.getChildAt(3) as? TextView)?.text = blueTicks(p.sub)
             }
         }
     }
@@ -806,7 +806,7 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
     p.rating?.let { r ->
         frame.addView(TextView(this).apply {
             text = android.text.SpannableString("★ $r").apply {
-                setSpan(android.text.style.ForegroundColorSpan(0xFFFFC83D.toInt()), 0, 1, 0)
+                setSpan(android.text.style.ForegroundColorSpan(starColor(r)), 0, 1, 0) // red, yellow or green by the rating
             }
             textSize = 10f
             setTextColor(Color.WHITE)
@@ -845,6 +845,7 @@ internal fun MainActivity.watchCard(p: Prog, gapBefore: Boolean): View {
     val icon = sourceIcon(p.icon ?: p.pkg)
     if (p.sub.isNotEmpty() || icon != null || p.addon != null) {
         col.addView(label(p.sub, 12f).apply {
+            text = blueTicks(p.sub) // a watched title's ✓ in blue
             details = this
             alpha = 0.8f
             setPadding(0, dp(2), 0, 0)

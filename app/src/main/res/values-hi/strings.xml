@@ -851,4 +851,5 @@
     <string name="sync_confirm_back">वापस</string>
     <string name="open_link">लिंक खोलें</string>
     <string name="open_link_failed">कोई ब्राउज़र लिंक नहीं खोल सका।</string>
+    <string name="title_trailer">ट्रेलर देखें</string>
 </resources>

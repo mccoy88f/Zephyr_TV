@@ -285,7 +285,7 @@ internal fun MainActivity.renderSpotlight() {
     val n = tmdbTrending.size
     val dots = if (!handheld() || n < 2) "" else if (n <= 10) (0 until n).joinToString(" ") { if (it == tmdbIndex) "●" else "○" } + "   "
         else "${tmdbIndex + 1} / $n   "
-    spotlightMeta.text = "$dots$rating$typeBadge$year$genre"
+    spotlightMeta.text = starred("$dots$rating$typeBadge$year$genre") // the star red, yellow or green by the rating
     spotlightTitle.text = item.title
     spotlightOverview.text = item.overview
     spotlightOverview.maxLines = OVERVIEW_LINES // a new title starts closed
