@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.1.0
 
 - **Zephyr TV settings → System → Remote behavior** holds **Set up Home button**, **Home button**, **Direct remote keys** and **Default launcher**.
 - **Direct remote keys** sends the remote keys straight to the TV. Use it when the remote is slow. Home can show Google TV for a moment.
