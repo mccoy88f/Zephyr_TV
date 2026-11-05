@@ -81,6 +81,24 @@ internal object VodProgress {
     @Synchronized
     fun remove(dir: File, id: String) = locked(dir, FILE) { write(dir, all(dir).filter { it.id != id }) }
 
+    /**
+     * For sync (see Sync): every entry as JSON by its id, and [merge]'s answer written in their place, under the lock
+     * the player takes too (nothing it writes meanwhile is lost). Null from [merge]: left as it is. What's there after.
+     */
+    @Synchronized
+    fun sync(dir: File, merge: (Map<String, JSONObject>) -> Map<String, JSONObject>?): Map<String, JSONObject> = locked(dir, FILE) {
+        val f = File(dir, FILE)
+        val mine = runCatching { JSONArray(f.readText()) }.getOrNull()?.let { a ->
+            (0 until a.length()).mapNotNull { a.optJSONObject(it) }.filter { it.optString("id").isNotEmpty() }.associateBy { it.getString("id") }
+        }.orEmpty()
+        val out = merge(mine) ?: return@locked mine
+        val part = File(dir, "$FILE.part")
+        part.writeText(JSONArray(out.values.sortedByDescending { it.optLong("at") }.take(KEEP)).toString())
+        part.renameTo(f)
+        cache = null
+        out
+    }
+
     private fun write(dir: File, list: List<Entry>) {
         val f = File(dir, FILE)
         val part = File(dir, "$FILE.part")
@@ -183,6 +201,24 @@ internal object VodWatched {
                 names[meta]?.takeIf { m.name.isEmpty() }?.let { Mark(m.id, meta, m.at, it) } ?: m
             })
         }
+    }
+
+    /**
+     * For sync (see Sync): every entry as JSON by its id, and [merge]'s answer written in their place, under the lock
+     * the player takes too (nothing it writes meanwhile is lost). Null from [merge]: left as it is. What's there after.
+     */
+    @Synchronized
+    fun sync(dir: File, merge: (Map<String, JSONObject>) -> Map<String, JSONObject>?): Map<String, JSONObject> = locked(dir, FILE) {
+        val f = File(dir, FILE)
+        val mine = runCatching { JSONArray(f.readText()) }.getOrNull()?.let { a ->
+            (0 until a.length()).mapNotNull { a.optJSONObject(it) }.filter { it.optString("id").isNotEmpty() }.associateBy { it.getString("id") }
+        }.orEmpty()
+        val out = merge(mine) ?: return@locked mine
+        val part = File(dir, "$FILE.part")
+        part.writeText(JSONArray(out.values.sortedByDescending { it.optLong("at") }.take(KEEP)).toString())
+        part.renameTo(f)
+        cache = null
+        out
     }
 
     private fun write(dir: File, marks: List<Mark>) {

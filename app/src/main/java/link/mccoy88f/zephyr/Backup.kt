@@ -24,7 +24,7 @@ internal object Backup {
     private const val FORMAT = 1
 
     /** The keys a backup carries. Everything else is state the TV works out again by itself. */
-    private val KEYS = setOf(
+    internal val KEYS = setOf(
         K.THEME, K.WP_LIGHT, K.WP_DARK, K.WP_FADE, K.WP_EVERY, K.COLOUR_ICONS,
         K.UPD_BETA, K.SORT, K.ORDER, K.ROW_HIDDEN, K.ROW_ALIGN, K.NAMES,
         K.HIDDEN_WATCH, K.CW_OFF, K.SECTIONS_OFF, K.ADDONS, K.ADDONS_TV, K.ADDONS_VOD, K.ADDONS_MOVIES, K.ADDONS_SERIES, K.ADDONS_VIDEOS, K.ADDONS_COURSES, K.ADDONS_PODCASTS, K.ADDONS_AUDIOBOOKS, K.ADDONS_EVENTS, K.RADIO_PLACE, K.ADULT_ADDONS, K.ADULT_ON, K.LOCK_ON, K.ADULT_FOREVER, K.ADULT_APP, K.ADULT_PLACE, K.STREAM_MANUAL, K.MATCH_FRAME_RATE, K.STREAM_LANG_ONLY, K.STREAM_QUALITY, K.FAST_START, K.HIDE_UNKNOWN_LANG, K.SUBTITLES_ON, K.HIDE_UNRELEASED, K.ADDONS_OFF, K.NUVIO_REPOS_OFF, K.NUVIO_REPOS, K.NUVIO_ON, K.NUVIO_OFF, K.NUVIO_ADULT, K.NUVIO_OPTIONS, K.NUVIO_ORDER, K.EXT_ORDER, K.EXT_OFF, K.EXT_ADULT, K.EXT_SOURCES, K.EXT_REPOS, K.EXT_COLLECT, K.EXT_OWN, K.EXT_APP, K.EXT_OPTIONS, K.CINEMETA_URL, K.CATALOG_SOURCES, K.CATALOGS, K.SECTION_NAMES, K.SHELVES_OFF, K.USERS, K.USER,
@@ -196,20 +196,37 @@ internal object Backup {
         val values = JSONObject()
         for ((key, value) in prefs.all) {
             if (key !in KEYS) continue
-            values.put(key, when (value) {
-                is String -> JSONObject().put("s", value)
-                is Boolean -> JSONObject().put("b", value)
-                is Int -> JSONObject().put("i", value)
-                is Long -> JSONObject().put("l", value)
-                is Float -> JSONObject().put("f", value.toDouble())
-                is Set<*> -> JSONObject().put("set", JSONArray(value.map { it.toString() }))
-                else -> continue
-            })
+            values.put(key, encode(value) ?: continue)
         }
         val root = JSONObject().put("app", "zephyr").put("format", FORMAT).put("prefs", values).put("pin", prefs.contains(K.PIN))
         if (files != null) root.put("data", exportData(files, users)).put("extras", exportExtras(files, withSource(prefs)))
             .put("trakt", exportTrakt(files, users))
         return root.toString(2)
+    }
+
+    /** A setting's [value] as a backup (and sync) keeps it: {"s": …}, {"b": …}, {"i"|"l"|"f": …}, {"set": […]}. */
+    internal fun encode(value: Any?): JSONObject? = when (value) {
+        is String -> JSONObject().put("s", value)
+        is Boolean -> JSONObject().put("b", value)
+        is Int -> JSONObject().put("i", value)
+        is Long -> JSONObject().put("l", value)
+        is Float -> JSONObject().put("f", value.toDouble())
+        is Set<*> -> JSONObject().put("set", JSONArray(value.map { it.toString() }.sorted()))
+        else -> null
+    }
+
+    /** [v] (see encode) put in [edit] as [key]; false when it isn't one. */
+    internal fun put(edit: SharedPreferences.Editor, key: String, v: JSONObject): Boolean {
+        when {
+            v.has("s") -> edit.putString(key, v.getString("s"))
+            v.has("b") -> edit.putBoolean(key, v.getBoolean("b"))
+            v.has("i") -> edit.putInt(key, v.getInt("i"))
+            v.has("l") -> edit.putLong(key, v.getLong("l"))
+            v.has("f") -> edit.putFloat(key, v.getDouble("f").toFloat())
+            v.has("set") -> v.getJSONArray("set").let { a -> edit.putStringSet(key, (0 until a.length()).map { a.getString(it) }.toSet()) }
+            else -> return false
+        }
+        return true
     }
 
     /** [json] read as a backup. Throws [IllegalArgumentException] for a file that isn't a Zephyr TV backup. */
@@ -253,16 +270,7 @@ internal object Backup {
         for (key in values.keys()) {
             if (key !in KEYS) continue // a newer Zephyr TV's setting, or something added by hand
             val v = values.optJSONObject(key) ?: continue
-            when {
-                v.has("s") -> edit.putString(key, v.getString("s"))
-                v.has("b") -> edit.putBoolean(key, v.getBoolean("b"))
-                v.has("i") -> edit.putInt(key, v.getInt("i"))
-                v.has("l") -> edit.putLong(key, v.getLong("l"))
-                v.has("f") -> edit.putFloat(key, v.getDouble("f").toFloat())
-                v.has("set") -> v.getJSONArray("set").let { a -> edit.putStringSet(key, (0 until a.length()).map { a.getString(it) }.toSet()) }
-                else -> continue
-            }
-            n++
+            if (put(edit, key, v)) n++
         }
         // The users that had Trakt on the TV that made it, and don't here: asked to sign in again once it's back.
         val trakt = if (files != null) root.optJSONObject("trakt")?.let { traktToConnect(files, it) } else null

@@ -8,6 +8,7 @@ import { redirect } from "@/i18n/navigation";
 import { parseAvatar } from "@/lib/avatars";
 import { answerLink, normalizeCode, pendingLink } from "./devices";
 import { currentAccount } from "./session";
+import { dropUserDocs } from "./sync";
 
 const MAX_USERS = 12;
 const field = (data: FormData, name: string) => String(data.get(name) ?? "");
@@ -69,7 +70,10 @@ export async function moveProfile(data: FormData) {
 export async function deleteProfile(data: FormData) {
   const account = await signedIn();
   const id = field(data, "id");
-  if (uuid.test(id)) await db.delete(profiles).where(and(eq(profiles.id, id), eq(profiles.accountId, account.id)));
+  if (uuid.test(id)) {
+    await db.delete(profiles).where(and(eq(profiles.id, id), eq(profiles.accountId, account.id)));
+    await dropUserDocs(account.id, id);
+  }
   await toAccount("#users");
 }
 

@@ -824,4 +824,13 @@
     <string name="ext_catalog_installed">Installed</string>
     <string name="ext_catalog_repo">Repository · %1$d</string>
     <string name="ext_catalog_empty">No extension in the catalogue yet.</string>
+    <string name="setup_account_title">How do you want to use Zephyr TV?</string>
+    <string name="setup_account_body">With a local account, this TV keeps everything to itself: nothing to sign up for. With a Zephyr TV account, your users, settings, add-ons and what each one watched stay the same on all your TVs.</string>
+    <string name="setup_account_local">Local account, no sign-up</string>
+    <string name="setup_account_ztv">Zephyr TV account (sync)</string>
+    <string name="sync_working">Syncing with your account…</string>
+    <string name="sync_now">Sync now</string>
+    <string name="sync_never">never</string>
+    <string name="sync_done">Synced with your account</string>
+    <string name="sync_failed">Sync didn\'t work: check the connection.</string>
 </resources>

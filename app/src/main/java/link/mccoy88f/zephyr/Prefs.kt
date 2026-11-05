@@ -84,6 +84,9 @@ internal object K {
     const val STREAM_LANG_ONLY = "stream_lang_only" // films' and episodes' streams in the TV's language only (see streamLanguage)
     const val STREAM_MANUAL = "stream_manual" // films' and episodes' streams picked by hand from one list (see pickStream)
     const val ZTV_TOKEN = "ztv_token" // this TV's token on Zephyr TV's site (see ZtvAccount): this TV's own, never in backups
+    const val SYNC_USERS = "sync_users" // JSON: each synced user's id on the account to their name and avatar at the last sync (see Sync)
+    const val SYNC_AT = "sync_at" // when this TV last synced with its account
+    const val SETUP_RESUME = "setup_resume" // the first start's setup goes on after the home screen was built again with the account's settings
     const val ZTV_EMAIL = "ztv_email" // the email of the account this TV is linked to, shown in System
     const val TRAKT_PENDING = "trakt_pending" // JSON: user id to Trakt name, to sign in again after a restore (see reconnectTrakt); never in backups
     const val MATCH_FRAME_RATE = "match_frame_rate" // the screen's refresh rate switched to the film's frame rate (see matchFrameRate)

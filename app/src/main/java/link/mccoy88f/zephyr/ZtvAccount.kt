@@ -1,6 +1,7 @@
 package link.mccoy88f.zephyr
 
 import android.os.Build
+import android.widget.TextView
 import org.json.JSONObject
 
 /**
@@ -52,6 +53,59 @@ internal object ZtvAccount {
     fun unlink(token: String) {
         runCatching { Http.send("$SITE/api/v1/unlink", JSONObject(), mapOf("Authorization" to "Bearer $token")) }
     }
+
+    /** The TV's token on the site has stopped working (unlinked there): this TV is unlinked too. */
+    class Unlinked : Exception("unlinked")
+
+    private fun auth(token: String) = mapOf("Authorization" to "Bearer $token")
+
+    private fun call(token: String, path: String, body: JSONObject?, method: String): Pair<Int, String> {
+        val r = Http.send("$SITE$path", body, auth(token), method)
+        if (r.first == 401) throw Unlinked()
+        return r
+    }
+
+    /** Where the account stands: {email, users: [{id, name, avatar}], docs: {key: revision}}. Throws offline, or Unlinked. */
+    fun state(token: String): JSONObject {
+        val (code, body) = call(token, "/api/v1/sync", null, "GET")
+        if (code !in 200..299) throw java.io.IOException("sync: $code")
+        return JSONObject(body)
+    }
+
+    /** A document's revision and what it holds (null: none yet, or unreadable on the site). */
+    fun doc(token: String, key: String): Pair<Int, JSONObject?> {
+        val (code, body) = call(token, "/api/v1/sync/doc?key=${java.net.URLEncoder.encode(key, "UTF-8")}", null, "GET")
+        if (code !in 200..299) throw java.io.IOException("doc $key: $code")
+        val o = JSONObject(body)
+        return o.optInt("rev") to o.optString("data").takeIf { !o.isNull("data") && it.isNotEmpty() }?.let { runCatching { JSONObject(it) }.getOrNull() }
+    }
+
+    /** [data] written over revision [base]: its new revision, or (409) the document as it is now, to merge with. */
+    fun put(token: String, key: String, base: Int, data: JSONObject): Pair<Int, JSONObject?>? {
+        val (code, body) = call(token, "/api/v1/sync/doc?key=${java.net.URLEncoder.encode(key, "UTF-8")}",
+            JSONObject().put("base", base).put("data", data.toString()), "PUT")
+        return when (code) {
+            in 200..299 -> JSONObject(body).optInt("rev") to null
+            409 -> JSONObject(body).let { o -> o.optInt("rev") to (o.optString("data").takeIf { !o.isNull("data") && it.isNotEmpty() }?.let { runCatching { JSONObject(it) }.getOrNull() } ?: JSONObject()) }
+            else -> throw java.io.IOException("put $key: $code")
+        }
+    }
+
+    /** A user added to the account: their id there, or null (12 already). */
+    fun addUser(token: String, name: String, avatar: String?): String? {
+        val (code, body) = call(token, "/api/v1/users", JSONObject().put("name", name).put("avatar", avatar ?: JSONObject.NULL), "POST")
+        if (code == 409) return null
+        if (code !in 200..299) throw java.io.IOException("add user: $code")
+        return JSONObject(body).getString("id")
+    }
+
+    fun updateUser(token: String, id: String, name: String, avatar: String?) {
+        call(token, "/api/v1/users/$id", JSONObject().put("name", name).put("avatar", avatar ?: JSONObject.NULL), "POST")
+    }
+
+    fun removeUser(token: String, id: String) {
+        call(token, "/api/v1/users/$id", null, "DELETE")
+    }
 }
 
 /** The account this TV is linked to (its email), or null. */
@@ -63,36 +117,43 @@ internal fun MainActivity.ztvValue(): String = ztvEmail() ?: getString(R.string.
 /** Settings → System → Zephyr TV account: linked, its page; else linking it. */
 internal fun MainActivity.ztvAccount() = if (ztvEmail() != null) ztvAccountPage() else ztvLink()
 
-/** Linking: a code from the site, shown with a QR code of its page; asked about until it's allowed, refused or too old. */
-private fun MainActivity.ztvLink() {
-    val title = getString(R.string.setting_ztv_account)
-    val back: () -> Unit = { renderSettings(accountRow()) }
-    val status = label(getString(R.string.ztv_waiting), 14f)
-    showPage(title, listOf(page(getString(R.string.dialog_cancel)) { back() }), back = back)
+/**
+ * This TV unlinked here (by the user, or found unlinked on the site): its token, what sync kept, and its users' ids
+ * on the account forgotten. The users themselves and what they watched stay, as a TV of its own.
+ */
+internal fun MainActivity.ztvForget() {
+    prefs.edit().remove(K.ZTV_TOKEN).remove(K.ZTV_EMAIL).remove(K.SYNC_USERS).remove(K.SYNC_AT).apply()
+    syncDir().deleteRecursively()
+    saveUsers(users().map { User(it.id, it.name, it.avatar) }, synced = true)
+}
+
+/**
+ * Linking, wherever it's shown ([alive]: still showing): a code from the site for [box] (its QR code, the code, how
+ * to), then asked about every few seconds until it's allowed ([linked], the token kept), refused or too old ([status]).
+ * [failed]: the site couldn't be reached.
+ */
+internal fun MainActivity.linkTv(alive: () -> Boolean, status: TextView, box: (android.view.View) -> Unit, failed: () -> Unit, linked: () -> Unit) {
+    status.text = getString(R.string.ztv_waiting)
     netIo.execute {
         val start = runCatching { ZtvAccount.start(tvName(), "${Build.MANUFACTURER} ${Build.MODEL}".trim(), myVersion()) }
             .onFailure { warn("account link failed ($it)") }.getOrNull()
         ui.post {
-            if (!pageShowing(title)) return@post
-            if (start == null) {
-                toast(R.string.ztv_failed)
-                back()
-                return@post
-            }
+            if (!alive()) return@post
+            if (start == null) return@post failed()
             status.text = getString(R.string.ztv_waiting_allow)
-            val box = qrBox(start.url, start.userCode, getString(R.string.ztv_link_intro, start.page, start.userCode), status)
-            showPage(title, listOf(page(getString(R.string.dialog_cancel)) { back() }), top = box, back = back)
+            box(qrBox(start.url, start.userCode, getString(R.string.ztv_link_intro, start.page, start.userCode), status))
             fun ask() {
-                if (!pageShowing(title)) return
+                if (!alive()) return
                 if (System.currentTimeMillis() > start.until) return run { status.text = getString(R.string.ztv_expired) }
                 netIo.execute {
                     val answer = runCatching { ZtvAccount.poll(start.deviceCode) }.getOrDefault(ZtvAccount.Poll.Waiting)
                     ui.post {
+                        if (!alive()) return@post
                         when (answer) {
                             is ZtvAccount.Poll.Linked -> {
                                 prefs.edit().putString(K.ZTV_TOKEN, answer.token).putString(K.ZTV_EMAIL, answer.email).apply()
-                                toast(R.string.ztv_done, long = false)
-                                if (pageShowing(title)) ztvAccountPage()
+                                status.text = getString(R.string.sync_working)
+                                linked()
                             }
                             ZtvAccount.Poll.Waiting -> ui.postDelayed({ ask() }, start.intervalMs)
                             ZtvAccount.Poll.Denied -> status.text = getString(R.string.ztv_denied)
@@ -106,46 +167,55 @@ private fun MainActivity.ztvLink() {
     }
 }
 
+/** Linking from Settings: once linked, the first sync; the home screen again if the account's settings came in. */
+private fun MainActivity.ztvLink() {
+    val title = getString(R.string.setting_ztv_account)
+    val back: () -> Unit = { renderSettings(accountRow()) }
+    val status = label("", 14f)
+    val rows = listOf(page(getString(R.string.dialog_cancel)) { back() })
+    showPage(title, rows, back = back)
+    linkTv({ pageShowing(title) }, status, { box -> showPage(title, rows, top = box, back = back) },
+        { toast(R.string.ztv_failed); back() }) {
+        toast(R.string.ztv_done, long = false)
+        syncNow { r ->
+            if (r?.settings == true) {
+                prefs.edit().putInt(K.REOPEN_ROW, accountRow()).apply()
+                Sync.recreatePending = false
+                recreate()
+            } else if (pageShowing(title)) ztvAccountPage()
+        }
+    }
+}
+
 /**
- * The linked account: its email, how many Zephyr TV users it has (asked of the site; they come to this TV with sync),
- * where to manage it, and Unlink. Unlinked on the site meanwhile: Not linked here too.
+ * The linked account: its email, its Zephyr TV users, Sync now (when it last did), where to manage it, and Unlink.
+ * Unlinked on the site meanwhile: Not linked here too (see Sync).
  */
-private fun MainActivity.ztvAccountPage(users: Int? = null) {
+private fun MainActivity.ztvAccountPage(focus: Int = 0) {
     val title = getString(R.string.setting_ztv_account)
     val email = ztvEmail() ?: return ztvLink()
     val intro = label(getString(R.string.ztv_manage, "$SITE/account"), 13f).apply { alpha = 0.7f; setPadding(dp(14), dp(4), dp(14), dp(10)) }
-    showPage(title, listOfNotNull(
+    val at = prefs.getLong(K.SYNC_AT, 0L)
+    val synced = users().count { it.sid != null }
+    showPage(title, listOf(
         page(getString(R.string.ztv_linked), email) {},
-        users?.let { page(getString(R.string.ztv_users), "$it") {} },
+        page(getString(R.string.ztv_users), "$synced") { showUsers() },
+        page(getString(R.string.sync_now), if (at == 0L) getString(R.string.sync_never)
+            else android.text.format.DateUtils.getRelativeTimeSpanString(at, System.currentTimeMillis(), 60_000L).toString()) {
+            toast(R.string.sync_working, long = false)
+            syncNow { r ->
+                toast(if (r == null) R.string.sync_failed else R.string.sync_done, long = false)
+                if (pageShowing(title) && ztvEmail() != null) ztvAccountPage(2)
+            }
+        },
         page(getString(R.string.ztv_unlink)) {
             val token = prefs.getString(K.ZTV_TOKEN, null)
-            prefs.edit().remove(K.ZTV_TOKEN).remove(K.ZTV_EMAIL).apply()
+            ztvForget()
             token?.let { netIo.execute { ZtvAccount.unlink(it) } }
             toast(R.string.ztv_unlinked, long = false)
             renderSettings(accountRow())
         },
-    ), top = intro, back = { renderSettings(accountRow()) })
-    if (users != null) return
-    val token = prefs.getString(K.ZTV_TOKEN, null) ?: return
-    netIo.execute {
-        val me = runCatching { ZtvAccount.me(token) }
-        ui.post {
-            if (!pageShowing(title)) return@post
-            val answer = me.getOrNull()
-            when {
-                me.isFailure -> {} // offline: as it is
-                answer == null -> { // unlinked on the site
-                    prefs.edit().remove(K.ZTV_TOKEN).remove(K.ZTV_EMAIL).apply()
-                    toast(R.string.ztv_unlinked, long = false)
-                    renderSettings(accountRow())
-                }
-                else -> {
-                    answer.optString("email").takeIf { it.isNotBlank() && it != email }?.let { prefs.edit().putString(K.ZTV_EMAIL, it).apply() }
-                    ztvAccountPage(answer.optJSONArray("users")?.length() ?: 0)
-                }
-            }
-        }
-    }
+    ), focus, top = intro, back = { renderSettings(accountRow()) })
 }
 
 /** The row of Zephyr TV account in System, after About. */

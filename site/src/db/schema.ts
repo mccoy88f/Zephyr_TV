@@ -1,4 +1,4 @@
-import { boolean, index, integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 /** What an account may do: a user's own things, or everything (the superadmin's panel). */
 export const role = pgEnum("role", ["user", "superadmin"]);
@@ -161,5 +161,23 @@ export const catalog = pgTable(
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
   },
   (t) => [index("catalog_status").on(t.status), index("catalog_by").on(t.submittedBy)],
+);
+
+/**
+ * What the account's TVs keep in step (F4): "settings" (the account's settings), and for each Zephyr TV user
+ * "watched:<profile>" and "progress:<profile>". Each a JSON document as the TVs write it, encrypted when SYNC_KEY is
+ * set, with its revision: a TV writes over the revision it read, else it reads again and merges (see api/v1/sync).
+ */
+export const syncDocs = pgTable(
+  "sync_docs",
+  {
+    accountId: uuid("account_id").notNull().references(() => accounts.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    rev: integer("rev").notNull(),
+    data: text("data").notNull(),
+    deviceId: uuid("device_id").references(() => devices.id, { onDelete: "set null" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.accountId, t.key] })],
 );
 

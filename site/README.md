@@ -46,7 +46,7 @@ The app's health check is `GET /healthz` (200 when the database answers).
 | F1 | Shared links with each title's poster as their preview (`/t/<type>/<id>`, `/o/<kind>?u=`): done |
 | F2 | Trakt's sign-in through here with PKCE (`/traktauth`, `/api/trakt/poll`): no secret, and the tokens never pass through the site (the TV swaps the code itself). On trakt.tv, Zephyr TV's app needs "Sign users in with PKCE" and `SITE_URL/traktauth` among its redirect URIs: done |
 | F3 | Accounts: sign-up with the email confirmed by a link (OVH SMTP), sign-in, forgotten password, the account's page (language, password, email, sessions, deletion), the superadmin's list of accounts; Zephyr TV users with DiceBear avatars, TVs linked with a code (`/link`, API `/api/v1`), the extensions' catalogue (`/extensions`, proposed by accounts, published after the superadmin's review, `/api/v1/catalog` for the app): done |
-| F4 | Sync between TVs (add-ons and keys end-to-end encrypted) |
+| F4 | Sync between TVs (`/api/v1/sync`): users and avatars, the settings and add-ons, each user's watched titles and progress, merged three ways on the TV; stored encrypted with `SYNC_KEY`: done. Next: end-to-end encryption with a passphrase, extensions and Trakt for the whole account |
 | F5 | Privacy policy, notices from the admin, launch |
 
 Licence: GPL-3.0, as Zephyr TV.

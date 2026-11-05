@@ -167,6 +167,41 @@ internal fun MainActivity.catalogPopup(next: () -> Unit) = homePopup(0, getStrin
     getString(R.string.catalog_nuvio) to { setCatalog(nuvioUrl()); next() },
     getString(R.string.cinemeta_default) to { setCatalog(null); next() })
 
+/**
+ * First start, first of all: a local account (nothing to sign up for; this TV keeps its things to itself) or a Zephyr
+ * TV account (this TV linked to it, and kept in step with the account's other TVs: see Sync). Then [next].
+ */
+internal fun MainActivity.accountPopup(next: () -> Unit) = homePopup(0, getString(R.string.setup_account_title),
+    getString(R.string.setup_account_body), null,
+    getString(R.string.setup_account_local) to next,
+    getString(R.string.setup_account_ztv) to { setupLink(next) })
+
+/**
+ * The first start's linking: the code and its QR code on the card; once allowed, the first sync. The account had
+ * settings: the home screen built again with them, the Home setup after (see K.SETUP_RESUME), the catalog already
+ * chosen. Else, or offline, [next] as with a local account. Back: the choice again.
+ */
+private fun MainActivity.setupLink(next: () -> Unit) {
+    var on = true
+    val title = getString(R.string.setup_account_ztv)
+    val back = getString(R.string.dialog_cancel) to { on = false; accountPopup(next) }
+    val status = label("", 14f)
+    homePopup(0, title, getString(R.string.ztv_waiting), null, back)
+    linkTv({ on && setupDialog != null }, status, { box -> homePopup(0, title, "", box, back) },
+        { toast(R.string.ztv_failed); on = false; accountPopup(next) }) {
+        syncNow { r ->
+            if (!on) return@syncNow
+            on = false
+            if (r?.settings == true) {
+                prefs.edit().putBoolean(K.SETUP_RESUME, true).apply()
+                Sync.recreatePending = false
+                setupDialog?.let { setupDialog = null; it.dismiss() }
+                recreate()
+            } else next()
+        }
+    }
+}
+
 internal fun MainActivity.rolePopup() = homePopup(1, getString(R.string.setup_role_title), getString(R.string.setup_role_body), null,
     getString(R.string.setup_continue) to {
         setupStep = 1
@@ -275,11 +310,12 @@ internal fun MainActivity.homePopup(step: Int, title: String, body: String, extr
 internal fun MainActivity.previewHomeSetup(at: Int = 0) {
     previewAt = at
     when (at) {
-        0 -> rolePopup()
-        1 -> testPopup(1)
-        2 -> servicePopup()
-        3 -> adbPopup()
-        4 -> donePopup()
+        0 -> accountPopup {}
+        1 -> rolePopup()
+        2 -> testPopup(1)
+        3 -> servicePopup()
+        4 -> adbPopup()
+        5 -> donePopup()
         else -> setupDialog?.dismiss()
     }
 }

@@ -821,4 +821,13 @@
     <string name="ext_catalog_installed">已安装</string>
     <string name="ext_catalog_repo">仓库 · %1$d</string>
     <string name="ext_catalog_empty">目录中尚无扩展。</string>
+    <string name="setup_account_title">你想如何使用 Zephyr TV？</string>
+    <string name="setup_account_body">使用本地账号，这台电视自己保存一切：无需注册。使用 Zephyr TV 账号，你的用户、设置、插件以及每个人看过的内容在你所有的电视上保持一致。</string>
+    <string name="setup_account_local">本地账号，无需注册</string>
+    <string name="setup_account_ztv">Zephyr TV 账号（同步）</string>
+    <string name="sync_working">正在与你的账号同步…</string>
+    <string name="sync_now">立即同步</string>
+    <string name="sync_never">从未</string>
+    <string name="sync_done">已与你的账号同步</string>
+    <string name="sync_failed">同步失败：请检查网络连接。</string>
 </resources>

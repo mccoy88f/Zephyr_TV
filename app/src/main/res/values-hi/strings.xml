@@ -824,4 +824,13 @@
     <string name="ext_catalog_installed">इंस्टॉल है</string>
     <string name="ext_catalog_repo">रिपॉज़िटरी · %1$d</string>
     <string name="ext_catalog_empty">कैटलॉग में अभी कोई एक्सटेंशन नहीं।</string>
+    <string name="setup_account_title">आप Zephyr TV कैसे इस्तेमाल करना चाहते हैं?</string>
+    <string name="setup_account_body">लोकल अकाउंट के साथ यह टीवी सब कुछ अपने पास रखता है: कोई साइन अप नहीं। Zephyr TV अकाउंट के साथ आपके यूज़र, सेटिंग्स, ऐड-ऑन और हर किसी ने क्या देखा, आपके सभी टीवी पर एक जैसे रहते हैं।</string>
+    <string name="setup_account_local">लोकल अकाउंट, बिना साइन अप</string>
+    <string name="setup_account_ztv">Zephyr TV अकाउंट (सिंक)</string>
+    <string name="sync_working">आपके अकाउंट से सिंक हो रहा है…</string>
+    <string name="sync_now">अभी सिंक करें</string>
+    <string name="sync_never">कभी नहीं</string>
+    <string name="sync_done">आपके अकाउंट से सिंक हो गया</string>
+    <string name="sync_failed">सिंक नहीं हुआ: कनेक्शन जाँचें।</string>
 </resources>

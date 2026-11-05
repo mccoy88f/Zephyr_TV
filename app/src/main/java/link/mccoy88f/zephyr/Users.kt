@@ -12,7 +12,8 @@ import java.io.File
 // Functions of MainActivity, kept here by topic; the users themselves are in the preferences.
 
 /** A Zephyr TV user: [id] names their folder ("" for the first one: Zephyr TV's own files), [name] is what they're called. */
-internal class User(val id: String, val name: String, val avatar: String? = null) // avatar: DiceBear's (see Avatars)
+internal class User(val id: String, val name: String, val avatar: String? = null, // avatar: DiceBear's (see Avatars)
+                    val sid: String? = null) // their id on the Zephyr TV account this TV is linked to (see Sync)
 
 /** What a user's id may be: it names a folder, so letters, digits, "-" and "_" only (a restored backup could say anything). */
 private val USER_ID = Regex("[A-Za-z0-9_-]{1,32}")
@@ -21,17 +22,18 @@ private val USER_ID = Regex("[A-Za-z0-9_-]{1,32}")
 internal fun MainActivity.users(): List<User> {
     val saved = runCatching {
         val a = org.json.JSONArray(prefs.getString(K.USERS, null) ?: return@runCatching emptyList())
-        (0 until a.length()).map { a.getJSONObject(it) }.map { User(it.optString("id"), it.optString("name").take(40), it.optString("avatar").takeIf { a -> Avatars.parse(a) != null }) }
+        (0 until a.length()).map { a.getJSONObject(it) }.map { User(it.optString("id"), it.optString("name").take(40), it.optString("avatar").takeIf { a -> Avatars.parse(a) != null }, it.optString("sid").takeIf { s -> s.length == 36 }) }
             .filter { it.id == "" || USER_ID.matches(it.id) }
     }.getOrDefault(emptyList())
     val first = saved.firstOrNull { it.id == "" } ?: User("", getString(R.string.user_default))
     return listOf(first) + saved.filter { it.id != "" }
 }
 
-private fun MainActivity.saveUsers(list: List<User>) {
+internal fun MainActivity.saveUsers(list: List<User>, synced: Boolean = false) {
     prefs.edit().putString(K.USERS, org.json.JSONArray(list.map { u ->
-        org.json.JSONObject().put("id", u.id).put("name", u.name).apply { u.avatar?.let { put("avatar", it) } }
+        org.json.JSONObject().put("id", u.id).put("name", u.name).apply { u.avatar?.let { put("avatar", it) }; u.sid?.let { put("sid", it) } }
     }).toString()).apply()
+    if (!synced) syncSoon() // a change made here: to the account too, when linked
 }
 
 /** The user in use: their progress, watched titles and Trakt account are the ones Zephyr TV shows and keeps. */
@@ -320,7 +322,7 @@ private fun MainActivity.linkStrip(tiles: List<android.view.View>) {
 
 /** [u]'s avatar set ([avatar], or none: their initial), and their page again. */
 private fun MainActivity.setAvatar(u: User, avatar: String?) {
-    saveUsers(users().map { if (it.id == u.id) User(it.id, it.name, avatar) else it })
+    saveUsers(users().map { if (it.id == u.id) User(it.id, it.name, avatar, it.sid) else it })
     if (currentUser().id == u.id) showUserIcon()
     userPage(u, avatarRow(u))
 }
@@ -407,9 +409,9 @@ private fun MainActivity.userName(u: User?) {
             saveUsers(list + added)
             userPage(added)
         } else {
-            saveUsers(list.map { if (it.id == u.id) User(it.id, name, it.avatar) else it })
+            saveUsers(list.map { if (it.id == u.id) User(it.id, name, it.avatar, it.sid) else it })
             if (currentUser().id == u.id) usersChanged()
-            userPage(User(u.id, name, u.avatar), renameRow(u))
+            userPage(User(u.id, name, u.avatar, u.sid), renameRow(u))
         }
     }
     fun fromPhone() {

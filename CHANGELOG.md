@@ -17,6 +17,9 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 - **Zephyr TV account** links the TV to your account on ztv.mccoy88f.link. Select **Zephyr TV settings → System → Zephyr TV account**. Scan the QR code or type the code on the site. To unlink the TV, use the TV or the site.
 - **Zephyr TV catalogue** shows the extensions that are reviewed on ztv.mccoy88f.link. Select **Extensions → Zephyr TV catalogue**, then select an extension to install it.
+- At the first start, select **Local account** or **Zephyr TV account**. A local account needs no sign-up and does not sync.
+- **Sync** keeps your TVs the same when they use one Zephyr TV account. It syncs the users and their avatars, the settings and the add-ons, and what each user watched. The PIN, the locks, the order of the apps and the extensions stay on each TV.
+- Select **Zephyr TV settings → System → Zephyr TV account → Sync now** to sync at once.
 
 ## 4.0.0-beta.23
 

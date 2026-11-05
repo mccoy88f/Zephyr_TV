@@ -104,6 +104,8 @@ internal fun MainActivity.closeLauncherSettings() {
     homeFocusable(allApps.visibility != View.VISIBLE) // the PIN can open over All apps
     (panelFrom?.takeIf { it.isAttachedToWindow } ?: findViewById(R.id.launcherSettings)).requestFocus()
     panelFrom = null
+    syncShow() // the account's settings, if they came in while the panel was open
+    syncSoon() // what was changed in it, to the account (when linked)
     phonePanel.close() // the phone's page follows the panel: closed with it
 }
 

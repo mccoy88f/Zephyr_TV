@@ -255,7 +255,11 @@ class MainActivity : Activity() {
 
     /** What opens first: the panel row a restart came back to, Piume's settings once, or the Home setup once. */
     private fun openFirstScreen() {
-        if (prefs.contains(K.REOPEN_ROW)) {
+        if (prefs.getBoolean(K.SETUP_RESUME, false)) {
+            // Linked to an account at the first start, and built again with its settings: the Home setup goes on.
+            prefs.edit().remove(K.SETUP_RESUME).apply()
+            ui.post { startHomeSetup() }
+        } else if (prefs.contains(K.REOPEN_ROW)) {
             val row = prefs.getInt(K.REOPEN_ROW, THEME_ROW)
             prefs.edit().remove(K.REOPEN_ROW).apply()
             // Back from a restore: the users that had Trakt sign in again first (see reconnectTrakt), then the row.
@@ -266,7 +270,7 @@ class MainActivity : Activity() {
             // Fresh install: pick the catalog of films and series, then walk through making Home land on Zephyr TV,
             // the one step that has to happen by hand.
             prefs.edit().putBoolean(K.SETUP_SHOWN, true).apply()
-            ui.post { catalogPopup { startHomeSetup() } }
+            ui.post { accountPopup { catalogPopup { startHomeSetup() } } }
         }
     }
 
@@ -339,6 +343,7 @@ class MainActivity : Activity() {
         ui.post(wallpaperTick)
         lastInput = SystemClock.elapsedRealtime() // back from an app: someone is here
         syncTraktNow() // what the user watched elsewhere, now and then
+        syncOnResume() // and with the Zephyr TV account, when linked (see Sync)
         piumeGoesNow() // Piume's things taken and the Home set: Piume can go
         spotlightIdle = false
         sceneAlive = true
