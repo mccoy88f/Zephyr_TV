@@ -852,4 +852,6 @@
     <string name="sync_confirm_device">Utenti, impostazioni e visti dell\'account vengono sostituiti da quelli di questo TV, anche sugli altri TV collegati.</string>
     <string name="sync_confirm_yes">Sì, continua</string>
     <string name="sync_confirm_back">Indietro</string>
+    <string name="open_link">Apri link</string>
+    <string name="open_link_failed">Nessun browser ha potuto aprire il link.</string>
 </resources>

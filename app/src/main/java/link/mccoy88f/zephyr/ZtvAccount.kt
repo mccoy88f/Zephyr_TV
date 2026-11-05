@@ -139,7 +139,7 @@ internal fun MainActivity.ztvForget() {
  * to), then asked about every few seconds until it's allowed ([linked], the token kept), refused or too old ([status]).
  * [failed]: the site couldn't be reached.
  */
-internal fun MainActivity.linkTv(alive: () -> Boolean, status: TextView, box: (android.view.View) -> Unit, failed: () -> Unit,
+internal fun MainActivity.linkTv(alive: () -> Boolean, status: TextView, box: (view: android.view.View, url: String) -> Unit, failed: () -> Unit,
                                   linked: (token: String, email: String) -> Unit) {
     status.text = getString(R.string.ztv_waiting)
     netIo.execute {
@@ -149,7 +149,7 @@ internal fun MainActivity.linkTv(alive: () -> Boolean, status: TextView, box: (a
             if (!alive()) return@post
             if (start == null) return@post failed()
             status.text = getString(R.string.ztv_waiting_allow)
-            box(qrBox(start.url, start.userCode, getString(R.string.ztv_link_intro, start.page, start.userCode), status))
+            box(qrBox(start.url, start.userCode, getString(R.string.ztv_link_intro, start.page, start.userCode), status), start.url)
             fun ask() {
                 if (!alive()) return
                 if (System.currentTimeMillis() > start.until) return run { status.text = getString(R.string.ztv_expired) }
@@ -181,7 +181,7 @@ private fun MainActivity.ztvLink(backTo: (() -> Unit)? = null) {
     val status = label("", 14f)
     val rows = listOf(page(getString(R.string.dialog_cancel)) { back() })
     showPage(title, rows, back = back)
-    linkTv({ pageShowing(title) }, status, { box -> showPage(title, rows, top = box, back = back) },
+    linkTv({ pageShowing(title) }, status, { box, url -> showPage(title, listOfNotNull(openLinkRow(url)) + rows, top = box, back = back) },
         { toast(R.string.ztv_failed); back() }) { token, email ->
         toast(R.string.ztv_done, long = false)
         firstSync(token, email, { main, names, choose ->

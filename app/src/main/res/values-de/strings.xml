@@ -849,4 +849,6 @@
     <string name="sync_confirm_device">Nutzer, Einstellungen und Gesehenes des Kontos werden durch die dieses Fernsehers ersetzt, auch auf den anderen verbundenen Fernsehern.</string>
     <string name="sync_confirm_yes">Ja, weiter</string>
     <string name="sync_confirm_back">Zurück</string>
+    <string name="open_link">Link öffnen</string>
+    <string name="open_link_failed">Kein Browser konnte den Link öffnen.</string>
 </resources>

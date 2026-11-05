@@ -852,4 +852,6 @@
     <string name="sync_confirm_device">Els usuaris, la configuració i el que han vist al compte se substitueixen pels d\'aquest televisor, també als altres televisors vinculats.</string>
     <string name="sync_confirm_yes">Sí, continua</string>
     <string name="sync_confirm_back">Enrere</string>
+    <string name="open_link">Obre l\'enllaç</string>
+    <string name="open_link_failed">Cap navegador no ha pogut obrir l\'enllaç.</string>
 </resources>

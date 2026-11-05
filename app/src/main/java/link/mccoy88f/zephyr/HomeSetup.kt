@@ -187,7 +187,10 @@ private fun MainActivity.setupLink(next: () -> Unit) {
     val back = getString(R.string.dialog_cancel) to { on = false; accountPopup(next) }
     val status = label("", 14f)
     homePopup(0, title, getString(R.string.ztv_waiting), null, back)
-    linkTv({ on && setupDialog != null }, status, { box -> homePopup(0, title, "", box, back) },
+    linkTv({ on && setupDialog != null }, status, { box, url ->
+        val open = openLinkRow(url)?.let { (name, _, act) -> name to act }
+        if (open != null) homePopup(0, title, "", box, open, back) else homePopup(0, title, "", box, back)
+    },
         { toast(R.string.ztv_failed); on = false; accountPopup(next) }) { token, email ->
         firstSync(token, email, { main, names, choose ->
             syncChoice(main, names, { t, body, buttons -> homePopup(0, t, body, null, *buttons.toTypedArray()) }, choose)

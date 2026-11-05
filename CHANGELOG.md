@@ -16,6 +16,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 ## Unreleased
 
 - When you link a TV to an account that already has a configuration, select what to do: **Use the cloud configuration**, **Use this TV's configuration**, **Merge**, or **Cancel and leave**. Merge keeps the main user of the account and adds all other users of the TV. It also keeps the add-ons of both.
+- On a phone or tablet, the pages that show a QR code to link the TV or to sign in to Trakt also show **Open link**. Select it to continue in the browser of the same device.
 
 ## 4.0.0-beta.25
 

@@ -105,6 +105,15 @@ internal fun MainActivity.warpQrNotice() = LinearLayout(this).apply {
  * A QR code of [url] for the phone, [caption] under it (the address, to type instead), [intro] (what to do), and
  * [status] (how it's going), all in the middle: the top of a page for something done on a phone.
  */
+/**
+ * On a phone or tablet (no other device to scan the QR code with), [url] opened in its browser: the sign-in goes on
+ * there, and this page keeps waiting for it as for the QR code. Null on a TV.
+ */
+internal fun MainActivity.openLinkRow(url: String) = if (!handheld()) null else page(getString(R.string.open_link)) {
+    runCatching { startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))) }
+        .onFailure { toast(R.string.open_link_failed) }
+}
+
 internal fun MainActivity.qrBox(url: String, caption: String?, intro: String, status: TextView) = LinearLayout(this).apply {
     orientation = LinearLayout.VERTICAL
     gravity = Gravity.CENTER_HORIZONTAL

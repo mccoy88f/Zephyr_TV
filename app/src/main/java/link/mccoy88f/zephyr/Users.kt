@@ -456,7 +456,7 @@ private fun MainActivity.traktSignIn(u: User, site: String, intro: String?, then
     val title = getString(R.string.trakt_connect) + " · " + u.name
     // After a restore ([then]): Skip goes on to the next user; else Cancel, back to the user's page.
     val leave = then ?: { userPage(u) }
-    showPage(title, listOf(page(getString(if (then != null) R.string.trakt_skip else R.string.dialog_cancel)) { leave() }), top = box, back = leave)
+    showPage(title, listOfNotNull(openLinkRow(url), page(getString(if (then != null) R.string.trakt_skip else R.string.dialog_cancel)) { leave() }), top = box, back = leave)
     val until = System.currentTimeMillis() + 10 * 60_000L
     val dir = vodDir(u.id)
     fun ask() {
