@@ -103,7 +103,10 @@ internal fun MainActivity.showVodTitle(given: Stremio.TitleMeta, ref: TitleRef, 
         getString(R.string.title_last_watched, listOfNotNull(e?.let { episodeLine(it) }, watchedOn(m.at)).joinToString(" · "))
     } else mine[t.id]?.let { m -> watchedOn(m.at)?.let { getString(R.string.title_watched_on, it) } ?: getString(R.string.title_watched) }
 
-    val (servicesBar, services) = serviceBar(t, available)
+    // A film (one thing to play, not a series or a list of episodes): Download, first among the apps.
+    val single = t.type != "series" && meta.episodes.size <= 1
+    val download = if (!single) null else downloadButton(ref, meta, null) { showVodTitle(meta, ref, available, found = found) }
+    val (servicesBar, services) = serviceBar(t, available, download)
     val genresText = meta.genres.take(3).joinToString(" · ").takeIf { it.isNotBlank() }
     val tmdbId = t.tmdbId ?: Local.get(t.id)?.tmdbId
     val people = collectorOf(t.type) == "movies" || collectorOf(t.type) == "series"
@@ -281,7 +284,9 @@ internal fun MainActivity.showVodEpisode(given: Stremio.TitleMeta, ref: TitleRef
     val seen = mark != null
     val seenLine = mark?.let { m -> watchedOn(m.at)?.let { getString(R.string.title_watched_on, it) } ?: getString(R.string.title_watched) }
 
-    val (servicesBar, services) = serviceBar(t, available)
+    // Download, first among the apps.
+    val download = downloadButton(ref, meta, e) { showVodEpisode(meta, ref, e, available, found) }
+    val (servicesBar, services) = serviceBar(t, available, download)
     // What this episode is about; the series' description isn't its own, so none says so.
     val about = e.overview?.takeIf { it.isNotBlank() } ?: getString(R.string.episode_no_description)
     val tmdbId = t.tmdbId ?: Local.get(t.id)?.tmdbId
@@ -807,16 +812,25 @@ private class Services(val known: Set<String>?,
                        val trailer: Pair<android.graphics.drawable.Drawable, () -> Unit>? = null, // YouTube's icon, and Watch trailer
                        val later: (((Set<String>) -> Unit) -> Unit))
 
-private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?): Pair<View?, Services> {
-    val item = tmdbItemOf(t) ?: return null to Services(available) { }
+/** A button of the apps' bar that isn't an app: [icon] tinted as the page's text, [label] for TalkBack. */
+internal class BarButton(val icon: android.graphics.drawable.Drawable, val label: String, val action: () -> Unit)
+
+/** [extra]: a button of Zephyr TV's own (Download) first in the bar, before the apps; with no apps, the bar is it alone. */
+private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?, extra: BarButton? = null): Pair<View?, Services> {
+    val item = tmdbItemOf(t)
+    if (item == null && extra == null) return null to Services(available) { }
     val region = TmdbClient.region(tmdbLang())
-    val known = available ?: TmdbClient.cachedProviders(item, region)
-    val offered = titleApps().filter { TmdbClient.offers(it.pkg, known) }
+    val known = available ?: item?.let { TmdbClient.cachedProviders(it, region) }
+    val offered = if (item == null) emptyList() else titleApps().filter { TmdbClient.offers(it.pkg, known) }
     // The trailer is a row of the page of its own (Watch trailer, YouTube's icon), not one of the apps' buttons.
     val apps = offered.filterNot { TmdbClient.isYouTube(it.pkg) }
-    val trailer = offered.firstOrNull { TmdbClient.isYouTube(it.pkg) }?.let { yt -> yt.icon to { closeLauncherSettings(); openInApp(yt, item) } }
+    val trailer = offered.firstOrNull { TmdbClient.isYouTube(it.pkg) }?.let { yt -> yt.icon to { closeLauncherSettings(); openInApp(yt, item!!) } }
+    // Each button: its icon, whether it's tinted (Zephyr TV's own) or an app's own colours, what it says, what OK does.
+    class Btn(val icon: android.graphics.drawable.Drawable?, val mono: Boolean, val label: String, val action: () -> Unit)
+    val buttons = listOfNotNull(extra?.let { Btn(it.icon.mutate(), true, it.label, it.action) }) +
+        apps.map { a -> Btn(a.icon, false, a.label) { closeLauncherSettings(); openInApp(a, item!!) } }
 
-    val barView = if (apps.isEmpty()) null else {
+    val barView = if (buttons.isEmpty()) null else {
         android.widget.HorizontalScrollView(this).apply {
             isHorizontalScrollBarEnabled = false
             overScrollMode = View.OVER_SCROLL_NEVER
@@ -829,17 +843,17 @@ private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?): 
 
             val rest = if (glass) 0x662C2C34.toInt() else if (dark) 0x991C1C22.toInt() else 0x99DCE0E8.toInt()
 
-            val btnIds = apps.indices.map { View.generateViewId() }
-            for ((idx, a) in apps.withIndex()) {
+            val btnIds = buttons.indices.map { View.generateViewId() }
+            for ((idx, a) in buttons.withIndex()) {
                 val btn = FrameLayout(context).apply {
                     id = btnIds[idx]
                     isFocusable = true
                     isClickable = true
                     nextFocusLeftId = if (idx > 0) btnIds[idx - 1] else btnIds[0]
-                    nextFocusRightId = if (idx < apps.size - 1) btnIds[idx + 1] else btnIds[idx]
+                    nextFocusRightId = if (idx < buttons.size - 1) btnIds[idx + 1] else btnIds[idx]
                     val pad = dp(6)
                     setPadding(pad, pad, pad, pad)
-                    contentDescription = if (TmdbClient.isYouTube(a.pkg)) getString(R.string.spotlight_trailer) else a.label
+                    contentDescription = a.label
 
                     val bg = GradientDrawable().apply {
                         cornerRadius = dp(8).toFloat()
@@ -851,8 +865,9 @@ private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?): 
                     val iv = ImageView(context).apply {
                         setImageDrawable(a.icon)
                         scaleType = ImageView.ScaleType.FIT_CENTER
+                        if (a.mono) setColorFilter(fg)
                     }
-                    addView(iv, FrameLayout.LayoutParams(dp(30), dp(30)).apply {
+                    addView(iv, FrameLayout.LayoutParams(if (a.mono) dp(24) else dp(30), if (a.mono) dp(24) else dp(30)).apply {
                         gravity = Gravity.CENTER
                     })
 
@@ -863,10 +878,7 @@ private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?): 
                             (parent?.parent as? android.widget.HorizontalScrollView)?.smoothScrollTo(left - dp(16), 0)
                         }
                     }
-                    setOnClickListener {
-                        closeLauncherSettings()
-                        openInApp(a, item)
-                    }
+                    setOnClickListener { a.action() }
                 }
                 container.addView(btn, LinearLayout.LayoutParams(dp(42), dp(42)).apply {
                     marginStart = if (idx > 0) dp(8) else 0
@@ -879,7 +891,7 @@ private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?): 
     val title = findViewById<android.widget.TextView>(R.id.settingsTitle)
     val services = Services(known, trailer = trailer) { again ->
         val key = tmdbKey()
-        if (known == null && providersOn() && key != null) {
+        if (item != null && known == null && providersOn() && key != null) {
             val shown = title?.text?.toString() ?: ""
             spotlightIo.execute {
                 val found = TmdbClient.providers(key, item, region) ?: return@execute
@@ -1003,7 +1015,7 @@ internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, epi
     val start = if (all.isEmpty()) 0 else picked - from
     val type = t?.type ?: ref.type
     val sources = streamSources(type, items[start].first).filter { only == null || it.first == only }
-    if (sources.isEmpty()) return toast(R.string.title_no_streams)
+    if (sources.isEmpty() && chosen == null) return toast(R.string.title_no_streams) // a download plays with no source
     val adultUrls = adultAddonUrls()
     val adultAddons = adultUrls.mapNotNull { Stremio.saved(filesDir, it)?.addon }
     val adultSourcesList = adultUrls + adultAddons.map { it.base } + adultAddons.map { it.name } + adultPluginSources(prefs, filesDir)
@@ -1063,10 +1075,14 @@ internal fun MainActivity.wireLeftColumn(firstRowId: Int) {
  * already there in their group (focus stays on the stream it's on), and the last row says the search goes on until all
  * have answered. A stream picked plays at once.
  */
-internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, episode: Stremio.Episode?, back: () -> Unit) {
+internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, episode: Stremio.Episode?, back: () -> Unit,
+                                    title: String = getString(R.string.stream_pick_title),
+                                    accept: (Stremio.Stream) -> Boolean = { true }, none: String = getString(R.string.title_no_streams),
+                                    picked: ((Stremio.Stream) -> Unit)? = null) {
+    // [accept]: only the streams it says yes to listed (Download: files, not live streams); [picked]: what choosing one
+    // does instead of playing it, [none] said when no stream is left.
     val t = meta.title
     val id = episode?.id ?: t.id
-    val title = getString(R.string.stream_pick_title)
     val sources = streamSources(t.type, id)
     val found = java.util.Collections.synchronizedList(ArrayList<Stremio.Stream>())
     var left = sources.size
@@ -1080,7 +1096,7 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
         val list = found.toList().distinctBy { it.url }.sortedByDescending { qualityGroup(it.title) }
         val rest = when {
             left > 0 -> listOf(page(getString(R.string.title_finding_streams)) { })
-            found.isEmpty() -> listOf(page(getString(R.string.title_no_streams)) { })
+            found.isEmpty() -> listOf(page(none) { })
             else -> emptyList()
         }
         pageExit = null
@@ -1099,6 +1115,7 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
                 settingsList.addView(label(qualityHeading(q), 13f).apply { alpha = 0.6f; setPadding(dp(14), dp(16), 0, dp(6)) }, at++)
             }
             settingsList.addView(twoLineRow(s.title.ifBlank { s.url.substringAfterLast('/').take(60) }, s.source.orEmpty()) {
+                if (picked != null) return@twoLineRow picked(s)
                 pageReturn = back
                 playTitle(ref, meta, episode, chosen = s)
             }.apply {
@@ -1125,7 +1142,7 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
             left--
             // Each source's, in the TV's language first then the preferred quality's order, after those already there in
             // their quality's group.
-            found += got.sortedWith(compareBy<Stremio.Stream> { it.langRank }.thenBy { dvLast(it) }.then(qualityOrder(preferredQuality(prefs))))
+            found += got.filter(accept).sortedWith(compareBy<Stremio.Stream> { it.langRank }.thenBy { dvLast(it) }.then(qualityOrder(preferredQuality(prefs))))
             if (pageShowing(title)) show()
         }
     }

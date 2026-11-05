@@ -22,6 +22,8 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - The home screen uses much less processor time. The remote responds faster on small TVs.
 - The apps row no longer moves while the rows below it load.
 - After a force-stop or an update, Zephyr TV turns the **Home button** on again. It stays off when you turn it off.
+- The page of a film or an episode has a **Download** button before the apps. Select it, then select a stream. The TV saves the file.
+- When the download is complete, select **Download** again to play or delete it. Live TV, channels, events and radio do not have **Download**.
 
 ## 4.0.4
 

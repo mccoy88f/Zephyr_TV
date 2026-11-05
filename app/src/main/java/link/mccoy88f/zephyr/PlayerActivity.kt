@@ -253,7 +253,7 @@ class PlayerActivity : Activity() {
         sources = list(SOURCES).zip(list(SOURCE_NAMES))
         subSources = list(SUB_SOURCES).zip(list(SUB_NAMES))
         descs = list(DESCS)
-        if (vod && sources.isEmpty()) return finish()
+        if (vod && sources.isEmpty() && !intent.hasExtra(CHOSEN)) return finish() // a download (see Downloads) plays with none
         val ids = list(IDS)
         channels = ids.indices.map { i ->
             Channel(list(TYPES).getOrNull(i)?.ifEmpty { null } ?: "tv", ids[i], list(NAMES).getOrNull(i).orEmpty(),
