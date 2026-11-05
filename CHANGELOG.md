@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.2.0
 
 - When a film or an episode is downloaded, a **Download** icon shows after **Search** at the top right. A red dot on it shows that a download is in progress.
 - Select the **Download** icon to see all downloads, with their progress. Select a download to open its page, where you can play or delete it. Select the bin to delete it.
