@@ -21,7 +21,9 @@ import link.mccoy88f.zephyr.SettingsRows.ADDONS_SECTION
 import link.mccoy88f.zephyr.SettingsRows.APPS_SECTION
 import link.mccoy88f.zephyr.MainActivity.Companion.CHOSEN
 import link.mccoy88f.zephyr.SettingsRows.CLOCK_ROW
+import link.mccoy88f.zephyr.SettingsRows.DRIFT_ROW
 import link.mccoy88f.zephyr.SettingsRows.FADE_ROW
+import link.mccoy88f.zephyr.SettingsRows.CW_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.HDMI
 import link.mccoy88f.zephyr.SettingsRows.ADDON_ROWS
 import link.mccoy88f.zephyr.SettingsRows.HIDDEN_ROW
@@ -227,6 +229,12 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 loadWallpaper()
                 renderSettings(FADE_ROW)
             },
+            page(getString(R.string.setting_wallpaper_drift), toggle(wallpaperDrift())) {
+                prefs.edit().putBoolean(K.WP_DRIFT, !wallpaperDrift()).apply()
+                if (wallpaperDrift()) scene.arm() else scene.stop()
+                findViewById<View>(R.id.wallpaper)?.invalidate()
+                renderSettings(DRIFT_ROW)
+            },
             page(getString(R.string.setting_folder_photo_changes), photoEveryName(photoEvery())) { pickPhotoEvery() },
             // "weather" is off/c/f as before; "wx_unit" keeps the unit while it's off.
             page(getString(R.string.setting_weather), toggle(weather != "off")) {
@@ -312,7 +320,23 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
     WATCH_SECTION -> {
         val hidden = prefs.getStringSet(K.HIDDEN_WATCH, emptySet())!!.size
         val cwOff = prefs.getStringSet(K.CW_OFF, emptySet())!!.count { pkg -> apps.any { it.pkg == pkg } }
+        val cwOn = continuePlaying()
         listOf(
+            page(getString(R.string.setting_continue_playing), toggle(cwOn)) {
+                prefs.edit().putBoolean(K.CW_ROW, !cwOn).apply()
+                if (continuePlaying()) {
+                    watchSessions()
+                    ui.post(playingTick)
+                } else {
+                    unwatchSessions()
+                    ui.removeCallbacks(playingTick)
+                    watchKey = null
+                    watchApp = null
+                    showWatchNext(emptyList())
+                }
+                renderApps()
+                renderSettings(CW_ROW)
+            },
             page(getString(R.string.setting_cw_apps), if (cwOff == 0) getString(R.string.cw_apps_all_on) else getString(R.string.cw_apps_count_off, cwOff)) { pickWatchSources() },
             page(getString(R.string.setting_restore_hidden_shows), if (hidden == 0) getString(R.string.hidden_shows_none) else getString(R.string.hidden_shows_count, hidden)) {
                 prefs.edit().remove(K.HIDDEN_WATCH).apply()
@@ -327,20 +351,20 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 else -> R.string.now_playing_needs_access
             })) {
                 if (listenerAllowed()) toast(R.string.now_playing_on, long = false)
-                else allowListener { renderSettings(WATCH_SECTION * SECTION) }
+                else allowListener { renderSettings(WATCH_SECTION * SECTION + 3) }
             },
             // Where films and series come from (Cinemeta, Nuvio, an added catalog), and TMDB completing them.
             page(getString(R.string.setting_cinemeta), sourcesValue()) { configureCinemeta() },
             // How a film or episode starts: its streams tried in turn, or picked by hand from one list of them all.
             page(getString(R.string.setting_stream_choice), getString(if (manualStreams()) R.string.stream_choice_manual else R.string.stream_choice_auto)) {
                 prefs.edit().putBoolean(K.STREAM_MANUAL, !manualStreams()).apply()
-                renderSettings(WATCH_SECTION * SECTION + 4)
+                renderSettings(WATCH_SECTION * SECTION + 5)
             },
             // The quality tried first: the highest, or one the TV shows (a 1080p one: 1080p down, then those above).
             page(getString(R.string.setting_stream_quality), qualityName(preferredQuality(prefs))) {
                 val now = QUALITIES.indexOf(preferredQuality(prefs)).coerceAtLeast(0)
                 prefs.edit().putInt(K.STREAM_QUALITY, QUALITIES[(now + 1) % QUALITIES.size]).apply()
-                renderSettings(WATCH_SECTION * SECTION + 5)
+                renderSettings(WATCH_SECTION * SECTION + 6)
             },
             // Quick start: the first working stream in the preferred quality plays; the other sources go on looking.
             // Not with the highest quality: that one waits for every source (see quickStart).
@@ -348,22 +372,22 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 if (preferredQuality(prefs) == 0) getString(R.string.fast_start_not_highest) else toggle(prefs.getBoolean(K.FAST_START, true))) {
                 if (preferredQuality(prefs) == 0) return@page toast(R.string.fast_start_pick_quality)
                 prefs.edit().putBoolean(K.FAST_START, !prefs.getBoolean(K.FAST_START, true)).apply()
-                renderSettings(WATCH_SECTION * SECTION + 6)
+                renderSettings(WATCH_SECTION * SECTION + 7)
             },
             // Films' and episodes' streams in the TV's language only (the TMDB language's), or all of them.
             page(getString(R.string.setting_stream_language), toggle(streamLanguage(prefs) != null)) {
                 prefs.edit().putBoolean(K.STREAM_LANG_ONLY, streamLanguage(prefs) == null).apply()
-                renderSettings(WATCH_SECTION * SECTION + 7)
+                renderSettings(WATCH_SECTION * SECTION + 8)
             },
             // Streams that say no language (and whose plugin doesn't either): hidden, with the TV's language only on.
             page(getString(R.string.setting_hide_unknown_language), toggle(prefs.getBoolean(K.HIDE_UNKNOWN_LANG, false))) {
                 prefs.edit().putBoolean(K.HIDE_UNKNOWN_LANG, !prefs.getBoolean(K.HIDE_UNKNOWN_LANG, false)).apply()
-                renderSettings(WATCH_SECTION * SECTION + 8)
+                renderSettings(WATCH_SECTION * SECTION + 9)
             },
             // Subtitles: off unless the stream forces them (a foreign line in a dubbed film), or on in every stream.
             page(getString(R.string.setting_subtitles_on), toggle(prefs.getBoolean(K.SUBTITLES_ON, false))) {
                 prefs.edit().putBoolean(K.SUBTITLES_ON, !prefs.getBoolean(K.SUBTITLES_ON, false)).apply()
-                renderSettings(WATCH_SECTION * SECTION + 9)
+                renderSettings(WATCH_SECTION * SECTION + 10)
             },
             // Films not out at home yet (in cinemas, or to come, as TMDB says for sure): left out of Spotlight and
             // the apps' rows. Needs TMDB's key.
@@ -371,13 +395,13 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 prefs.edit().putBoolean(K.HIDE_UNRELEASED, !hideUnreleased()).apply()
                 tmdbTrending = emptyList()
                 watchKey = null
-                renderSettings(WATCH_SECTION * SECTION + 10)
+                renderSettings(WATCH_SECTION * SECTION + 11)
             },
             // The screen's refresh rate switched to the film's frame rate (24 Hz for a film): no judder in the pans,
             // a moment of black as the TV changes mode. Off by default.
             page(getString(R.string.setting_match_frame_rate), toggle(prefs.getBoolean(K.MATCH_FRAME_RATE, false))) {
                 prefs.edit().putBoolean(K.MATCH_FRAME_RATE, !prefs.getBoolean(K.MATCH_FRAME_RATE, false)).apply()
-                renderSettings(WATCH_SECTION * SECTION + 11)
+                renderSettings(WATCH_SECTION * SECTION + 12)
             },
         )
     }
@@ -433,9 +457,7 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
         page(getString(R.string.setting_screensaver_timing)) { openScreensaverSettings() },
     )
     else -> listOfNotNull(
-        page(getString(R.string.setup_home)) { closeLauncherSettings(); startHomeSetup() },
-        page(getString(R.string.setting_home_button), toggle(homeServiceOn())) { toggleHomeButton() },
-        page(getString(R.string.setting_default_launcher), if (isDefaultHome()) getString(R.string.plume_press_change) else getString(R.string.default_launcher_set_prompt)) { makeDefaultHome() },
+        page(getString(R.string.setting_home_remote), SUBMENU) { showHomeRemotePage() },
         page(getString(R.string.setting_updates), updatesValue()) { showUpdates() },
         page(getString(R.string.setting_remote), toggle(remoteOn())) { toggleRemote() },
         if (!remoteOn()) null else page(getString(R.string.remote_show)) { showRemoteAddress() },

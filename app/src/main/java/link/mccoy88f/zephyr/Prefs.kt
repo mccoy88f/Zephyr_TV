@@ -14,6 +14,7 @@ internal object K {
     const val WP_LIGHT = "wp_light"
     const val WP_DARK = "wp_dark"
     const val WP_FADE = "wp_fade"
+    const val WP_DRIFT = "wp_drift" // slow Ken Burns zoom/pan on the home wallpaper; off saves CPU
     const val WP_EVERY = "wp_every"
     const val WP_PHOTO_LIGHT = "wp_photo_light"
     const val WP_PHOTO_DARK = "wp_photo_dark"
@@ -51,6 +52,7 @@ internal object K {
     const val HIDDEN_WATCH = "hidden_watch"
     const val HIDDEN_PLAYING = "hidden_playing" // paused tracks closed from the row, "<package>/<title>"; shown again once they play
     const val CW_OFF = "cw_off"
+    const val CW_ROW = "cw_row" // Continue Playing tile and its Watch Next / now-playing queries; default on
     const val SECTIONS_OFF = "sections_off" // "pkg/section" of the app sections turned off
     const val CHANNEL_LOGOS = "channel_logos" // logos from iptv-org for channels the TV has none for
     const val PLAY_CHANNELS = "play_channels" // open an add-on TV channel straight into play (off: its page first)
@@ -147,6 +149,8 @@ internal object K {
 
     // System
     const val HOME_OFF = "home_off"
+    /** Like Plume's Smooth volume: on = no key filter (remote works; Home may flash Google TV). Default off. */
+    const val SMOOTH_VOLUME = "smooth_volume"
     const val SETUP_SHOWN = "setup_shown"
     const val REOPEN_ROW = "reopen_row"
     const val UPD_VER = "upd_ver"

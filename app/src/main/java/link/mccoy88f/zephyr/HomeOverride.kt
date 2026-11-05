@@ -1,30 +1,54 @@
 package link.mccoy88f.zephyr
 
 import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Intent
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 
 /**
- * Google TV's launcher has to stay enabled (disabling it boot-loops the TV), so we take the Home key before
- * the system sees it and open our home directly; Google TV never flashes up. Holding Home still opens the
- * Google TV dashboard. Covering Google TV whenever it shows stays as the fallback for anything else that
- * opens it (e.g. Back out of the last app).
+ * Google TV's launcher has to stay enabled (disabling it boot-loops the TV), so we open our home when
+ * Google TV's home screens appear. Key filtering follows [K.SMOOTH_VOLUME] (default off = filter on for
+ * instant Home). On many TVs filtering makes the remote lag; Smooth volume turns the filter off and
+ * Home is caught by the window watcher instead (Google TV may flash briefly).
  */
 class HomeOverride : AccessibilityService() {
     private val adultRelock = AdultRelock()
 
     override fun onServiceConnected() {
         running = this
+        applyKeyFilterFromPrefs()
         // It runs all the time, the home screen not: standby locks 18+ again while an app is in front too.
         registerReceiver(adultRelock, AdultRelock.FILTER)
     }
 
-    /** Turned off, from Zephyr TV's switch or Android's Accessibility settings: the app mustn't turn it back on. */
+    /**
+     * Reads [K.SMOOTH_VOLUME]: when on, turns key filtering off so the remote stays usable; Home is then
+     * caught by the window watcher (Google TV may flash ~1 s). Default off keeps filtering for instant Home.
+     */
+    fun applyKeyFilterFromPrefs() {
+        val smooth = getSharedPreferences(K.FILE, MODE_PRIVATE).getBoolean(K.SMOOTH_VOLUME, false)
+        applyKeyFilter(filter = !smooth)
+    }
+
+    /**
+     * When [filter] is true, Home is taken in [onKeyEvent] before the system sees it (no Google TV flash).
+     * Off: keys go straight to apps; Home is covered when Google TV shows.
+     */
+    fun applyKeyFilter(filter: Boolean) {
+        val info = serviceInfo ?: return
+        val flag = AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
+        serviceInfo = info.apply { flags = if (filter) flags or flag else flags and flag.inv() }
+    }
+
+    /**
+     * Unbind also runs on force-stop and on every APK update — not only when the user turns the service off.
+     * Do not set [K.HOME_OFF] here: that flag is only written from [turnOffHomeButton], so [ensureHomeService]
+     * can put the service back after an install. Otherwise Home stays broken until Accessibility is toggled by hand.
+     */
     override fun onUnbind(intent: Intent?): Boolean {
         running = null
         runCatching { unregisterReceiver(adultRelock) }
-        getSharedPreferences(K.FILE, MODE_PRIVATE).edit().putBoolean(K.HOME_OFF, true).apply()
         return super.onUnbind(intent)
     }
 

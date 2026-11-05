@@ -32,6 +32,8 @@
     <string name="setting_light_wallpaper">हल्के मोड का वॉलपेपर</string>
     <string name="setting_dark_wallpaper">गहरे मोड का वॉलपेपर</string>
     <string name="setting_photo_fade">फ़ोटो फ़ेड</string>
+    <string name="setting_wallpaper_drift">वॉलपेपर गति</string>
+    <string name="setting_continue_playing">चलाना जारी रखें</string>
     <string name="setting_folder_photo_changes">फ़ोल्डर की फ़ोटो बदलना</string>
     <string name="setting_sort_apps">ऐप का क्रम</string>
     <string name="setting_sort_manual">खुद से</string>
@@ -105,6 +107,11 @@
     <string name="setting_screensaver_timing">स्क्रीनसेवर का समय</string>
 
     <string name="setting_home_button">होम बटन</string>
+    <string name="setting_home_remote">रिमोट व्यवहार</string>
+    <string name="home_remote_intro">रिमोट Zephyr TV के साथ कैसे काम करता है: होम, वॉल्यूम और अन्य कुंजियाँ।\n\nहोम बटन सेवा होम दबाने या Google TV दिखने पर Zephyr TV खोलती है। स्मूथ वॉल्यूम कुंजी फ़िल्टर बंद करता है ताकि वॉल्यूम, चैनल आदि सामान्य रहें; होम पहले थोड़ी देर Google TV दिखा सकता है।</string>
+    <string name="setting_smooth_volume">स्मूथ वॉल्यूम</string>
+    <string name="smooth_volume_on">चालू · होम चमक सकता है</string>
+    <string name="help_smooth_volume">वॉल्यूम और अन्य रिमोट कुंजियाँ सामान्य काम करती हैं। होम Zephyr TV से पहले लगभग एक सेकंड Google TV दिखा सकता है। तुरंत होम के लिए बंद करें (कुछ टीवी पर रिमोट धीमा हो सकता है)।</string>
     <string name="home_button_on">चालू</string>
     <string name="home_button_off_prompt">बंद: चालू करने के लिए दबाएँ</string>
 

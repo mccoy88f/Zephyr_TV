@@ -131,13 +131,19 @@ internal fun MainActivity.connectedInputs(): Set<String> {
 /** A green dot on the TV inputs button while at least one external input has an active device (see hdmiInputs). */
 internal fun MainActivity.updateInputsDot() {
     val icon = findViewById<ImageView>(R.id.tvInputsButton) ?: return
-    val on = hdmiInputs().any { !it.offline }
     icon.overlay.remove(inputsDot)
-    if (!on) return
+    // GONE / not laid out yet: never post in a loop — width stays 0 while GONE and was burning the main thread.
+    if (icon.visibility != View.VISIBLE) return
     if (icon.width == 0) {
-        icon.post { updateInputsDot() }
+        if (icon.getTag(R.id.tvInputsButton) == true) return
+        icon.setTag(R.id.tvInputsButton, true)
+        icon.post {
+            icon.setTag(R.id.tvInputsButton, null)
+            updateInputsDot()
+        }
         return
     }
+    if (!hdmiInputs().any { !it.offline }) return
     val size = dp(9)
     inputsDot.setBounds(icon.width - size - dp(3), dp(3), icon.width - dp(3), dp(3) + size)
     icon.overlay.add(inputsDot)

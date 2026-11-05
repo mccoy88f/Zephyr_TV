@@ -20,9 +20,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import link.mccoy88f.zephyr.MainActivity.Companion.HELP_URL
-import link.mccoy88f.zephyr.SettingsRows.HOME_BUTTON_ROW
 import link.mccoy88f.zephyr.MainActivity.Companion.ROLE_REQUEST
 import link.mccoy88f.zephyr.MainActivity.Companion.WRITE_SECURE
+import link.mccoy88f.zephyr.SettingsRows.SECTION
+import link.mccoy88f.zephyr.SettingsRows.SYSTEM_SECTION
 
 // Making Home land on Zephyr TV: the Home button service, the default-home role, and the guided setup popups.
 // Functions of MainActivity, kept here by topic; their state lives in MainActivity.
@@ -48,7 +49,52 @@ internal fun MainActivity.homeServiceOn(): Boolean {
         .split(':').any { ComponentName.unflattenFromString(it) == me }
 }
 
-internal fun MainActivity.toggleHomeButton() = if (homeServiceOn()) turnOffHomeButton() else turnOnHomeButton()
+internal fun MainActivity.toggleHomeButton() {
+    if (homeServiceOn()) turnOffHomeButton() else turnOnHomeButton()
+    showHomeRemotePage(focus = 1)
+}
+
+/** Like Plume: on = no accessibility key filter (remote / volume / page keys work; Home may flash Google TV). Default off. */
+internal fun MainActivity.smoothVolume() = prefs.getBoolean(K.SMOOTH_VOLUME, false)
+
+internal fun MainActivity.toggleSmoothVolume() {
+    prefs.edit().putBoolean(K.SMOOTH_VOLUME, !smoothVolume()).commit()
+    HomeOverride.running?.applyKeyFilterFromPrefs()
+    showHomeRemotePage(focus = 2) // Smooth volume row
+}
+
+/**
+ * Remote behavior: Home button service, Smooth volume (key filter), and default launcher.
+ */
+internal fun MainActivity.showHomeRemotePage(focus: Int = 0) {
+    val intro = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(14), dp(4), dp(14), dp(8))
+        addView(label(getString(R.string.home_remote_intro), 13f).apply {
+            maxLines = 8
+            setLineSpacing(0f, 1.15f)
+        })
+    }
+    val smooth = smoothVolume()
+    showPage(
+        getString(R.string.setting_home_remote),
+        listOf(
+            page(getString(R.string.setup_home)) { closeLauncherSettings(); startHomeSetup() },
+            page(getString(R.string.setting_home_button), toggle(homeServiceOn())) { toggleHomeButton() },
+            page(
+                getString(R.string.setting_smooth_volume),
+                if (smooth) getString(R.string.smooth_volume_on) else getString(R.string.state_off),
+            ) { toggleSmoothVolume() },
+            page(
+                getString(R.string.setting_default_launcher),
+                if (isDefaultHome()) getString(R.string.plume_press_change) else getString(R.string.default_launcher_set_prompt),
+            ) { makeDefaultHome() },
+        ),
+        focus = focus,
+        top = intro,
+        back = { renderSettings(SYSTEM_SECTION * SECTION) },
+    )
+}
 
 /** Off hands Home back to the TV's own launcher, and Zephyr TV leaves it off until switched on again. */
 internal fun MainActivity.turnOffHomeButton() {
@@ -64,14 +110,13 @@ internal fun MainActivity.turnOffHomeButton() {
         toast(R.string.home_off_hint)
         openSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS)
     }
-    renderSettings(HOME_BUTTON_ROW)
 }
 
 /** The Home key service is an accessibility service, which Android only lets the user switch on. */
 internal fun MainActivity.turnOnHomeButton() {
     prefs.edit().remove(K.HOME_OFF).apply()
     ensureHomeService() // works where the adb permission was granted
-    if (homeServiceOn()) return renderSettings(HOME_BUTTON_ROW)
+    if (homeServiceOn()) return
     // The written path is the safety net: some Google TVs (a Xiaomi stick) answer the Accessibility link
     // with "You don't have an app that can do this", which we can't detect from here.
     toast(R.string.home_on_hint)

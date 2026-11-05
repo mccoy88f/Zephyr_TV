@@ -32,6 +32,8 @@
     <string name="setting_light_wallpaper">Fond d\'écran du thème clair</string>
     <string name="setting_dark_wallpaper">Fond d\'écran du thème sombre</string>
     <string name="setting_photo_fade">Fondu des photos</string>
+    <string name="setting_wallpaper_drift">Mouvement du fond</string>
+    <string name="setting_continue_playing">Continuer la lecture</string>
     <string name="setting_folder_photo_changes">Changement des photos du dossier</string>
     <string name="setting_sort_apps">Trier les applis</string>
     <string name="setting_sort_manual">Manuel</string>
@@ -105,6 +107,11 @@
     <string name="setting_screensaver_timing">Délai de l\'économiseur d\'écran</string>
 
     <string name="setting_home_button">Bouton Accueil</string>
+    <string name="setting_home_remote">Comportement de la télécommande</string>
+    <string name="home_remote_intro">Comment la télécommande fonctionne avec Zephyr TV : Accueil, volume et les autres touches.\n\nLe service du bouton Accueil ouvre Zephyr TV à l\'appui sur Accueil ou quand Google TV apparaît. Volume fluide désactive le filtrage des touches pour que volume, chaînes et le reste fonctionnent normalement ; Accueil peut afficher Google TV un instant avant.</string>
+    <string name="setting_smooth_volume">Volume fluide</string>
+    <string name="smooth_volume_on">Activé · Accueil peut clignoter</string>
+    <string name="help_smooth_volume">Le volume et les autres touches de la télécommande fonctionnent normalement. Accueil peut afficher Google TV environ une seconde avant Zephyr TV. Désactivez pour un Accueil immédiat (peut ralentir la télécommande sur certains téléviseurs).</string>
     <string name="home_button_on">Activé</string>
     <string name="home_button_off_prompt">Désactivé : appuyez pour activer</string>
 

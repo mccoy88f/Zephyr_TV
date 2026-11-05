@@ -104,7 +104,8 @@ class MainActivity : Activity() {
     internal var nightShown = false // night mode's dimming is showing
     internal val loading = java.util.Collections.synchronizedSet(HashSet<String>())
     internal val ui = Handler(Looper.getMainLooper())
-    internal val posters = object : LruCache<String, Bitmap>(24 * 1024 * 1024) { // decoded: rows scrolled back show at once
+    // Cap decoded posters: Plume kept this small; 12 MB is enough for a couple of rows without starving a 2–3 GB TV.
+    internal val posters = object : LruCache<String, Bitmap>(12 * 1024 * 1024) {
         override fun sizeOf(key: String, value: Bitmap) = value.byteCount
     }
 
@@ -329,10 +330,15 @@ class MainActivity : Activity() {
             if (settingsScrim.visibility == View.VISIBLE) again()
         }
         phonePanel.pending?.let { phonePanel.pending = null; it() }
-        watchSessions() // once allowed (see NowPlaying): the Play queue follows what's playing
+        if (continuePlaying()) {
+            watchSessions() // once allowed (see NowPlaying): the Play queue follows what's playing
+            ui.post(playingTick)
+            refreshWatchNext()
+        } else {
+            unwatchSessions()
+            ui.removeCallbacks(playingTick)
+        }
         refreshExtensions() // the preinstalled ones, and a newer version of each, once a day
-        ui.post(playingTick)
-        refreshWatchNext()
         showWeather()
         ui.removeCallbacks(weatherTick)
         ui.post(weatherTick)
@@ -347,7 +353,7 @@ class MainActivity : Activity() {
         piumeGoesNow() // Piume's things taken and the Home set: Piume can go
         spotlightIdle = false
         sceneAlive = true
-        scene.arm()
+        if (wallpaperDrift()) scene.arm() else scene.stop()
         restartSpotlightTick()
         // Gallery chosen but its paintings missing (updated from a version that bundled them): fetch them.
         if (galleryOn() && photoScreensaver() == null && !paintingsReady(this)) downloadPaintings {}
@@ -421,9 +427,18 @@ class MainActivity : Activity() {
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         posters.evictAll()
+        if (level >= TRIM_MEMORY_UI_HIDDEN) {
+            Epg.release()
+            if (!sceneAlive) scene.clear()
+        }
     }
 
     override fun onDestroy() {
+        unwatchSessions()
+        scene.clear()
+        Sync.pending?.let { ui.removeCallbacks(it) }
+        Sync.pending = null
+        ui.removeCallbacksAndMessages(null)
         unregisterReceiver(adultRelock)
         unregisterReceiver(packageReceiver)
         applicationContext.getSystemService(ConnectivityManager::class.java).unregisterNetworkCallback(net)
@@ -569,19 +584,23 @@ class MainActivity : Activity() {
     internal val playingRefresh = Runnable { if (watchApp == CW_PKG) { watchKey = null; refreshWatchNext() } }
 
     /**
-     * Every few seconds while the Play queue's rows show: what's playing, compared by track and playing or paused,
-     * rebuilt when it changed. Some apps' sessions don't tell listeners (Spotify on this Sony didn't).
+     * While the Play queue's rows show: what's playing, compared by track and playing or paused, rebuilt when it
+     * changed. Some apps' sessions don't tell listeners (Spotify on this Sony didn't). Kept slow: the session
+     * callbacks already refresh when they work.
      */
     internal val playingTick = object : Runnable {
         override fun run() {
             ui.removeCallbacks(this)
-            if (watchApp != CW_PKG || !hasWindowFocus()) return ui.postDelayed(this, 5000).let { }
+            if (!continuePlaying() || watchApp != CW_PKG || !hasWindowFocus()) {
+                if (continuePlaying()) ui.postDelayed(this, PLAYING_POLL_MS)
+                return
+            }
             io.execute {
                 val now = nowPlaying().joinToString("|") { "${it.title}/${it.sub}" }
                 ui.post {
                     if (lastPlaying != null && now != lastPlaying) playingRefresh.run()
                     lastPlaying = now
-                    ui.postDelayed(this, 5000)
+                    ui.postDelayed(this, PLAYING_POLL_MS)
                 }
             }
         }
@@ -603,12 +622,20 @@ class MainActivity : Activity() {
      * listener in style() is a fallback for a key that never arrives as a down. [holdFired] stops both firing.
      */
     override fun dispatchTouchEvent(e: android.view.MotionEvent): Boolean {
+        noteInput()
+        return homeDrag(e) || hanging(e) || super.dispatchTouchEvent(e)
+    }
+
+    /** Key or touch: wake Spotlight / Scene if they froze after idle. Do not re-arm Scene on every key — that
+     * redrew the full wallpaper per DPAD and made the remote feel stuck (a11y key filter + main thread). */
+    internal fun noteInput() {
+        val woke = SystemClock.elapsedRealtime() - lastInput > SCENE_IDLE_MS
         lastInput = SystemClock.elapsedRealtime()
         if (spotlightIdle) {
             spotlightIdle = false
             restartSpotlightTick()
         }
-        return homeDrag(e) || hanging(e) || super.dispatchTouchEvent(e)
+        if (woke && sceneAlive && wallpaperDrift()) scene.arm()
     }
 
     override fun dispatchKeyEvent(e: KeyEvent): Boolean = handleKey(e) || super.dispatchKeyEvent(e)
@@ -665,6 +692,7 @@ class MainActivity : Activity() {
         const val FILE_REQUEST = 5 // a file picked, or saved, on a phone or tablet (see Handheld)
         const val VPN_REQUEST = 6 // Android's permission for WARP's VPN (see Privacy)
         const val SPOTLIGHT_IDLE_MS = 15 * 60_000L // Spotlight stops turning after this long without a key press
+        private const val PLAYING_POLL_MS = 15_000L // fallback poll when session callbacks miss a change
         const val TMDB_FRESH_MS = 3 * 3600_000L // how long a trending list is kept before it's fetched again
         val SPOTLIGHT_PKGS = listOf("com.nuvio.tv", "com.nuvio.app", "com.stremio.one", "com.netflix.ninja", "com.google.android.youtube.tv", "com.amazon.amazonvideo.livingroom")
         val SPOTLIGHT_EVERY = listOf(0, 5, 8, 10, 15, 30) // seconds between Spotlight titles; 0 = off
