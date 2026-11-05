@@ -5,7 +5,7 @@
   },
   "nav": {
     "download": "下载",
-    "credits": "项目与许可",
+    "credits": "Credits",
     "admin": "管理",
     "login": "登录",
     "logout": "退出",
@@ -51,7 +51,7 @@
     "install_text": "在电视上用浏览器或文件管理器下载 APK（或从手机发送），在提示时允许安装未知来源的应用，然后打开它。在设置中将 Zephyr TV 设为主屏幕。"
   },
   "credits": {
-    "title": "项目与许可",
+    "title": "Credits",
     "intro": "Zephyr TV 是自由软件。它建立在其他项目的成果之上，并使用以下库、服务和图片，各自遵循其许可。",
     "origin": "Zephyr TV 的来源",
     "app": "应用中的库",
@@ -81,7 +81,8 @@
       "nuvio": "Zephyr TV 运行的插件格式，由 NuvioTV 定义。",
       "simple_icons": "知名应用的标志。",
       "paintings": "屏保中的画作，公有领域的扫描件。",
-      "unsplash": "默认壁纸。"
+      "unsplash": "默认壁纸。",
+      "flag_icons": "用于选择网站语言的旗帜。"
     }
   },
   "login": {

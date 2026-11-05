@@ -5,7 +5,7 @@
   },
   "nav": {
     "download": "Download",
-    "credits": "Progetti e licenze",
+    "credits": "Credits",
     "admin": "Admin",
     "login": "Accedi",
     "logout": "Esci",
@@ -51,7 +51,7 @@
     "install_text": "Scarica l'APK sul TV con un browser o un file manager (o mandalo dal telefono), consenti l'installazione da origini sconosciute quando richiesto, poi aprilo. Nelle impostazioni, imposta Zephyr TV come schermata Home."
   },
   "credits": {
-    "title": "Progetti e licenze",
+    "title": "Credits",
     "intro": "Zephyr TV è software libero. Nasce dal lavoro di altri progetti e usa queste librerie, servizi e immagini, ognuno con la sua licenza.",
     "origin": "Da dove nasce Zephyr TV",
     "app": "Librerie nell'app",
@@ -81,7 +81,8 @@
       "nuvio": "Il formato dei plugin che Zephyr TV esegue, come lo definisce NuvioTV.",
       "simple_icons": "I loghi delle app più note.",
       "paintings": "I quadri del salvaschermo, scansioni di pubblico dominio.",
-      "unsplash": "Lo sfondo predefinito."
+      "unsplash": "Lo sfondo predefinito.",
+      "flag_icons": "Le bandiere per scegliere la lingua del sito."
     }
   },
   "login": {

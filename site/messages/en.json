@@ -5,7 +5,7 @@
   },
   "nav": {
     "download": "Download",
-    "credits": "Projects and licences",
+    "credits": "Credits",
     "admin": "Admin",
     "login": "Sign in",
     "logout": "Sign out",
@@ -51,7 +51,7 @@
     "install_text": "Download the APK on the TV with a browser or a file manager (or send it from a phone), allow installs from unknown sources when asked, then open it. In Settings, set Zephyr TV as the home screen."
   },
   "credits": {
-    "title": "Projects and licences",
+    "title": "Credits",
     "intro": "Zephyr TV is free software. It is built on the work of other projects, and uses these libraries, services and media, each under its own licence.",
     "origin": "Where Zephyr TV comes from",
     "app": "Libraries in the app",
@@ -81,7 +81,8 @@
       "nuvio": "The plugin format Zephyr TV runs, as NuvioTV defines it.",
       "simple_icons": "The logos of well-known apps.",
       "paintings": "The paintings of the screensaver, scans in the public domain.",
-      "unsplash": "The default wallpaper."
+      "unsplash": "The default wallpaper.",
+      "flag_icons": "The flags that pick the site's language."
     }
   },
   "login": {

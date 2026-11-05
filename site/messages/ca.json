@@ -5,7 +5,7 @@
   },
   "nav": {
     "download": "Baixa",
-    "credits": "Projectes i llicències",
+    "credits": "Credits",
     "admin": "Admin",
     "login": "Inicia la sessió",
     "logout": "Tanca la sessió",
@@ -51,7 +51,7 @@
     "install_text": "Baixa l'APK al televisor amb un navegador o un gestor de fitxers (o envia'l des del telèfon), permet la instal·lació d'orígens desconeguts quan t'ho demani i obre'l. A la configuració, tria Zephyr TV com a pantalla d'inici."
   },
   "credits": {
-    "title": "Projectes i llicències",
+    "title": "Credits",
     "intro": "Zephyr TV és programari lliure. Neix de la feina d'altres projectes i fa servir aquestes biblioteques, serveis i imatges, cadascun amb la seva llicència.",
     "origin": "D'on ve Zephyr TV",
     "app": "Biblioteques de l'app",
@@ -81,7 +81,8 @@
       "nuvio": "El format de plugins que executa Zephyr TV, tal com el defineix NuvioTV.",
       "simple_icons": "Els logos de les apps conegudes.",
       "paintings": "Els quadres de l'estalvi de pantalla, escanejos de domini públic.",
-      "unsplash": "El fons de pantalla predeterminat."
+      "unsplash": "El fons de pantalla predeterminat.",
+      "flag_icons": "Les banderes per triar la llengua del lloc."
     }
   },
   "login": {

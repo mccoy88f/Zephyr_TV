@@ -54,6 +54,15 @@ img { max-width: 100%; }
 .nav a:hover { color: var(--accent); }
 .nav form { margin: 0; }
 .linkish { background: none; border: 0; padding: 0; font: inherit; font-weight: 500; color: var(--fg); cursor: pointer; }
+/* The language, by its flag: the current one, and the others under it. */
+.langs { position: relative; }
+.langs summary { list-style: none; cursor: pointer; display: flex; padding: 4px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); }
+.langs summary::-webkit-details-marker { display: none; }
+.langs img { display: block; border-radius: 4px; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.12); }
+.langs ul { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; list-style: none; margin: 0; padding: 8px; display: grid; grid-template-columns: repeat(3, auto); gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgb(0 0 0 / 0.25); }
+.langs button { padding: 4px; border: 2px solid transparent; border-radius: 8px; background: none; cursor: pointer; }
+.langs button:hover, .langs button:focus-visible { border-color: var(--line); }
+.langs button.on { border-color: var(--accent); }
 .lang { font: inherit; font-size: 15px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
 
 .page { max-width: 1080px; margin: 0 auto; padding: 32px 24px 64px; }
