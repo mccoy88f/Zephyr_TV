@@ -22,5 +22,5 @@
     <polygon points="224,165 224,245 304,205" fill="url(#playGrad)" />
   </g>
   <text x="458" y="196" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="62" font-weight="900" fill="url(#textGrad)" text-anchor="middle" letter-spacing="8">ZEPHYR</text>
-  <text x="458" y="248" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30" font-weight="700" fill="#38BDF8" text-anchor="middle" letter-spacing="14">TV</text>
+  <text x="464" y="262" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="50" font-weight="900" fill="#38BDF8" text-anchor="middle" letter-spacing="12">TV</text>
 </svg>

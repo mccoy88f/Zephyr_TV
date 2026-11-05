@@ -42,7 +42,7 @@
   </g>
 
   <!-- Sezione Testo -->
-  <text x="256" y="375" font-family="system-ui, -apple-system, &#39;Segoe UI&#39;, Roboto, sans-serif" font-size="42" font-weight="900" fill="url(#textGrad)" text-anchor="middle" letter-spacing="6">ZEPHYR</text>
+  <text x="256" y="372" font-family="system-ui, -apple-system, &#39;Segoe UI&#39;, Roboto, sans-serif" font-size="42" font-weight="900" fill="url(#textGrad)" text-anchor="middle" letter-spacing="6">ZEPHYR</text>
 
-  <text x="256" y="415" font-family="system-ui, -apple-system, &#39;Segoe UI&#39;, Roboto, sans-serif" font-size="20" font-weight="700" fill="#38BDF8" text-anchor="middle" letter-spacing="10">TV</text>
+  <text x="260" y="424" font-family="system-ui, -apple-system, &#39;Segoe UI&#39;, Roboto, sans-serif" font-size="38" font-weight="900" fill="#38BDF8" text-anchor="middle" letter-spacing="8">TV</text>
 </svg>
