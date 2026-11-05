@@ -19,12 +19,13 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - When a user has Trakt on another TV of the same Zephyr TV account, this TV asks one time to connect Trakt here too. Scan the QR code with your phone. The account keeps only the Trakt name, never the keys.
 - The downloads window is called **Downloads**. It is smaller: it shows up to four downloads, and you scroll to see the others.
 - The folder of Zephyr TV for downloads is called **Zephyr TV folder**.
+- The downloads window has no **Close** any more. Press Back to close it.
 
 ## 4.2.0
 
 - When a film or an episode is downloaded, a **Download** icon shows after **Search** at the top right. A red dot on it shows that a download is in progress.
 - Select the **Download** icon to see all downloads, with their progress. Select a download to open its page, where you can play or delete it. Select the bin to delete it.
-- At the bottom of the window, **Delete all** deletes all downloads. Press it two times. Press Back to close the window.
+- At the bottom of the window, **Delete all** deletes all downloads. Press it two times. **Close** closes the window.
 - The card of a downloaded film or episode shows a blue download icon, as a watched one shows a blue ✓. A red dot on it shows that it is downloading.
 - The progress of a download updates every second, on its page and on the home screen.
 - The search filters have **Only downloaded items**. It is off by default. When it is on, the search shows only the films and series that you downloaded.
