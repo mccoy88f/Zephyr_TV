@@ -833,4 +833,7 @@
     <string name="sync_never">कभी नहीं</string>
     <string name="sync_done">आपके अकाउंट से सिंक हो गया</string>
     <string name="sync_failed">सिंक नहीं हुआ: कनेक्शन जाँचें।</string>
+    <string name="sync_title">सिंक</string>
+    <string name="sync_on">चालू · %1$s</string>
+    <string name="sync_off">बंद: Zephyr TV अकाउंट जोड़ें</string>
 </resources>

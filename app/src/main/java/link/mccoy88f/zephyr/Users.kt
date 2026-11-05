@@ -174,7 +174,9 @@ private fun MainActivity.usersSettings(focus: Int = 0) {
         val trakt = Trakt.account(vodDir(u.id))?.user?.let { "Trakt: $it" }
         page(u.name, listOfNotNull(trakt, if (u.id == current.id) CHOSEN else null).joinToString("  ")) { userPage(u) }
     } + page(getString(R.string.user_add)) { userName(null) } +
-        adultSettingsRows { usersSettings(list.size + 1) }, focus) { backFromUsersSettings() }
+        // Sync with a Zephyr TV account: on (and its page, Sync now), or off (linking this TV).
+        page(getString(R.string.sync_title), syncValue()) { ztvAccount { usersSettings(list.size + 1) } } +
+        adultSettingsRows { usersSettings(list.size + 2) }, focus) { backFromUsersSettings() }
     userIcons(list)
 }
 

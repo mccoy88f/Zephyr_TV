@@ -836,4 +836,7 @@
     <string name="sync_never">nunca</string>
     <string name="sync_done">Sincronizado con tu cuenta</string>
     <string name="sync_failed">La sincronización falló: revisa la conexión.</string>
+    <string name="sync_title">Sincronización</string>
+    <string name="sync_on">Activada · %1$s</string>
+    <string name="sync_off">Desactivada: vincula una cuenta de Zephyr TV</string>
 </resources>

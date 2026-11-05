@@ -830,4 +830,7 @@
     <string name="sync_never">从未</string>
     <string name="sync_done">已与你的账号同步</string>
     <string name="sync_failed">同步失败：请检查网络连接。</string>
+    <string name="sync_title">同步</string>
+    <string name="sync_on">已开启 · %1$s</string>
+    <string name="sync_off">未开启：关联 Zephyr TV 账号</string>
 </resources>

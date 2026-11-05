@@ -114,8 +114,15 @@ internal fun MainActivity.ztvEmail(): String? = prefs.getString(K.ZTV_EMAIL, nul
 /** The row's value: the account's email, or Not linked. */
 internal fun MainActivity.ztvValue(): String = ztvEmail() ?: getString(R.string.ztv_not_linked)
 
-/** Settings → System → Zephyr TV account: linked, its page; else linking it. */
-internal fun MainActivity.ztvAccount() = if (ztvEmail() != null) ztvAccountPage() else ztvLink()
+/**
+ * Settings → System → Zephyr TV account, or the users' settings' Sync: linked, its page; else linking it. [back]:
+ * where Back goes (System's row by default).
+ */
+internal fun MainActivity.ztvAccount(back: (() -> Unit)? = null) =
+    if (ztvEmail() != null) ztvAccountPage(back = back) else ztvLink(back)
+
+/** Sync's state for a row: on, with the account's email; or off. */
+internal fun MainActivity.syncValue(): String = ztvEmail()?.let { getString(R.string.sync_on, it) } ?: getString(R.string.sync_off)
 
 /**
  * This TV unlinked here (by the user, or found unlinked on the site): its token, what sync kept, and its users' ids
@@ -168,9 +175,9 @@ internal fun MainActivity.linkTv(alive: () -> Boolean, status: TextView, box: (a
 }
 
 /** Linking from Settings: once linked, the first sync; the home screen again if the account's settings came in. */
-private fun MainActivity.ztvLink() {
+private fun MainActivity.ztvLink(backTo: (() -> Unit)? = null) {
     val title = getString(R.string.setting_ztv_account)
-    val back: () -> Unit = { renderSettings(accountRow()) }
+    val back: () -> Unit = backTo ?: { renderSettings(accountRow()) }
     val status = label("", 14f)
     val rows = listOf(page(getString(R.string.dialog_cancel)) { back() })
     showPage(title, rows, back = back)
@@ -182,7 +189,7 @@ private fun MainActivity.ztvLink() {
                 prefs.edit().putInt(K.REOPEN_ROW, accountRow()).apply()
                 Sync.recreatePending = false
                 recreate()
-            } else if (pageShowing(title)) ztvAccountPage()
+            } else if (pageShowing(title)) ztvAccountPage(back = backTo)
         }
     }
 }
@@ -191,9 +198,10 @@ private fun MainActivity.ztvLink() {
  * The linked account: its email, its Zephyr TV users, Sync now (when it last did), where to manage it, and Unlink.
  * Unlinked on the site meanwhile: Not linked here too (see Sync).
  */
-private fun MainActivity.ztvAccountPage(focus: Int = 0) {
+private fun MainActivity.ztvAccountPage(focus: Int = 0, back: (() -> Unit)? = null) {
     val title = getString(R.string.setting_ztv_account)
-    val email = ztvEmail() ?: return ztvLink()
+    val email = ztvEmail() ?: return ztvLink(back)
+    val leave: () -> Unit = back ?: { renderSettings(accountRow()) }
     val intro = label(getString(R.string.ztv_manage, "$SITE/account"), 13f).apply { alpha = 0.7f; setPadding(dp(14), dp(4), dp(14), dp(10)) }
     val at = prefs.getLong(K.SYNC_AT, 0L)
     val synced = users().count { it.sid != null }
@@ -205,7 +213,7 @@ private fun MainActivity.ztvAccountPage(focus: Int = 0) {
             toast(R.string.sync_working, long = false)
             syncNow { r ->
                 toast(if (r == null) R.string.sync_failed else R.string.sync_done, long = false)
-                if (pageShowing(title) && ztvEmail() != null) ztvAccountPage(2)
+                if (pageShowing(title) && ztvEmail() != null) ztvAccountPage(2, back)
             }
         },
         page(getString(R.string.ztv_unlink)) {
@@ -213,9 +221,9 @@ private fun MainActivity.ztvAccountPage(focus: Int = 0) {
             ztvForget()
             token?.let { netIo.execute { ZtvAccount.unlink(it) } }
             toast(R.string.ztv_unlinked, long = false)
-            renderSettings(accountRow())
+            leave()
         },
-    ), focus, top = intro, back = { renderSettings(accountRow()) })
+    ), focus, top = intro, back = leave)
 }
 
 /** The row of Zephyr TV account in System, after About. */

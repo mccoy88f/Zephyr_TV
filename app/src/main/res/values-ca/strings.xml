@@ -836,4 +836,7 @@
     <string name="sync_never">mai</string>
     <string name="sync_done">Sincronitzat amb el teu compte</string>
     <string name="sync_failed">La sincronització ha fallat: comprova la connexió.</string>
+    <string name="sync_title">Sincronització</string>
+    <string name="sync_on">Activada · %1$s</string>
+    <string name="sync_off">Desactivada: vincula un compte de Zephyr TV</string>
 </resources>

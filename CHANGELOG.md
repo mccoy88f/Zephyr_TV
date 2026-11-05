@@ -20,6 +20,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - At the first start, select **Local account** or **Zephyr TV account**. A local account needs no sign-up and does not sync.
 - **Sync** keeps your TVs the same when they use one Zephyr TV account. It syncs the users and their avatars, the settings and the add-ons, and what each user watched. The PIN, the locks, the order of the apps and the extensions stay on each TV.
 - Select **Zephyr TV settings → System → Zephyr TV account → Sync now** to sync at once.
+- **Users → Settings → Sync** shows if sync is on. If sync is off, select it to link the TV to a Zephyr TV account.
 
 ## 4.0.0-beta.23
 

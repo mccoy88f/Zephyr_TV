@@ -833,4 +833,7 @@
     <string name="sync_never">never</string>
     <string name="sync_done">Synced with your account</string>
     <string name="sync_failed">Sync didn\'t work: check the connection.</string>
+    <string name="sync_title">Sync</string>
+    <string name="sync_on">On · %1$s</string>
+    <string name="sync_off">Off: link a Zephyr TV account</string>
 </resources>
