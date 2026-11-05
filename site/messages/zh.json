@@ -114,7 +114,8 @@
     "mail_to": "发送到",
     "mail_send": "发送测试邮件",
     "mail_ok": "已发送到 {to}：如果没收到，请查看垃圾邮件。",
-    "mail_failed": "SMTP 服务器拒绝了："
+    "mail_failed": "SMTP 服务器拒绝了：",
+    "mail_from_mismatch": "MAIL_FROM 为 {from}，但 SMTP 服务器只允许从 {user} 发送：邮件将从 {user} 发出（请修改或删除 MAIL_FROM）。"
   },
   "share": {
     "watch": "在 Zephyr TV 上观看",

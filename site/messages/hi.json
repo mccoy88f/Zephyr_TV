@@ -114,7 +114,8 @@
     "mail_to": "इसे भेजें",
     "mail_send": "टेस्ट ईमेल भेजें",
     "mail_ok": "{to} को भेजा गया: न मिले तो स्पैम देखें।",
-    "mail_failed": "SMTP सर्वर ने इसे अस्वीकार किया:"
+    "mail_failed": "SMTP सर्वर ने इसे अस्वीकार किया:",
+    "mail_from_mismatch": "MAIL_FROM में {from} है, पर SMTP सर्वर सिर्फ़ {user} से भेजता है: ईमेल {user} से जाते हैं (MAIL_FROM ठीक करें या हटाएँ)।"
   },
   "share": {
     "watch": "Zephyr TV पर देखने के लिए",

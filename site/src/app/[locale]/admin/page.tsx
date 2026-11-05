@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { db } from "@/db";
 import { accounts, catalog, sessions } from "@/db/schema";
 import { Link, redirect } from "@/i18n/navigation";
-import { mailReady } from "@/server/mail";
+import { mailReady, sender } from "@/server/mail";
 import { testMail } from "./actions";
 import { currentAccount } from "@/server/session";
 
@@ -45,6 +45,7 @@ export default async function Admin({ params, searchParams }: { params: Promise<
       <article className="card">
         <h2>{t("mail_title")}</h2>
         <p>{t("mail_text", { host: process.env.SMTP_HOST || "ssl0.ovh.net", port: process.env.SMTP_PORT || "465", user: process.env.SMTP_USER || "—" })}</p>
+        {sender().mismatch && <p className="error">{t("mail_from_mismatch", { from: sender().configured, user: process.env.SMTP_USER ?? "" })}</p>}
         <form className="search" action={testMail}>
           <input name="to" type="email" placeholder={account.email} aria-label={t("mail_to")} defaultValue={to ?? ""} />
           <button className="button" type="submit">{t("mail_send")}</button>

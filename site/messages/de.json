@@ -114,7 +114,8 @@
     "mail_to": "Senden an",
     "mail_send": "Test-E-Mail senden",
     "mail_ok": "An {to} gesendet: Falls sie nicht ankommt, sieh im Spam nach.",
-    "mail_failed": "Der SMTP-Server hat sie abgelehnt:"
+    "mail_failed": "Der SMTP-Server hat sie abgelehnt:",
+    "mail_from_mismatch": "MAIL_FROM enthält {from}, aber der SMTP-Server sendet nur von {user}: Die E-Mails gehen von {user} aus (MAIL_FROM korrigieren oder entfernen)."
   },
   "share": {
     "watch": "Zum Anschauen in Zephyr TV",

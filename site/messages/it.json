@@ -114,7 +114,8 @@
     "mail_to": "Invia a",
     "mail_send": "Invia un'email di prova",
     "mail_ok": "Inviata a {to}: se non arriva, guarda nello spam.",
-    "mail_failed": "Il server SMTP l'ha rifiutata:"
+    "mail_failed": "Il server SMTP l'ha rifiutata:",
+    "mail_from_mismatch": "MAIL_FROM contiene {from}, ma il server SMTP invia solo da {user}: le email partono da {user} (correggi MAIL_FROM o toglila)."
   },
   "share": {
     "watch": "Da guardare su Zephyr TV",

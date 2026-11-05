@@ -114,7 +114,8 @@
     "mail_to": "Enviar para",
     "mail_send": "Enviar um e-mail de teste",
     "mail_ok": "Enviado para {to}: se não chegar, veja no spam.",
-    "mail_failed": "O servidor SMTP recusou:"
+    "mail_failed": "O servidor SMTP recusou:",
+    "mail_from_mismatch": "MAIL_FROM tem {from}, mas o servidor SMTP só envia de {user}: os e-mails saem de {user} (corrija MAIL_FROM ou remova-a)."
   },
   "share": {
     "watch": "Para assistir no Zephyr TV",

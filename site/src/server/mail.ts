@@ -26,11 +26,24 @@ function smtp(): Transporter {
   return transporter;
 }
 
+/**
+ * Who the email is from: MAIL_FROM's name, always with SMTP_USER's address. Shared SMTP servers (OVH's) refuse a From
+ * that isn't the mailbox signed in, after accepting it ("queued"): a different address in MAIL_FROM only keeps its name.
+ */
+export function sender() {
+  const user = process.env.SMTP_USER ?? "";
+  const configured = process.env.MAIL_FROM?.trim();
+  const name = configured?.match(/^"?([^"<]*?)"?\s*</)?.[1]?.trim() || (configured && !configured.includes("@") ? configured : "") || "Zephyr TV";
+  const address = configured?.match(/<([^>]+)>/)?.[1] ?? (configured?.includes("@") ? configured : user);
+  const mismatch = !!configured && address.toLowerCase() !== user.toLowerCase();
+  return { from: `${name} <${user}>`, mismatch, configured: address };
+}
+
 /** [to] for the log: "an…@example.com", the address not written out whole. */
 const masked = (to: string) => to.replace(/^(.{2})[^@]*/, "$1…");
 
 /**
- * [text] (and [html]) to [to], from MAIL_FROM ("Zephyr TV <SMTP_USER>" by default): the SMTP server's answer
+ * [text] (and [html]) to [to], from sender(): the SMTP server's answer
  * ("250 … queued as …"), also in the log either way. Throws when it can't be sent.
  */
 export async function sendMail(to: string, subject: string, text: string, html: string): Promise<string> {
@@ -39,7 +52,9 @@ export async function sendMail(to: string, subject: string, text: string, html: 
     throw new Error("SMTP_USER and SMTP_PASSWORD are not set");
   }
   try {
-    const info = await smtp().sendMail({ from: process.env.MAIL_FROM || `Zephyr TV <${process.env.SMTP_USER}>`, to, subject, text, html });
+    const s = sender();
+    if (s.mismatch) console.warn(`[mail] MAIL_FROM's address (${s.configured}) isn't SMTP_USER: sent from ${s.from}`);
+    const info = await smtp().sendMail({ from: s.from, to, subject, text, html });
     const answer = `${info.response ?? ""}`.slice(0, 200);
     console.info(`[mail] "${subject}" to ${masked(to)}: accepted ${info.accepted?.length ?? 0}, refused ${info.rejected?.length ?? 0} · ${answer}`);
     if (info.rejected?.length) throw new Error(`refused: ${answer}`);

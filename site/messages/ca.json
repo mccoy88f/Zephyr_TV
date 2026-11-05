@@ -114,7 +114,8 @@
     "mail_to": "Envia a",
     "mail_send": "Envia un correu de prova",
     "mail_ok": "Enviat a {to}: si no arriba, mira al correu brossa.",
-    "mail_failed": "El servidor SMTP l'ha rebutjat:"
+    "mail_failed": "El servidor SMTP l'ha rebutjat:",
+    "mail_from_mismatch": "MAIL_FROM conté {from}, però el servidor SMTP només envia des de {user}: els correus surten de {user} (corregeix MAIL_FROM o treu-la)."
   },
   "share": {
     "watch": "Per mirar a Zephyr TV",
