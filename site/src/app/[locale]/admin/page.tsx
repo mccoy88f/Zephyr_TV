@@ -49,8 +49,8 @@ export default async function Admin({ params, searchParams }: { params: Promise<
           <input name="to" type="email" placeholder={account.email} aria-label={t("mail_to")} defaultValue={to ?? ""} />
           <button className="button" type="submit">{t("mail_send")}</button>
         </form>
-        {mail && (mail === "ok"
-          ? <p className="okmsg" role="status">{t("mail_ok", { to: to ?? "" })}</p>
+        {mail && (mail.startsWith("ok")
+          ? <p className="okmsg" role="status">{t("mail_ok", { to: to ?? "" })} <code>{mail.slice(3)}</code></p>
           : <p className="error" role="alert">{t("mail_failed")} <code>{mail}</code></p>)}
       </article>
       <p className="muted">{t("soon")}</p>

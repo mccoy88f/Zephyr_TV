@@ -64,7 +64,7 @@ export async function testMail(data: FormData) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) result = "invalid address";
   else {
     try {
-      await sendMail(to, "Zephyr TV: test", `Test email from ${process.env.SITE_URL || "the site"}.`, "<p>Test email from Zephyr TV's site.</p>");
+      result = "ok " + await sendMail(to, "Zephyr TV: test", `Test email from ${process.env.SITE_URL || "the site"}.`, "<p>Test email from Zephyr TV's site.</p>");
     } catch (e) {
       const err = e as { code?: string; responseCode?: number; response?: string; message?: string };
       result = [err.code, err.responseCode, err.response ?? err.message].filter(Boolean).join(" · ").slice(0, 300) || "error";
