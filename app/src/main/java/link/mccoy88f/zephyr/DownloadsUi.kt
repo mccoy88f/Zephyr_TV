@@ -114,7 +114,7 @@ private fun MainActivity.downloadValue(s: DlStatus?): CharSequence = when {
 
 /**
  * The downloads' menu, from the top bar's icon, under it as the users' one: a row for each film or episode (OK: its page,
- * to play or delete it; the bin: deleted at once), live; Delete all (pressed twice) and Close at the bottom.
+ * to play or delete it; the bin: deleted at once), live; Delete all (pressed twice) at the bottom. Back closes it.
  */
 internal fun MainActivity.openDownloadsMenu(anchor: View) {
     val box = LinearLayout(this).apply {
@@ -220,9 +220,7 @@ internal fun MainActivity.openDownloadsMenu(anchor: View) {
         lastEntries.values.toList().forEach { deleteDownload(it) }
         menu.dismiss()
     }
-    buttons.addView(deleteAll, LinearLayout.LayoutParams(0, dp(44), 1f))
-    buttons.addView(settingsRow(getString(R.string.setup_close), "") { menu.dismiss() },
-        LinearLayout.LayoutParams(0, dp(44), 1f).apply { marginStart = dp(6) })
+    buttons.addView(deleteAll, LinearLayout.LayoutParams(0, dp(44), 1f)) // Back closes the window
     box.addView(buttons, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(10) })
 
     // Live: each row's value; a download come or gone, the rows again.
@@ -237,7 +235,7 @@ internal fun MainActivity.openDownloadsMenu(anchor: View) {
     val screen = window.decorView.width
     val x = (at[0] - dp(160)).coerceAtMost(screen - box.measuredWidth - dp(16)).coerceAtLeast(dp(16))
     menu.showAtLocation(anchor, Gravity.NO_GRAVITY, x, at[1] + anchor.height + dp(8))
-    (list.getChildAt(0) as? ViewGroup)?.getChildAt(0)?.requestFocus() ?: buttons.getChildAt(1).requestFocus()
+    (list.getChildAt(0) as? ViewGroup)?.getChildAt(0)?.requestFocus() ?: deleteAll.requestFocus()
 }
 
 /** [e] deleted: the download stopped (going) or its file removed (done), and forgotten. */
