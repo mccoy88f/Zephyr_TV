@@ -11,7 +11,8 @@
     "logout": "Tanca la sessió",
     "language": "Idioma",
     "account": "Compte",
-    "extensions": "Extensions"
+    "extensions": "Extensions",
+    "register": "Crea un compte"
   },
   "footer": {
     "source": "Codi font",
@@ -37,7 +38,11 @@
     "f_users_text": "Cada persona de casa té el seu historial, el seu Continua mirant, el seu avatar i el seu compte de Trakt.",
     "f_phone_title": "El telèfon t'ajuda",
     "f_phone_text": "Escriu des del telèfon, envia add-ons i claus, fes còpies i restaura, o fes-lo servir de comandament.",
-    "screens_title": "Una ullada"
+    "screens_title": "Una ullada",
+    "cta_account": "Crea un compte",
+    "account_title": "Un compte per a tots els teus televisors",
+    "account_text": "Vincula els teus televisors a un compte gratuït de Zephyr TV: usuaris, avatars, configuració, complements i el que ha vist cadascú són iguals a tots.",
+    "account_open": "El teu compte"
   },
   "download": {
     "title": "Baixa",
@@ -97,7 +102,9 @@
     "error_invalid": "Escriu un correu vàlid i la teva contrasenya.",
     "register": "Crea un compte",
     "forgot": "Has oblidat la contrasenya?",
-    "resend": "Torna a enviar el correu de confirmació"
+    "resend": "Torna a enviar el correu de confirmació",
+    "no_account": "Encara no tens compte?",
+    "no_account_text": "Gratuït: els teus televisors vinculats, usuaris i configuració sincronitzats, les extensions del catàleg."
   },
   "admin": {
     "title": "Admin",
@@ -219,7 +226,11 @@
     "delete_title": "Elimina el compte",
     "delete_text": "Tot el que pertany al compte s'elimina i no es pot recuperar.",
     "delete_submit": "Elimina el compte",
-    "done_tv": "Televisor vinculat al compte."
+    "done_tv": "Televisor vinculat al compte.",
+    "reset_title": "Inicialitza el compte",
+    "reset_text": "Primer es desvinculen tots els televisors, després s'eliminen els usuaris de Zephyr TV i tot el que s'ha sincronitzat. El compte, el correu i la contrasenya es mantenen. Els televisors conserven el que tenen.",
+    "reset_submit": "Inicialitza el compte",
+    "done_reset": "Compte inicialitzat: cap televisor vinculat, cap usuari."
   },
   "adminAccounts": {
     "title": "Comptes",
@@ -284,7 +295,7 @@
     "pick": "Tria aquest avatar",
     "no_avatar": "Sense avatar",
     "dicebear": "Avatars de DiceBear: només rep un codi aleatori, mai un nom.",
-    "main": "Usuari principal",
+    "main": "Principal",
     "main_note": "El primer usuari és el principal: la sincronització és seva i porta tots els usuaris. No es pot eliminar."
   },
   "catalog": {

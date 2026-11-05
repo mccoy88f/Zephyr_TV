@@ -17,8 +17,13 @@ export default async function Login({ params, searchParams }: { params: Promise<
       <h1>{t("title")}</h1>
       <LoginForm next={next} />
       <p>
-        <Link href="/register">{t("register")}</Link> · <Link href="/forgot">{t("forgot")}</Link> · <Link href="/resend">{t("resend")}</Link>
+        <Link href="/forgot">{t("forgot")}</Link> · <Link href="/resend">{t("resend")}</Link>
       </p>
+      <article className="card cta">
+        <h2>{t("no_account")}</h2>
+        <p>{t("no_account_text")}</p>
+        <Link className="button primary" href="/register">{t("register")}</Link>
+      </article>
     </section>
   );
 }

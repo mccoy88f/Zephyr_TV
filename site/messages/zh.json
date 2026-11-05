@@ -11,7 +11,8 @@
     "logout": "退出",
     "language": "语言",
     "account": "账号",
-    "extensions": "扩展"
+    "extensions": "扩展",
+    "register": "创建账号"
   },
   "footer": {
     "source": "源代码",
@@ -37,7 +38,11 @@
     "f_users_text": "家里每个人都有自己的观看记录、继续观看、头像和 Trakt 账号。",
     "f_phone_title": "手机来帮忙",
     "f_phone_text": "用手机输入文字、发送插件和密钥、备份与恢复，或当作遥控器使用。",
-    "screens_title": "看一看"
+    "screens_title": "看一看",
+    "cta_account": "创建账号",
+    "account_title": "一个账号管理你所有的电视",
+    "account_text": "将你的电视关联到免费的 Zephyr TV 账号：用户、头像、设置、插件以及每个人看过的内容在所有电视上保持一致。",
+    "account_open": "你的账号"
   },
   "download": {
     "title": "下载",
@@ -97,7 +102,9 @@
     "error_invalid": "请输入有效的电子邮件和密码。",
     "register": "创建账号",
     "forgot": "忘记密码？",
-    "resend": "重新发送确认邮件"
+    "resend": "重新发送确认邮件",
+    "no_account": "还没有账号？",
+    "no_account_text": "免费：关联你的电视，用户和设置同步，使用目录中的扩展。"
   },
   "admin": {
     "title": "管理",
@@ -219,7 +226,11 @@
     "delete_title": "删除账号",
     "delete_text": "属于该账号的一切都会被删除，且无法恢复。",
     "delete_submit": "删除账号",
-    "done_tv": "电视已关联到账号。"
+    "done_tv": "电视已关联到账号。",
+    "reset_title": "重置账号",
+    "reset_text": "先取消关联所有电视，然后删除 Zephyr TV 用户和所有已同步的内容。账号、邮箱和密码保留。电视保留其现有内容。",
+    "reset_submit": "重置账号",
+    "done_reset": "账号已重置：没有关联的电视，没有用户。"
   },
   "adminAccounts": {
     "title": "账号",
@@ -284,7 +295,7 @@
     "pick": "选择此头像",
     "no_avatar": "不使用头像",
     "dicebear": "头像由 DiceBear 生成：它只收到一个随机代码，从不收到名字。",
-    "main": "主用户",
+    "main": "主",
     "main_note": "第一个用户是主用户：同步属于他，并包含所有用户。主用户不能删除。"
   },
   "catalog": {

@@ -11,7 +11,8 @@
     "logout": "Sair",
     "language": "Idioma",
     "account": "Conta",
-    "extensions": "Extensões"
+    "extensions": "Extensões",
+    "register": "Criar uma conta"
   },
   "footer": {
     "source": "Código-fonte",
@@ -37,7 +38,11 @@
     "f_users_text": "Cada pessoa da casa tem seu histórico, seu Continuar assistindo, seu avatar e sua conta Trakt.",
     "f_phone_title": "Seu celular ajuda",
     "f_phone_text": "Digite no celular, envie add-ons e chaves, faça backup e restauração ou use-o como controle remoto.",
-    "screens_title": "Uma olhada"
+    "screens_title": "Uma olhada",
+    "cta_account": "Criar uma conta",
+    "account_title": "Uma conta para todas as suas TVs",
+    "account_text": "Conecte suas TVs a uma conta Zephyr TV gratuita: usuários, avatares, configurações, add-ons e o que cada um assistiu ficam iguais em todas.",
+    "account_open": "Sua conta"
   },
   "download": {
     "title": "Baixar",
@@ -97,7 +102,9 @@
     "error_invalid": "Digite um e-mail válido e sua senha.",
     "register": "Criar uma conta",
     "forgot": "Esqueceu a senha?",
-    "resend": "Reenviar o e-mail de confirmação"
+    "resend": "Reenviar o e-mail de confirmação",
+    "no_account": "Ainda não tem conta?",
+    "no_account_text": "Grátis: suas TVs conectadas, usuários e configurações sincronizados, as extensões do catálogo."
   },
   "admin": {
     "title": "Admin",
@@ -219,7 +226,11 @@
     "delete_title": "Excluir a conta",
     "delete_text": "Tudo o que pertence à conta é excluído e não pode ser recuperado.",
     "delete_submit": "Excluir a conta",
-    "done_tv": "TV conectada à conta."
+    "done_tv": "TV conectada à conta.",
+    "reset_title": "Redefinir a conta",
+    "reset_text": "Primeiro todas as TVs conectadas são desconectadas, depois os usuários do Zephyr TV e tudo o que foi sincronizado são excluídos. A conta, o e-mail e a senha ficam. As TVs mantêm o que têm.",
+    "reset_submit": "Redefinir a conta",
+    "done_reset": "Conta redefinida: nenhuma TV conectada, nenhum usuário."
   },
   "adminAccounts": {
     "title": "Contas",
@@ -284,7 +295,7 @@
     "pick": "Escolher este avatar",
     "no_avatar": "Sem avatar",
     "dicebear": "Avatares do DiceBear: ele recebe só um código aleatório, nunca um nome.",
-    "main": "Usuário principal",
+    "main": "Principal",
     "main_note": "O primeiro usuário é o principal: a sincronização é dele e leva todos os usuários. Ele não pode ser excluído."
   },
   "catalog": {

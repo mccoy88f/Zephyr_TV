@@ -11,7 +11,8 @@
     "logout": "Abmelden",
     "language": "Sprache",
     "account": "Konto",
-    "extensions": "Erweiterungen"
+    "extensions": "Erweiterungen",
+    "register": "Konto erstellen"
   },
   "footer": {
     "source": "Quellcode",
@@ -37,7 +38,11 @@
     "f_users_text": "Jede Person im Haus hat ihren Verlauf, ihr Weiterschauen, ihren Avatar und ihr Trakt-Konto.",
     "f_phone_title": "Dein Handy hilft",
     "f_phone_text": "Tippe auf dem Handy, schicke Add-ons und Schlüssel, sichere und stelle wieder her oder nutze es als Fernbedienung.",
-    "screens_title": "Ein Blick darauf"
+    "screens_title": "Ein Blick darauf",
+    "cta_account": "Konto erstellen",
+    "account_title": "Ein Konto für alle deine Fernseher",
+    "account_text": "Verbinde deine Fernseher mit einem kostenlosen Zephyr-TV-Konto: Nutzer, Avatare, Einstellungen, Add-ons und was jeder gesehen hat, bleiben überall gleich.",
+    "account_open": "Dein Konto"
   },
   "download": {
     "title": "Herunterladen",
@@ -97,7 +102,9 @@
     "error_invalid": "Gib eine gültige E-Mail und dein Passwort ein.",
     "register": "Konto erstellen",
     "forgot": "Passwort vergessen?",
-    "resend": "Bestätigungs-E-Mail erneut senden"
+    "resend": "Bestätigungs-E-Mail erneut senden",
+    "no_account": "Noch kein Konto?",
+    "no_account_text": "Kostenlos: deine Fernseher verbunden, Nutzer und Einstellungen synchron, die Erweiterungen des Katalogs."
   },
   "admin": {
     "title": "Admin",
@@ -219,7 +226,11 @@
     "delete_title": "Konto löschen",
     "delete_text": "Alles, was zum Konto gehört, wird gelöscht und kann nicht wiederhergestellt werden.",
     "delete_submit": "Konto löschen",
-    "done_tv": "Fernseher mit dem Konto verbunden."
+    "done_tv": "Fernseher mit dem Konto verbunden.",
+    "reset_title": "Konto zurücksetzen",
+    "reset_text": "Zuerst werden alle verbundenen Fernseher getrennt, dann werden die Zephyr-TV-Nutzer und alles Synchronisierte gelöscht. Das Konto, seine E-Mail und sein Passwort bleiben. Die Fernseher behalten, was sie haben.",
+    "reset_submit": "Konto zurücksetzen",
+    "done_reset": "Konto zurückgesetzt: kein Fernseher verbunden, keine Nutzer."
   },
   "adminAccounts": {
     "title": "Konten",
@@ -284,7 +295,7 @@
     "pick": "Diesen Avatar wählen",
     "no_avatar": "Kein Avatar",
     "dicebear": "Avatare von DiceBear: Es erhält nur einen zufälligen Code, nie einen Namen.",
-    "main": "Hauptnutzer",
+    "main": "Haupt",
     "main_note": "Der erste Nutzer ist der Hauptnutzer: Ihm gehört die Synchronisierung, die alle Nutzer mitnimmt. Er kann nicht gelöscht werden."
   },
   "catalog": {

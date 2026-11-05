@@ -142,7 +142,7 @@ h3 { font-size: 19px; margin: 0 0 8px; }
 .card .form { margin: 12px 0 0; }
 .sessions { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 8px; }
 .sessions li { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
-.sessions .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; min-width: 0; }
+.sessions .small { max-width: 100%; min-width: 0; overflow-wrap: anywhere; }
 .sessions li > * { min-width: 0; }
 .search { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
 .search input { flex: 1; min-width: min(200px, 100%); font: inherit; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--panel); color: var(--fg); }
@@ -186,6 +186,13 @@ code.url { word-break: break-all; font-size: 13px; }
 .review { display: flex; gap: 6px; flex-wrap: wrap; margin: 0; }
 .review input { font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--panel); color: var(--fg); min-width: min(160px, 100%); }
 .review .button, .ext .row-actions .button { padding: 8px 14px; }
+
+/* Creating an account, where it's offered: in view. */
+.card.cta { display: grid; gap: 12px; justify-items: start; border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent) 7%, var(--panel)); }
+.card.cta h2 { margin: 0; }
+.card.cta.wide { text-align: center; justify-items: center; padding: 28px; }
+.card.cta.wide p { max-width: 620px; }
+.button.small-button { padding: 7px 14px; font-size: 15px; }
 
 .footer { border-top: 1px solid var(--line); padding: 24px; text-align: center; font-size: 14px; }
 .footer p { margin: 4px 0; }

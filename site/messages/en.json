@@ -11,7 +11,8 @@
     "logout": "Sign out",
     "language": "Language",
     "account": "Account",
-    "extensions": "Extensions"
+    "extensions": "Extensions",
+    "register": "Create an account"
   },
   "footer": {
     "source": "Source code",
@@ -37,7 +38,11 @@
     "f_users_text": "Each person in the house has their own history, Continue Watching, avatar and Trakt account.",
     "f_phone_title": "Your phone helps",
     "f_phone_text": "Type on the phone, send add-ons and keys, back up and restore, or use it as a remote.",
-    "screens_title": "A look at it"
+    "screens_title": "A look at it",
+    "cta_account": "Create an account",
+    "account_title": "One account for all your TVs",
+    "account_text": "Link your TVs to a free Zephyr TV account: users, avatars, settings, add-ons and what each one watched stay the same on all of them.",
+    "account_open": "Your account"
   },
   "download": {
     "title": "Download",
@@ -97,7 +102,9 @@
     "error_invalid": "Enter a valid email and your password.",
     "register": "Create an account",
     "forgot": "Forgot your password?",
-    "resend": "Confirmation email again"
+    "resend": "Confirmation email again",
+    "no_account": "No account yet?",
+    "no_account_text": "Free: your TVs linked, users and settings in sync, the catalogue's extensions."
   },
   "admin": {
     "title": "Admin",
@@ -219,7 +226,11 @@
     "delete_title": "Delete the account",
     "delete_text": "Everything that belongs to the account goes, and can't be brought back.",
     "delete_submit": "Delete the account",
-    "done_tv": "TV linked to the account."
+    "done_tv": "TV linked to the account.",
+    "reset_title": "Reset the account",
+    "reset_text": "All linked TVs are unlinked first, then the Zephyr TV users and everything synced are deleted. The account, its email and password stay. The TVs keep what they have.",
+    "reset_submit": "Reset the account",
+    "done_reset": "The account is reset: no TV linked, no users."
   },
   "adminAccounts": {
     "title": "Accounts",
@@ -284,7 +295,7 @@
     "pick": "Choose this avatar",
     "no_avatar": "No avatar",
     "dicebear": "Avatars by DiceBear: only a random code goes to it, never a name.",
-    "main": "Main user",
+    "main": "Main",
     "main_note": "The first user is the main one: their TV owns sync, which carries every user. They can't be removed."
   },
   "catalog": {

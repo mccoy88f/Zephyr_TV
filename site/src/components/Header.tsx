@@ -25,7 +25,10 @@ export async function Header() {
             <button className="linkish" type="submit">{t("logout")}</button>
           </form>
         ) : (
-          <Link href="/login">{t("login")}</Link>
+          <>
+            <Link href="/login">{t("login")}</Link>
+            <Link className="button primary small-button" href="/register">{t("register")}</Link>
+          </>
         )}
         <LanguageMenu label={t("language")} />
       </nav>

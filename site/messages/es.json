@@ -11,7 +11,8 @@
     "logout": "Cerrar sesión",
     "language": "Idioma",
     "account": "Cuenta",
-    "extensions": "Extensiones"
+    "extensions": "Extensiones",
+    "register": "Crear una cuenta"
   },
   "footer": {
     "source": "Código fuente",
@@ -37,7 +38,11 @@
     "f_users_text": "Cada persona de la casa tiene su historial, su Seguir viendo, su avatar y su cuenta de Trakt.",
     "f_phone_title": "Tu teléfono ayuda",
     "f_phone_text": "Escribe desde el teléfono, envía add-ons y claves, haz copias y restaura, o úsalo como mando.",
-    "screens_title": "Un vistazo"
+    "screens_title": "Un vistazo",
+    "cta_account": "Crear una cuenta",
+    "account_title": "Una cuenta para todas tus TV",
+    "account_text": "Vincula tus TV a una cuenta gratuita de Zephyr TV: usuarios, avatares, ajustes, complementos y lo que vio cada uno son iguales en todas.",
+    "account_open": "Tu cuenta"
   },
   "download": {
     "title": "Descargar",
@@ -97,7 +102,9 @@
     "error_invalid": "Escribe un correo válido y tu contraseña.",
     "register": "Crear una cuenta",
     "forgot": "¿Olvidaste tu contraseña?",
-    "resend": "Reenviar el correo de confirmación"
+    "resend": "Reenviar el correo de confirmación",
+    "no_account": "¿No tienes cuenta?",
+    "no_account_text": "Gratis: tus TV vinculadas, usuarios y ajustes sincronizados, las extensiones del catálogo."
   },
   "admin": {
     "title": "Admin",
@@ -219,7 +226,11 @@
     "delete_title": "Eliminar la cuenta",
     "delete_text": "Todo lo que pertenece a la cuenta se elimina y no se puede recuperar.",
     "delete_submit": "Eliminar la cuenta",
-    "done_tv": "TV vinculada a la cuenta."
+    "done_tv": "TV vinculada a la cuenta.",
+    "reset_title": "Restablecer la cuenta",
+    "reset_text": "Primero se desvinculan todas las TV, luego se borran los usuarios de Zephyr TV y todo lo sincronizado. La cuenta, su correo y su contraseña se mantienen. Las TV conservan lo que tienen.",
+    "reset_submit": "Restablecer la cuenta",
+    "done_reset": "Cuenta restablecida: ninguna TV vinculada, ningún usuario."
   },
   "adminAccounts": {
     "title": "Cuentas",
@@ -284,7 +295,7 @@
     "pick": "Elegir este avatar",
     "no_avatar": "Sin avatar",
     "dicebear": "Avatares de DiceBear: solo recibe un código aleatorio, nunca un nombre.",
-    "main": "Usuario principal",
+    "main": "Principal",
     "main_note": "El primer usuario es el principal: la sincronización es suya y lleva consigo a todos los usuarios. No se puede eliminar."
   },
   "catalog": {

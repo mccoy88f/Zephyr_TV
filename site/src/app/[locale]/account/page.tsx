@@ -3,11 +3,12 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { db } from "@/db";
 import { devices, profiles } from "@/db/schema";
 import { avatarUrl } from "@/lib/avatars";
+import { deviceName } from "@/lib/device";
 import { addProfile, deleteProfile, moveProfile, unlinkDevice } from "@/server/profileActions";
 import { Form } from "@/components/Form";
 import { Link, redirect } from "@/i18n/navigation";
 import { LANGUAGE_NAMES, routing } from "@/i18n/routing";
-import { changeEmail, changePassword, deleteAccount, setLanguage, signOutOthers } from "@/server/accountActions";
+import { changeEmail, changePassword, deleteAccount, resetAccount, setLanguage, signOutOthers } from "@/server/accountActions";
 import { currentAccount, sessionsOf } from "@/server/session";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -39,7 +40,7 @@ export default async function AccountPage({ params, searchParams }: {
   return (
     <section>
       <h1>{t("title")}</h1>
-      {done && ["email", "password", "sessions", "tv"].includes(done) && <p className="okmsg" role="status">{t(`done_${done}`)}</p>}
+      {done && ["email", "password", "sessions", "tv", "reset"].includes(done) && <p className="okmsg" role="status">{t(`done_${done}`)}</p>}
       <p className="muted">{t("signed_in", { email: account.email })} · {t("since", { date: format.dateTime(account.createdAt, { dateStyle: "long" }) })}</p>
 
       <article className="card" id="users">
@@ -126,7 +127,7 @@ export default async function AccountPage({ params, searchParams }: {
               <li key={s.tokenHash}>
                 {s.mine && <span className="tag">{t("this_browser")}</span>}
                 <span>{format.dateTime(s.createdAt, { dateStyle: "medium", timeStyle: "short" })}</span>
-                <span className="muted small">{s.userAgent ?? ""}</span>
+                <span className="muted small ua" title={s.userAgent ?? undefined}>{deviceName(s.userAgent) ?? s.userAgent ?? ""}</span>
               </li>
             ))}
           </ul>
@@ -137,6 +138,14 @@ export default async function AccountPage({ params, searchParams }: {
           )}
         </article>
       </div>
+
+      <article className="card danger-zone">
+        <h2>{t("reset_title")}</h2>
+        <p>{t("reset_text")}</p>
+        <Form action={resetAccount} danger submit={t("reset_submit")} fields={[
+          { name: "current", label: f("current_password"), type: "password", autoComplete: "current-password" },
+        ]} />
+      </article>
 
       <article className="card danger-zone">
         <h2>{t("delete_title")}</h2>

@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { currentAccount } from "@/server/session";
 
 const FEATURES = ["home", "watch", "addons", "player", "users", "phone"] as const;
 
@@ -12,6 +13,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("home");
+  const account = await currentAccount().catch(() => null); // no database: the page still shows
   return (
     <>
       <section className="hero">
@@ -22,6 +24,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <Link className="button primary" href="/download">{t("cta_download")}</Link>
           <a className="button" href="https://github.com/mccoy88f/Zephyr_TV">{t("cta_github")}</a>
         </div>
+      </section>
+      <section>
+        <article className="card cta wide">
+          <h2>{t("account_title")}</h2>
+          <p>{t("account_text")}</p>
+          <Link className="button primary" href={account ? "/account" : "/register"}>{account ? t("account_open") : t("cta_account")}</Link>
+        </article>
       </section>
       <section>
         <img className="shot wide" src={screen(locale, "home-glass")} alt={t("screens_alt")} />

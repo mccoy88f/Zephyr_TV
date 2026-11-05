@@ -11,7 +11,8 @@
     "logout": "Se déconnecter",
     "language": "Langue",
     "account": "Compte",
-    "extensions": "Extensions"
+    "extensions": "Extensions",
+    "register": "Créer un compte"
   },
   "footer": {
     "source": "Code source",
@@ -37,7 +38,11 @@
     "f_users_text": "Chaque personne de la maison a son historique, son Reprendre la lecture, son avatar et son compte Trakt.",
     "f_phone_title": "Votre téléphone aide",
     "f_phone_text": "Écrivez depuis le téléphone, envoyez add-ons et clés, sauvegardez et restaurez, ou servez-vous-en comme télécommande.",
-    "screens_title": "Un aperçu"
+    "screens_title": "Un aperçu",
+    "cta_account": "Créer un compte",
+    "account_title": "Un compte pour toutes vos TV",
+    "account_text": "Reliez vos TV à un compte Zephyr TV gratuit : utilisateurs, avatars, réglages, add-ons et ce que chacun a regardé restent identiques partout.",
+    "account_open": "Votre compte"
   },
   "download": {
     "title": "Télécharger",
@@ -97,7 +102,9 @@
     "error_invalid": "Saisissez un e-mail valide et votre mot de passe.",
     "register": "Créer un compte",
     "forgot": "Mot de passe oublié ?",
-    "resend": "Renvoyer l'e-mail de confirmation"
+    "resend": "Renvoyer l'e-mail de confirmation",
+    "no_account": "Pas encore de compte ?",
+    "no_account_text": "Gratuit : vos TV reliées, utilisateurs et réglages synchronisés, les extensions du catalogue."
   },
   "admin": {
     "title": "Admin",
@@ -219,7 +226,11 @@
     "delete_title": "Supprimer le compte",
     "delete_text": "Tout ce qui appartient au compte est supprimé et ne peut pas être récupéré.",
     "delete_submit": "Supprimer le compte",
-    "done_tv": "TV reliée au compte."
+    "done_tv": "TV reliée au compte.",
+    "reset_title": "Réinitialiser le compte",
+    "reset_text": "Toutes les TV reliées sont d'abord déliées, puis les utilisateurs Zephyr TV et tout ce qui est synchronisé sont supprimés. Le compte, son e-mail et son mot de passe restent. Les TV gardent ce qu'elles ont.",
+    "reset_submit": "Réinitialiser le compte",
+    "done_reset": "Compte réinitialisé : aucune TV reliée, aucun utilisateur."
   },
   "adminAccounts": {
     "title": "Comptes",
@@ -284,7 +295,7 @@
     "pick": "Choisir cet avatar",
     "no_avatar": "Aucun avatar",
     "dicebear": "Avatars de DiceBear : il ne reçoit qu'un code aléatoire, jamais un nom.",
-    "main": "Utilisateur principal",
+    "main": "Principal",
     "main_note": "Le premier utilisateur est le principal : la synchronisation lui appartient et emporte tous les utilisateurs. Il ne peut pas être supprimé."
   },
   "catalog": {

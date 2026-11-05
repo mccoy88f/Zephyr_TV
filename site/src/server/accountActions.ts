@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { db } from "@/db";
-import { accounts } from "@/db/schema";
+import { accounts, devices, linkCodes, profiles, syncDocs } from "@/db/schema";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { sendLink, useLink } from "./emails";
@@ -179,3 +179,20 @@ export async function deleteAccount(_: FormState, data: FormData): Promise<FormS
   redirect({ href: "/?done=deleted", locale: await getLocale() });
   return { ok: true };
 }
+
+/**
+ * The account back as it was when made (its password asked first): its TVs unlinked first (their tokens stop
+ * working; each TV keeps what it has, as a TV of its own), then its Zephyr TV users and everything synced gone.
+ * The account itself, its email, password, sign-ins and extension proposals stay.
+ */
+export async function resetAccount(_: FormState, data: FormData): Promise<FormState> {
+  const account = await signedIn();
+  if (!(await verifyPassword(account.passwordHash, field(data, "current")))) return { error: "pw_wrong" };
+  await db.delete(devices).where(eq(devices.accountId, account.id));
+  await db.delete(linkCodes).where(eq(linkCodes.accountId, account.id));
+  await db.delete(syncDocs).where(eq(syncDocs.accountId, account.id));
+  await db.delete(profiles).where(eq(profiles.accountId, account.id));
+  redirect({ href: "/account?done=reset", locale: await getLocale() });
+  return { ok: true };
+}
+
