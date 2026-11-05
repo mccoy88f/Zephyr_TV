@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- When Spotlight folds away, a space stays between the favourites row and the top bar with the weather.
+
 ## 4.0.0
 
 - When you link a TV to an account that already has a configuration, select what to do: **Use the cloud configuration**, **Use this TV's configuration**, **Merge**, or **Cancel and leave**. Merge keeps the main user of the account and adds all other users of the TV. It also keeps the add-ons of both.

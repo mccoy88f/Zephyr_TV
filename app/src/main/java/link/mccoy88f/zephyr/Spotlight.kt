@@ -92,6 +92,9 @@ internal fun MainActivity.veilFromScroll() {
     if (f != rowsVeil.folded) rowsVeil.folded = f else if (f > 0f) rowsVeil.invalidate()
 }
 
+/** The room left above the apps (dp) with Spotlight folded away, under the top bar. */
+private const val FOLDED_TOP = 16
+
 /** Spotlight's height and margins down to nothing ([fold]), or back to its own; the veil fading in or out with it. */
 private fun MainActivity.foldAnimation(fold: Boolean) {
     val c = spotlightContainer
@@ -118,7 +121,8 @@ private fun MainActivity.foldAnimation(fold: Boolean) {
         val t = a.animatedValue as Float
         val f = if (fold) start + (1f - start) * t else start * (1f - t) // how folded: 0 open, 1 away
         lp.height = from + ((to - from) * t).toInt()
-        lp.topMargin = (dp(36) * (1f - f)).toInt()
+        // Folded, some room stays above the apps: they don't touch the top bar (the clock, the weather).
+        lp.topMargin = (dp(FOLDED_TOP) + (dp(36) - dp(FOLDED_TOP)) * (1f - f)).toInt()
         lp.bottomMargin = (dp(12) * (1f - f)).toInt()
         c.layoutParams = lp
         c.alpha = 1f - f
