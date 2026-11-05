@@ -33,6 +33,10 @@ body {
 }
 a { color: var(--accent); }
 img { max-width: 100%; }
+/* Long words (addresses, names without spaces, emails) go to a new line inside their box, never past its edge. */
+body { overflow-wrap: break-word; }
+.card, .credits li, .people li, .sessions li, .shared, td, .okmsg, .error { overflow-wrap: anywhere; }
+.grid > *, .shots > *, .people > *, .credits > *, .shared > * { min-width: 0; }
 
 .header {
   position: sticky;
@@ -94,8 +98,8 @@ h3 { font-size: 19px; margin: 0 0 8px; }
 .button.primary { background: linear-gradient(135deg, var(--accent-2), var(--accent)); border-color: transparent; color: var(--on-accent); }
 .button:disabled { opacity: 0.6; cursor: default; }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-.grid.two { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 16px; }
+.grid.two { grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
 .card p { margin: 0; color: var(--muted); }
 .release .button { margin-top: 12px; }
@@ -105,12 +109,12 @@ h3 { font-size: 19px; margin: 0 0 8px; }
 
 .shot { display: block; width: 100%; border-radius: var(--radius); border: 1px solid var(--line); }
 .shot.wide { box-shadow: 0 20px 60px rgb(0 0 0 / 0.25); }
-.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 16px; }
 
 .credits { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
 .credits li { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
 .credits li p { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
-.credits.compact { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.credits.compact { grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 8px; }
 .tag { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); font-size: 13px; font-weight: 600; }
 
 .form { display: grid; gap: 16px; margin: 24px 0; }
@@ -138,9 +142,10 @@ h3 { font-size: 19px; margin: 0 0 8px; }
 .card .form { margin: 12px 0 0; }
 .sessions { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 8px; }
 .sessions li { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
-.sessions .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.sessions .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; min-width: 0; }
+.sessions li > * { min-width: 0; }
 .search { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
-.search input { flex: 1; min-width: 200px; font: inherit; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--panel); color: var(--fg); }
+.search input { flex: 1; min-width: min(200px, 100%); font: inherit; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--panel); color: var(--fg); }
 .table { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 15px; }
 th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
@@ -173,12 +178,13 @@ th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--lin
 .ext-head { display: flex; gap: 12px; align-items: center; }
 .ext-head img { border-radius: 10px; flex: none; }
 .ext-head h3 { margin: 0; }
+.ext-head > div { min-width: 0; }
 .ext-head .tag { margin-left: 0; margin-right: 6px; }
 .ext-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .ext-actions .button { padding: 8px 14px; }
 code.url { word-break: break-all; font-size: 13px; }
 .review { display: flex; gap: 6px; flex-wrap: wrap; margin: 0; }
-.review input { font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--panel); color: var(--fg); min-width: 160px; }
+.review input { font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--panel); color: var(--fg); min-width: min(160px, 100%); }
 .review .button, .ext .row-actions .button { padding: 8px 14px; }
 
 .footer { border-top: 1px solid var(--line); padding: 24px; text-align: center; font-size: 14px; }
