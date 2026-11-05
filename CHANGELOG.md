@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- **Zephyr TV account** links the TV to your account on ztv.mccoy88f.link. Select **Zephyr TV settings → System → Zephyr TV account**. Scan the QR code or type the code on the site. To unlink the TV, use the TV or the site.
+
 ## 4.0.0-beta.23
 
 - Shared links go to ztv.mccoy88f.link. A chat shows the title's poster, name and plot as the link's preview.

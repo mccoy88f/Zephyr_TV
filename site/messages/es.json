@@ -198,7 +198,8 @@
     "sessions_others": "Cerrar sesión en los demás dispositivos",
     "delete_title": "Eliminar la cuenta",
     "delete_text": "Todo lo que pertenece a la cuenta se elimina y no se puede recuperar.",
-    "delete_submit": "Eliminar la cuenta"
+    "delete_submit": "Eliminar la cuenta",
+    "done_tv": "TV vinculada a la cuenta."
   },
   "adminAccounts": {
     "title": "Cuentas",
@@ -228,5 +229,40 @@
     "change_subject": "Confirma tu nuevo correo",
     "change_text": "Confirma este correo para mover aquí tu cuenta de Zephyr TV. El enlace vale {hours} horas.",
     "change_button": "Confirmar el nuevo correo"
+  },
+  "link": {
+    "title": "Vincular una TV",
+    "ask": "¿Vincular “{name}” a tu cuenta?",
+    "account": "Cuenta: {email}",
+    "allow": "Vincular la TV",
+    "deny": "Ahora no",
+    "intro": "Escribe el código que Zephyr TV muestra en Ajustes → Sistema → Cuenta de Zephyr TV.",
+    "unknown": "Este código no existe o caducó: revísalo en la TV o vuelve a empezar allí.",
+    "code": "Código",
+    "next": "Siguiente"
+  },
+  "users": {
+    "title": "Usuarios de Zephyr TV",
+    "intro": "Las personas que miran, cada una con su avatar. En tus TV vinculadas llegan con la sincronización.",
+    "up": "Subir",
+    "down": "Bajar",
+    "delete": "Eliminar",
+    "name": "Nombre",
+    "add": "Añadir un usuario",
+    "tvs_title": "TV vinculadas",
+    "tvs_intro": "Las TV conectadas a esta cuenta. Si desvinculas una, se cierra su sesión al instante.",
+    "tvs_none": "Ninguna TV vinculada.",
+    "seen": "visto {date}",
+    "unlink": "Desvincular",
+    "tvs_link": "Vincular una TV",
+    "edit": "Editar el usuario",
+    "back": "Tu cuenta",
+    "saved": "Guardado.",
+    "save": "Guardar",
+    "avatar": "Avatar",
+    "avatar_intro": "Elige un estilo y un avatar: el primero de cada estilo es el de este usuario, en ese estilo.",
+    "pick": "Elegir este avatar",
+    "no_avatar": "Sin avatar",
+    "dicebear": "Avatares de DiceBear: solo recibe un código aleatorio, nunca un nombre."
   }
 }

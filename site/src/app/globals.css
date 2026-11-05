@@ -141,6 +141,23 @@ th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--lin
 .tag.bad { background: color-mix(in srgb, var(--error) 18%, transparent); color: var(--error); }
 .tag.warn { background: color-mix(in srgb, #d97706 18%, transparent); color: #d97706; }
 
+/* The account's Zephyr TV users and their avatars. */
+#users, #tvs { margin-bottom: 16px; }
+.people { list-style: none; padding: 0; margin: 12px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.people li { display: grid; justify-items: center; gap: 6px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+.person { display: grid; justify-items: center; gap: 8px; color: var(--fg); text-decoration: none; font-weight: 600; }
+.person img, .person .initial { width: 56px; height: 56px; border-radius: 50%; }
+.person .initial { display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 18%, var(--panel)); color: var(--accent); font-size: 24px; }
+.avatars h3 { margin: 16px 0 8px; }
+.avatar-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.avatar-row form { margin: 0; }
+.avatar-pick { padding: 3px; border-radius: 50%; border: 3px solid transparent; background: none; cursor: pointer; }
+.avatar-pick img { display: block; border-radius: 50%; }
+.avatar-pick:hover, .avatar-pick:focus-visible { border-color: var(--line); }
+.avatar-pick.on { border-color: var(--accent); }
+.actions.left { justify-content: flex-start; }
+.actions form { margin: 0; }
+
 .footer { border-top: 1px solid var(--line); padding: 24px; text-align: center; font-size: 14px; }
 .footer p { margin: 4px 0; }
 

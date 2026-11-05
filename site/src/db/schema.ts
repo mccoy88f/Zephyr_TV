@@ -1,4 +1,4 @@
-import { index, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 /** What an account may do: a user's own things, or everything (the superadmin's panel). */
 export const role = pgEnum("role", ["user", "superadmin"]);
@@ -71,3 +71,60 @@ export const traktSignins = pgTable("trakt_signins", {
   code: text("code"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * A Zephyr TV user of an account (Mario, Anna…): their name and avatar (DiceBear's "style/seed", as Zephyr TV keeps
+ * it), in the account's order. What each watched comes with sync (F4).
+ */
+export const profiles = pgTable(
+  "profiles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id").notNull().references(() => accounts.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    avatar: text("avatar"),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("profiles_account").on(t.accountId)],
+);
+
+/**
+ * A TV linked to an account: its name, model and Zephyr TV version as it said, and its token's SHA-256 (the TV keeps
+ * the token). Unlinked from the account's page, or by the TV.
+ */
+export const devices = pgTable(
+  "devices",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id").notNull().references(() => accounts.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    name: text("name").notNull(),
+    model: text("model"),
+    appVersion: text("app_version"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("devices_account").on(t.accountId)],
+);
+
+/** Where a TV's link is: waiting for someone to enter its code, allowed, or refused. */
+export const linkStatus = pgEnum("link_status", ["pending", "approved", "denied"]);
+
+/**
+ * A TV asking to be linked: the short code it shows ([userCode], typed or scanned on a phone), the SHA-256 of the long
+ * one it keeps to ask with ([deviceCodeHash]), and once allowed, the account. Ten minutes, then gone.
+ */
+export const linkCodes = pgTable("link_codes", {
+  userCode: text("user_code").primaryKey(),
+  deviceCodeHash: text("device_code_hash").notNull().unique(),
+  status: linkStatus("status").notNull().default("pending"),
+  accountId: uuid("account_id").references(() => accounts.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  model: text("model"),
+  appVersion: text("app_version"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+

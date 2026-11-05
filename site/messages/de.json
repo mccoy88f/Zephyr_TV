@@ -198,7 +198,8 @@
     "sessions_others": "Auf den anderen Geräten abmelden",
     "delete_title": "Konto löschen",
     "delete_text": "Alles, was zum Konto gehört, wird gelöscht und kann nicht wiederhergestellt werden.",
-    "delete_submit": "Konto löschen"
+    "delete_submit": "Konto löschen",
+    "done_tv": "Fernseher mit dem Konto verbunden."
   },
   "adminAccounts": {
     "title": "Konten",
@@ -228,5 +229,40 @@
     "change_subject": "Bestätige deine neue E-Mail",
     "change_text": "Bestätige diese E-Mail, um dein Zephyr-TV-Konto hierher umzuziehen. Der Link gilt {hours} Stunden.",
     "change_button": "Neue E-Mail bestätigen"
+  },
+  "link": {
+    "title": "Fernseher verbinden",
+    "ask": "„{name}“ mit deinem Konto verbinden?",
+    "account": "Konto: {email}",
+    "allow": "Fernseher verbinden",
+    "deny": "Nicht jetzt",
+    "intro": "Gib den Code ein, den Zephyr TV unter Einstellungen → System → Zephyr-TV-Konto zeigt.",
+    "unknown": "Dieser Code ist unbekannt oder abgelaufen: Prüfe ihn am Fernseher oder starte dort neu.",
+    "code": "Code",
+    "next": "Weiter"
+  },
+  "users": {
+    "title": "Zephyr-TV-Nutzer",
+    "intro": "Die Personen, die schauen, jede mit eigenem Avatar. Auf deinen verbundenen Fernsehern kommen sie mit der Synchronisierung.",
+    "up": "Nach oben",
+    "down": "Nach unten",
+    "delete": "Löschen",
+    "name": "Name",
+    "add": "Nutzer hinzufügen",
+    "tvs_title": "Verbundene Fernseher",
+    "tvs_intro": "Die mit diesem Konto verbundenen Fernseher. Trennst du einen, wird er sofort abgemeldet.",
+    "tvs_none": "Noch kein Fernseher verbunden.",
+    "seen": "zuletzt {date}",
+    "unlink": "Trennen",
+    "tvs_link": "Fernseher verbinden",
+    "edit": "Nutzer bearbeiten",
+    "back": "Dein Konto",
+    "saved": "Gespeichert.",
+    "save": "Speichern",
+    "avatar": "Avatar",
+    "avatar_intro": "Wähle einen Stil und einen Avatar: Der erste jedes Stils ist der dieses Nutzers in diesem Stil.",
+    "pick": "Diesen Avatar wählen",
+    "no_avatar": "Kein Avatar",
+    "dicebear": "Avatare von DiceBear: Es erhält nur einen zufälligen Code, nie einen Namen."
   }
 }

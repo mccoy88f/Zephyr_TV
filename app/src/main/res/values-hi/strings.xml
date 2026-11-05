@@ -805,4 +805,18 @@
     <string name="phone_user_title">उपयोगकर्ता का नाम</string>
     <string name="phone_user_intro">नाम टाइप करें। इसका पहला अक्षर डिवाइस के उपयोगकर्ता आइकन पर दिखता है: कोई अक्षर या इमोजी।</string>
     <string name="phone_user_saved">डिवाइस पर सेव हुआ: %1$s</string>
+    <string name="setting_ztv_account">Zephyr TV अकाउंट</string>
+    <string name="ztv_not_linked">नहीं जुड़ा</string>
+    <string name="ztv_waiting">साइट से कोड माँगा जा रहा है…</string>
+    <string name="ztv_failed">Zephyr TV की साइट तक नहीं पहुँच सके: कनेक्शन जाँचें और फिर कोशिश करें।</string>
+    <string name="ztv_link_intro">फ़ोन से कोड स्कैन करें, या %1$s खोलें और %2$s डालें। वहाँ साइन इन करके इस टीवी को अनुमति दें।</string>
+    <string name="ztv_waiting_allow">आपकी अनुमति का इंतज़ार…</string>
+    <string name="ztv_expired">बहुत समय बीत गया: वापस जाकर फिर कोशिश करें।</string>
+    <string name="ztv_denied">टीवी को अनुमति नहीं मिली।</string>
+    <string name="ztv_done">टीवी आपके अकाउंट से जुड़ गया</string>
+    <string name="ztv_linked">इससे जुड़ा</string>
+    <string name="ztv_users">अकाउंट में Zephyr TV यूज़र</string>
+    <string name="ztv_unlink">इस टीवी को अलग करें</string>
+    <string name="ztv_unlinked">टीवी अलग किया गया</string>
+    <string name="ztv_manage">यूज़र और टीवी %1$s पर संभालें।</string>
 </resources>

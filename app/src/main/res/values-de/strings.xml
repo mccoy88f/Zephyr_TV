@@ -805,4 +805,18 @@
     <string name="phone_user_title">Name eines Benutzers</string>
     <string name="phone_user_intro">Tippe den Namen ein. Sein erstes Zeichen erscheint auf dem Benutzersymbol des Geräts: ein Buchstabe oder ein Emoji.</string>
     <string name="phone_user_saved">Auf dem Gerät gespeichert: %1$s</string>
+    <string name="setting_ztv_account">Zephyr-TV-Konto</string>
+    <string name="ztv_not_linked">Nicht verbunden</string>
+    <string name="ztv_waiting">Code wird angefordert…</string>
+    <string name="ztv_failed">Die Website von Zephyr TV ist nicht erreichbar: Prüfe die Verbindung und versuche es erneut.</string>
+    <string name="ztv_link_intro">Scanne den Code mit dem Handy oder öffne %1$s und gib %2$s ein. Melde dich an und erlaube diesen Fernseher.</string>
+    <string name="ztv_waiting_allow">Warte darauf, dass du diesen Fernseher erlaubst…</string>
+    <string name="ztv_expired">Es ist zu viel Zeit vergangen: Geh zurück und versuche es erneut.</string>
+    <string name="ztv_denied">Der Fernseher wurde nicht erlaubt.</string>
+    <string name="ztv_done">Fernseher mit deinem Konto verbunden</string>
+    <string name="ztv_linked">Verbunden mit</string>
+    <string name="ztv_users">Zephyr-TV-Nutzer im Konto</string>
+    <string name="ztv_unlink">Diesen Fernseher trennen</string>
+    <string name="ztv_unlinked">Fernseher getrennt</string>
+    <string name="ztv_manage">Nutzer und Fernseher verwaltest du auf %1$s.</string>
 </resources>

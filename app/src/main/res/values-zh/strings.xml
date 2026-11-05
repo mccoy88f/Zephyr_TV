@@ -802,4 +802,18 @@
     <string name="phone_user_title">用户名称</string>
     <string name="phone_user_intro">输入名称。它的第一个字符会显示在设备的用户图标上：一个字母或一个表情符号。</string>
     <string name="phone_user_saved">已保存到设备：%1$s</string>
+    <string name="setting_ztv_account">Zephyr TV 账号</string>
+    <string name="ztv_not_linked">未关联</string>
+    <string name="ztv_waiting">正在向网站请求代码…</string>
+    <string name="ztv_failed">无法连接 Zephyr TV 网站：请检查网络后重试。</string>
+    <string name="ztv_link_intro">用手机扫描二维码，或打开 %1$s 并输入 %2$s。登录后允许这台电视。</string>
+    <string name="ztv_waiting_allow">正在等待你允许这台电视…</string>
+    <string name="ztv_expired">时间过久：请返回重试。</string>
+    <string name="ztv_denied">这台电视未被允许。</string>
+    <string name="ztv_done">电视已关联到你的账号</string>
+    <string name="ztv_linked">已关联到</string>
+    <string name="ztv_users">账号中的 Zephyr TV 用户</string>
+    <string name="ztv_unlink">取消关联这台电视</string>
+    <string name="ztv_unlinked">已取消关联</string>
+    <string name="ztv_manage">在 %1$s 管理用户和电视。</string>
 </resources>

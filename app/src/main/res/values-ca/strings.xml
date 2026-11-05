@@ -808,4 +808,18 @@
     <string name="phone_user_title">El nom d\'un usuari</string>
     <string name="phone_user_intro">Escriu el nom. El seu primer caràcter es mostra a la icona d\'usuaris del dispositiu: una lletra o un emoji.</string>
     <string name="phone_user_saved">Desat al dispositiu: %1$s</string>
+    <string name="setting_ztv_account">Compte de Zephyr TV</string>
+    <string name="ztv_not_linked">No vinculat</string>
+    <string name="ztv_waiting">Demanant un codi al lloc…</string>
+    <string name="ztv_failed">No s\'ha pogut contactar amb el lloc de Zephyr TV: comprova la connexió i torna-ho a provar.</string>
+    <string name="ztv_link_intro">Escaneja el codi amb el mòbil, o obre %1$s i escriu %2$s. Inicia la sessió i permet aquest televisor.</string>
+    <string name="ztv_waiting_allow">Esperant que permetis aquest televisor…</string>
+    <string name="ztv_expired">Ha passat massa temps: torna enrere i torna-ho a provar.</string>
+    <string name="ztv_denied">El televisor no s\'ha permès.</string>
+    <string name="ztv_done">Televisor vinculat al teu compte</string>
+    <string name="ztv_linked">Vinculat a</string>
+    <string name="ztv_users">Usuaris de Zephyr TV al compte</string>
+    <string name="ztv_unlink">Desvincula aquest televisor</string>
+    <string name="ztv_unlinked">Televisor desvinculat</string>
+    <string name="ztv_manage">Gestiona usuaris i televisors a %1$s.</string>
 </resources>

@@ -37,6 +37,9 @@ export async function login(_: LoginState, data: FormData): Promise<LoginState> 
   if (!(await verifyPassword(account.passwordHash, password)) || account.blockedAt) return { error: "wrong" };
   if (!account.emailVerifiedAt) return { error: "unverified" };
   await startSession(account.id);
-  redirect({ href: account.role === "superadmin" ? "/admin" : "/", locale: await getLocale() });
+  // Back where sign-in was asked for (a TV's code to allow, the account's page), only ever a page of this site.
+  const next = String(data.get("next") ?? "");
+  const safe = /^\/[a-z0-9/?=&%._-]*$/i.test(next) && !next.startsWith("//") ? next : null;
+  redirect({ href: safe ?? (account.role === "superadmin" ? "/admin" : "/account"), locale: await getLocale() });
   return {};
 }

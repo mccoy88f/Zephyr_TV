@@ -198,7 +198,8 @@
     "sessions_others": "Sair dos outros dispositivos",
     "delete_title": "Excluir a conta",
     "delete_text": "Tudo o que pertence à conta é excluído e não pode ser recuperado.",
-    "delete_submit": "Excluir a conta"
+    "delete_submit": "Excluir a conta",
+    "done_tv": "TV conectada à conta."
   },
   "adminAccounts": {
     "title": "Contas",
@@ -228,5 +229,40 @@
     "change_subject": "Confirme seu novo e-mail",
     "change_text": "Confirme este e-mail para mover sua conta do Zephyr TV para cá. O link vale por {hours} horas.",
     "change_button": "Confirmar o novo e-mail"
+  },
+  "link": {
+    "title": "Conectar uma TV",
+    "ask": "Conectar “{name}” à sua conta?",
+    "account": "Conta: {email}",
+    "allow": "Conectar a TV",
+    "deny": "Agora não",
+    "intro": "Digite o código que o Zephyr TV mostra em Configurações → Sistema → Conta Zephyr TV.",
+    "unknown": "Este código não existe ou expirou: confira na TV ou comece de novo por lá.",
+    "code": "Código",
+    "next": "Avançar"
+  },
+  "users": {
+    "title": "Usuários do Zephyr TV",
+    "intro": "As pessoas que assistem, cada uma com seu avatar. Nas suas TVs conectadas, eles chegam com a sincronização.",
+    "up": "Subir",
+    "down": "Descer",
+    "delete": "Excluir",
+    "name": "Nome",
+    "add": "Adicionar um usuário",
+    "tvs_title": "TVs conectadas",
+    "tvs_intro": "As TVs conectadas a esta conta. Se desconectar uma, ela sai na hora.",
+    "tvs_none": "Nenhuma TV conectada.",
+    "seen": "vista em {date}",
+    "unlink": "Desconectar",
+    "tvs_link": "Conectar uma TV",
+    "edit": "Editar o usuário",
+    "back": "Sua conta",
+    "saved": "Salvo.",
+    "save": "Salvar",
+    "avatar": "Avatar",
+    "avatar_intro": "Escolha um estilo e um avatar: o primeiro de cada estilo é o deste usuário, nesse estilo.",
+    "pick": "Escolher este avatar",
+    "no_avatar": "Sem avatar",
+    "dicebear": "Avatares do DiceBear: ele recebe só um código aleatório, nunca um nome."
   }
 }

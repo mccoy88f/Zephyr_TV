@@ -198,7 +198,8 @@
     "sessions_others": "Tanca la sessió als altres dispositius",
     "delete_title": "Elimina el compte",
     "delete_text": "Tot el que pertany al compte s'elimina i no es pot recuperar.",
-    "delete_submit": "Elimina el compte"
+    "delete_submit": "Elimina el compte",
+    "done_tv": "Televisor vinculat al compte."
   },
   "adminAccounts": {
     "title": "Comptes",
@@ -228,5 +229,40 @@
     "change_subject": "Confirma el teu correu nou",
     "change_text": "Confirma aquest correu per moure-hi el teu compte de Zephyr TV. L'enllaç val {hours} hores.",
     "change_button": "Confirma el correu nou"
+  },
+  "link": {
+    "title": "Vincula un televisor",
+    "ask": "Vols vincular “{name}” al teu compte?",
+    "account": "Compte: {email}",
+    "allow": "Vincula el televisor",
+    "deny": "Ara no",
+    "intro": "Escriu el codi que Zephyr TV mostra a Configuració → Sistema → Compte de Zephyr TV.",
+    "unknown": "Aquest codi no existeix o ha caducat: comprova'l al televisor o torna a començar des d'allà.",
+    "code": "Codi",
+    "next": "Següent"
+  },
+  "users": {
+    "title": "Usuaris de Zephyr TV",
+    "intro": "Les persones que miren, cadascuna amb el seu avatar. Als teus televisors vinculats arriben amb la sincronització.",
+    "up": "Puja",
+    "down": "Baixa",
+    "delete": "Elimina",
+    "name": "Nom",
+    "add": "Afegeix un usuari",
+    "tvs_title": "Televisors vinculats",
+    "tvs_intro": "Els televisors connectats a aquest compte. Si en desvincules un, en surt de seguida.",
+    "tvs_none": "Cap televisor vinculat.",
+    "seen": "vist el {date}",
+    "unlink": "Desvincula",
+    "tvs_link": "Vincula un televisor",
+    "edit": "Edita l'usuari",
+    "back": "El teu compte",
+    "saved": "Desat.",
+    "save": "Desa",
+    "avatar": "Avatar",
+    "avatar_intro": "Tria un estil i un avatar: el primer de cada estil és el d'aquest usuari, en aquell estil.",
+    "pick": "Tria aquest avatar",
+    "no_avatar": "Sense avatar",
+    "dicebear": "Avatars de DiceBear: només rep un codi aleatori, mai un nom."
   }
 }

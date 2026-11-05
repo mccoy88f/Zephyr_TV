@@ -198,7 +198,8 @@
     "sessions_others": "Se déconnecter des autres appareils",
     "delete_title": "Supprimer le compte",
     "delete_text": "Tout ce qui appartient au compte est supprimé et ne peut pas être récupéré.",
-    "delete_submit": "Supprimer le compte"
+    "delete_submit": "Supprimer le compte",
+    "done_tv": "TV reliée au compte."
   },
   "adminAccounts": {
     "title": "Comptes",
@@ -228,5 +229,40 @@
     "change_subject": "Confirmez votre nouvel e-mail",
     "change_text": "Confirmez cet e-mail pour y transférer votre compte Zephyr TV. Le lien est valable {hours} heures.",
     "change_button": "Confirmer le nouvel e-mail"
+  },
+  "link": {
+    "title": "Relier une TV",
+    "ask": "Relier « {name} » à votre compte ?",
+    "account": "Compte : {email}",
+    "allow": "Relier la TV",
+    "deny": "Pas maintenant",
+    "intro": "Saisissez le code affiché par Zephyr TV dans Paramètres → Système → Compte Zephyr TV.",
+    "unknown": "Ce code est inconnu ou a expiré : vérifiez-le sur la TV, ou recommencez depuis celle-ci.",
+    "code": "Code",
+    "next": "Suivant"
+  },
+  "users": {
+    "title": "Utilisateurs de Zephyr TV",
+    "intro": "Les personnes qui regardent, chacune avec son avatar. Sur vos TV reliées, ils arrivent avec la synchronisation.",
+    "up": "Monter",
+    "down": "Descendre",
+    "delete": "Supprimer",
+    "name": "Nom",
+    "add": "Ajouter un utilisateur",
+    "tvs_title": "TV reliées",
+    "tvs_intro": "Les TV connectées à ce compte. Déliez-en une et elle est déconnectée aussitôt.",
+    "tvs_none": "Aucune TV reliée.",
+    "seen": "vue le {date}",
+    "unlink": "Délier",
+    "tvs_link": "Relier une TV",
+    "edit": "Modifier l'utilisateur",
+    "back": "Votre compte",
+    "saved": "Enregistré.",
+    "save": "Enregistrer",
+    "avatar": "Avatar",
+    "avatar_intro": "Choisissez un style et un avatar : le premier de chaque style est celui de cet utilisateur, dans ce style.",
+    "pick": "Choisir cet avatar",
+    "no_avatar": "Aucun avatar",
+    "dicebear": "Avatars de DiceBear : il ne reçoit qu'un code aléatoire, jamais un nom."
   }
 }

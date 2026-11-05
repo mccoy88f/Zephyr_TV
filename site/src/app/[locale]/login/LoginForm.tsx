@@ -4,11 +4,12 @@ import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { type LoginState, login } from "./actions";
 
-export function LoginForm() {
+export function LoginForm({ next }: { next?: string }) {
   const t = useTranslations("login");
   const [state, action, pending] = useActionState<LoginState, FormData>(login, {});
   return (
     <form className="form" action={action}>
+      {next && <input type="hidden" name="next" value={next} />}
       <label>
         {t("email")}
         <input name="email" type="email" autoComplete="email" required maxLength={254} />

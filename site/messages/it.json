@@ -198,7 +198,8 @@
     "sessions_others": "Esci dagli altri dispositivi",
     "delete_title": "Elimina l'account",
     "delete_text": "Tutto quello che appartiene all'account viene eliminato e non si può recuperare.",
-    "delete_submit": "Elimina l'account"
+    "delete_submit": "Elimina l'account",
+    "done_tv": "TV collegato all'account."
   },
   "adminAccounts": {
     "title": "Account",
@@ -228,5 +229,40 @@
     "change_subject": "Conferma la tua nuova email",
     "change_text": "Conferma questa email per spostare qui il tuo account Zephyr TV. Il link vale {hours} ore.",
     "change_button": "Conferma la nuova email"
+  },
+  "link": {
+    "title": "Collega un TV",
+    "ask": "Collegare “{name}” al tuo account?",
+    "account": "Account: {email}",
+    "allow": "Collega il TV",
+    "deny": "Non ora",
+    "intro": "Inserisci il codice che Zephyr TV mostra in Impostazioni → Sistema → Account Zephyr TV.",
+    "unknown": "Questo codice non esiste o è scaduto: controllalo sul TV, o ricomincia da lì.",
+    "code": "Codice",
+    "next": "Avanti"
+  },
+  "users": {
+    "title": "Utenti di Zephyr TV",
+    "intro": "Le persone che guardano, ognuna con il suo avatar. Sui TV collegati arrivano con la sincronizzazione.",
+    "up": "Sposta su",
+    "down": "Sposta giù",
+    "delete": "Elimina",
+    "name": "Nome",
+    "add": "Aggiungi un utente",
+    "tvs_title": "TV collegati",
+    "tvs_intro": "I TV collegati a questo account. Se ne scolleghi uno, esce subito.",
+    "tvs_none": "Nessun TV collegato.",
+    "seen": "visto {date}",
+    "unlink": "Scollega",
+    "tvs_link": "Collega un TV",
+    "edit": "Modifica l'utente",
+    "back": "Il tuo account",
+    "saved": "Salvato.",
+    "save": "Salva",
+    "avatar": "Avatar",
+    "avatar_intro": "Scegli uno stile e un avatar: il primo di ogni stile è quello di questo utente, in quello stile.",
+    "pick": "Scegli questo avatar",
+    "no_avatar": "Nessun avatar",
+    "dicebear": "Avatar di DiceBear: gli arriva solo un codice casuale, mai un nome."
   }
 }

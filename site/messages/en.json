@@ -198,7 +198,8 @@
     "sessions_others": "Sign out of the other devices",
     "delete_title": "Delete the account",
     "delete_text": "Everything that belongs to the account goes, and can't be brought back.",
-    "delete_submit": "Delete the account"
+    "delete_submit": "Delete the account",
+    "done_tv": "TV linked to the account."
   },
   "adminAccounts": {
     "title": "Accounts",
@@ -228,5 +229,40 @@
     "change_subject": "Confirm your new email",
     "change_text": "Confirm this email to move your Zephyr TV account here. The link works for {hours} hours.",
     "change_button": "Confirm the new email"
+  },
+  "link": {
+    "title": "Link a TV",
+    "ask": "Link “{name}” to your account?",
+    "account": "Account: {email}",
+    "allow": "Link the TV",
+    "deny": "Not now",
+    "intro": "Enter the code Zephyr TV shows in Settings → System → Zephyr TV account.",
+    "unknown": "This code is unknown or too old: check it on the TV, or start again there.",
+    "code": "Code",
+    "next": "Next"
+  },
+  "users": {
+    "title": "Zephyr TV users",
+    "intro": "The people who watch: each with their own avatar. On your linked TVs they come with sync.",
+    "up": "Move up",
+    "down": "Move down",
+    "delete": "Delete",
+    "name": "Name",
+    "add": "Add a user",
+    "tvs_title": "Linked TVs",
+    "tvs_intro": "The TVs signed in to this account. Unlink one and it signs out at once.",
+    "tvs_none": "No TV linked yet.",
+    "seen": "seen {date}",
+    "unlink": "Unlink",
+    "tvs_link": "Link a TV",
+    "edit": "Edit the user",
+    "back": "Your account",
+    "saved": "Saved.",
+    "save": "Save",
+    "avatar": "Avatar",
+    "avatar_intro": "Pick a style and an avatar: the first of each style is this user's, in that style.",
+    "pick": "Choose this avatar",
+    "no_avatar": "No avatar",
+    "dicebear": "Avatars by DiceBear: only a random code goes to it, never a name."
   }
 }
