@@ -4,14 +4,18 @@ import kotlin.math.abs
 
 /**
  * Minimal QR Code encoder, enough for the wallpaper-upload address without a library: byte mode,
- * error correction level M, versions 1–6 (up to 106 bytes), one alignment pattern at most.
+ * error correction level M, versions 1–7 (up to 122 bytes: Trakt's sign-in address, with its PKCE challenge, is
+ * 121), their alignment patterns and version 7's version information.
  * Returns the modules (true = dark) without the quiet zone.
  */
 internal object Qr {
     // Per version (index 0 = version 1), level M: data codewords, EC codewords per block, block count.
-    private val DATA = intArrayOf(16, 28, 44, 64, 86, 108)
-    private val EC = intArrayOf(10, 16, 26, 18, 24, 16)
-    private val BLOCKS = intArrayOf(1, 1, 1, 2, 2, 4)
+    private val DATA = intArrayOf(16, 28, 44, 64, 86, 108, 124)
+    private val EC = intArrayOf(10, 16, 26, 18, 24, 16, 18)
+    private val BLOCKS = intArrayOf(1, 1, 1, 2, 2, 4, 4)
+
+    /** Version 7's version information (its 6 bits and their BCH code), in two 6×3 blocks by the finders. */
+    private const val VERSION_7 = 0x07C94
 
     private val EXP = IntArray(512)
     private val LOG = IntArray(256)
@@ -91,9 +95,20 @@ internal object Qr {
             set(6, i, i % 2 == 0)
             set(i, 6, i % 2 == 0)
         }
-        if (v > 0) {
-            val a = size - 7
-            for (r in -2..2) for (c in -2..2) set(a + r, a + c, maxOf(abs(r), abs(c)) != 1)
+        // Alignment patterns: where their rows and columns cross, but over a finder (version 1 has none).
+        val align = when {
+            v == 0 -> intArrayOf()
+            v < 6 -> intArrayOf(6, size - 7)
+            else -> intArrayOf(6, 22, 38)
+        }
+        for (ar in align) for (ac in align) {
+            if ((ar == 6 && ac == 6) || (ar == 6 && ac == size - 7) || (ar == size - 7 && ac == 6)) continue
+            for (r in -2..2) for (c in -2..2) set(ar + r, ac + c, maxOf(abs(r), abs(c)) != 1)
+        }
+        if (v >= 6) for (i in 0 until 18) { // version 7: its version information, bottom left and top right
+            val dark = (VERSION_7 shr i) and 1 == 1
+            set(size - 11 + i % 3, i / 3, dark)
+            set(i / 3, size - 11 + i % 3, dark)
         }
 
         // Format information (level M = 00, mask 0), both copies; this also reserves those modules.

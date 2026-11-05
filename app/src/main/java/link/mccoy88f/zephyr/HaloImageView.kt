@@ -50,7 +50,10 @@ internal class HaloImageView @JvmOverloads constructor(context: Context, attrs: 
         shadow = runCatching {
             val shape = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val c = Canvas(shape)
-            super.onDraw(c) // the icon where it's drawn: only its shape counts (its alpha), not its colour
+            // The icon where the view draws it (its padding, its scale): only its shape counts (its alpha), not its colour.
+            c.translate(paddingLeft.toFloat(), paddingTop.toFloat())
+            imageMatrix?.let { c.concat(it) }
+            d.draw(c)
             val blur = Paint().apply { maskFilter = BlurMaskFilter(radius.coerceAtLeast(1f), BlurMaskFilter.Blur.NORMAL) }
             shape.extractAlpha(blur, offset).also { shape.recycle() }
         }.getOrNull()

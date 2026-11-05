@@ -118,7 +118,9 @@ internal fun MainActivity.qrBox(url: String, caption: String?, intro: String, st
     orientation = LinearLayout.VERTICAL
     gravity = Gravity.CENTER_HORIZONTAL
     setPadding(0, dp(4), 0, dp(12))
-    addView(ImageView(this@qrBox).apply { setImageBitmap(qrBitmap(url, dp(200))) })
+    // Too long for a QR code here: no code (the address and Open link still show), never a crash.
+    runCatching { qrBitmap(url, dp(200)) }.onFailure { warn("QR code not made (${url.length} characters): $it") }.getOrNull()
+        ?.let { qr -> addView(ImageView(this@qrBox).apply { setImageBitmap(qr) }) }
     caption?.let {
         addView(label(it, 12f).apply {
             gravity = Gravity.CENTER
