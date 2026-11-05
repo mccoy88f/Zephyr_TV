@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.0.4
 
 - When the user is connected to Trakt, the **Play queue** shows **Series to finish**, with the next episode of each, and **Films to finish**, with how far you got. They come from Trakt.
 
