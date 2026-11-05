@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- The icons at the top right have the same shadow as the clock and Spotlight. They are easy to see on any wallpaper.
+
 ## 4.0.1
 
 - When Spotlight folds away, a space stays between the favourites row and the top bar with the weather.

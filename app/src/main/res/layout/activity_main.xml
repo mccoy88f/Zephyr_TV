@@ -74,7 +74,7 @@
             </LinearLayout>
 
             <!-- Who's watching (see Users): their Continue Playing, ✓ marks and Trakt account. -->
-            <ImageView
+            <link.mccoy88f.zephyr.HaloImageView
                 android:id="@+id/usersButton"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
@@ -84,7 +84,7 @@
                 android:padding="8dp"
                 android:src="@drawable/ic_profile" />
 
-            <ImageView
+            <link.mccoy88f.zephyr.HaloImageView
                 android:id="@+id/searchButton"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
@@ -94,7 +94,7 @@
                 android:padding="8dp"
                 android:src="@drawable/ic_search" />
 
-            <ImageView
+            <link.mccoy88f.zephyr.HaloImageView
                 android:id="@+id/wifi"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
@@ -103,7 +103,7 @@
                 android:padding="8dp"
                 android:src="@drawable/ic_wifi" />
 
-            <ImageView
+            <link.mccoy88f.zephyr.HaloImageView
                 android:id="@+id/allAppsButton"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
@@ -113,7 +113,7 @@
                 android:padding="9dp"
                 android:src="@drawable/ic_apps" />
 
-            <ImageView
+            <link.mccoy88f.zephyr.HaloImageView
                 android:id="@+id/tvInputsButton"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
@@ -123,7 +123,7 @@
                 android:padding="8dp"
                 android:src="@drawable/ic_input" />
 
-            <ImageView
+            <link.mccoy88f.zephyr.HaloImageView
                 android:id="@+id/systemSettings"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
@@ -133,7 +133,7 @@
                 android:padding="8dp"
                 android:src="@drawable/ic_settings" />
 
-            <ImageView
+            <link.mccoy88f.zephyr.HaloImageView
                 android:id="@+id/launcherSettings"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
