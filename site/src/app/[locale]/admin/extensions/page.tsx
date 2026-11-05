@@ -3,7 +3,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { db } from "@/db";
 import { accounts, catalog } from "@/db/schema";
 import { Link, redirect } from "@/i18n/navigation";
-import { deleteExtension, recheckExtension, reviewExtension } from "@/server/catalogActions";
+import { deleteExtension, recheckExtension, refreshOfficial, reviewExtension } from "@/server/catalogActions";
 import { currentAccount } from "@/server/session";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -44,6 +44,8 @@ export default async function ReviewExtensions({ params }: { params: Promise<{ l
     <section>
       <p><Link href="/admin">← {t("back")}</Link></p>
       <h1>{t("title")}</h1>
+      <p className="muted">{t("official_note")}</p>
+      <form action={refreshOfficial}><button className="button" type="submit">{t("official_refresh")}</button></form>
       {ordered.length === 0 && <p className="muted">{t("none")}</p>}
       {STATUSES.map((s) => {
         const of = ordered.filter((r) => r.e.status === s);
@@ -60,6 +62,7 @@ export default async function ReviewExtensions({ params }: { params: Promise<{ l
                       <h3>{e.name}</h3>
                       <p className="small">
                         <span className="tag">{e.kind === "repository" ? c("repository", { n: e.count ?? 0 }) : `${e.extId} v${e.version}`}</span>
+                        {e.official && <span className="tag official">{c("official")}</span>}
                         {e.adult && <span className="tag bad">18+</span>}
                       </p>
                     </div>
@@ -73,9 +76,9 @@ export default async function ReviewExtensions({ params }: { params: Promise<{ l
                   {e.review && <p className="small">{t("review", { note: e.review })}</p>}
                   <p className="small">{t("checked", { date: format.dateTime(e.checkedAt, { dateStyle: "medium", timeStyle: "short" }) })}</p>
                   <div className="row-actions">
-                    {e.status !== "approved" && move(e.id, "approved", t("approve"))}
-                    {e.status === "pending" && move(e.id, "rejected", t("reject"), true, true)}
-                    {e.status === "approved" && move(e.id, "removed", t("remove"), true, true)}
+                    {!e.official && e.status !== "approved" && move(e.id, "approved", t("approve"))}
+                    {!e.official && e.status === "pending" && move(e.id, "rejected", t("reject"), true, true)}
+                    {!e.official && e.status === "approved" && move(e.id, "removed", t("remove"), true, true)}
                     <form action={recheckExtension}><input type="hidden" name="id" value={e.id} /><button className="button" type="submit">{t("recheck")}</button></form>
                     {e.status !== "pending" && e.status !== "approved" && (
                       <form action={deleteExtension}><input type="hidden" name="id" value={e.id} /><button className="linkish danger-text" type="submit">{t("delete")}</button></form>

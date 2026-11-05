@@ -147,6 +147,7 @@ th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--lin
 .row-actions { display: flex; gap: 12px; flex-wrap: wrap; }
 .row-actions form { margin: 0; }
 .linkish.danger-text { color: var(--error); }
+.tag.official { background: color-mix(in srgb, #16a34a 18%, transparent); color: #16a34a; }
 .tag.bad { background: color-mix(in srgb, var(--error) 18%, transparent); color: var(--error); }
 .tag.warn { background: color-mix(in srgb, #d97706 18%, transparent); color: #d97706; }
 

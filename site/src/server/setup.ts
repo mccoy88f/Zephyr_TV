@@ -3,6 +3,7 @@ import { and, eq, isNull, lt } from "drizzle-orm";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { db } from "@/db";
 import { accounts, emailTokens, sessions } from "@/db/schema";
+import { syncOfficial } from "./catalog";
 import { hashPassword, verifyPassword } from "./password";
 
 /**
@@ -28,8 +29,8 @@ export async function setup() {
 }
 
 /**
- * Once an hour: accounts never verified gone after 7 days (their email may not be theirs), and sessions and email
- * links past their time.
+ * Once an hour (and as the server starts): accounts never verified gone after 7 days (their email may not be theirs),
+ * sessions and email links past their time; and the official extensions read again (see syncOfficial).
  */
 export function tidyEveryHour() {
   const tidy = async () => {
@@ -41,6 +42,9 @@ export function tidyEveryHour() {
     } catch (e) {
       console.warn("tidy failed", e);
     }
+    // Zephyr TV's own extensions, their versions and details as their repository has them now.
+    await syncOfficial().then((n) => console.info(`[catalog] ${n} official extensions`))
+      .catch((e) => console.warn("[catalog] official extensions failed:", e instanceof Error ? e.message : e));
   };
   void tidy();
   setInterval(tidy, 3_600_000).unref();

@@ -310,7 +310,8 @@
     "status_rejected": "Recusada",
     "status_removed": "Removida",
     "review_note": "Revisão: {note}",
-    "withdraw": "Retirar"
+    "withdraw": "Retirar",
+    "official": "Oficial"
   },
   "catalogAdmin": {
     "title": "Extensões para revisar",
@@ -325,6 +326,8 @@
     "reject": "Recusar",
     "remove": "Remover",
     "recheck": "Ler de novo",
-    "delete": "Excluir"
+    "delete": "Excluir",
+    "official_note": "As extensões do próprio Zephyr TV (o repositório Zephyr-TV-Extensions) são publicadas sem revisão e lidas de novo a cada hora: versões e detalhes como no repositório.",
+    "official_refresh": "Ler as oficiais agora"
   }
 }

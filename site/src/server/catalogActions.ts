@@ -7,7 +7,7 @@ import { db } from "@/db";
 import { catalog } from "@/db/schema";
 import { redirect } from "@/i18n/navigation";
 import type { FormState } from "./accountActions";
-import { Refused, manifestUrl, readManifest } from "./catalog";
+import { Refused, manifestUrl, readManifest, syncOfficial } from "./catalog";
 import { allow } from "./limit";
 import { currentAccount } from "./session";
 
@@ -91,3 +91,12 @@ export async function deleteExtension(data: FormData) {
   if (id) await db.delete(catalog).where(eq(catalog.id, id));
   await backToReview();
 }
+
+/** The official extensions read again now (see syncOfficial), not at the next hour. */
+export async function refreshOfficial() {
+  const me = await currentAccount();
+  if (me?.role !== "superadmin") return redirect({ href: "/login", locale: await getLocale() });
+  await syncOfficial().catch((e) => console.warn("[catalog] official extensions failed:", e instanceof Error ? e.message : e));
+  await backToReview();
+}
+

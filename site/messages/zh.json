@@ -310,7 +310,8 @@
     "status_rejected": "已拒绝",
     "status_removed": "已移除",
     "review_note": "审核：{note}",
-    "withdraw": "撤回"
+    "withdraw": "撤回",
+    "official": "官方"
   },
   "catalogAdmin": {
     "title": "待审核的扩展",
@@ -325,6 +326,8 @@
     "reject": "拒绝",
     "remove": "移除",
     "recheck": "重新读取",
-    "delete": "删除"
+    "delete": "删除",
+    "official_note": "Zephyr TV 自己的扩展（Zephyr-TV-Extensions 仓库）无需审核即发布，并每小时重新读取：版本和信息与仓库一致。",
+    "official_refresh": "立即重新读取官方扩展"
   }
 }

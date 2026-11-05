@@ -152,6 +152,8 @@ export const catalog = pgTable(
     count: integer("count"),
     adult: boolean("adult").notNull().default(false),
     homepage: text("homepage"),
+    // Zephyr TV's own (OFFICIAL_REPOSITORY): published without review, kept as that repository has them (see syncOfficial).
+    official: boolean("official").notNull().default(false),
     note: text("note"),
     status: catalogStatus("status").notNull().default("pending"),
     review: text("review"),

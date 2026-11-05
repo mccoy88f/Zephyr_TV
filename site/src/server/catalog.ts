@@ -1,6 +1,9 @@
 import "server-only";
 import { lookup } from "node:dns/promises";
 import { BlockList, isIP } from "node:net";
+import { and, eq, notInArray } from "drizzle-orm";
+import { db } from "@/db";
+import { catalog } from "@/db/schema";
 
 /** The names Zephyr TV publishes with (see the app's Extensions.kt). */
 export const PUBLISHED = "manifest-zephyrtv.json";
@@ -139,3 +142,35 @@ export async function readManifest(url: string): Promise<Read> {
 
 /** The ztv: link that installs [url] in Zephyr TV (Links.kt: ext?u=…), without its scheme. */
 export const installLink = (url: string) => `ext?u=${encodeURIComponent(url)}`;
+
+/** Zephyr TV's own extensions: the repository the app knows as official too (ExtensionSettings.OFFICIAL_REPOSITORY). */
+export const OFFICIAL_REPOSITORY =
+  process.env.OFFICIAL_REPOSITORY || "https://raw.githubusercontent.com/mccoy88f/Zephyr-TV-Extensions/main/repository-zephyrtv.json";
+
+/**
+ * The catalogue's official extensions as OFFICIAL_REPOSITORY lists them now: each read from its manifest (name,
+ * version, description, icon as they are today) and published, marked official; one no longer listed taken out. One
+ * that can't be read just now stays as it was. How many are in.
+ */
+export async function syncOfficial(): Promise<number> {
+  const repo = await fetchJson(OFFICIAL_REPOSITORY);
+  const list = (repo as { extensions?: unknown })?.extensions;
+  if (!Array.isArray(list)) throw new Refused("not_extension");
+  const urls = list.map((e) => httpsFrom(e, OFFICIAL_REPOSITORY)).filter((u): u is string => !!u);
+  const now = new Date();
+  let n = 0;
+  for (const url of urls) {
+    const read = await readManifest(url).catch((e) => {
+      console.warn(`[catalog] official ${url}: ${e instanceof Error ? e.message : e}`);
+      return null;
+    });
+    if (!read) continue;
+    const row = { ...read, official: true, status: "approved" as const, checkedAt: now };
+    await db.insert(catalog).values({ ...row, reviewedAt: now }).onConflictDoUpdate({ target: catalog.url, set: row });
+    n++;
+  }
+  await db.update(catalog).set({ official: false, status: "removed", reviewedAt: now })
+    .where(and(eq(catalog.official, true), urls.length ? notInArray(catalog.url, urls) : undefined));
+  return n;
+}
+

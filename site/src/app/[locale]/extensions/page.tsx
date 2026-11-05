@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { db } from "@/db";
 import { catalog } from "@/db/schema";
@@ -21,7 +21,7 @@ export default async function Extensions({ params }: { params: Promise<{ locale:
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("catalog");
-  const list = await db.select().from(catalog).where(eq(catalog.status, "approved")).orderBy(asc(catalog.name)).catch(() => []);
+  const list = await db.select().from(catalog).where(eq(catalog.status, "approved")).orderBy(desc(catalog.official), asc(catalog.name)).catch(() => []);
   return (
     <section>
       <h1>{t("title")}</h1>
@@ -41,6 +41,7 @@ export default async function Extensions({ params }: { params: Promise<{ locale:
                   <h3>{e.name}</h3>
                   <p className="small">
                     {e.kind === "repository" ? <span className="tag">{t("repository", { n: e.count ?? 0 })}</span> : e.version && <span className="tag">v{e.version}</span>}
+                    {e.official && <span className="tag official">{t("official")}</span>}
                     {e.adult && <span className="tag bad">18+</span>}
                   </p>
                 </div>

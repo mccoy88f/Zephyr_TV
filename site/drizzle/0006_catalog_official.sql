@@ -1,0 +1,1 @@
+ALTER TABLE "catalog" ADD COLUMN "official" boolean DEFAULT false NOT NULL;

@@ -310,7 +310,8 @@
     "status_rejected": "अस्वीकृत",
     "status_removed": "हटाया गया",
     "review_note": "समीक्षा: {note}",
-    "withdraw": "वापस लें"
+    "withdraw": "वापस लें",
+    "official": "आधिकारिक"
   },
   "catalogAdmin": {
     "title": "समीक्षा के लिए एक्सटेंशन",
@@ -325,6 +326,8 @@
     "reject": "अस्वीकार करें",
     "remove": "हटाएँ",
     "recheck": "फिर से पढ़ें",
-    "delete": "मिटाएँ"
+    "delete": "मिटाएँ",
+    "official_note": "Zephyr TV के अपने एक्सटेंशन (Zephyr-TV-Extensions रिपॉज़िटरी) बिना समीक्षा प्रकाशित होते हैं और हर घंटे फिर पढ़े जाते हैं: संस्करण और जानकारी रिपॉज़िटरी के अनुसार।",
+    "official_refresh": "आधिकारिक एक्सटेंशन अभी फिर पढ़ें"
   }
 }

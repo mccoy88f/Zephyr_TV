@@ -310,7 +310,8 @@
     "status_rejected": "Rebutjada",
     "status_removed": "Retirada",
     "review_note": "Revisió: {note}",
-    "withdraw": "Retira"
+    "withdraw": "Retira",
+    "official": "Oficial"
   },
   "catalogAdmin": {
     "title": "Extensions per revisar",
@@ -325,6 +326,8 @@
     "reject": "Rebutja",
     "remove": "Retira",
     "recheck": "Torna a llegir",
-    "delete": "Elimina"
+    "delete": "Elimina",
+    "official_note": "Les extensions pròpies de Zephyr TV (el repositori Zephyr-TV-Extensions) es publiquen sense revisió i es tornen a llegir cada hora: versions i dades com al repositori.",
+    "official_refresh": "Torna a llegir ara les oficials"
   }
 }
