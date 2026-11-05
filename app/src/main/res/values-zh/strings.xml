@@ -849,4 +849,6 @@
     <string name="open_link">打开链接</string>
     <string name="open_link_failed">没有浏览器能打开此链接。</string>
     <string name="title_trailer">观看预告片</string>
+    <string name="trakt_todo_shows">待看完的剧集</string>
+    <string name="trakt_todo_movies">待看完的电影</string>
 </resources>

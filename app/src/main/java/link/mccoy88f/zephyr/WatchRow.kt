@@ -599,9 +599,62 @@ internal fun MainActivity.timeLeft(ms: Long): String {
 }
 
 /** The Play queue tile's row: what's playing now (see nowPlaying) first, then Continue Watching, in one row. */
-internal fun MainActivity.showWatchNext(list: List<Prog>, playing: List<Prog> = emptyList()) = showSections(listOfNotNull(
-    (playing + list).takeIf { it.isNotEmpty() }?.let { getString(R.string.continue_watching).let { t -> Section("", t, t, it) } },
-))
+internal fun MainActivity.showWatchNext(list: List<Prog>, playing: List<Prog> = emptyList()) {
+    val sections = listOfNotNull(
+        (playing + list).takeIf { it.isNotEmpty() }?.let { getString(R.string.continue_watching).let { t -> Section("", t, t, it) } },
+    ) + traktTodoSections(playing + list)
+    sectionCounts[CW_PKG] = sections.size
+    showSections(sections)
+}
+
+private const val TODO_FILE = "trakt_todo.json" // in the user's folder: what Trakt said is left to finish, and when
+private const val TODO_EVERY_MS = 15 * 60_000L
+private val todoAsking = java.util.Collections.synchronizedSet(HashSet<String>())
+
+/**
+ * The Play queue's rows from Trakt, for a user signed in to it: Series to finish (the next episode of each) and Films
+ * to finish (how far each got), as Trakt last said (kept, asked again every 15 minutes: the rows come back with the
+ * answer). Those already in [shown] (Continue Playing) aren't repeated. Each card opens the title's page.
+ */
+private fun MainActivity.traktTodoSections(shown: List<Prog>): List<Section> {
+    val user = currentUser().id
+    val dir = vodDir(user)
+    if (Trakt.account(dir) == null) return emptyList()
+    val file = java.io.File(dir, TODO_FILE)
+    val saved = runCatching { org.json.JSONObject(file.readText()) }.getOrNull()
+    if ((saved == null || System.currentTimeMillis() - saved.optLong("at") > TODO_EVERY_MS) && todoAsking.add(user)) {
+        netIo.execute {
+            val fresh = runCatching { Trakt.toComplete(dir) }.getOrNull()
+            todoAsking.remove(user)
+            if (fresh == null) return@execute
+            runCatching { file.writeText(fresh.toString()) }
+            ui.post { if (watchApp == CW_PKG && tmdbLastFocusApp == null && currentUser().id == user) refreshWatchNext() }
+        }
+    }
+    saved ?: return emptyList()
+    val here = shown.mapNotNull { it.vod?.id }.toSet()
+    fun cards(key: String, type: String, sub: (org.json.JSONObject) -> String, progress: (org.json.JSONObject) -> Int): List<Prog> {
+        val a = saved.optJSONArray(key) ?: return emptyList()
+        return (0 until a.length()).mapNotNull { a.optJSONObject(it) }.filter { it.optString("id") !in here }.map { o ->
+            val id = o.optString("id")
+            val t = Stremio.Title(type, id, o.optString("name").ifEmpty { id }, Stremio.art(id, "poster/small"), Stremio.art(id, "background/medium"),
+                Stremio.art(id, "logo/medium"), o.optString("year").ifEmpty { null })
+            val p = titleCard(localize(t) ?: t, cinemetaUrl(), if (type == "movie") MOVIES_PKG else SERIES_PKG, sub = sub(o))
+            Prog(p.title, p.sub, progress(o), p.image, p.intent, p.pkg, p.weight, p.badge, p.logo, p.poster, p.channelPage, p.channelId,
+                p.playing, p.addon, p.icon, p.vod, p.cinema, p.rating)
+        }
+    }
+    val shows = cards("shows", "series", { o ->
+        listOf("S%dE%d".format(o.optInt("season"), o.optInt("number")), o.optString("episode")).filter { it.isNotBlank() }.joinToString(" · ")
+    }) { o -> (o.optInt("completed") * 100 / o.optInt("aired").coerceAtLeast(1)).coerceIn(0, 99) }
+    val films = cards("movies", "movie", { o -> o.optString("year") }) { o -> o.optInt("progress") }
+    val showsName = getString(R.string.trakt_todo_shows)
+    val filmsName = getString(R.string.trakt_todo_movies)
+    return listOfNotNull(
+        shows.takeIf { it.isNotEmpty() }?.let { Section("trakt:shows", showsName, showsName, it) },
+        films.takeIf { it.isNotEmpty() }?.let { Section("trakt:movies", filmsName, filmsName, it) },
+    )
+}
 
 /**
  * The rows under the apps, one per section. The first is the row in the layout; any more are built under it (see

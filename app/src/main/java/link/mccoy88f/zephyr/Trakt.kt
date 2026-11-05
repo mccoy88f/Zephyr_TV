@@ -190,6 +190,52 @@ internal object Trakt {
     private fun call(dir: File, method: String, path: String, body: JSONObject? = null): Pair<Int, String>? =
         token(dir)?.let { request(it, method, path, body) }
 
+    // ---------- what's left to finish, for the Play queue ----------
+
+    /**
+     * What [dir]'s account has left to finish on Trakt, for the Play queue: the films paused part way (how far), and
+     * the series with an episode next (the 20 watched last: which episode, how many of how many). Null when signed out
+     * or offline. Network: off the UI thread (one call per series).
+     */
+    fun toComplete(dir: File): JSONObject? {
+        fun text(o: JSONObject, k: String) = if (o.isNull(k)) "" else o.optString(k)
+        val (mc, mb) = call(dir, "GET", "/sync/playback/movies?limit=40") ?: return null
+        if (mc !in 200..299) return null
+        val movies = JSONArray()
+        val paused = runCatching { JSONArray(mb) }.getOrDefault(JSONArray())
+        for (i in 0 until paused.length()) {
+            val o = paused.optJSONObject(i) ?: continue
+            val m = o.optJSONObject("movie") ?: continue
+            val imdb = m.optJSONObject("ids")?.let { text(it, "imdb") }.orEmpty()
+            val progress = o.optDouble("progress", 0.0)
+            if (!imdb.startsWith("tt") || progress >= 95.0) continue
+            movies.put(JSONObject().put("id", imdb).put("name", text(m, "title")).put("year", m.optInt("year").takeIf { it > 0 }?.toString().orEmpty())
+                .put("progress", progress.toInt().coerceIn(1, 99)))
+        }
+        val shows = JSONArray()
+        val (sc, sb) = call(dir, "GET", "/sync/watched/shows?extended=noseasons") ?: return null
+        if (sc in 200..299) {
+            val watched = runCatching { JSONArray(sb) }.getOrDefault(JSONArray())
+            val recent = (0 until watched.length()).mapNotNull { watched.optJSONObject(it) }.sortedByDescending { text(it, "last_watched_at") }.take(20)
+            for (o in recent) {
+                val s = o.optJSONObject("show") ?: continue
+                val ids = s.optJSONObject("ids") ?: continue
+                val imdb = text(ids, "imdb")
+                val traktId = ids.optLong("trakt")
+                if (!imdb.startsWith("tt") || traktId == 0L) continue
+                val (pc, pb) = call(dir, "GET", "/shows/$traktId/progress/watched?hidden=false&specials=false&count_specials=false") ?: continue
+                if (pc !in 200..299) continue
+                val p = runCatching { JSONObject(pb) }.getOrNull() ?: continue
+                val next = p.optJSONObject("next_episode") ?: continue
+                if (p.optInt("completed") >= p.optInt("aired")) continue
+                shows.put(JSONObject().put("id", imdb).put("name", text(s, "title")).put("season", next.optInt("season"))
+                    .put("number", next.optInt("number")).put("episode", text(next, "title"))
+                    .put("completed", p.optInt("completed")).put("aired", p.optInt("aired")))
+            }
+        }
+        return JSONObject().put("at", System.currentTimeMillis()).put("movies", movies).put("shows", shows)
+    }
+
     // ---------- what Zephyr TV tells Trakt ----------
 
     /** A film ([id] its IMDb id) or an episode ("tt…:1:3", [metaId] its series'), as Trakt names it in a scrobble. */

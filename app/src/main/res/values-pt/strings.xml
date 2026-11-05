@@ -855,4 +855,6 @@
     <string name="open_link">Abrir link</string>
     <string name="open_link_failed">Nenhum navegador conseguiu abrir o link.</string>
     <string name="title_trailer">Ver trailer</string>
+    <string name="trakt_todo_shows">Séries para terminar</string>
+    <string name="trakt_todo_movies">Filmes para terminar</string>
 </resources>
