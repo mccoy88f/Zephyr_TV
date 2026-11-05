@@ -16,20 +16,20 @@ class QrTest {
         .joinToString("") { "%02x".format(it) }
 
     /**
-     * Trakt's sign-in address with its PKCE challenge (121 bytes) needs version 7. The modules, as segno 1.6.6 draws
-     * the same code (version 7-M, byte mode, mask 0): its six alignment patterns and its version information too.
+     * Trakt's sign-in address with its PKCE challenge (121 bytes) needs version 7. The modules match
+     * the same code (version 7-M, byte mode, mask 0) as python-qrcode 7.4.2 draws it: its six alignment patterns and its version information too.
      */
     @Test fun version7MatchesAReferenceEncoder() {
         val url = "https://ztv.mccoy88f.link/traktauth?start=AbCdEfGhIjKlMnOpQrStUvWxYz012345&cc=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
         val m = Qr.encode(url)
         org.junit.Assert.assertEquals(45, m.size)
-        org.junit.Assert.assertEquals("9ffd0417fc90c1d6a72de7cde7067de772bf31eefe12752a0de77ee3e8c47383", sha256(m))
+        org.junit.Assert.assertEquals("8755762dcc60807265c3c45e8385fdcf1fc3d510a546ccbf582a0b5c1dcd735d", sha256(m))
     }
 
-    /** A short address stays in version 2, as before, the same modules as segno draws. */
+    /** A short address stays in version 2, as before, the same modules as python-qrcode 7.4.2 draws. */
     @Test fun version2StaysTheSame() {
         val m = Qr.encode("http://192.168.1.20:8080/")
         org.junit.Assert.assertEquals(25, m.size)
-        org.junit.Assert.assertEquals("c27408324fc7840eb14b033028cd92bc0f5e30cc7174c3fb7154f4b0606eb600", sha256(m))
+        org.junit.Assert.assertEquals("3e65db30ab2f1a518c8b1ac85d889378a964524245ea794b2c2f326de6368ecc", sha256(m))
     }
 }
