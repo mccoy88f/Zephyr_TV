@@ -1,0 +1,12 @@
+{
+  "name": "zephyr-tv-receiver",
+  "version": "1.0.0",
+  "description": "Zephyr TV Receiver as a TizenBrew module (Samsung, Tizen): plays what Zephyr TV sends it. Not a Node project: Zephyr TV is Android (app/), its site is in site/.",
+  "license": "GPL-3.0",
+  "repository": "github:mccoy88f/Zephyr_TV",
+  "packageType": "app",
+  "appName": "Zephyr TV Receiver",
+  "appPath": "site/public/receiver/index.html",
+  "serviceFile": "webos/service/service.js",
+  "keys": ["MediaPlayPause", "MediaPlay", "MediaPause", "MediaStop", "MediaFastForward", "MediaRewind"]
+}

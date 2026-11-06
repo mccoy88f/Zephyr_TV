@@ -4,9 +4,9 @@ name: webOS
 
 on:
   push:
-    paths: ['webos/**', 'site/public/receiver/**', '.github/workflows/webos.yml']
+    paths: ['webos/**', 'tizen/**', 'package.json', 'site/public/receiver/**', '.github/workflows/webos.yml']
   pull_request:
-    paths: ['webos/**', 'site/public/receiver/**', '.github/workflows/webos.yml']
+    paths: ['webos/**', 'tizen/**', 'package.json', 'site/public/receiver/**', '.github/workflows/webos.yml']
 
 jobs:
   package:
@@ -22,6 +22,9 @@ jobs:
         run: |
           node --check webos/service/service.js
           for f in site/public/receiver/*.js; do node --check "$f"; done
+          # One version for every TV: platform.js's, as package.json (TizenBrew's module) says it too.
+          v="$(sed -n 's/.*var VERSION = "\([0-9.]*\)".*/\1/p' site/public/receiver/platform.js)"
+          node -e "const p=require('./package.json'); if (p.version !== '$v') { console.error('package.json says ' + p.version + ', platform.js ' + '$v'); process.exit(1) }"
           npm install -g @webos-tools/cli@3.2.6
           command -v convert >/dev/null || sudo apt-get install -y imagemagick # the icons, from the shared one
           webos/package.sh webos-out

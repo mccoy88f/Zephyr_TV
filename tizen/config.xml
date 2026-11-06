@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Zephyr TV Receiver as a Tizen web app (.wgt), for those who install it with Tizen Studio and a Samsung
+     certificate (see docs/receiver.md): the same web app as on every TV (site/public/receiver), put together by
+     tizen/package.sh. Installed this way it has no service: streams that need their own headers don't play (through
+     TizenBrew they do: see package.json at the repository's root). -->
+<widget xmlns:tizen="http://tizen.org/ns/widgets" xmlns="http://www.w3.org/ns/widgets" id="https://ztv.mccoy88f.link/receiver" version="1.0.0" viewmodes="maximized">
+    <access origin="*" subdomains="true"></access>
+    <tizen:application id="ZephyrRcv0.Receiver" package="ZephyrRcv0" required_version="2.3"/>
+    <author href="https://github.com/mccoy88f/Zephyr_TV">mccoy88f</author>
+    <content src="index.html"/>
+    <description>Plays what Zephyr TV sends it (Send to, in Zephyr TV's player).</description>
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+    <icon src="icon.png"/>
+    <name>Zephyr TV Receiver</name>
+    <tizen:metadata key="http://tizen.org/metadata/app_ui_type/base_screen_resolution" value="extensive"/>
+    <tizen:privilege name="http://tizen.org/privilege/internet"/>
+    <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+    <tizen:profile name="tv"/>
+    <tizen:setting screen-orientation="landscape" context-menu="disable" background-support="disable" encryption="disable" install-location="auto" hwkey-event="enable"/>
+</widget>

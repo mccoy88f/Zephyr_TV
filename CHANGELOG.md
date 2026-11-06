@@ -15,8 +15,10 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 ## 4.7.1
 
-- **Zephyr TV Receiver** also works on Hisense TVs with VIDAA. The TV opens it from the site as an app of its own. To add it, read docs/receiver.md on GitHub.
+- **Zephyr TV Receiver** works on Hisense TVs with VIDAA. The TV opens it from the site as an app of its own. To add it, read docs/receiver.md on GitHub.
 - On VIDAA, streams that need their own headers cannot play. **Send to** tells you, so you can pick another stream.
+- **Zephyr TV Receiver** works on Samsung TVs with Tizen too. Add it in TizenBrew with **Add GitHub Module** and `mccoy88f/Zephyr_TV`. Through TizenBrew, streams that need their own headers play too.
+- The Receiver is in the nine languages of Zephyr TV.
 
 ## 4.7.0
 

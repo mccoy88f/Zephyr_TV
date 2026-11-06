@@ -10,8 +10,10 @@
 (function () {
   "use strict";
 
-  // Served by the site (VIDAA): its own address; packaged (webOS: a file on the TV): the site's.
-  var SITE = /^https?:$/.test(location.protocol) ? location.protocol + "//" + location.host : "https://ztv.mccoy88f.link";
+  // Served by the site (VIDAA): its own address. A file on the TV (webOS), or TizenBrew's server on the TV
+  // (127.0.0.1): the site's.
+  var SITE = /^https?:$/.test(location.protocol) && !/^(127\.0\.0\.1|localhost)$/.test(location.hostname)
+    ? location.protocol + "//" + location.host : "https://ztv.mccoy88f.link";
   var P = window.Platform; // what differs from one TV to the other (see platform.js)
   var OFFER_SECONDS = 5;
   var BANNER_MS = 5000;
@@ -261,29 +263,31 @@
 
   // ---------- the remote ----------
 
-  var KEY = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, OK: 13, BACK: 461, PLAY: 415, PAUSE: 19, STOP: 413, FF: 417, RW: 412, ESC: 27, BKSP: 8, PLAYPAUSE: 179 };
+  var KEY = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, OK: 13, BACK: 461, PLAY: 415, PAUSE: 19, STOP: 413, FF: 417, RW: 412, ESC: 27, PLAYPAUSE: 179 };
+  // The platform's own Back and Play/Pause keys (VIDAA's Backspace, Samsung's 10009 and 10252), with the common ones.
+  function isBack(k) { return k === KEY.BACK || k === KEY.ESC || (P.keys.back || []).indexOf(k) >= 0; }
+  function isPlayPause(k) { return k === KEY.PLAYPAUSE || (P.keys.playPause || []).indexOf(k) >= 0; }
   document.addEventListener("keydown", function (e) {
     var k = e.keyCode;
     if (offering) {
       if (k === KEY.UP || k === KEY.DOWN) { offerFocus = 1 - offerFocus; offer.draw(); }
       else if (k === KEY.OK) { if (offerFocus === 0) accept(); else closeOffer(); }
-      else if (k === KEY.BACK || k === KEY.ESC || k === KEY.BKSP) closeOffer();
+      else if (isBack(k)) closeOffer();
       e.preventDefault();
       return;
     }
     if (!playing) {
       // Waiting: Back leaves the app, as a TV app does.
-      // VIDAA's Back is Backspace (8); its apps leave with window.close().
-      if (k === KEY.BACK || k === KEY.BKSP || k === KEY.ESC) P.exit();
+      if (isBack(k)) P.exit();
       return;
     }
-    if (k === KEY.OK || k === KEY.PLAYPAUSE) setPaused(!video.paused);
+    if (k === KEY.OK || isPlayPause(k)) setPaused(!video.paused);
     else if (k === KEY.PLAY) setPaused(false);
     else if (k === KEY.PAUSE) setPaused(true);
     else if (k === KEY.LEFT || k === KEY.RW) seek(-10);
     else if (k === KEY.RIGHT || k === KEY.FF) seek(10);
     else if (k === KEY.UP || k === KEY.DOWN) showBanner();
-    else if (k === KEY.BACK || k === KEY.STOP || k === KEY.ESC || k === KEY.BKSP) stop();
+    else if (isBack(k) || k === KEY.STOP) stop();
     else return;
     e.preventDefault();
   });
