@@ -968,4 +968,5 @@
     <string name="handoff_device">un altre dispositiu</string>
     <string name="handoff_from">Des de %1$s</string>
     <string name="handoff_watch">Mira-ho ara (%1$d)</string>
+    <string name="send_not_there">%1$s només reprodueix fluxos web: ni torrents ni fitxers baixats.</string>
 </resources>

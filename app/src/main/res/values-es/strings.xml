@@ -968,4 +968,5 @@
     <string name="handoff_device">otro dispositivo</string>
     <string name="handoff_from">Desde %1$s</string>
     <string name="handoff_watch">Ver ahora (%1$d)</string>
+    <string name="send_not_there">%1$s solo reproduce streams web: ni torrents ni archivos descargados.</string>
 </resources>

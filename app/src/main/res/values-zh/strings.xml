@@ -960,4 +960,5 @@
     <string name="handoff_device">另一台设备</string>
     <string name="handoff_from">从 %1$s 开始</string>
     <string name="handoff_watch">立即观看（%1$d）</string>
+    <string name="send_not_there">%1$s 仅播放网络片源：不支持种子和已下载的文件。</string>
 </resources>

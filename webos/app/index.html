@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Zephyr TV Reviver</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Linking: the code to enter on the site, and its QR code. -->
+  <section id="link" class="screen center hidden">
+    <img class="logo" src="logo.png" alt="">
+    <h1 data-t="linkTitle"></h1>
+    <div class="linkBox">
+      <img id="qr" class="qr" alt="">
+      <div class="linkText">
+        <p data-t="linkHow"></p>
+        <p class="url" id="linkUrl"></p>
+        <p class="code" id="linkCode"></p>
+        <p class="muted" id="linkState"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Waiting: ready to receive from the account's other devices. -->
+  <section id="idle" class="screen center hidden">
+    <img class="logo" src="logo.png" alt="">
+    <h1 data-t="ready"></h1>
+    <p class="muted" id="account"></p>
+    <p class="muted small" id="idleNote"></p>
+  </section>
+
+  <!-- What came: five seconds to cancel. -->
+  <section id="offer" class="overlay hidden">
+    <div class="panel">
+      <h2 id="offerFrom"></h2>
+      <p id="offerWhat" class="what"></p>
+      <p id="offerAt" class="muted"></p>
+      <div class="rows">
+        <div class="row focus" id="offerWatch" tabindex="0"></div>
+        <div class="row" id="offerCancel" tabindex="0" data-t="cancel"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The player, as Zephyr TV's: the picture, its loading screen, the banner across the bottom. -->
+  <section id="player" class="screen hidden">
+    <video id="video" preload="auto"></video>
+    <div id="loading" class="center loading">
+      <div class="logoBox big"><img id="loadPoster" alt=""></div>
+      <div id="loadName" class="loadName"></div>
+      <div id="loadStatus" class="loadStatus"></div>
+    </div>
+    <div id="banner" class="banner hidden">
+      <div class="logoBox"><img id="poster" alt=""></div>
+      <div class="info">
+        <div class="head">
+          <div id="title" class="title"></div>
+          <div id="position" class="position"></div>
+          <div id="clock" class="clock"></div>
+        </div>
+        <div class="bar"><div id="progress"></div></div>
+        <div id="state" class="paused hidden" data-t="paused"></div>
+        <div id="source" class="source"></div>
+      </div>
+    </div>
+    <div id="hint" class="hint hidden"></div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>

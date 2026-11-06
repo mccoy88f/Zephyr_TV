@@ -11,6 +11,19 @@ const config: NextConfig = {
   // Native or Node-only: left to Node, not bundled.
   serverExternalPackages: ["@node-rs/argon2", "pg", "nodemailer"],
   images: { unoptimized: true },
+  // The devices' API from Zephyr TV Reviver too (webos/), a web app on the TV: from any origin, as it sends its token in
+  // Authorization (never a cookie), so another site can do nothing with it a TV couldn't.
+  async headers() {
+    return [{
+      source: "/api/v1/:path*",
+      headers: [
+        { key: "Access-Control-Allow-Origin", value: "*" },
+        { key: "Access-Control-Allow-Methods", value: "GET, POST, DELETE, OPTIONS" },
+        { key: "Access-Control-Allow-Headers", value: "Authorization, Content-Type, X-Zephyr-Version" },
+        { key: "Access-Control-Max-Age", value: "86400" },
+      ],
+    }];
+  },
 };
 
 export default withNextIntl(config);

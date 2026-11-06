@@ -1567,6 +1567,12 @@ class PlayerActivity : Activity() {
         val c = channels.getOrNull(at) ?: return
         // Its stream, when another device can play it too (an address, a torrent): not a downloaded file of this one's.
         val s = streams.getOrNull(tried)?.takeIf { it.url.startsWith("http") || Torrents.isTorrent(it.url) }
+        // Zephyr TV Reviver plays the stream as it is, and nothing else: an address only, not a torrent (no engine there)
+        // nor a downloaded file (no streams to look for instead).
+        if (d.reviver && s?.url?.startsWith("http") != true) {
+            android.widget.Toast.makeText(this, getString(R.string.send_not_there, d.name), android.widget.Toast.LENGTH_LONG).show()
+            return
+        }
         val what = Handoff.What(intent.getStringExtra(META_TYPE) ?: c.type, intent.getStringExtra(META_ID) ?: c.id, c.id, c.name,
             intent.getStringExtra(POSTER), s?.let { streamJson(it).toString() }, player?.currentPosition ?: 0L)
         Thread {

@@ -1,0 +1,13 @@
+{
+  "id": "link.mccoy88f.zephyr.reviver",
+  "version": "1.0.0",
+  "vendor": "mccoy88f",
+  "type": "web",
+  "main": "index.html",
+  "title": "Zephyr TV Reviver",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "iconColor": "#0b0b10",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true
+}

@@ -14,11 +14,13 @@
   },
   "dependencies": {
     "@node-rs/argon2": "2.2.2",
+    "@types/qrcode": "1.5.5",
     "drizzle-orm": "0.45.4",
     "next": "16.4.2",
     "next-intl": "4.14.9",
     "nodemailer": "10.2.1",
     "pg": "8.23.1",
+    "qrcode": "1.5.4",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "server-only": "0.0.1",

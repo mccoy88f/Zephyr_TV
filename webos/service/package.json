@@ -1,0 +1,7 @@
+{
+  "name": "link.mccoy88f.zephyr.reviver.service",
+  "version": "1.0.0",
+  "description": "Zephyr TV Reviver's service: a local proxy that adds a stream's headers",
+  "main": "service.js",
+  "license": "GPL-3.0"
+}

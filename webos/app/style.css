@@ -1,0 +1,51 @@
+/* Zephyr TV Reviver: Zephyr TV's dark look, at 1920x1080 (the TV scales it). */
+html, body { margin: 0; width: 1920px; height: 1080px; background: #000; color: #fff; overflow: hidden;
+  font-family: "LG Smart UI", "Roboto", "Helvetica Neue", Arial, sans-serif; }
+.hidden { display: none !important; }
+.screen { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+.center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+#link, #idle { background: radial-gradient(ellipse at 50% 35%, #1d1d2a 0%, #0b0b10 60%, #000 100%); }
+.logo { width: 180px; height: 180px; margin-bottom: 36px; }
+h1 { font-size: 54px; font-weight: 600; margin: 0 0 24px; }
+h2 { font-size: 40px; font-weight: 600; margin: 0 0 18px; }
+p { font-size: 30px; margin: 8px 0; }
+.muted { opacity: 0.65; }
+.small { font-size: 24px; }
+.linkBox { display: flex; align-items: center; margin-top: 24px; text-align: left; }
+.qr { width: 300px; height: 300px; background: #fff; border-radius: 16px; padding: 12px; margin-right: 56px; }
+.url { font-size: 34px; font-weight: 600; }
+.code { font-size: 72px; font-weight: 700; letter-spacing: 8px; margin: 16px 0; }
+
+/* The five seconds' panel: as Zephyr TV's settings panel, over the screen. */
+.overlay { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: rgba(0, 0, 0, 0.6);
+  display: flex; justify-content: flex-end; }
+.panel { width: 640px; height: 100%; box-sizing: border-box; padding: 80px 48px; background: #09090b; }
+.what { font-size: 32px; font-weight: 600; }
+.rows { margin-top: 40px; }
+.row { font-size: 30px; padding: 18px 24px; border-radius: 12px; margin-bottom: 10px; color: #fff; }
+.row.focus { background: #fff; color: #000; }
+
+/* The player: Zephyr TV's sizes, in dp, twice over (Android TV draws 960x540 dp on a 1080p screen). */
+#player { background: #000; }
+video { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: #000; }
+.loading { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: #000; }
+.logoBox { width: 320px; height: 180px; border-radius: 20px; overflow: hidden; background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0; margin-right: 48px; }
+.logoBox img { width: 100%; height: 100%; object-fit: cover; }
+.logoBox.big { width: 640px; height: 360px; margin: 0 0 32px; border-radius: 24px; }
+.loadName { font-size: 56px; font-weight: 700; max-width: 1400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.loadStatus { font-size: 36px; opacity: 0.8; margin-top: 32px; animation: breathe 2.4s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.85; } }
+.banner { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: flex-start; padding: 96px 96px 64px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 55%, rgba(0, 0, 0, 0) 100%); }
+.info { flex: 1; min-width: 0; }
+.head { display: flex; align-items: center; }
+.title { flex: 1; font-size: 48px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.position { font-size: 28px; opacity: 0.7; padding-left: 24px; }
+.clock { font-size: 36px; margin-left: 48px; }
+.bar { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.25); margin: 28px 0 16px; overflow: hidden; }
+#progress { height: 100%; width: 0; background: #fff; border-radius: 4px; }
+.paused { font-size: 28px; opacity: 0.85; margin-bottom: 8px; }
+.source { font-size: 24px; opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hint { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 36px; padding: 20px 36px;
+  border-radius: 24px; background: rgba(0, 0, 0, 0.7); }

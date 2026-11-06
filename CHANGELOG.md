@@ -13,6 +13,14 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.7.0
+
+- **Zephyr TV Reviver** is a new app for LG TVs with webOS. It plays what Zephyr TV sends it with **Send to**. Download `ZephyrTVReviver.ipk` from the release.
+- Install it with Homebrew Channel or with the Developer Mode of the TV. At the first start, link it to your Zephyr TV account with the code or the QR code.
+- The LG TV shows in **Send to** with the other devices. It plays web streams: MP4, MKV, HLS and DASH. Its player looks like the player of Zephyr TV.
+- Streams that need their own headers play through a small proxy in the app.
+- Torrents and downloaded files cannot go to the LG TV. **Send to** tells you.
+
 ## 4.6.0
 
 - **Send to** in the player sends the film or episode to another device of your Zephyr TV account. The other device plays it from the same point.

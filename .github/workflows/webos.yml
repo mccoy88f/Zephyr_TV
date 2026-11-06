@@ -1,0 +1,31 @@
+# Checks that Zephyr TV Reviver (webos/) packages: its service reads as JavaScript, and LG's tools make its .ipk, kept
+# as an artifact to install by hand. The release workflow packages it the same way and attaches it to the release.
+name: webOS
+
+on:
+  push:
+    paths: ['webos/**', '.github/workflows/webos.yml']
+  pull_request:
+    paths: ['webos/**', '.github/workflows/webos.yml']
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check and package
+        run: |
+          node --check webos/service/service.js
+          node --check webos/app/app.js
+          npm install -g @webos-tools/cli@3.2.6
+          ares-package webos/app webos/service -o webos-out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zephyr-tv-reviver
+          path: webos-out/*.ipk
