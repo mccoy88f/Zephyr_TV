@@ -18,6 +18,8 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 - The list of streams shows the seeders of a torrent stream on the second line again, when the add-on gives them.
 - At the same quality, the torrent with the most seeders is at the top of the torrents.
 - A torrent stream does not lose its peers any more while it plays. Before, the speed went to zero after a few minutes, also with many seeders.
+- In the player, the peers and the speed of a torrent show on the audio and subtitles line.
+- The stream line in the player does not start its scroll again every second. Now you can read all of it.
 - Update the engine in **Settings → Content → Torrent engine**.
 
 ## 4.3.0-beta.5

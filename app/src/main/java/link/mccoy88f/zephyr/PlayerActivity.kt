@@ -176,6 +176,8 @@ class PlayerActivity : Activity() {
     private lateinit var more: TextView
     private lateinit var source: TextView
     private lateinit var trackLine: TextView // in the banner: the audio track and subtitles playing
+    private lateinit var torrentInfo: TextView // after it: a torrent's peers and speed, asked again each second
+    private lateinit var trackRow: LinearLayout // the two, on one line
     private lateinit var subtitles: FrameLayout // over the picture, its size: the subtitles' cues
     private lateinit var tracksPanel: LinearLayout // Audio and subtitles, on the right
     private lateinit var tracksTitle: TextView
@@ -252,7 +254,7 @@ class PlayerActivity : Activity() {
                     torrentLine = Torrents.statusLine(this@PlayerActivity, b)
                     torrentDown = b.getInt("down")
                     if (loading.visibility == View.VISIBLE && !soundOnly && player?.playbackState != Player.STATE_READY) status.text = torrentLine
-                    if (banner.visibility == View.VISIBLE && shown == at) fillSource(at)
+                    if (banner.visibility == View.VISIBLE && shown == at) fillTorrentInfo(at)
                 }
             }
             ui.postDelayed(this, 1000)
@@ -389,7 +391,16 @@ class PlayerActivity : Activity() {
         // The stream's line and the audio and subtitles' under the bar: too long for it, they scroll (selected: they
         // scroll without focus, which stays on the buttons).
         source = text(12f).apply { alpha = 0.6f; scrolling() }
-        trackLine = text(12f).apply { alpha = 0.6f; scrolling(); setPadding(0, dp(4), 0, 0) }
+        trackLine = text(12f).apply { alpha = 0.6f; scrolling() }
+        // Not scrolling, and a line of its own beside the tracks: written each second, it would start their scroll again.
+        torrentInfo = text(12f).apply { alpha = 0.6f; maxLines = 1; visibility = View.GONE }
+        trackRow = LinearLayout(this).apply {
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dp(4), 0, 0)
+            visibility = View.GONE
+            addView(trackLine, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(torrentInfo, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+        }
         buttons = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL; clipChildren = false }
         // What's on: framed while it has the focus, so it's clear OK there shows all of it.
         val descBg = GradientDrawable().apply { cornerRadius = dp(10).toFloat(); setColor(Color.TRANSPARENT) }
@@ -411,7 +422,7 @@ class PlayerActivity : Activity() {
         lines = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             addView(source)
-            addView(trackLine)
+            addView(trackRow)
             addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
                 if (bottom - top != oldBottom - oldTop) buttons.post { sizeButtons() }
             }
@@ -562,11 +573,10 @@ class PlayerActivity : Activity() {
     /** The stream playing on channel [i] and its picture's resolution ("Stream 1 of 2 · RAI 1 · 1080p"), or Loading. */
     private fun fillSource(i: Int) {
         val playing = streams.getOrNull(tried)?.takeIf { i == at }
-        source.text = if (playing != null)
-            listOfNotNull(getString(R.string.player_stream, tried + 1, streams.size, playing.title), resolution(),
-                torrentLine?.takeIf { torrent != null }).joinToString(" · ")
+        setIfChanged(source, if (playing != null)
+            listOfNotNull(getString(R.string.player_stream, tried + 1, streams.size, playing.title), resolution()).joinToString(" · ")
                 .let { if (player?.playWhenReady == false) getString(R.string.player_paused) + "  ·  " + it else it }
-        else getString(R.string.player_loading)
+        else getString(R.string.player_loading))
     }
 
     /** "720p", "1080p", "4K": the picture's lines (its width, for a wide film cropped shorter); null before it plays. */
@@ -1245,12 +1255,26 @@ class PlayerActivity : Activity() {
         val subs = tracks(C.TRACK_TYPE_TEXT)
         if (i != at || (audio.size < 2 && subs.isEmpty())) {
             trackLine.visibility = View.GONE
-            return
+        } else {
+            val sound = audio.firstOrNull { it.selected }?.name ?: audio.firstOrNull()?.name ?: "–"
+            val shownSubs = subs.firstOrNull { it.selected }?.name ?: getString(R.string.player_subtitles_off)
+            setIfChanged(trackLine, getString(R.string.player_tracks_line, sound, shownSubs))
+            trackLine.visibility = View.VISIBLE
         }
-        val sound = audio.firstOrNull { it.selected }?.name ?: audio.firstOrNull()?.name ?: "–"
-        val shownSubs = subs.firstOrNull { it.selected }?.name ?: getString(R.string.player_subtitles_off)
-        trackLine.text = getString(R.string.player_tracks_line, sound, shownSubs)
-        trackLine.visibility = View.VISIBLE
+        fillTorrentInfo(i)
+    }
+
+    /** The torrent's peers and speed after the tracks (see torrentTick); the line without them when it isn't one. */
+    private fun fillTorrentInfo(i: Int) {
+        val line = torrentLine?.takeIf { torrent != null && i == at }
+        torrentInfo.text = line?.let { if (trackLine.visibility == View.VISIBLE) "  ·  $it" else it }.orEmpty()
+        torrentInfo.visibility = if (line != null) View.VISIBLE else View.GONE
+        trackRow.visibility = if (line != null || trackLine.visibility == View.VISIBLE) View.VISIBLE else View.GONE
+    }
+
+    /** [t] in [v] only when it's another: the same text set again starts its scroll over. */
+    private fun setIfChanged(v: TextView, t: String) {
+        if (v.text?.toString() != t) v.text = t
     }
 
     // ---------- the banner's buttons ----------
