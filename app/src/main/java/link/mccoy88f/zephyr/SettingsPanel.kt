@@ -1158,12 +1158,12 @@ internal fun MainActivity.pickSpotlightSource() {
 /**
  * An accordion's heading: a box like a button, the group's [title] and its [count] of rows, and an arrow on the
  * right that says whether it's open (up) or closed (down). OK, or a tap, runs [toggle]: the page is drawn again
- * with the group open or closed. The panel's standard for a long list in groups (the streams by quality): only the first group open at
- * first, so the list starts short and the best ones are on top.
+ * with the group open or closed. The panel's standard for a long list in groups (the streams by quality): one group open at
+ * first (the preferred quality's, see openGroup), so the list starts short.
  */
 internal fun MainActivity.accordionRow(title: String, count: Int, open: Boolean, toggle: () -> Unit): View {
-    // Always there, as a button's box (a field's colour, edged), lit as the other rows with the focus.
-    val bg = GradientDrawable().apply { cornerRadius = dp(8).toFloat(); setColor(field); setStroke(dp(1), fieldEdge()) }
+    // A button's box as the theme draws its buttons (see buttonRest): light, dark, or a pane of glass over the photo.
+    val bg = GradientDrawable().apply { cornerRadius = dp(8).toFloat(); setColor(buttonRest()); if (!glass) setStroke(dp(1), fieldEdge()) }
     val name = label(title, 13f).apply { alpha = 0.9f; setTypeface(typeface, android.graphics.Typeface.BOLD) }
     val number = label("$count", 13f).apply { alpha = 0.6f; setPadding(dp(8), 0, dp(8), 0) }
     val arrow = ImageView(this).apply {
@@ -1177,6 +1177,7 @@ internal fun MainActivity.accordionRow(title: String, count: Int, open: Boolean,
         gravity = Gravity.CENTER_VERTICAL
         setPadding(dp(14), dp(10), dp(14), dp(10))
         background = bg
+        val light = if (glass) glassPane(this, dp(8)) else null
         isFocusable = true
         isClickable = true
         contentDescription = "$title, $count"
@@ -1185,13 +1186,18 @@ internal fun MainActivity.accordionRow(title: String, count: Int, open: Boolean,
         addView(arrow, LinearLayout.LayoutParams(dp(18), dp(18)))
         setOnClickListener { toggle() }
         setOnFocusChangeListener { _, focused ->
-            bg.setColor(if (focused) fg else field)
+            // Glass lightens, its content staying white; light and dark invert, as their other rows do.
+            if (light != null) return@setOnFocusChangeListener light(focused)
+            bg.setColor(if (focused) fg else buttonRest())
             name.setTextColor(if (focused) onFg else fg)
             number.setTextColor(if (focused) onFg else fg)
             arrow.setColorFilter(if (focused) onFg else fg)
         }
     }
 }
+
+/** A button's fill at rest, in the theme: the title page's buttons, an accordion's heading. */
+internal fun MainActivity.buttonRest() = if (glass) 0x662C2C34 else if (dark) 0x991C1C22.toInt() else 0x99DCE0E8.toInt()
 
 internal fun MainActivity.twoLineRow(info: String, source: String, action: () -> Unit): View {
     val bg = GradientDrawable().apply { cornerRadius = dp(8).toFloat() }

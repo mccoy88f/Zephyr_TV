@@ -13,6 +13,12 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## Unreleased
+
+- In **Pick a stream**, the group of your **Preferred quality** is open at first. If there is no stream in that quality, the best quality below it opens.
+- The boxes of the quality groups use the colours of the theme. In **Glass**, they are panes of glass.
+- **Films** and **Series** show their pictures one time when they open. They do not load the pictures again two or three times.
+
 ## 4.5.1
 
 - In **Pick a stream** and in the list of streams to download, each quality is a group that opens and closes. Only the highest quality is open at first. Select the box of a group to open or close it. Its arrow points up when it is open and down when it is closed.

@@ -75,7 +75,7 @@ internal fun MainActivity.withMainArt(t: Stremio.Title, missing: MutableList<Str
 /** Asks the main catalog for [titles]' art in the background; once in, the rows under [pkg] again if it's still in focus. */
 internal fun MainActivity.mainArtLater(titles: List<Stremio.Title>, pkg: String) {
     val todo = mainArtTodo(titles) ?: return
-    netIo.execute { if (askMainArt(todo, 60)) ui.post { rowsAgain(pkg) } }
+    netIo.execute { if (askMainArt(todo, 60)) ui.post { rowsAgainSoon(pkg) } }
 }
 
 /** Asks the main catalog for [titles]' art and waits for it, [seconds] at most: for the search's results. Off the UI thread. */

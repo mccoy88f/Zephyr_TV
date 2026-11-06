@@ -105,7 +105,7 @@ internal fun MainActivity.localizeLater(ids: List<String>, pkg: String) {
     if (todo.isEmpty()) return
     netIo.execute {
         askLocal(todo, key, lang)
-        ui.post { rowsAgain(pkg) }
+        ui.post { rowsAgainSoon(pkg) }
     }
 }
 

@@ -861,7 +861,7 @@ private fun MainActivity.serviceBar(t: Stremio.Title, available: Set<String>?, e
                 gravity = Gravity.CENTER_VERTICAL
             }
 
-            val rest = if (glass) 0x662C2C34.toInt() else if (dark) 0x991C1C22.toInt() else 0x99DCE0E8.toInt()
+            val rest = buttonRest()
 
             val btnIds = buttons.indices.map { View.generateViewId() }
             for ((idx, a) in buttons.withIndex()) {
@@ -1115,7 +1115,7 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
     var left = sources.size
     var hidden = 0 // torrents left out: no engine to play them (see Torrents)
     var shown = false
-    // The quality groups open (see accordionRow): the highest only, until one is opened or closed by hand.
+    // The quality groups open (see accordionRow): the preferred quality's only (see openGroup), until one is opened or closed by hand.
     val open = HashSet<Int>()
     var openedByHand = false
     val savedPageExit = pageExit
@@ -1142,11 +1142,11 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
         findViewById<TextView>(R.id.settingsTitle).visibility = View.VISIBLE
         var group = -1
         var at = 0
+        val counts = list.groupingBy { qualityGroup(it.title) }.eachCount()
         if (!openedByHand) {
             open.clear()
-            list.firstOrNull()?.let { open += qualityGroup(it.title) }
+            openGroup(counts.keys, preferredQuality(prefs))?.let { open += it }
         }
-        val counts = list.groupingBy { qualityGroup(it.title) }.eachCount()
         local?.let { e ->
             settingsList.addView(label(getString(R.string.download_local), 13f).apply { alpha = 0.6f; setPadding(dp(14), dp(16), 0, dp(6)) }, at++)
             val s = localStream(e)

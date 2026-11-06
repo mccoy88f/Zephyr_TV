@@ -173,6 +173,18 @@ internal const val UNKNOWN_QUALITY = 900
  */
 internal fun qualityGroup(title: String) = streamQuality(title).let { if (it == UNKNOWN_QUALITY) 0 else it }
 
+/**
+ * The quality group open at first in a stream list, of [groups] (see qualityGroup): the [preferred] quality's
+ * (Content → Preferred quality), else the best below it, else the nearest above it; with 0 (the highest), the best.
+ * The group of streams that say no quality only when there is no other.
+ */
+internal fun openGroup(groups: Collection<Int>, preferred: Int): Int? {
+    val known = groups.filter { it > 0 }
+    if (known.isEmpty()) return groups.firstOrNull()
+    if (preferred == 0) return known.max()
+    return known.filter { it <= preferred }.maxOrNull() ?: known.min()
+}
+
 /** The heading over a [qualityGroup]'s streams. */
 internal fun android.content.Context.qualityHeading(group: Int) =
     if (group == 0) getString(R.string.player_quality_unknown) else if (group >= 2160) "${group}p · 4K" else "${group}p"

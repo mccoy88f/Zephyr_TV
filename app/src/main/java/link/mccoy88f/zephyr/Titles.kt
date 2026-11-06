@@ -180,7 +180,7 @@ private fun MainActivity.releasesLater(ids: List<String>, pkg: String) {
     netIo.execute {
         runCatching { Releases.ask(key, todo, region) }.onFailure { warn("TMDB releases failed (${TmdbClient.redact(it)})") }
         Releases.asking.removeAll(todo.toSet())
-        ui.post { rowsAgain(pkg) }
+        ui.post { rowsAgainSoon(pkg) }
     }
 }
 
@@ -236,7 +236,7 @@ private fun MainActivity.nameLater(marks: List<Pair<VodWatched.Mark, String>>, p
     netIo.execute {
         val names = parallel(todo, 6, 20) { (m, kind) -> Stremio.titleMeta(base, kind, m.metaId)?.title?.name?.let { m.metaId to it } }.toMap()
         runCatching { VodWatched.name(dir, names) }
-        if (names.isNotEmpty()) ui.post { rowsAgain(pkg) }
+        if (names.isNotEmpty()) ui.post { rowsAgainSoon(pkg) }
     }
 }
 
@@ -251,7 +251,7 @@ private fun MainActivity.refreshShelves(addon: Stremio.Addon, pkg: String) {
         refreshing.remove(addon.url)
         val has = got?.any { it.titles.isNotEmpty() } == true
         // Still empty: leave the app as it is. The next time the user opens it, vodDue tries again.
-        if (got != null && (has || had)) ui.post { rowsAgain(pkg) }
+        if (got != null && (has || had)) ui.post { rowsAgainSoon(pkg) }
     }
 }
 

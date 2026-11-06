@@ -97,8 +97,10 @@ class MainActivity : Activity() {
     internal var nightShown = false // night mode's dimming is showing
     internal val loading = java.util.Collections.synchronizedSet(HashSet<String>())
     internal val ui = Handler(Looper.getMainLooper())
-    // Decoded posters, so rows scrolled back show at once: 12 MB is a couple of rows without starving a 2–3 GB TV.
-    internal val posters = object : LruCache<String, Bitmap>(12 * 1024 * 1024) {
+    internal var rowsAgainPending: Runnable? = null // see rowsAgainSoon
+    // Decoded posters, so rows scrolled back (or built again) show at once: a whole Films page on a TV with memory to
+    // spare (32 MB, an eighth of what Android gives the app), less on a small one, never under 12 MB.
+    internal val posters = object : LruCache<String, Bitmap>(posterCacheBytes()) {
         override fun sizeOf(key: String, value: Bitmap) = value.byteCount
     }
 

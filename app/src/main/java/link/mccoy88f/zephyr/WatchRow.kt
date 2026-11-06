@@ -185,6 +185,22 @@ internal fun MainActivity.rowsAgain(pkg: String?) {
     queryAppChannels(pkg)
 }
 
+/**
+ * [pkg]'s rows built again a moment from now, with all that came in by then: what the background brings in a burst
+ * (names and posters in the TV's language, the main catalog's art, the releases, catalogs read again) redraws the rows
+ * once, not once for each. On the main thread.
+ */
+internal fun MainActivity.rowsAgainSoon(pkg: String?) {
+    if (pkg == null || tmdbLastFocusApp != pkg) return
+    rowsAgainPending?.let { ui.removeCallbacks(it) }
+    rowsAgainPending = Runnable {
+        rowsAgainPending = null
+        rowsAgain(pkg)
+    }.also { ui.postDelayed(it, ROWS_AGAIN_MS) }
+}
+
+private const val ROWS_AGAIN_MS = 800L
+
 internal fun MainActivity.queryAppChannels(pkg: String?) {
     // An add-on's tile, or the TV app with the add-ons' channels in it, has rows without the TV listings too.
     if (pkg == null || pkg.startsWith(HDMI) || (!readsListings() && !pkg.startsWith(STREMIO) && addonsUnder(pkg).isEmpty())) {
@@ -1003,11 +1019,15 @@ internal fun MainActivity.fillArt(frame: FrameLayout, w: Int, h: Int, backdrop: 
 private fun MainActivity.drawArt(frame: FrameLayout, w: Int, h: Int, backdrops: List<String>, logos: List<String>, posters: List<String>, title: String,
                                  page: Boolean = false) {
     // The first of [uris] that loads; [failed] when none does.
-    fun load(v: ImageView, uris: List<String>, blur: Boolean = false, failed: () -> Unit = {}) = posterIo.execute {
-        val bmp = uris.firstNotNullOfOrNull { uri -> runCatching { art(uri, alpha = uri in logos) }.getOrNull() }
-            ?: return@execute run { ui.post(failed) }
-        val shown = if (blur) softBlur(bmp) else bmp
-        ui.post { v.setImageBitmap(shown) }
+    // In memory already (a row built again, see showSections): drawn at once, without a blank frame first.
+    fun load(v: ImageView, uris: List<String>, blur: Boolean = false, failed: () -> Unit = {}) {
+        uris.firstOrNull()?.let { uri -> artInMemory(uri, alpha = uri in logos, blur = blur) }?.let { return v.setImageBitmap(it) }
+        posterIo.execute {
+            val hit = uris.firstNotNullOfOrNull { uri -> runCatching { art(uri, alpha = uri in logos)?.let { uri to it } }.getOrNull() }
+                ?: return@execute run { ui.post(failed) }
+            val shown = if (blur) blurOf(hit.first, hit.second) else hit.second
+            ui.post { v.setImageBitmap(shown) }
+        }
     }
     fun again(backdrops: List<String>, posters: List<String>) {
         frame.removeAllViews()
@@ -1088,6 +1108,7 @@ internal fun MainActivity.addTitleLogo(frame: FrameLayout, uris: List<String>, w
     }, FrameLayout.LayoutParams(MATCH_PARENT, h / 2, Gravity.BOTTOM))
     val logo = ImageView(this).apply { scaleType = ImageView.ScaleType.FIT_START }
     frame.addView(logo, FrameLayout.LayoutParams(w / 2, h / 3, Gravity.BOTTOM or Gravity.START).apply { setMargins(dp(10), 0, 0, dp(10)) })
+    uris.firstOrNull()?.let { artInMemory(it, alpha = true) }?.let { return logo.setImageBitmap(it) }
     posterIo.execute { uris.firstNotNullOfOrNull { runCatching { art(it, alpha = true) }.getOrNull() }?.let { ui.post { logo.setImageBitmap(it) } } }
 }
 
@@ -1218,6 +1239,14 @@ internal fun MainActivity.art(uri: String, alpha: Boolean = false): Bitmap? {
     return bmp
 }
 
+/** [uri]'s picture if it's decoded in memory already ([blur]: its card blur, see blurOf); no disk, no network. */
+internal fun MainActivity.artInMemory(uri: String, alpha: Boolean = false, blur: Boolean = false): Bitmap? =
+    if (blur) posters.get("$uri#blur") else posters.get(if (alpha) "$uri#alpha" else uri)
+
+/** [bmp]'s (from [uri]) soft blur for a card, kept in memory with it: a row built again shows it at once. */
+internal fun MainActivity.blurOf(uri: String, bmp: Bitmap): Bitmap =
+    posters.get("$uri#blur") ?: softBlur(bmp).also { posters.put("$uri#blur", it) }
+
 internal fun MainActivity.decode(uri: String, alpha: Boolean = false): Bitmap? {
     val bytes = openStream(uri).use { it.readCapped(Http.MAX_IMAGE) }
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -1243,3 +1272,6 @@ internal fun channelKey(number: String?): Double {
     val major = parts.firstOrNull() ?: return Double.MAX_VALUE
     return major + (parts.getOrNull(1) ?: 0) / 1000.0
 }
+
+/** The decoded posters' memory (MainActivity.posters): an eighth of the app's heap, 12 to 32 MB. */
+internal fun posterCacheBytes(): Int = (Runtime.getRuntime().maxMemory() / 8).coerceIn(12L shl 20, 32L shl 20).toInt()
