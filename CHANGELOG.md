@@ -13,7 +13,7 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
-## Unreleased
+## 4.5.2
 
 - In **Pick a stream**, the group of your **Preferred quality** is open at first. If there is no stream in that quality, the best quality below it opens.
 - The boxes of the quality groups use the colours of the theme. In **Glass**, they are panes of glass.
