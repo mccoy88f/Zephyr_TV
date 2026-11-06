@@ -1,0 +1,11 @@
+{
+  "packages": [
+    {
+      "id": "link.mccoy88f.zephyr.receiver",
+      "title": "Zephyr TV Receiver",
+      "shortDescription": "<p>Plays what Zephyr TV sends it with Send to, from a phone, a tablet or another TV of the same Zephyr TV account. Link it once with the code it shows.</p>",
+      "iconUri": "https://ztv.mccoy88f.link/receiver/icon.png",
+      "manifestUrl": "https://github.com/mccoy88f/Zephyr_TV/releases/latest/download/link.mccoy88f.zephyr.receiver.manifest.json"
+    }
+  ]
+}

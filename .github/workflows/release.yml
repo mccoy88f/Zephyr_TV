@@ -73,6 +73,21 @@ jobs:
           command -v convert >/dev/null || sudo apt-get install -y imagemagick # the icons, from the shared one
           webos/package.sh webos-out
           cp webos-out/*.ipk ZephyrTVReceiver.ipk
+          # Homebrew Channel's manifest of this .ipk (its repository, ztv.mccoy88f.link/webos.json, points at the
+          # latest release's): its version, the .ipk beside it, its SHA-256 and size.
+          node -e '
+            const fs = require("fs"), crypto = require("crypto");
+            const app = JSON.parse(fs.readFileSync("webos/app/appinfo.json", "utf8"));
+            const v = /var VERSION = "([0-9.]+)"/.exec(fs.readFileSync("site/public/receiver/platform.js", "utf8"))[1];
+            const ipk = fs.readFileSync("ZephyrTVReceiver.ipk");
+            fs.writeFileSync("link.mccoy88f.zephyr.receiver.manifest.json", JSON.stringify({
+              id: app.id, version: v, type: "web", title: app.title,
+              appDescription: "Plays what Zephyr TV sends it with Send to, from the account'"'"'s other devices.",
+              iconUri: "https://ztv.mccoy88f.link/receiver/icon.png", sourceUrl: "https://github.com/mccoy88f/Zephyr_TV",
+              rootRequired: false, ipkUrl: "ZephyrTVReceiver.ipk",
+              ipkHash: { sha256: crypto.createHash("sha256").update(ipk).digest("hex") }, ipkSize: ipk.length,
+            }, null, 2));
+          '
 
       - name: Publish
         env:
@@ -85,4 +100,4 @@ jobs:
           awk -v v="## $VER" '$0 == v {on = 1; next} on && /^#/ {exit} on' CHANGELOG.md > notes.md
           # A beta ("4.0.0-beta.1") is a pre-release: the in-app updater reads releases/latest, which leaves those out.
           pre=""; case "$VER" in *-*) pre="--prerelease";; esac
-          gh release create "v$VER" ZephyrTV.apk ZephyrTorrent.apk ZephyrTVReceiver.ipk --title "Zephyr TV $VER" --notes-file notes.md --target "$GITHUB_SHA" $pre
+          gh release create "v$VER" ZephyrTV.apk ZephyrTorrent.apk ZephyrTVReceiver.ipk link.mccoy88f.zephyr.receiver.manifest.json --title "Zephyr TV $VER" --notes-file notes.md --target "$GITHUB_SHA" $pre
