@@ -486,6 +486,11 @@ internal object Engine {
         val dir = workDir(d.folder)
         val again = d.path?.let { File(it).exists() } == true // part of it saved before the engine stopped
         val h = handle(Magnet.parse(d.link) ?: return, d.link, dir) ?: run { d.failed = true; saveDownloads(); return }
+        // Out of the session's queue, as a stream's: going at once, never held back behind others or paused.
+        runCatching {
+            h.unsetFlags(TorrentFlags.AUTO_MANAGED)
+            h.resume()
+        }.onFailure { log("download left in the queue: $it") }
         d.handle = h
         val ti = metadata(h) { synchronized(downloads) { downloads[d.key] !== d } }
         if (synchronized(downloads) { downloads[d.key] !== d }) return
@@ -575,6 +580,13 @@ internal object Engine {
     fun progress(d: Download): Long = when {
         d.done || d.moving -> d.total
         else -> d.handle?.takeIf { it.isValid && d.index >= 0 }?.let { h -> runCatching { h.fileProgress()[d.index] }.getOrNull() } ?: 0L
+    }
+
+    /** Its peers now, and what stops it (libtorrent's error on it: a file it can't write), or null. */
+    fun peers(d: Download): Int = d.handle?.takeIf { it.isValid }?.let { runCatching { it.status().numPeers() }.getOrNull() } ?: 0
+
+    fun problem(d: Download): String? = d.handle?.takeIf { it.isValid }?.let { h ->
+        runCatching { h.status().errorCode().takeIf { it.isError }?.message }.getOrNull()
     }
 
     fun rate(d: Download): Int = d.handle?.takeIf { it.isValid }?.let { runCatching { it.status().downloadPayloadRate() }.getOrNull() } ?: 0

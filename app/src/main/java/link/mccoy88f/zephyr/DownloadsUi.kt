@@ -108,6 +108,12 @@ private fun MainActivity.downloadValue(s: DlStatus?): CharSequence = when {
     s == null -> ""
     s.complete -> blueTicks("✓ " + sizeName(s.total))
     s.failed -> getString(R.string.download_failed_status)
+    // A torrent: what stops it, else how far, with its peers and speed (0 % for a while on a big film, at first).
+    s.torrent?.problem != null -> getString(R.string.torrent_stalled, s.torrent.problem)
+    s.torrent != null && s.status == android.app.DownloadManager.STATUS_RUNNING && s.total > 0 ->
+        "${s.percent}% · " + getString(R.string.torrent_status, s.torrent.peers, Torrents.speedName(s.torrent.rate.toLong()))
+    s.torrent != null && s.status != android.app.DownloadManager.STATUS_PAUSED ->
+        getString(R.string.download_waiting) + " · " + getString(R.string.torrent_status, s.torrent.peers, Torrents.speedName(s.torrent.rate.toLong()))
     s.status == android.app.DownloadManager.STATUS_RUNNING -> if (s.total > 0) "${s.percent}% · ${sizeName(s.total)}" else sizeName(s.done)
     else -> getString(R.string.download_waiting)
 }
@@ -152,11 +158,19 @@ internal fun MainActivity.openDownloadsMenu(anchor: View) {
         list.removeAllViews()
         values.clear()
         entries.values.sortedBy { it.name.lowercase() }.forEach { e ->
-            val value = label("", 13f).apply { alpha = 0.7f; maxWidth = dp(150); setPadding(dp(12), 0, 0, 0) }
+            // Of a fixed width: a value changing each second (percent, speed) doesn't move the name beside it.
+            val value = label("", 13f).apply {
+                alpha = 0.7f
+                width = dp(200)
+                isSingleLine = true
+                ellipsize = android.text.TextUtils.TruncateAt.END
+                gravity = Gravity.END
+                setPadding(dp(12), 0, 0, 0)
+            }
             values[e.id] = value
             // A long name scrolls while its row has the focus, in a window that keeps its width (see Ticker).
             val name = label(e.name, 14f)
-            val nameBox = Ticker(this, name, on = false)
+            val nameBox = Ticker(this, name) // always: a touch screen gives no row the focus
             val bg = GradientDrawable().apply { cornerRadius = dp(8).toFloat() }
             val row = LinearLayout(this).apply {
                 id = View.generateViewId()
@@ -172,7 +186,6 @@ internal fun MainActivity.openDownloadsMenu(anchor: View) {
                 setOnFocusChangeListener { _, f ->
                     bg.setColor(if (f) fg else 0)
                     name.setTextColor(if (f) onFg else fg)
-                    nameBox.on = f
                     value.setTextColor(if (f) onFg else fg)
                 }
             }

@@ -13,6 +13,13 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.3.0-beta.10
+
+- In **Downloads**, a long name scrolls always, also on a touch screen and on a TV with its animations turned off.
+- A torrent download shows its peers and speed next to the percent. If it stops, the row tells why.
+- A torrent download starts at once. Before, it could wait behind other torrents in the engine.
+- Update the engine in **Settings → Films and series → Torrent engine**.
+
 ## 4.3.0-beta.9
 
 - In the player, the stream line and the audio and subtitles line scroll without starting again. Before, they started again when the time or the speed changed.

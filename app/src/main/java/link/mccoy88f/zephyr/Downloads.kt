@@ -193,7 +193,7 @@ private fun MainActivity.torrentStatuses(entries: Collection<Downloads.Entry>): 
         Torrents.keepDownloading(this)
     }
     for (e in mine) got[e.id]?.file?.takeIf { it.isNotEmpty() && it != e.file }?.let { Downloads.put(filesDir, e.named(it)) }
-    return mine.mapNotNull { e -> got[e.id]?.let { e.id to DlStatus(torrentStatus(it.state), it.done, it.total) } }.toMap()
+    return mine.mapNotNull { e -> got[e.id]?.let { e.id to DlStatus(torrentStatus(it.state), it.done, it.total, TorrentInfo(it.peers, it.rate, it.problem)) } }.toMap()
 }
 
 @Volatile private var torrentPoked = 0L
@@ -206,7 +206,10 @@ internal fun MainActivity.removeDownload(e: Downloads.Entry) {
 }
 
 /** Where a download is at, as the downloads' menu, the cards and the pages show it (see DownloadsUi). */
-internal class DlStatus(val status: Int, val done: Long, val total: Long) {
+/** [torrent]: a torrent's peers, speed and what stops it, from the engine (see torrentStatuses); null for the others. */
+internal class TorrentInfo(val peers: Int, val rate: Int, val problem: String?)
+
+internal class DlStatus(val status: Int, val done: Long, val total: Long, val torrent: TorrentInfo? = null) {
     val running get() = status == DownloadManager.STATUS_RUNNING || status == DownloadManager.STATUS_PENDING || status == DownloadManager.STATUS_PAUSED
     val complete get() = status == DownloadManager.STATUS_SUCCESSFUL
     val failed get() = status == DownloadManager.STATUS_FAILED

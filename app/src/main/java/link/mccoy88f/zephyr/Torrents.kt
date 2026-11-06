@@ -203,14 +203,16 @@ internal object Torrents {
     }.onFailure { warn("torrent engine: download service not started ($it)") }
 
     /** Where a download in the engine is at. */
-    class Progress(val state: String, val done: Long, val total: Long, val file: String?, val rate: Int)
+    class Progress(val state: String, val done: Long, val total: Long, val file: String?, val rate: Int,
+                   val peers: Int = 0, val problem: String? = null)
 
     /** Every download the engine has, by its key; null when the engine can't be asked. */
     fun downloads(c: Context): Map<String, Progress>? {
         val b = call(c, "downloads") ?: return null
         return b.getStringArray("keys").orEmpty().associateWith { k ->
             val d = b.getBundle(k) ?: Bundle()
-            Progress(d.getString("state") ?: "waiting", d.getLong("done"), d.getLong("total"), d.getString("file"), d.getInt("rate"))
+            Progress(d.getString("state") ?: "waiting", d.getLong("done"), d.getLong("total"), d.getString("file"), d.getInt("rate"),
+                d.getInt("peers"), d.getString("problem"))
         }
     }
 

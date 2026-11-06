@@ -118,6 +118,8 @@ class EngineProvider : ContentProvider() {
                     putString("file", d.path?.substringAfterLast('/'))
                     putString("path", d.path)
                     putInt("rate", Engine.rate(d))
+                    putInt("peers", Engine.peers(d))
+                    Engine.problem(d)?.let { putString("problem", it) }
                 })
             }
             "cancel" -> Engine.cancel(arg ?: return out)
