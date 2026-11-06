@@ -245,9 +245,9 @@ internal object Engine {
             streamsDir().listFiles()?.forEach { d -> if (d.name != p.hash) d.deleteRecursively() }
             if (streamsDir().usableSpace < RESERVE) return "no_space"
         }
-        val error = runCatching { p.handle.status().errorCode().takeIf { it.isError }?.message() }.getOrNull() ?: return null
+        val error = runCatching { p.handle.status().errorCode().takeIf { it.isError }?.message }.getOrNull() ?: return null
         // Once there's room again, the torrent may go on: its error cleared, started again.
-        if (free >= RESERVE) runCatching { p.handle.clearError(); p.handle.resume() }
+        if (free >= RESERVE) runCatching { p.handle.swig().clear_error(); p.handle.resume() }
         return error
     }
 
