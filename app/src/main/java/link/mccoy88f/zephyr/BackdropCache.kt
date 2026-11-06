@@ -40,8 +40,18 @@ internal class BackdropCache(private val dir: File, private val maxFiles: Int = 
             return file
         }
         val part = File(dir, "${file.name}.${Thread.currentThread().id}$PART")
+        // The folder made again when it's gone: Android's Clear cache empties it while the app runs on (the home
+        // screen is never closed), and every image after would fail to save until the app started again.
+        dir.mkdirs()
+        // Where it's saved, opened first: a file that can't be written is an IOException, never the
+        // FileNotFoundException a 404 is (see art: that one isn't asked for again this session).
+        val out = try {
+            part.outputStream()
+        } catch (e: java.io.FileNotFoundException) {
+            throw java.io.IOException("couldn't write ${part.path}", e)
+        }
         try {
-            download(url).use { input -> part.outputStream().use { input.copyCapped(it, Http.MAX_IMAGE) } }
+            out.use { o -> download(url).use { input -> input.copyCapped(o, Http.MAX_IMAGE) } }
             if (!part.renameTo(file) && file.length() == 0L) throw java.io.IOException("couldn't save $url")
         } finally {
             part.delete()

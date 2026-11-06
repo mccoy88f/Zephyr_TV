@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.7.4
+
+- After you clear the cache of Zephyr TV in the Android settings, the posters and pictures download again. Before, the cards showed only a colour and the title until Zephyr TV started again.
+
 ## 4.7.3
 
 - **Films and series → Content catalog →** a catalog **→ Turn off TMDB** shows the posters, names and descriptions of that catalog as the add-on gives them. TMDB does not replace them.
