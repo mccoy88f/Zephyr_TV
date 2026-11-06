@@ -21,8 +21,9 @@ jobs:
       - name: Check and package
         run: |
           node --check webos/service/service.js
-          node --check site/public/receiver/app.js
+          for f in site/public/receiver/*.js; do node --check "$f"; done
           npm install -g @webos-tools/cli@3.2.6
+          command -v convert >/dev/null || sudo apt-get install -y imagemagick # the icons, from the shared one
           webos/package.sh webos-out
 
       - uses: actions/upload-artifact@v4

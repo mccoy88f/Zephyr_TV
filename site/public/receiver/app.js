@@ -4,45 +4,21 @@
  * (ztv.mccoy88f.link/receiver/index.html) as an app of its own. Linked once to the
  * Zephyr TV account through the site (a code, or its QR code, entered on a phone), it waits for what the account's
  * other devices send it, says it for five seconds (Watch now, Cancel), then plays it in a player that looks like
- * Zephyr TV's, from where it got to there. A stream that needs its own headers plays through the app's service, a
- * small proxy on the TV (see ../service); one that doesn't, straight. ES5: webOS 3 runs an old Chromium.
+ * Zephyr TV's, from where it got to there. What differs between the TVs is in platform.js, the words in i18n.js;
+ * this is the same on every one. ES5: webOS 3 runs an old Chromium.
  */
 (function () {
   "use strict";
 
   // Served by the site (VIDAA): its own address; packaged (webOS: a file on the TV): the site's.
   var SITE = /^https?:$/.test(location.protocol) ? location.protocol + "//" + location.host : "https://ztv.mccoy88f.link";
-  var UA = navigator.userAgent || "";
-  // webOS (its service bridge, or Web0S in its user agent), VIDAA, or a browser (for a try on a computer).
-  var PLATFORM = typeof PalmServiceBridge !== "undefined" || /Web0S|webOS/.test(UA) ? "webOS" : /VIDAA|Hisense/i.test(UA) ? "VIDAA" : "Web";
-  var TV_NAME = { webOS: "LG TV", VIDAA: "Hisense TV", Web: "TV" }[PLATFORM];
-  var SERVICE = "luna://link.mccoy88f.zephyr.receiver.service/";
-  var VERSION = "1.0.0";
+  var P = window.Platform; // what differs from one TV to the other (see platform.js)
   var OFFER_SECONDS = 5;
   var BANNER_MS = 5000;
 
-  // ---------- words ----------
+  // ---------- words (see i18n.js) ----------
 
-  var WORDS = {
-    en: {
-      linkTitle: "Link this TV to your Zephyr TV account", linkHow: "On your phone, scan the code or open", linkWait: "Waiting for you to allow it…",
-      linkDenied: "Refused. A new code in a moment.", linkGone: "The code expired. A new one in a moment.", linkFail: "No connection to the site. Trying again…",
-      ready: "Ready to receive", readyNote: "In Zephyr TV, select Send to in the player and pick this TV.", account: "Account: %s",
-      from: "From %s", anotherDevice: "another device", fromAt: "From %s", watch: "Watch now (%s)", cancel: "Cancel",
-      loading: "Loading…", paused: "Paused", cantPlay: "This stream can't play on this TV.", failed: "The stream doesn't play.",
-      torrent: "Torrents play only in Zephyr TV, with its torrent engine."
-    },
-    it: {
-      linkTitle: "Collega questa TV al tuo account Zephyr TV", linkHow: "Dal telefono, inquadra il codice o apri", linkWait: "In attesa che tu lo autorizzi…",
-      linkDenied: "Rifiutato. Tra un attimo un nuovo codice.", linkGone: "Il codice è scaduto. Tra un attimo uno nuovo.", linkFail: "Nessuna connessione al sito. Riprovo…",
-      ready: "Pronto a ricevere", readyNote: "In Zephyr TV, scegli Invia a nel player e seleziona questa TV.", account: "Account: %s",
-      from: "Da %s", anotherDevice: "un altro dispositivo", fromAt: "Da %s", watch: "Guarda ora (%s)", cancel: "Annulla",
-      loading: "Caricamento…", paused: "In pausa", cantPlay: "Questo stream non si può riprodurre su questa TV.", failed: "Lo stream non parte.",
-      torrent: "I torrent si riproducono solo in Zephyr TV, con il motore torrent."
-    }
-  };
-  var lang = ((navigator.language || "en").slice(0, 2) in WORDS) ? navigator.language.slice(0, 2) : "en";
-  function t(key, arg) { var w = WORDS[lang][key] || WORDS.en[key] || key; return arg == null ? w : w.replace("%s", arg); }
+  var t = window.t;
   function $(id) { return document.getElementById(id); }
   function show(id) {
     ["link", "idle", "player"].forEach(function (s) { $(s).classList.toggle("hidden", s !== id); });
@@ -73,25 +49,7 @@
     x.send(body ? JSON.stringify(body) : null);
   }
 
-  // ---------- the service (see ../service): luna calls through the TV's own bridge ----------
-
-  var bridges = [];
-  /** [method] of the app's service with [params]; [cb](answer) for each answer (a subscription answers again). */
-  function luna(method, params, cb) {
-    if (typeof PalmServiceBridge === "undefined") { if (cb) cb({ returnValue: false, errorText: "not on webOS" }); return; }
-    var b = new PalmServiceBridge(); // kept: a bridge let go of ends its call (and a subscription)
-    bridges.push(b);
-    b.onservicecallback = function (text) {
-      var a;
-      try { a = JSON.parse(text); } catch (e) { a = { returnValue: false }; }
-      if (cb) cb(a);
-    };
-    b.call(SERVICE + method, JSON.stringify(params || {}));
-  }
-
-  /** The service started and kept up while the app runs (a subscription keeps it from stopping when idle). */
-  var proxyPort = 0;
-  luna("start", { subscribe: true }, function (a) { if (a.returnValue && a.port) proxyPort = a.port; });
+  P.start();
 
   // ---------- linking ----------
 
@@ -100,7 +58,7 @@
     show("link");
     clearTimeout(linkTimer);
     $("linkState").textContent = "";
-    call("POST", "/api/v1/link/start", { name: TV_NAME, model: PLATFORM + " · Zephyr TV Receiver", version: VERSION }, function (status, o) {
+    call("POST", "/api/v1/link/start", { name: P.tv, model: P.model, version: P.version }, function (status, o) {
       if (status !== 200 || !o) {
         $("linkState").textContent = t("linkFail");
         linkTimer = setTimeout(startLink, 10000);
@@ -209,18 +167,12 @@
     });
   }
 
-  /**
-   * Where [w]'s stream plays from: straight, or through the service when it needs its headers (webOS only: VIDAA has
-   * no service, and Zephyr TV doesn't send it those; DASH plays straight).
-   */
+  /** Where [w]'s stream plays from: straight, or through the platform when it needs its headers (DASH: straight). */
   function address(s, done) {
     var headers = s.headers || {};
     var needs = Object.keys(headers).length > 0;
-    var dash = /\.mpd(\?|$)/i.test(s.url);
-    if (!needs || dash || PLATFORM !== "webOS") return done(s.url);
-    luna("play", { url: s.url, headers: headers }, function (a) {
-      done(a.returnValue && a.url ? a.url : s.url);
-    });
+    if (!needs || /\.mpd(\?|$)/i.test(s.url)) return done(s.url);
+    P.proxy(s.url, headers, done);
   }
 
   function play(w) {
@@ -322,7 +274,7 @@
     if (!playing) {
       // Waiting: Back leaves the app, as a TV app does.
       // VIDAA's Back is Backspace (8); its apps leave with window.close().
-      if (k === KEY.BACK || k === KEY.BKSP || k === KEY.ESC) { if (typeof webOS !== "undefined" && webOS.platformBack) webOS.platformBack(); else window.close(); }
+      if (k === KEY.BACK || k === KEY.BKSP || k === KEY.ESC) P.exit();
       return;
     }
     if (k === KEY.OK || k === KEY.PLAYPAUSE) setPaused(!video.paused);

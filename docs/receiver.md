@@ -51,6 +51,10 @@ npm install -g @webos-tools/cli
 webos/package.sh out
 ```
 
-The web app is in `site/public/receiver/` (the site serves it to VIDAA TVs; ES5, as webOS 3 runs an old Chromium);
-webOS's own files (`appinfo.json`, its icons) are in `webos/app/`, its service in `webos/service/` (Node's own modules
-only, for the old Node of webOS 3 and 4). `webos/package.sh` puts them together.
+One web app for every TV, in `site/public/receiver/` (the site serves it to VIDAA TVs; ES5, as webOS 3 runs an old
+Chromium): `app.js` is the same on every one, `platform.js` holds what differs (each TV's name, how the app leaves,
+whether and how a stream gets its headers: another TV is one more entry there), `i18n.js` the words in Zephyr TV's
+nine languages. Its one icon (400 px) and its one version (`VERSION` in `platform.js`) go into every package.
+
+webOS adds only `webos/app/appinfo.json` and its service, `webos/service/` (Node's own modules only, for the old Node
+of webOS 3 and 4); `webos/package.sh` puts them together, its icons made from the shared one (ImageMagick).
