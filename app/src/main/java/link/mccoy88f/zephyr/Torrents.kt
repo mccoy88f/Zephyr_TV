@@ -142,7 +142,8 @@ internal object Torrents {
         for (attempt in 0..1) {
             val client = client(c)
             if (client == null) {
-                if (attempt == 0 && wake(c)) continue
+                // Not from the player (its status, each second): the engine's activity would pause what plays.
+                if (attempt == 0 && c !is PlayerActivity && wake(c)) continue
                 warn("torrent engine: $method failed (${lastError})")
                 return null
             }

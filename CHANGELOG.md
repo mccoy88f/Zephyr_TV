@@ -13,6 +13,12 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.3.0-beta.5
+
+- A torrent stream does not stop any more after 30 seconds while it loads. Before, the player said that no stream was available, but the engine still downloaded.
+- While the engine downloads, the player waits for the torrent. It tries the next stream only when nothing comes for 2 minutes.
+- During playback, the banner shows the peers, the speed and how much is ready next to the stream.
+
 ## 4.3.0-beta.4
 
 - Zephyr TV starts the torrent engine when it opens. It also starts it when a title has torrent streams. The engine then finds peers sooner.

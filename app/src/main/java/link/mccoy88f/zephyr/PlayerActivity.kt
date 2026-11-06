@@ -134,6 +134,7 @@ class PlayerActivity : Activity() {
     private var torrent: Torrents.Session? = null // the torrent stream playing, through the engine (see startTorrent)
     private var torrentStarting = false // its metadata being waited for
     private var torrentLine: String? = null // its peers and speed, as the status and the banner say them
+    private var torrentDown = 0 // its download speed (bytes a second), at the engine's last status
     private val probes = ConcurrentHashMap<String, Stremio.Probe>() // what each stream turned out to be, by address
     private val fetched = ConcurrentHashMap<String, Pair<Long, List<Stremio.Stream>>>() // channel id to its streams, and when
     private val pages = ConcurrentHashMap<String, Stremio.Meta>()
@@ -219,15 +220,21 @@ class PlayerActivity : Activity() {
             ui.postDelayed(this, 1000)
         }
     }
-    private val stuck = Runnable {
-        if (player?.playWhenReady == false) return@Runnable // paused: waiting is what it's asked to do
+    private val stuck = object : Runnable { override fun run() {
+        if (player?.playWhenReady == false) return // paused: waiting is what it's asked to do
+        // A torrent still downloading (slow peers, a film's start and end asked first): waited for, not dropped.
+        if (torrent != null && torrentDown > 0) {
+            warn("stream ${tried + 1}: torrent still loading (${torrentDown shr 10} KB/s), waiting")
+            ui.postDelayed(this, TORRENT_STUCK_MS)
+            return
+        }
         // One that played and stalls (the network, a server slow for a while, a jump in its times): the same again,
         // from now, a couple of times; one that never started, or keeps stalling: the next.
-        if (again("stalled")) return@Runnable
+        if (again("stalled")) return
         warn("stream ${tried + 1} stuck, trying the next")
         why = Stremio.Why.STUCK
         next()
-    }
+    } }
 
     /**
      * Once a second while a torrent starts or plays: its peers, speed and what's ready ahead, from the engine, under
@@ -243,6 +250,7 @@ class PlayerActivity : Activity() {
                 ui.post {
                     if (b == null || b.getString("state") == "none" || torrent == null && !torrentStarting) return@post
                     torrentLine = Torrents.statusLine(this@PlayerActivity, b)
+                    torrentDown = b.getInt("down")
                     if (loading.visibility == View.VISIBLE && !soundOnly && player?.playbackState != Player.STATE_READY) status.text = torrentLine
                     if (banner.visibility == View.VISIBLE && shown == at) fillSource(at)
                 }
@@ -2090,7 +2098,9 @@ class PlayerActivity : Activity() {
         else p.setMediaItem(item)
         p.playWhenReady = true
         p.prepare()
-        ui.postDelayed(stuck, if (vod) VOD_STUCK_MS else STUCK_MS)
+        // prepare() has said Buffering already, which set the wait: a torrent's waits for its pieces, not 30 s.
+        ui.removeCallbacks(stuck)
+        ui.postDelayed(stuck, if (torrent?.url == s.url) TORRENT_STUCK_MS else if (vod) VOD_STUCK_MS else STUCK_MS)
     }
 
     /** That no stream plays, and why the last one tried didn't, when that's known (a certificate, the server…). */
@@ -2238,6 +2248,7 @@ class PlayerActivity : Activity() {
         ui.removeCallbacks(torrentTick)
         torrentStarting = false
         torrentLine = null
+        torrentDown = 0
         val t = torrent ?: return
         torrent = null
         runCatching { torrentIo.execute { t.stop() } }
