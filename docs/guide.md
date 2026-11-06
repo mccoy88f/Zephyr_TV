@@ -168,8 +168,9 @@ Some add-ons give torrent streams instead of direct links. To play and download 
 |---|---|---|
 | **Version** | | The version installed. **Update the engine** shows when this version of Zephyr TV has a newer one |
 | **Cache size** | 4 GB | 1, 2, 4, 8 or 16 GB. **Cache in use** shows what it takes and the free space; **Empty the cache** deletes it (but the film playing) |
+| **Upload limit** | 10 KB/s | What the TV sends to other peers, only while it downloads: from 10 KB/s to no limit |
 | **Keep the torrents watched** | Off | On: the torrent you watch downloads whole into the download folder, and shows in **Downloads** |
-| **Sending** | | The TV doesn't seed. It sends at most 10 KB/s, and only while it downloads |
+| **Sending** | | The TV doesn't seed. It sends only while it downloads, up to the **Upload limit** |
 | **Uninstall** | | Removes the engine |
 
 With torrents, the other peers see the TV's address. **WARP** ([chapter 12](#hiding-your-ip)) hides it: the engine goes through WARP too (if you install the engine with WARP already on, turn WARP off and on again). What you play and download is your responsibility.

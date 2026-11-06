@@ -13,6 +13,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.3.0-beta.8
+
+- **Torrent engine → Upload limit** sets what the device sends while it downloads: from 10 KB/s (the default) to no limit. It sends nothing when it does not download.
+- Update the engine in **Settings → Films and series → Torrent engine**.
+
 ## 4.3.0-beta.7
 
 - The settings have new sections: **Home screen**, **Look**, **Films and series**, **TV & EPG**, **Extra features**, **Account and privacy** and **System**. Each section opens smaller pages.

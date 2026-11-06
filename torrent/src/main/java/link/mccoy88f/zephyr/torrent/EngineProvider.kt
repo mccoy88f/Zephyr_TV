@@ -52,10 +52,12 @@ class EngineProvider : ContentProvider() {
             "settings" -> {
                 Engine.setSettings(extras?.takeIf { it.containsKey("cache_mb") }?.getInt("cache_mb"),
                     extras?.takeIf { it.containsKey("keep_cache") }?.getBoolean("keep_cache"),
-                    extras?.takeIf { it.containsKey("seed") }?.getBoolean("seed"))
+                    extras?.takeIf { it.containsKey("seed") }?.getBoolean("seed"),
+                    extras?.takeIf { it.containsKey("upload_kb") }?.getInt("upload_kb"))
                 out.putInt("cache_mb", Engine.cacheLimitMb())
                 out.putBoolean("keep_cache", Engine.keepCache())
                 out.putBoolean("seed", Engine.seeding())
+                out.putInt("upload_kb", Engine.uploadKb())
             }
             "start" -> {
                 val link = extras?.getString("link") ?: arg ?: return out.apply { putString("error", "no link") }

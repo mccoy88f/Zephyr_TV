@@ -948,4 +948,7 @@
     <string name="torrent_problem_no_space">设备空间不足</string>
     <string name="torrent_stalled">已停止：%1$s</string>
     <string name="update_current_version">已是最新：%1$s</string>
+    <string name="torrent_upload">上传限制</string>
+    <string name="torrent_upload_none">无限制</string>
+    <string name="hint_torrent_upload">设备仅在下载时向其他用户发送的数据量。更高的上传可能让种子更快。</string>
 </resources>

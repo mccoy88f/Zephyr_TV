@@ -956,4 +956,7 @@
     <string name="torrent_problem_no_space">No queda espai al dispositiu</string>
     <string name="torrent_stalled">Aturat: %1$s</string>
     <string name="update_current_version">Ja actualitzat: %1$s</string>
+    <string name="torrent_upload">Límit de pujada</string>
+    <string name="torrent_upload_none">Sense límit</string>
+    <string name="hint_torrent_upload">El que el dispositiu envia a altres parells, només mentre baixa. Més pujada pot fer un torrent més ràpid.</string>
 </resources>

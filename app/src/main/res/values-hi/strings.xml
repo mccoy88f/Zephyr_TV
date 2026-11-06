@@ -952,4 +952,7 @@
     <string name="torrent_problem_no_space">डिवाइस में जगह नहीं बची</string>
     <string name="torrent_stalled">रुका: %1$s</string>
     <string name="update_current_version">अद्यतित: %1$s</string>
+    <string name="torrent_upload">अपलोड सीमा</string>
+    <string name="torrent_upload_none">कोई सीमा नहीं</string>
+    <string name="hint_torrent_upload">डिवाइस अन्य पीयर को क्या भेजता है, केवल डाउनलोड के समय। अधिक अपलोड टॉरेंट को तेज़ कर सकता है।</string>
 </resources>

@@ -956,4 +956,7 @@
     <string name="torrent_problem_no_space">No queda espacio en el dispositivo</string>
     <string name="torrent_stalled">Detenido: %1$s</string>
     <string name="update_current_version">Ya actualizado: %1$s</string>
+    <string name="torrent_upload">Límite de subida</string>
+    <string name="torrent_upload_none">Sin límite</string>
+    <string name="hint_torrent_upload">Lo que el dispositivo envía a otros pares, solo mientras descarga. Más subida puede hacer un torrent más rápido.</string>
 </resources>

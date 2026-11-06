@@ -167,7 +167,7 @@ Alcuni add-on danno stream torrent invece di link diretti. Per riprodurli e scar
 - **Riproduzione**: il motore cerca i peer (fino a un minuto), poi il film parte mentre si scarica. Mentre carica, sotto il nome si vedono i peer, la velocità e quanto è già pronto; nel banner, sulla riga di audio e sottotitoli. Finché il motore scarica, il player aspetta; passa allo stream successivo solo dopo 2 minuti senza dati. Se il torrent si ferma (per esempio lo spazio è finito), il player dice perché.
 - **Ordine**: a parità di qualità, il player prova prima i link diretti, poi i torrent con più seeder. La lista degli stream mostra i seeder sulla seconda riga.
 - **Cache**: quello che si scarica per la riproduzione resta in una cache, cancellata quando chiudi il film. Un film più grande della cache, o dello spazio libero, si scarica solo intorno al punto che stai guardando.
-- **Invio**: il TV non fa seeding. Invia al massimo 10 KB/s, e solo mentre scarica.
+- **Invio**: il TV non fa seeding. Invia solo mentre scarica, fino al **Limite di upload** (10 KB/s di base).
 - **Scarica**: il pulsante **Scarica** accetta anche gli stream torrent. Il motore scarica il file intero nella cartella dei download, con una sua notifica. Il file scaricato si riproduce e si condivide come gli altri.
 
 | Voce | Predefinito | Cosa fa |
@@ -176,6 +176,7 @@ Alcuni add-on danno stream torrent invece di link diretti. Per riprodurli e scar
 | **Versione** | | La versione installata. **Aggiorna il motore** compare quando questa versione di Zephyr TV ne ha una più nuova: la prima pressione dice la versione, la seconda installa |
 | **Dimensione della cache** | 4 GB | 1, 2, 4, 8 o 16 GB |
 | **Cache occupata** | | Quanto occupa la cache, e lo spazio libero. **Svuota la cache** la cancella (tranne il film in riproduzione) |
+| **Limite di upload** | 10 KB/s | Quanto il TV invia agli altri peer, solo mentre scarica: da 10 KB/s a senza limiti |
 | **Tieni i torrent guardati** | Spento | Acceso: il torrent che guardi si scarica per intero nella cartella dei download, e compare nei **Download** |
 | **Disinstalla** | | Rimuove il motore |
 

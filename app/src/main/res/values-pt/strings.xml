@@ -956,4 +956,7 @@
     <string name="torrent_problem_no_space">Sem espaço no dispositivo</string>
     <string name="torrent_stalled">Parado: %1$s</string>
     <string name="update_current_version">Já atualizado: %1$s</string>
+    <string name="torrent_upload">Limite de envio</string>
+    <string name="torrent_upload_none">Sem limite</string>
+    <string name="hint_torrent_upload">O que o dispositivo envia a outros pares, só enquanto transfere. Mais envio pode tornar um torrent mais rápido.</string>
 </resources>

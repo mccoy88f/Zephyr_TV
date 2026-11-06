@@ -21,6 +21,9 @@ import link.mccoy88f.zephyr.SettingsRows.TORRENT_ROW
 /** The cache limits to choose from, in MB. */
 private val CACHE_SIZES = listOf(1024, 2048, 4096, 8192, 16384)
 
+/** The upload limits to choose from, in KB/s: 0 for none. */
+private val UPLOAD_KB = listOf(10, 25, 50, 100, 250, 500, 1024, 0)
+
 /** The engine's Update pressed once: the row says the version there is, and the next press installs it. */
 private var engineUpdateSeen = false
 
@@ -61,6 +64,7 @@ internal fun MainActivity.torrentPage(focus: Int = 0) {
             if (settingsScrim.visibility != android.view.View.VISIBLE) return@post // the settings closed meanwhile
             val cache = s?.getInt("cache_mb") ?: 4096
             val keep = s?.getBoolean("keep_cache") ?: false
+            val upload = s?.getInt("upload_kb") ?: 10
             // The page again with the engine's answer, where it was (see showPage); no answer, said so.
             fun set(b: Bundle.() -> Unit, at: Int) = netIo.execute {
                 val ok = Torrents.settings(this, Bundle().apply(b)) != null
@@ -101,6 +105,12 @@ internal fun MainActivity.torrentPage(focus: Int = 0) {
                     }
                 }
             }
+            // What the TV sends while it downloads (never otherwise): 10 KB/s at least, up to no limit.
+            val uploadAt = rows.size
+            rows += choice(getString(R.string.torrent_upload), UPLOAD_KB.map { kb ->
+                kb to if (kb == 0) getString(R.string.torrent_upload_none) else Torrents.speedName(kb * 1024L)
+            }, upload, reopen = { torrentPage(uploadAt) }) { kb -> set({ putInt("upload_kb", kb) }, uploadAt) }
+                .hinted(getString(R.string.hint_torrent_upload))
             // A torrent watched, kept: handed to the engine as a download of its own, in the download folder.
             val keepAt = rows.size
             rows += page(getString(R.string.torrent_keep_cache), toggle(keep)) { set({ putBoolean("keep_cache", !keep) }, keepAt) }

@@ -59,22 +59,27 @@ internal object Engine {
     // Never shared on: the TV sends only while it downloads, and then little (see uploadLimit). The old setting stays unread.
     fun seeding() = false
 
-    fun setSettings(cacheMb: Int?, keep: Boolean?, seed: Boolean?) {
+    /** What the TV may send while it downloads, in KB/s: 10 at least (the default); 0 for no limit. */
+    fun uploadKb() = prefs.getInt("upload_kb", 10).let { if (it == 0) 0 else it.coerceAtLeast(10) }
+
+    fun setSettings(cacheMb: Int?, keep: Boolean?, seed: Boolean?, uploadKb: Int? = null) {
         prefs.edit().apply {
+            uploadKb?.let { putInt("upload_kb", if (it == 0) 0 else it.coerceAtLeast(10)) }
             cacheMb?.let { putInt("cache_mb", it.coerceIn(256, 64 * 1024)) }
             keep?.let { putBoolean("keep_cache", it) }
             seed?.let { putBoolean("seed", it) }
         }.commit() // on disk at once: a process killed right after keeps them
         if (seed == false) synchronized(downloads) { downloads.values.filter { it.done }.forEach { d -> d.handle?.let { remove(it, false) }; d.handle = null } }
-        if (seed != null) applyUpload()
+        if (seed != null || uploadKb != null) applyUpload()
     }
 
     /**
-     * How much the TV sends: only while it downloads (a stream playing, a download going), 10 KB/s, as BitTorrent's
-     * peers send more to those who send them something. Otherwise 1 KB/s (libtorrent's 0 is no limit), with nothing
-     * to send anyway: a stream's torrent goes when it stops, a finished download's too (no seeding).
+     * How much the TV sends: only while it downloads (a stream playing, a download going), as BitTorrent's peers send
+     * more to those who send them something: the limit chosen (10 KB/s by default, none at 0). Otherwise 1 KB/s
+     * (libtorrent's 0 is no limit), with nothing to send anyway: a stream's torrent goes when it stops, a finished
+     * download's too (no seeding).
      */
-    private fun uploadLimit() = if (play != null || downloading()) 10 * 1024 else 1024
+    private fun uploadLimit() = if (play != null || downloading()) uploadKb() * 1024 else 1024
 
     @Volatile private var upload = -1
 

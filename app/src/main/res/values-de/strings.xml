@@ -952,4 +952,7 @@
     <string name="torrent_problem_no_space">Kein Speicherplatz mehr auf dem Gerät</string>
     <string name="torrent_stalled">Angehalten: %1$s</string>
     <string name="update_current_version">Aktuell: %1$s</string>
+    <string name="torrent_upload">Upload-Limit</string>
+    <string name="torrent_upload_none">Unbegrenzt</string>
+    <string name="hint_torrent_upload">Was das Gerät an andere Peers sendet, nur während es lädt. Mehr Upload kann einen Torrent schneller machen.</string>
 </resources>

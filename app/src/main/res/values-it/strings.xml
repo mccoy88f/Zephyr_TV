@@ -956,4 +956,7 @@
     <string name="torrent_problem_no_space">Spazio esaurito sul dispositivo</string>
     <string name="torrent_stalled">Fermo: %1$s</string>
     <string name="update_current_version">Già aggiornato: %1$s</string>
+    <string name="torrent_upload">Limite di upload</string>
+    <string name="torrent_upload_none">Senza limiti</string>
+    <string name="hint_torrent_upload">Quanto il dispositivo invia agli altri peer, solo mentre scarica. Più upload può rendere un torrent più veloce.</string>
 </resources>
