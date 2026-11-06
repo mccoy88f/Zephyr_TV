@@ -459,8 +459,9 @@ internal object Engine {
         val d = Download(key, link, m.hash, name.replace(Regex("[\\\\/:*?\"<>|]"), " ").trim().take(80).ifEmpty { "video" },
             folderKey, index = m.file ?: -1)
         synchronized(downloads) {
-            // The same torrent asked again (a kept stream played again): it goes on as it is.
-            downloads[key]?.takeIf { it.hash == d.hash && !it.failed }?.let { return true }
+            // The same torrent asked again (a kept stream played again) while it's still going: it goes on as it is.
+            // One finished (its file maybe deleted since) or failed is downloaded again.
+            downloads[key]?.takeIf { it.hash == d.hash && !it.failed && !it.done }?.let { return true }
             downloads[key]?.let { old -> old.handle?.let { remove(it, files = true) } }
             downloads[key] = d
         }

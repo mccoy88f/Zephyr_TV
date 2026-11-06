@@ -1179,6 +1179,17 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
         shown = true
     }
     show()
+    // The sources' answers drawn together, at most every 700 ms: drawn at each one, the list was built again many
+    // times in a row, and the row with the focus started its scroll over each time.
+    var drawing = false
+    fun soon() {
+        if (drawing) return
+        drawing = true
+        ui.postDelayed({
+            drawing = false
+            if (pageShowing(title)) show()
+        }, if (left == 0) 0L else 700L)
+    }
     for ((base, name) in sources) netIo.execute {
         val every = runCatching { cachedStreams(prefs, filesDir, cacheDir, base, name, t.type, id, all = true) }.getOrDefault(emptyList())
         val got = Torrents.offered(every)
@@ -1189,7 +1200,7 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
             // Each source's, in the TV's language first then the preferred quality's order, after those already there in
             // their quality's group.
             found += got.filter(accept).sortedWith(compareBy<Stremio.Stream> { it.langRank }.thenBy { dvLast(it) }.then(qualityOrder(preferredQuality(prefs))))
-            if (pageShowing(title)) show()
+            soon()
         }
     }
 }

@@ -390,15 +390,16 @@ class PlayerActivity : Activity() {
         more = text(14f).apply { alpha = 0.85f; maxLines = 14; ellipsize = TextUtils.TruncateAt.END; setPadding(0, dp(8), 0, 0) }
         // The stream's line and the audio and subtitles' under the bar: too long for it, they scroll (selected: they
         // scroll without focus, which stays on the buttons).
-        source = text(12f).apply { alpha = 0.6f; scrolling() }
-        trackLine = text(12f).apply { alpha = 0.6f; scrolling() }
+        // Scrolled by a Ticker, which a layout pass elsewhere (the time, the speed, each second) doesn't start over.
+        source = text(12f).apply { alpha = 0.6f }
+        trackLine = text(12f).apply { alpha = 0.6f }
         // Not scrolling, and a line of its own beside the tracks: written each second, it would start their scroll again.
         torrentInfo = text(12f).apply { alpha = 0.6f; maxLines = 1; visibility = View.GONE }
         trackRow = LinearLayout(this).apply {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(0, dp(4), 0, 0)
             visibility = View.GONE
-            addView(trackLine, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(Ticker(context, trackLine), LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             addView(torrentInfo, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT))
         }
         buttons = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL; clipChildren = false }
@@ -423,7 +424,7 @@ class PlayerActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             // As wide as the banner: a line measured again to its text's width (a sibling's text changed, each second)
             // would start its scroll over.
-            addView(source, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+            addView(Ticker(context, source), LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
             addView(trackRow, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
             addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
                 if (bottom - top != oldBottom - oldTop) buttons.post { sizeButtons() }

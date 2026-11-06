@@ -124,7 +124,9 @@ internal fun MainActivity.openDownloadsMenu(anchor: View) {
         elevation = dp(8).toFloat()
         minimumWidth = dp(320)
     }
-    val menu = PopupWindow(box, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
+    // As wide as it needs up to a limit: a long name scrolls in its row instead of widening the window.
+    val wide = minOf(dp(440), window.decorView.width - dp(32))
+    val menu = PopupWindow(box, wide, ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
         setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0))
         elevation = dp(8).toFloat()
     }
@@ -152,11 +154,9 @@ internal fun MainActivity.openDownloadsMenu(anchor: View) {
         entries.values.sortedBy { it.name.lowercase() }.forEach { e ->
             val value = label("", 13f).apply { alpha = 0.7f; maxWidth = dp(150); setPadding(dp(12), 0, 0, 0) }
             values[e.id] = value
-            val name = label(e.name, 14f).apply {
-                isSingleLine = true
-                ellipsize = android.text.TextUtils.TruncateAt.MARQUEE
-                marqueeRepeatLimit = -1
-            }
+            // A long name scrolls while its row has the focus, in a window that keeps its width (see Ticker).
+            val name = label(e.name, 14f)
+            val nameBox = Ticker(this, name, on = false)
             val bg = GradientDrawable().apply { cornerRadius = dp(8).toFloat() }
             val row = LinearLayout(this).apply {
                 id = View.generateViewId()
@@ -166,13 +166,13 @@ internal fun MainActivity.openDownloadsMenu(anchor: View) {
                 background = bg
                 isFocusable = true
                 isClickable = true
-                addView(name, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                addView(nameBox, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
                 addView(value)
                 setOnClickListener { menu.dismiss(); openDownloaded(e) }
                 setOnFocusChangeListener { _, f ->
                     bg.setColor(if (f) fg else 0)
                     name.setTextColor(if (f) onFg else fg)
-                    name.isSelected = f
+                    nameBox.on = f
                     value.setTextColor(if (f) onFg else fg)
                 }
             }
@@ -230,7 +230,7 @@ internal fun MainActivity.openDownloadsMenu(anchor: View) {
     }
     refreshDownloads()
 
-    box.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+    box.measure(View.MeasureSpec.makeMeasureSpec(wide, View.MeasureSpec.EXACTLY), View.MeasureSpec.UNSPECIFIED)
     val at = IntArray(2).also { anchor.getLocationInWindow(it) }
     val screen = window.decorView.width
     val x = (at[0] - dp(160)).coerceAtMost(screen - box.measuredWidth - dp(16)).coerceAtLeast(dp(16))

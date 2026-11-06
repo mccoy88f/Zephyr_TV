@@ -13,6 +13,14 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.3.0-beta.9
+
+- In the player, the stream line and the audio and subtitles line scroll without starting again. Before, they started again when the time or the speed changed.
+- In **Downloads**, a long name scrolls in its row. The window does not get wider any more.
+- **Pick a stream** and the download list show the streams of each source together. Before, the list was built again for each source, and the row with the focus started its scroll again.
+- A torrent downloaded before, and finished or deleted since, downloads again.
+- Update the engine in **Settings → Films and series → Torrent engine**.
+
 ## 4.3.0-beta.8
 
 - **Torrent engine → Upload limit** sets what the device sends while it downloads: from 10 KB/s (the default) to no limit. It sends nothing when it does not download.
