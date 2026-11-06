@@ -92,6 +92,12 @@ internal fun MainActivity.veilFromScroll() {
     if (f != rowsVeil.folded) rowsVeil.folded = f else if (f > 0f) rowsVeil.invalidate()
 }
 
+/**
+ * On a phone or tablet, the page moved up by a finger into the rows (as far as the veil behind them is whole): as
+ * Spotlight folded away on a TV, its carousel stays on the title it shows. Back up, it turns again.
+ */
+internal fun MainActivity.spotlightScrolledAway() = handheld() && -findViewById<View>(R.id.content).translationY >= dp(120)
+
 /** The room left above the apps (dp) with Spotlight folded away, under the top bar. */
 private const val FOLDED_TOP = 16
 

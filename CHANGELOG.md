@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.7.2
+
+- On a phone or tablet, Spotlight stops on its title when you scroll down to the rows. Before, it went on changing the title and the picture behind the rows. Scroll back up and it goes on.
+
 ## 4.7.1
 
 - **Zephyr TV Receiver** works on Hisense TVs with VIDAA. The TV opens it from the site as an app of its own. To add it, read docs/receiver.md on GitHub.

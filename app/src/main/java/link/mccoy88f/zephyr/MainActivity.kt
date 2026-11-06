@@ -685,7 +685,7 @@ class MainActivity : Activity() {
                 spotlightIdle = true
                 return
             }
-            val busy = isNight() || spotlightFolded || isDescendantOf(currentFocus, spotlightContainer) || settingsScrim.visibility == View.VISIBLE ||
+            val busy = isNight() || spotlightFolded || spotlightScrolledAway() || isDescendantOf(currentFocus, spotlightContainer) || settingsScrim.visibility == View.VISIBLE ||
                 allApps.visibility == View.VISIBLE || editing || !hasWindowFocus()
             if (busy) restartSpotlightTick() else cycleSpotlight(1)
         }
