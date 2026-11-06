@@ -1,11 +1,5 @@
 package link.mccoy88f.zephyr
 
-import link.mccoy88f.zephyr.SettingsRows.DARK_WP_ROW
-import link.mccoy88f.zephyr.SettingsRows.LIGHT_WP_ROW
-import link.mccoy88f.zephyr.SettingsRows.PHOTO_EVERY_ROW
-import link.mccoy88f.zephyr.SettingsRows.ROW_APPS_ROW
-import link.mccoy88f.zephyr.SettingsRows.SCREENSAVER_ROW
-import link.mccoy88f.zephyr.SettingsRows.SECTION
 import link.mccoy88f.zephyr.SettingsRows.THEME_ROW
 import android.app.Activity
 import android.app.Dialog

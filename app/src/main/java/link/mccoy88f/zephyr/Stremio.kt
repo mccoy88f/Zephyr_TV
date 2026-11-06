@@ -167,6 +167,14 @@ internal object Stremio {
         return listing
     }
 
+    /** The version in the add-on's manifest as saved here, or null (see updateRow). */
+    fun savedVersion(dir: File, url: String): String? = runCatching {
+        JSONObject(file(dir, url).readText()).optJSONObject("manifest")?.optString("version")?.takeIf { it.isNotBlank() }
+    }.getOrNull()
+
+    /** The version its manifest says now, read from the add-on ("?" when it says none); throws when it doesn't answer. */
+    fun remoteVersion(url: String): String = get(url).optString("version").takeIf { it.isNotBlank() } ?: "?"
+
     /** Whether the add-on's channels are missing, empty, or a quarter of an hour old, and a failed try isn't too recent. */
     fun due(dir: File, url: String): Boolean {
         val now = System.currentTimeMillis()

@@ -13,6 +13,22 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.3.0-beta.7
+
+- The settings have new sections: **Home screen**, **Look**, **Films and series**, **TV & EPG**, **Extra features**, **Account and privacy** and **System**. Each section opens smaller pages.
+- A row with more than two values shows its value with an arrow. Select it to see all the values, with ✓ on the current one. On the remote, ◀ ▶ change the value on the row.
+- Some rows show a short help text under their name.
+- When you touch a switch, the page stays where it was.
+- **Films and series → Playback → Picture shape** sets how the player fills the screen: **Fit**, **Fill** or **Stretch**.
+- **Update** on an add-on, a plugin, an extension or the torrent engine first shows the version that is available. Select it again to update.
+- In the player, the stream line does not start its scroll again every second.
+- The torrent cache is 4 GB by default. A film larger than the cache or the free space downloads only around the part that plays.
+- **Torrent engine** shows how much space the cache uses, and **Empty the cache** deletes it.
+- If a torrent stops because the device is full, the player tells you.
+- **Keep the torrents watched** downloads the torrent you watch into the download folder. It then shows in **Downloads**.
+- The torrent engine does not seed any more. It sends at most 10 KB/s, and only while it downloads.
+- Update the engine in **Settings → Films and series → Torrent engine**.
+
 ## 4.3.0-beta.6
 
 - The list of streams shows the seeders of a torrent stream on the second line again, when the add-on gives them.

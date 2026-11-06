@@ -232,4 +232,4 @@ private fun MainActivity.ztvAccountPage(focus: Int = 0, back: (() -> Unit)? = nu
 }
 
 /** The row of Zephyr TV account in System, after About. */
-internal fun MainActivity.accountRow() = aboutRow() + 1
+internal fun MainActivity.accountRow() = SettingsRows.ZTV_ACCOUNT_ROW

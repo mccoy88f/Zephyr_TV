@@ -319,7 +319,7 @@ private fun MainActivity.extensionPage(id: String, focus: Int = 0) {
     if (at in 0 until ids.size - 1) rows += page(getString(R.string.addon_move_down)) { move(+1); extensionPage(id, moves) }
     extensionUpdateUrl(prefs, e)?.let { url ->
         val row = rows.size
-        rows += page(getString(R.string.addon_update)) {
+        rows += updateRow("ext:${e.id}", e.version, { Extensions.published(url).version }, redraw = { extensionPage(id, row) }) {
             updateExtensionNow(e, url) { extensionPage(id, row) }
         }
     }

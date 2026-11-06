@@ -53,9 +53,11 @@ internal object Engine {
 
     // ---------- settings ----------
 
-    fun cacheLimitMb() = prefs.getInt("cache_mb", 2048)
+    // 4 GB: a 1080p film fits whole, so it downloads on from where it plays instead of only around it.
+    fun cacheLimitMb() = prefs.getInt("cache_mb", 4096)
     fun keepCache() = prefs.getBoolean("keep_cache", false)
-    fun seeding() = prefs.getBoolean("seed", false)
+    // Never shared on: the TV sends only while it downloads, and then little (see uploadLimit). The old setting stays unread.
+    fun seeding() = false
 
     fun setSettings(cacheMb: Int?, keep: Boolean?, seed: Boolean?) {
         prefs.edit().apply {
@@ -64,6 +66,22 @@ internal object Engine {
             seed?.let { putBoolean("seed", it) }
         }.commit() // on disk at once: a process killed right after keeps them
         if (seed == false) synchronized(downloads) { downloads.values.filter { it.done }.forEach { d -> d.handle?.let { remove(it, false) }; d.handle = null } }
+        if (seed != null) applyUpload()
+    }
+
+    /**
+     * How much the TV sends: only while it downloads (a stream playing, a download going), 10 KB/s, as BitTorrent's
+     * peers send more to those who send them something. Otherwise 1 KB/s (libtorrent's 0 is no limit), with nothing
+     * to send anyway: a stream's torrent goes when it stops, a finished download's too (no seeding).
+     */
+    private fun uploadLimit() = if (play != null || downloading()) 10 * 1024 else 1024
+
+    @Volatile private var upload = -1
+
+    private fun applyUpload() {
+        val limit = uploadLimit()
+        if (limit == upload) return
+        runCatching { session.applySettings(SettingsPack().uploadRateLimit(limit)); upload = limit }.onFailure { log("upload limit not set: $it") }
     }
 
     private fun start(): SessionManager {
@@ -72,6 +90,7 @@ internal object Engine {
         sp.connectionsLimit(120)
         sp.activeDownloads(4)
         sp.activeSeeds(if (seeding()) 4 else 0)
+        sp.uploadRateLimit(1024) // see uploadLimit: set as the first stream or download starts
         sp.setBoolean(settings_pack.bool_types.enable_dht.swigValue(), true)
         sp.setBoolean(settings_pack.bool_types.enable_lsd.swigValue(), true)
         // A stream downloads only around where it plays (a film larger than the cache): each time those pieces are all
@@ -136,8 +155,16 @@ internal object Engine {
     fun start(link: String): Result<Play> {
         val m = Magnet.parse(link) ?: return Result.failure(IllegalArgumentException("not a magnet link"))
         stopPlay()
-        // Downloading already (Download): its file, as far as it got, and the download goes on after.
-        val download = synchronized(downloads) { downloads.values.firstOrNull { it.hash == m.hash && it.handle?.isValid == true } }
+        // Downloading already (Download): its file, as far as it got, and the download goes on after. One just asked
+        // for (a stream kept as a download) is waited for a moment, till it has its torrent: the stream mustn't own it.
+        fun kept() = synchronized(downloads) { downloads.values.firstOrNull { it.hash == m.hash && !it.failed && (!it.done || it.handle != null) } }
+        var download = kept()
+        val until = System.currentTimeMillis() + 10_000
+        while (download != null && download.handle?.isValid != true && System.currentTimeMillis() < until) {
+            Thread.sleep(100)
+            download = kept()
+        }
+        download = download?.takeIf { it.handle?.isValid == true }
         val dir = File(streamsDir(), m.hash)
         val h = download?.handle ?: handle(m, link, dir) ?: return Result.failure(IllegalStateException("not added"))
         // Out of the session's queue: a stream "finished" (see start) isn't paused as a seed when seeding is off.
@@ -145,8 +172,10 @@ internal object Engine {
             h.unsetFlags(TorrentFlags.AUTO_MANAGED)
             h.resume()
         }.onFailure { log("stream left in the queue: $it") }
-        val p = Play(UUID.randomUUID().toString().replace("-", ""), m.hash, h, owned = download == null, dir = dir)
+        // Not the stream's to remove when a download has the same torrent (its handle not there yet, even).
+        val p = Play(UUID.randomUUID().toString().replace("-", ""), m.hash, h, owned = download == null && kept() == null, dir = dir)
         play = p
+        applyUpload()
         val ti = metadata(h) { play !== p } ?: run {
             if (play === p) stopPlay()
             return Result.failure(IllegalStateException("no metadata"))
@@ -161,6 +190,7 @@ internal object Engine {
         if (token != null && p.token != token) return
         play = null
         p.stopped = true
+        applyUpload()
         if (p.owned) {
             remove(p.handle, files = !keepCache())
             if (keepCache()) trimCache()
@@ -186,7 +216,40 @@ internal object Engine {
         }
     }
 
-    private fun size(f: File): Long = if (f.isFile) f.length() else f.listFiles()?.sumOf { size(it) } ?: 0L
+    /** The space [f] takes on the drive: its blocks, not its length (libtorrent's files are sparse while they fill). */
+    private fun size(f: File): Long = if (f.isFile) runCatching { android.system.Os.stat(f.path).st_blocks * 512 }.getOrDefault(f.length())
+        else f.listFiles()?.sumOf { size(it) } ?: 0L
+
+    /** Free space below this, while a stream plays: other torrents' cache goes, and the player is told. */
+    private const val RESERVE = 300L shl 20
+
+    /** The streams' cache: what it takes on the drive, and what's free there. */
+    fun cacheUse(): Pair<Long, Long> {
+        val dir = streamsDir().apply { mkdirs() }
+        return size(dir) to dir.usableSpace
+    }
+
+    /** The streams' cache emptied, but for the stream playing. What it takes after. */
+    fun clearCache(): Long {
+        streamsDir().listFiles()?.forEach { d -> if (d.name != play?.hash) d.deleteRecursively() }
+        return cacheUse().first
+    }
+
+    /**
+     * What stops [p] from downloading, or null: the drive full ("no_space"), or libtorrent's error on the torrent
+     * (a file it can't write). The drive full: the other torrents' cache goes first, and the torrent goes on.
+     */
+    fun problem(p: Play): String? {
+        val free = runCatching { p.dir.usableSpace.takeIf { it > 0 } ?: streamsDir().usableSpace }.getOrDefault(Long.MAX_VALUE)
+        if (free < RESERVE) {
+            streamsDir().listFiles()?.forEach { d -> if (d.name != p.hash) d.deleteRecursively() }
+            if (streamsDir().usableSpace < RESERVE) return "no_space"
+        }
+        val error = runCatching { p.handle.status().errorCode().takeIf { it.isError }?.message() }.getOrNull() ?: return null
+        // Once there's room again, the torrent may go on: its error cleared, started again.
+        if (free >= RESERVE) runCatching { p.handle.clearError(); p.handle.resume() }
+        return error
+    }
 
     /** Stops a stream whose player went away without saying so (killed, or crashed): no status asked for too long. */
     fun checkIdle() {
@@ -227,7 +290,9 @@ internal object Engine {
             firstPiece = (offset / pieceLen).toInt()
             lastPiece = ((offset + size - 1).coerceAtLeast(offset) / pieceLen).toInt()
             mime = mimeOf(name)
-            whole = size <= (cacheLimitMb().toLong() shl 20)
+            // Whole when it fits the cache and the drive (a margin left): else only around where it plays.
+            val free = runCatching { dir.usableSpace }.getOrDefault(0L)
+            whole = size <= (cacheLimitMb().toLong() shl 20) && (free == 0L || size + RESERVE < free)
             if (owned) {
                 handle.prioritizeFiles(Array(fs.numFiles()) { if (it == idx) (if (whole) Priority.DEFAULT else Priority.IGNORE) else Priority.IGNORE })
             }
@@ -389,12 +454,15 @@ internal object Engine {
         val d = Download(key, link, m.hash, name.replace(Regex("[\\\\/:*?\"<>|]"), " ").trim().take(80).ifEmpty { "video" },
             folderKey, index = m.file ?: -1)
         synchronized(downloads) {
+            // The same torrent asked again (a kept stream played again): it goes on as it is.
+            downloads[key]?.takeIf { it.hash == d.hash && !it.failed }?.let { return true }
             downloads[key]?.let { old -> old.handle?.let { remove(it, files = true) } }
             downloads[key] = d
         }
         saveDownloads()
         resume(d)
         DownloadService.update(app)
+        applyUpload()
         return true
     }
 
@@ -467,6 +535,8 @@ internal object Engine {
                 going = true
                 if (d.total <= 0 || d.index < 0 || !h.isValid) continue
                 val got = runCatching { h.fileProgress()[d.index] }.getOrDefault(0L)
+                // Finished while it plays: moved to its folder once the player lets go of it.
+                if (got >= d.total && play?.hash == d.hash) continue
                 if (got >= d.total) {
                     runCatching { h.flushCache() }
                     // Shared on (seeding): the file stays where libtorrent has it, to be read from.
@@ -480,6 +550,7 @@ internal object Engine {
             }
         }
         saveDownloads()
+        applyUpload()
         return going
     }
 

@@ -754,7 +754,8 @@ internal fun MainActivity.addonPage(url: String, focus: Int? = null) {
             addonsChanged()
             addonPage(url, R.string.addon_on)
         },
-        page(getString(R.string.addon_update)) {
+        updateRow("addon:$url", Stremio.savedVersion(filesDir, url), { Stremio.remoteVersion(url) },
+            redraw = { addonPage(url, R.string.addon_update) }) {
             toast(R.string.addon_checking, long = false)
             updateAddon(url, null) { listing ->
                 val a = listing?.addon
@@ -787,6 +788,8 @@ internal fun MainActivity.addonPage(url: String, focus: Int? = null) {
     // After a move, the same move again (or the other one, at the top or bottom of the list).
     val shown = rows.map { it.first }
     val index = focus?.let { f -> shown.indexOf(getString(f)).takeIf { it >= 0 }
+        // Update pressed once: its row now says the version found (see updateRow).
+        ?: (if (f == R.string.addon_update) rows.indexOfFirst { it.second == getString(R.string.update_press_again) }.takeIf { it >= 0 } else null)
         ?: shown.indexOfFirst { it == getString(R.string.addon_move_up) || it == getString(R.string.addon_move_down) } } ?: 0
     showPage(name, rows, index.coerceAtLeast(0), top = label(url, 12f).apply { alpha = 0.6f; setPadding(dp(4), dp(8), dp(4), dp(8)) }, back = { renderSettings(row) })
 }

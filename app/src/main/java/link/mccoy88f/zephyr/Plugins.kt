@@ -247,8 +247,6 @@ internal fun MainActivity.addonsAndPlugins(focus: Int = 0) {
         page(getString(R.string.addons_stremio), "${addonUrls().size}") { renderSettings(SettingsRows.ADDON_ADD_ROW) },
         page(getString(R.string.nuvio_plugins), "${repos.size}") { nuvioPage() },
         page(getString(R.string.ext_title), "${extensions(prefs, filesDir).size}") { extensionsPage() },
-        // Their requests, and the videos, from Cloudflare's addresses instead of the device's (see Privacy).
-        page(getString(R.string.warp_title), getString(if (vpnOn()) R.string.warp_vpn_on else R.string.state_off)) { privacyPage { addonsAndPlugins(4) } },
     ), focus) { renderSettingsHome(HOME_SECTIONS.indexOf(SettingsRows.ADDONS_SECTION)) }
 }
 
@@ -339,7 +337,8 @@ private fun MainActivity.repoPage(url: String, focus: Int = 0) {
             repoPage(url, plugins + 1)
         },
     ) + moves + listOf(
-        page(getString(R.string.addon_update)) {
+        updateRow("nuvio:$url", Nuvio.saved(filesDir, url)?.version?.takeIf { it.isNotBlank() },
+            { Http.json(url).optString("version").ifBlank { "?" } }, redraw = { repoPage(url, plugins + 2 + moves.size) }) {
             toast(R.string.addon_checking, long = false)
             netIo.execute {
                 val again = Nuvio.update(filesDir, url)

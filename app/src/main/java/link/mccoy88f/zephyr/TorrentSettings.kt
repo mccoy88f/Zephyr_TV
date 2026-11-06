@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.widget.LinearLayout
 import link.mccoy88f.zephyr.MainActivity.Companion.REPO
+import link.mccoy88f.zephyr.MainActivity.Companion.SUBMENU
 import link.mccoy88f.zephyr.SettingsRows.TORRENT_ROW
 
 // Settings → Content → Torrent engine: Zephyr Torrent installed, updated and removed (see Torrents), and its
@@ -18,7 +19,10 @@ import link.mccoy88f.zephyr.SettingsRows.TORRENT_ROW
 @Volatile private var installingEngine = false
 
 /** The cache limits to choose from, in MB. */
-private val CACHE_SIZES = listOf(1024, 2048, 4096, 8192)
+private val CACHE_SIZES = listOf(1024, 2048, 4096, 8192, 16384)
+
+/** The engine's Update pressed once: the row says the version there is, and the next press installs it. */
+private var engineUpdateSeen = false
 
 /** The row's value: not installed, or its version (with "update" when an older one than this release's). */
 internal fun MainActivity.torrentValue(): String {
@@ -52,11 +56,11 @@ internal fun MainActivity.torrentPage(focus: Int = 0) {
     netIo.execute {
         val s = Torrents.settings(this)
         val nodes = Torrents.call(this, "health")?.getLong("nodes")
+        val cacheUse = Torrents.call(this, "cache")?.let { it.getLong("used") to it.getLong("free") }
         ui.post {
             if (settingsScrim.visibility != android.view.View.VISIBLE) return@post // the settings closed meanwhile
-            val cache = s?.getInt("cache_mb") ?: 2048
+            val cache = s?.getInt("cache_mb") ?: 4096
             val keep = s?.getBoolean("keep_cache") ?: false
-            val seed = s?.getBoolean("seed") ?: false
             // The page again with the engine's answer, where it was (see showPage); no answer, said so.
             fun set(b: Bundle.() -> Unit, at: Int) = netIo.execute {
                 val ok = Torrents.settings(this, Bundle().apply(b)) != null
@@ -67,21 +71,43 @@ internal fun MainActivity.torrentPage(focus: Int = 0) {
                 }
             }
             val older = installed.first < Torrents.bundledVersion(this)
-            val rows = listOfNotNull(
-                page(getString(R.string.torrent_state), engineState(nodes)) { },
-                page(getString(R.string.torrent_version), installed.second) { },
-                if (!older) null else if (installingEngine) page(getString(R.string.torrent_installing)) { }
-                    else page(getString(R.string.torrent_update)) { installEngine() },
-                // How much the streams' cache may hold: a film bigger than this is only downloaded around where it plays.
-                page(getString(R.string.torrent_cache), sizeName(cache.toLong() shl 20)) {
-                    set({ putInt("cache_mb", CACHE_SIZES[(CACHE_SIZES.indexOf(cache) + 1).mod(CACHE_SIZES.size)]) }, if (older) 3 else 2)
-                },
-                page(getString(R.string.torrent_keep_cache), toggle(keep)) { set({ putBoolean("keep_cache", !keep) }, if (older) 4 else 3) },
-                page(getString(R.string.torrent_seed), toggle(seed)) { set({ putBoolean("seed", !seed) }, if (older) 5 else 4) },
-                page(getString(R.string.torrent_uninstall)) {
-                    runCatching { startActivity(Intent(Intent.ACTION_DELETE, Uri.fromParts("package", Torrents.enginePackage(this), null))) }
-                },
-            )
+            val rows = ArrayList<Triple<String, String, () -> Unit>>()
+            rows += page(getString(R.string.torrent_state), engineState(nodes)) { }
+            rows += page(getString(R.string.torrent_version), installed.second) { }
+            // Update in two steps: the first press says which version there is, the second installs it.
+            val updateAt = rows.size
+            if (older) rows += when {
+                installingEngine -> page(getString(R.string.torrent_installing)) { }
+                engineUpdateSeen -> page(getString(R.string.update_available_version, getString(R.string.torrent_version_name)),
+                    getString(R.string.update_press_again)) { engineUpdateSeen = false; installEngine() }
+                else -> page(getString(R.string.torrent_update), SUBMENU) { engineUpdateSeen = true; torrentPage(updateAt) }
+            }
+            // How much the streams' cache may hold: a film bigger than this is only downloaded around where it plays.
+            val cacheAt = rows.size
+            rows += choice(getString(R.string.torrent_cache), CACHE_SIZES.map { it to sizeName(it.toLong() shl 20) }, cache,
+                reopen = { torrentPage(cacheAt) }) { mb -> set({ putInt("cache_mb", mb) }, cacheAt) }
+                .hinted(getString(R.string.hint_torrent_cache))
+            // What the cache takes now, and what's free on the drive; emptied at a press (all but the stream playing).
+            val usedAt = rows.size
+            rows += page(getString(R.string.torrent_cache_used), cacheUse?.let { (used, free) ->
+                getString(R.string.torrent_cache_used_value, sizeName(used).ifEmpty { "0 MB" }, sizeName(free))
+            } ?: "") { }
+            rows += page(getString(R.string.torrent_clear_cache)) {
+                netIo.execute {
+                    val ok = Torrents.call(this, "clear_cache") != null
+                    ui.post {
+                        toast(if (ok) R.string.torrent_cache_cleared else R.string.torrent_disconnected)
+                        if (pageShowing(title)) torrentPage(usedAt + 1)
+                    }
+                }
+            }
+            // A torrent watched, kept: handed to the engine as a download of its own, in the download folder.
+            val keepAt = rows.size
+            rows += page(getString(R.string.torrent_keep_cache), toggle(keep)) { set({ putBoolean("keep_cache", !keep) }, keepAt) }
+                .hinted(getString(R.string.hint_torrent_keep))
+            rows += page(getString(R.string.torrent_uninstall)) {
+                runCatching { startActivity(Intent(Intent.ACTION_DELETE, Uri.fromParts("package", Torrents.enginePackage(this), null))) }
+            }
             showPage(title, rows, focus = focus.coerceAtLeast(0), top = intro, back = { renderSettings(TORRENT_ROW) })
             val row = settingsList.getChildAt(1) as? LinearLayout ?: return@post
             stateDot(row, nodes)

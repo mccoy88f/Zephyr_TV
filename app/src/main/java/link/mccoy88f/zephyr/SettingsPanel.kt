@@ -10,6 +10,7 @@ import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -28,16 +29,13 @@ import link.mccoy88f.zephyr.MainActivity.Companion.HDMI
 import link.mccoy88f.zephyr.SettingsRows.ADDON_ROWS
 import link.mccoy88f.zephyr.SettingsRows.HIDDEN_ROW
 import link.mccoy88f.zephyr.SettingsRows.UPDATE_ROW
-import link.mccoy88f.zephyr.SettingsRows.EPG_ROW
 import link.mccoy88f.zephyr.SettingsRows.PLAY_CHANNELS_ROW
 import link.mccoy88f.zephyr.SettingsRows.CHANNEL_NUMBERS_ROW
-import link.mccoy88f.zephyr.SettingsRows.CHANNEL_ORDER_ROW
 import link.mccoy88f.zephyr.SettingsRows.CHANNEL_LOGOS_ROW
 import link.mccoy88f.zephyr.SettingsRows.ICONS_ROW
 import link.mccoy88f.zephyr.SettingsRows.INPUTS_MODE_ROW
 import link.mccoy88f.zephyr.SettingsRows.INPUTS_IN_APPS_ROW
 import link.mccoy88f.zephyr.SettingsRows.LOCK_ROW
-import link.mccoy88f.zephyr.SettingsRows.PIN_ROW
 import link.mccoy88f.zephyr.SettingsRows.LOOK_SECTION
 import link.mccoy88f.zephyr.SettingsRows.NAMES_ROW
 import link.mccoy88f.zephyr.SettingsRows.NIGHT_FROM_ROW
@@ -65,6 +63,28 @@ import link.mccoy88f.zephyr.SettingsRows.TV_SECTION
 import link.mccoy88f.zephyr.SettingsRows.WATCH_SECTION
 import link.mccoy88f.zephyr.SettingsRows.WEATHER_ROW
 import link.mccoy88f.zephyr.SettingsRows.WEATHER_UNITS_ROW
+import link.mccoy88f.zephyr.SettingsRows.ACCOUNT_SECTION
+import link.mccoy88f.zephyr.SettingsRows.ASPECT_ROW
+import link.mccoy88f.zephyr.SettingsRows.CLOCK_SECTION
+import link.mccoy88f.zephyr.SettingsRows.CW_SECTION
+import link.mccoy88f.zephyr.SettingsRows.FAST_START_ROW
+import link.mccoy88f.zephyr.SettingsRows.FRAME_RATE_ROW
+import link.mccoy88f.zephyr.SettingsRows.HOME_SCREEN_SECTION
+import link.mccoy88f.zephyr.SettingsRows.INPUTS_SECTION
+import link.mccoy88f.zephyr.SettingsRows.NIGHT_SECTION
+import link.mccoy88f.zephyr.SettingsRows.NOW_PLAYING_ROW
+import link.mccoy88f.zephyr.SettingsRows.PARENT_ROW
+import link.mccoy88f.zephyr.SettingsRows.PLAYBACK_SECTION
+import link.mccoy88f.zephyr.SettingsRows.REMOTE_ROW
+import link.mccoy88f.zephyr.SettingsRows.STREAMS_SECTION
+import link.mccoy88f.zephyr.SettingsRows.STREAM_CHOICE_ROW
+import link.mccoy88f.zephyr.SettingsRows.STREAM_LANGUAGE_ROW
+import link.mccoy88f.zephyr.SettingsRows.STREAM_QUALITY_ROW
+import link.mccoy88f.zephyr.SettingsRows.SUBTITLES_ROW
+import link.mccoy88f.zephyr.SettingsRows.UNKNOWN_LANGUAGE_ROW
+import link.mccoy88f.zephyr.SettingsRows.UNRELEASED_ROW
+import link.mccoy88f.zephyr.SettingsRows.WALLPAPER_SECTION
+import link.mccoy88f.zephyr.SettingsRows.WARP_ROW
 
 // Zephyr TV settings: the side panel, its sections and pages, the on/off rows and the layout lock PIN.
 // Functions of MainActivity, kept here by topic; their state lives in MainActivity.
@@ -112,30 +132,38 @@ internal fun MainActivity.closeLauncherSettings() {
 }
 
 internal fun MainActivity.sectionTitle(section: Int) = getString(when (section) {
-    LOOK_SECTION -> R.string.settings_section_look
-    APPS_SECTION -> R.string.settings_section_apps
-    WATCH_SECTION -> R.string.settings_section_content
+    HOME_SCREEN_SECTION -> R.string.settings_section_home
+    LOOK_SECTION -> R.string.settings_section_appearance
+    WATCH_SECTION -> R.string.settings_section_media
     TV_SECTION -> R.string.settings_section_tv
     ADDONS_SECTION -> R.string.settings_section_addons
+    ACCOUNT_SECTION -> R.string.settings_section_account
+    APPS_SECTION -> R.string.settings_section_apps
+    CW_SECTION -> R.string.setting_continue_playing
     SPOTLIGHT_SECTION -> R.string.setting_tmdb
+    INPUTS_SECTION -> R.string.settings_group_inputs
+    WALLPAPER_SECTION -> R.string.settings_group_wallpapers
+    CLOCK_SECTION -> R.string.settings_group_clock
+    NIGHT_SECTION -> R.string.setting_night
     SCREENSAVER_SECTION -> R.string.setting_screensaver
+    STREAMS_SECTION -> R.string.settings_group_streams
+    PLAYBACK_SECTION -> R.string.settings_group_playback
     else -> R.string.settings_section_system
 })
 
 /** Icon at the start of that section's row on the first settings page. */
 internal fun MainActivity.sectionIcon(section: Int) = when (section) {
+    HOME_SCREEN_SECTION -> R.drawable.ic_apps
     LOOK_SECTION -> R.drawable.ic_settings_look
-    APPS_SECTION -> R.drawable.ic_apps
     WATCH_SECTION -> R.drawable.ic_movie
     TV_SECTION -> R.drawable.ic_live_tv
     ADDONS_SECTION -> R.drawable.ic_stream
-    SPOTLIGHT_SECTION -> R.drawable.ic_settings_spotlight
-    SCREENSAVER_SECTION -> R.drawable.ic_settings_screensaver
+    ACCOUNT_SECTION -> R.drawable.ic_lock
     else -> R.drawable.ic_settings
 }
 
 /** The sections in the order the settings' first page lists them (their numbers aren't that order). */
-internal val HOME_SECTIONS = listOf(LOOK_SECTION, APPS_SECTION, WATCH_SECTION, TV_SECTION, ADDONS_SECTION, SPOTLIGHT_SECTION, SCREENSAVER_SECTION, SYSTEM_SECTION)
+internal val HOME_SECTIONS = listOf(HOME_SCREEN_SECTION, LOOK_SECTION, WATCH_SECTION, TV_SECTION, ADDONS_SECTION, ACCOUNT_SECTION, SYSTEM_SECTION)
 
 /** The sections, each a page of its own: an arrow says so (a value here would only repeat the page's first row). */
 internal fun MainActivity.renderSettingsHome(focus: Int = 0) {
@@ -154,11 +182,16 @@ internal fun MainActivity.renderSettingsHome(focus: Int = 0) {
     }.toMap(), first = 0)
 }
 
-/** Shows the section page holding [row], focused on it. */
+/** Shows the page holding [row], focused on it. Back: from a group to the row that opened it, else to the first page. */
 internal fun MainActivity.renderSettings(row: Int) {
     val section = row / SECTION
     showPage(sectionTitle(section), sectionRows(section), row % SECTION) {
-        if (section == ADDONS_SECTION) addonsAndPlugins(1) else renderSettingsHome(HOME_SECTIONS.indexOf(section))
+        val parent = PARENT_ROW[section]
+        when {
+            parent != null -> renderSettings(parent)
+            section == ADDONS_SECTION -> addonsAndPlugins(1)
+            else -> renderSettingsHome(HOME_SECTIONS.indexOf(section))
+        }
     }
     shownSection = section
     // Each add-on's row starts with its icon; grey when it's switched off.
@@ -210,32 +243,62 @@ internal fun MainActivity.updatesValue() = when {
     else -> getString(R.string.updates_up_to_date, myVersion())
 }
 
-/** Each section's rows, in the order of its *_ROW constants. */
+/** The picture's shape in the player (see PlayerActivity.fit): fit (black bars), fill (cropped), stretch. */
+internal fun aspectMode(p: android.content.SharedPreferences) = p.getString(K.ASPECT, "fit") ?: "fit"
+
+/** A group's row: its page's name, with an arrow. */
+private fun MainActivity.group(section: Int) = page(sectionTitle(section), SUBMENU) { renderSettings(section * SECTION) }
+
+/** Change the PIN's row, the last on Account and privacy: after Show the address while remote access is on. */
+internal fun MainActivity.pinRow() = REMOTE_ROW + if (remoteOn()) 2 else 1
+
+/** Each page's rows, in the order of its *_ROW constants. */
 internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String, () -> Unit>> = when (section) {
-    LOOK_SECTION -> {
-        val theme = prefs.getString(K.THEME, "light")!!
+    HOME_SCREEN_SECTION -> listOf(group(APPS_SECTION), group(CW_SECTION), group(SPOTLIGHT_SECTION), group(INPUTS_SECTION))
+    LOOK_SECTION -> listOf(
+        choice(getString(R.string.setting_theme), listOf("light" to getString(R.string.setting_theme_light),
+            "dark" to getString(R.string.setting_theme_dark), "glass" to getString(R.string.setting_theme_glass),
+            "auto" to getString(R.string.setting_theme_auto)), prefs.getString(K.THEME, "light")!!, reopen = { renderSettings(THEME_ROW) }) {
+            prefs.edit().putString(K.THEME, it).putInt(K.REOPEN_ROW, THEME_ROW).apply()
+            recreate() // colours are applied once per activity; reopen the panel after
+        },
+        group(WALLPAPER_SECTION),
+        group(CLOCK_SECTION),
+        group(NIGHT_SECTION),
+        page(getString(R.string.setting_screensaver), SUBMENU) { renderSettings(SCREENSAVER_SECTION * SECTION) },
+    ) + listOfNotNull(
+        // A phone or tablet: its own status bar over the home screen, or not (the home screen has its clock).
+        if (!handheld()) null else page(getString(R.string.setting_status_bar), toggle(prefs.getBoolean(K.STATUS_BAR, false))) {
+            prefs.edit().putBoolean(K.STATUS_BAR, !prefs.getBoolean(K.STATUS_BAR, false)).apply()
+            applyStatusBar()
+            renderSettings(STATUS_BAR_ROW)
+        },
+    )
+    WALLPAPER_SECTION -> listOf(
+        page(getString(R.string.setting_light_wallpaper), wallpaperName(currentWallpaper(false))) { pickWallpaper(false) },
+        page(getString(R.string.setting_dark_wallpaper), wallpaperName(currentWallpaper(true))) { pickWallpaper(true) },
+        page(getString(R.string.setting_photo_fade), toggle(wallpaperFade())) {
+            prefs.edit().putBoolean(K.WP_FADE, !wallpaperFade()).apply()
+            loadWallpaper()
+            renderSettings(FADE_ROW)
+        },
+        page(getString(R.string.setting_wallpaper_drift), toggle(wallpaperDrift())) {
+            prefs.edit().putBoolean(K.WP_DRIFT, !wallpaperDrift()).apply()
+            if (wallpaperDrift()) scene.arm() else scene.stop()
+            findViewById<View>(R.id.wallpaper)?.invalidate()
+            renderSettings(DRIFT_ROW)
+        },
+        page(getString(R.string.setting_folder_photo_changes), photoEveryName(photoEvery())) { pickPhotoEvery() },
+    )
+    CLOCK_SECTION -> {
         val weather = prefs.getString(K.WEATHER, "off")!!
         val unit = if (weather == "off") prefs.getString(K.WX_UNIT, "c")!! else weather
         listOf(
-            page(getString(R.string.setting_theme), themeName()) {
-                prefs.edit().putString(K.THEME, mapOf("light" to "dark", "dark" to "glass", "glass" to "auto", "auto" to "light")[theme])
-                    .putInt(K.REOPEN_ROW, THEME_ROW).apply()
-                recreate() // colours are applied once per activity; reopen the panel after
+            choice(getString(R.string.setting_clock), listOf("auto", "24", "12").map { it to clockName(it) },
+                prefs.getString(K.CLOCK_24, "auto")!!, reopen = { renderSettings(CLOCK_ROW) }) {
+                prefs.edit().putString(K.CLOCK_24, it).apply()
+                applyClock()
             },
-            page(getString(R.string.setting_light_wallpaper), wallpaperName(currentWallpaper(false))) { pickWallpaper(false) },
-            page(getString(R.string.setting_dark_wallpaper), wallpaperName(currentWallpaper(true))) { pickWallpaper(true) },
-            page(getString(R.string.setting_photo_fade), toggle(wallpaperFade())) {
-                prefs.edit().putBoolean(K.WP_FADE, !wallpaperFade()).apply()
-                loadWallpaper()
-                renderSettings(FADE_ROW)
-            },
-            page(getString(R.string.setting_wallpaper_drift), toggle(wallpaperDrift())) {
-                prefs.edit().putBoolean(K.WP_DRIFT, !wallpaperDrift()).apply()
-                if (wallpaperDrift()) scene.arm() else scene.stop()
-                findViewById<View>(R.id.wallpaper)?.invalidate()
-                renderSettings(DRIFT_ROW)
-            },
-            page(getString(R.string.setting_folder_photo_changes), photoEveryName(photoEvery())) { pickPhotoEvery() },
             // "weather" is off/c/f as before; "wx_unit" keeps the unit while it's off.
             page(getString(R.string.setting_weather), toggle(weather != "off")) {
                 if (weather == "off") prefs.edit().putString(K.WEATHER, unit).apply()
@@ -245,79 +308,50 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 ui.post(weatherTick)
                 renderSettings(WEATHER_ROW)
             },
-            page(getString(R.string.weather_units), if (unit == "f") "°F" else "°C") {
-                val next = if (unit == "f") "c" else "f"
-                prefs.edit().putString(K.WX_UNIT, next).putString(K.WEATHER, if (weather == "off") "off" else next).apply()
+            choice(getString(R.string.weather_units), listOf("c" to "°C", "f" to "°F"), unit, reopen = { renderSettings(WEATHER_UNITS_ROW) }) {
+                prefs.edit().putString(K.WX_UNIT, it).putString(K.WEATHER, if (weather == "off") "off" else it).apply()
                 showWeather()
-                renderSettings(WEATHER_UNITS_ROW)
             },
             page(getString(R.string.weather_location), if (manualCity()) prefs.getString(K.GEO_CITY, null) ?: "" else getString(R.string.automatic)) { pickCity() },
-            page(getString(R.string.setting_clock), clockName(prefs.getString(K.CLOCK_24, "auto")!!)) {
-                val next = mapOf("auto" to "24", "24" to "12", "12" to "auto")[prefs.getString(K.CLOCK_24, "auto")] ?: "auto"
-                prefs.edit().putString(K.CLOCK_24, next).apply()
-                applyClock()
-                renderSettings(CLOCK_ROW)
-            },
-            page(getString(R.string.setting_night), toggle(prefs.getBoolean(K.NIGHT, false))) {
-                prefs.edit().putBoolean(K.NIGHT, !prefs.getBoolean(K.NIGHT, false)).apply()
-                applyNight()
-                renderSettings(NIGHT_ROW)
-            },
-            page(getString(R.string.setting_night_from), hourName(nightFrom())) { pickNightHour(K.NIGHT_FROM, R.string.setting_night_from, NIGHT_FROM_ROW) },
-            page(getString(R.string.setting_night_to), hourName(nightTo())) { pickNightHour(K.NIGHT_TO, R.string.setting_night_to, NIGHT_TO_ROW) },
-        ) + listOfNotNull(
-            // A phone or tablet: its own status bar over the home screen, or not (the home screen has its clock).
-            if (!handheld()) null else page(getString(R.string.setting_status_bar), toggle(prefs.getBoolean(K.STATUS_BAR, false))) {
-                prefs.edit().putBoolean(K.STATUS_BAR, !prefs.getBoolean(K.STATUS_BAR, false)).apply()
-                applyStatusBar()
-                renderSettings(STATUS_BAR_ROW)
-            },
         )
     }
+    NIGHT_SECTION -> listOf(
+        page(getString(R.string.setting_night), toggle(prefs.getBoolean(K.NIGHT, false))) {
+            prefs.edit().putBoolean(K.NIGHT, !prefs.getBoolean(K.NIGHT, false)).apply()
+            applyNight()
+            renderSettings(NIGHT_ROW)
+        },
+        page(getString(R.string.setting_night_from), hourName(nightFrom())) { pickNightHour(K.NIGHT_FROM, R.string.setting_night_from, NIGHT_FROM_ROW) },
+        page(getString(R.string.setting_night_to), hourName(nightTo())) { pickNightHour(K.NIGHT_TO, R.string.setting_night_to, NIGHT_TO_ROW) },
+    )
     APPS_SECTION -> {
-        val sort = prefs.getString(K.SORT, "manual")!!
         val rowHidden = rowHiddenSet().count { pkg -> apps.any { it.pkg == pkg } } // uninstalled ones don't count
-        val names = rowNames()
-        val colour = colourIcons()
         listOf(
             page(getString(R.string.edit_apps_row)) { closeLauncherSettings(); startEdit(grab = null) },
-            page(getString(R.string.setting_sort_apps), if (sort == "manual") getString(R.string.setting_sort_manual) else getString(R.string.setting_sort_usage)) {
-                prefs.edit().putString(K.SORT, if (sort == "manual") "usage" else "manual").apply()
+            choice(getString(R.string.setting_sort_apps), listOf("manual" to getString(R.string.setting_sort_manual), "usage" to getString(R.string.setting_sort_usage)),
+                prefs.getString(K.SORT, "manual")!!, reopen = { renderSettings(SORT_ROW) }) {
+                prefs.edit().putString(K.SORT, it).apply()
                 renderApps()
-                renderSettings(SORT_ROW)
             },
             page(getString(R.string.setting_apps_in_row), if (rowHidden == 0) getString(R.string.apps_in_row_all) else getString(R.string.apps_in_row_count, apps.size - rowHidden, apps.size)) { pickRowApps() },
-            page(getString(R.string.row_position), getString(ROW_ALIGN[rowAlign()]!!.first)) {
-                prefs.edit().putString(K.ROW_ALIGN, ROW_ALIGN.keys.let { it.elementAt((it.indexOf(rowAlign()) + 1) % it.size) }).apply()
+            choice(getString(R.string.row_position), ROW_ALIGN.map { (k, v) -> k to getString(v.first) }, rowAlign(), reopen = { renderSettings(ALIGN_ROW) }) {
+                prefs.edit().putString(K.ROW_ALIGN, it).apply()
                 alignRow()
-                renderSettings(ALIGN_ROW)
             },
-            page(getString(R.string.setting_app_names), when (names) {
-                "always" -> getString(R.string.app_names_always)
-                "never" -> getString(R.string.app_names_never)
-                else -> getString(R.string.app_names_focus)
-            }) {
-                prefs.edit().putString(K.NAMES, mapOf("focus" to "always", "always" to "never", "never" to "focus")[names]).apply()
+            choice(getString(R.string.setting_app_names), listOf("focus" to getString(R.string.app_names_focus),
+                "always" to getString(R.string.app_names_always), "never" to getString(R.string.app_names_never)),
+                rowNames(), reopen = { renderSettings(NAMES_ROW) }) {
+                prefs.edit().putString(K.NAMES, it).apply()
                 renderApps()
-                renderSettings(NAMES_ROW)
             },
-            page(getString(R.string.setting_icon_style), if (colour) getString(R.string.icon_style_colour) else getString(R.string.icon_style_monochrome)) {
-                prefs.edit().putBoolean(K.COLOUR_ICONS, !colour).apply()
+            choice(getString(R.string.setting_icon_style), listOf(true to getString(R.string.icon_style_colour), false to getString(R.string.icon_style_monochrome)),
+                colourIcons(), reopen = { renderSettings(ICONS_ROW) }) {
+                prefs.edit().putBoolean(K.COLOUR_ICONS, it).apply()
                 renderApps()
-                renderSettings(ICONS_ROW)
             },
-            page(getString(R.string.setting_lock_layout), toggle(lockOn())) {
-                if (!lockOn()) return@page setLock()
-                prefs.edit().remove(K.LOCK_ON).apply()
-                dropUnusedPin() // the 18+ lock or remote access may still use it
-                renderSettings(LOCK_ROW)
-            },
-        ) + listOfNotNull(
-            // The one PIN (see Pins), while something uses it: the old one first, then the new one twice.
-            if (!pinSet()) null else page(getString(R.string.setting_change_pin)) { changePin { renderSettings(PIN_ROW) } },
         )
     }
-    WATCH_SECTION -> {
+    CW_SECTION -> {
         val hidden = prefs.getStringSet(K.HIDDEN_WATCH, emptySet())!!.size
         val cwOff = prefs.getStringSet(K.CW_OFF, emptySet())!!.count { pkg -> apps.any { it.pkg == pkg } }
         val cwOn = continuePlaying()
@@ -351,77 +385,103 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 else -> R.string.now_playing_needs_access
             })) {
                 if (listenerAllowed()) toast(R.string.now_playing_on, long = false)
-                else allowListener { renderSettings(WATCH_SECTION * SECTION + 3) }
+                else allowListener { renderSettings(NOW_PLAYING_ROW) }
             },
-            // Where films and series come from (Cinemeta, Nuvio, an added catalog), and TMDB completing them.
-            page(getString(R.string.setting_cinemeta), sourcesValue()) { configureCinemeta() },
-            // How a film or episode starts: its streams tried in turn, or picked by hand from one list of them all.
-            page(getString(R.string.setting_stream_choice), getString(if (manualStreams()) R.string.stream_choice_manual else R.string.stream_choice_auto)) {
-                prefs.edit().putBoolean(K.STREAM_MANUAL, !manualStreams()).apply()
-                renderSettings(WATCH_SECTION * SECTION + 5)
-            },
-            // The quality tried first: the highest, or one the TV shows (a 1080p one: 1080p down, then those above).
-            page(getString(R.string.setting_stream_quality), qualityName(preferredQuality(prefs))) {
-                val now = QUALITIES.indexOf(preferredQuality(prefs)).coerceAtLeast(0)
-                prefs.edit().putInt(K.STREAM_QUALITY, QUALITIES[(now + 1) % QUALITIES.size]).apply()
-                renderSettings(WATCH_SECTION * SECTION + 6)
-            },
-            // Quick start: the first working stream in the preferred quality plays; the other sources go on looking.
-            // Not with the highest quality: that one waits for every source (see quickStart).
-            page(getString(R.string.setting_fast_start),
-                if (preferredQuality(prefs) == 0) getString(R.string.fast_start_not_highest) else toggle(prefs.getBoolean(K.FAST_START, true))) {
-                if (preferredQuality(prefs) == 0) return@page toast(R.string.fast_start_pick_quality)
-                prefs.edit().putBoolean(K.FAST_START, !prefs.getBoolean(K.FAST_START, true)).apply()
-                renderSettings(WATCH_SECTION * SECTION + 7)
-            },
-            // Films' and episodes' streams in the TV's language only (the TMDB language's), or all of them.
-            page(getString(R.string.setting_stream_language), toggle(streamLanguage(prefs) != null)) {
-                prefs.edit().putBoolean(K.STREAM_LANG_ONLY, streamLanguage(prefs) == null).apply()
-                renderSettings(WATCH_SECTION * SECTION + 8)
-            },
-            // Streams that say no language (and whose plugin doesn't either): hidden, with the TV's language only on.
-            page(getString(R.string.setting_hide_unknown_language), toggle(prefs.getBoolean(K.HIDE_UNKNOWN_LANG, false))) {
-                prefs.edit().putBoolean(K.HIDE_UNKNOWN_LANG, !prefs.getBoolean(K.HIDE_UNKNOWN_LANG, false)).apply()
-                renderSettings(WATCH_SECTION * SECTION + 9)
-            },
-            // Subtitles: off unless the stream forces them (a foreign line in a dubbed film), or on in every stream.
-            page(getString(R.string.setting_subtitles_on), toggle(prefs.getBoolean(K.SUBTITLES_ON, false))) {
-                prefs.edit().putBoolean(K.SUBTITLES_ON, !prefs.getBoolean(K.SUBTITLES_ON, false)).apply()
-                renderSettings(WATCH_SECTION * SECTION + 10)
-            },
-            // Films not out at home yet (in cinemas, or to come, as TMDB says for sure): left out of Spotlight and
-            // the apps' rows. Needs TMDB's key.
-            page(getString(R.string.setting_hide_unreleased), toggle(hideUnreleased())) {
-                prefs.edit().putBoolean(K.HIDE_UNRELEASED, !hideUnreleased()).apply()
-                tmdbTrending = emptyList()
-                watchKey = null
-                renderSettings(WATCH_SECTION * SECTION + 11)
-            },
-            // The screen's refresh rate switched to the film's frame rate (24 Hz for a film): no judder in the pans,
-            // a moment of black as the TV changes mode. Off by default.
-            page(getString(R.string.setting_match_frame_rate), toggle(prefs.getBoolean(K.MATCH_FRAME_RATE, false))) {
-                prefs.edit().putBoolean(K.MATCH_FRAME_RATE, !prefs.getBoolean(K.MATCH_FRAME_RATE, false)).apply()
-                renderSettings(WATCH_SECTION * SECTION + 12)
-            },
-            // Where Download saves films and episodes (see Downloads): the app's own folder, Download, Movies or a drive.
-            page(getString(R.string.setting_download_folder), downloadFolder()?.name.orEmpty()) { pickDownloadFolder() },
-            // Torrent streams, played and downloaded by Zephyr Torrent, an app of its own installed from here (see Torrents).
-            page(getString(R.string.setting_torrent_engine), torrentValue()) { torrentPage() },
         )
     }
-    // The TV's own side: its inputs (HDMI and the like) and its channels, with their logos and guide.
-    TV_SECTION -> listOf(
-        page(getString(R.string.setting_inputs_mode), if (inputsMode() == "apps") getString(R.string.inputs_mode_apps) else getString(R.string.inputs_mode_menu)) {
-            val next = if (inputsMode() == "apps") "menu" else "apps"
-            prefs.edit().putString(K.INPUTS_MODE, next).apply()
+    // The TV's inputs (HDMI and the like): a menu or tiles of their own, and the connected ones among the favourites.
+    INPUTS_SECTION -> listOf(
+        choice(getString(R.string.setting_inputs_mode), listOf("menu" to getString(R.string.inputs_mode_menu), "apps" to getString(R.string.inputs_mode_apps)),
+            inputsMode(), reopen = { renderSettings(INPUTS_MODE_ROW) }) {
+            prefs.edit().putString(K.INPUTS_MODE, it).apply()
             applyInputsMode()
-            renderSettings(INPUTS_MODE_ROW)
         },
         page(getString(R.string.setting_inputs_in_apps), toggle(inputsInApps())) {
             prefs.edit().putBoolean(K.INPUTS_IN_APPS, !inputsInApps()).apply()
             applyInputsMode()
             renderSettings(INPUTS_IN_APPS_ROW)
         },
+    )
+    WATCH_SECTION -> listOf(
+        // Where films and series come from (Cinemeta, Nuvio, an added catalog), and TMDB completing them.
+        page(getString(R.string.setting_cinemeta), sourcesValue()) { configureCinemeta() },
+        group(STREAMS_SECTION),
+        group(PLAYBACK_SECTION),
+        // Films not out at home yet (in cinemas, or to come, as TMDB says for sure): left out of Spotlight and
+        // the apps' rows. Needs TMDB's key.
+        page(getString(R.string.setting_hide_unreleased), toggle(hideUnreleased())) {
+            prefs.edit().putBoolean(K.HIDE_UNRELEASED, !hideUnreleased()).apply()
+            tmdbTrending = emptyList()
+            watchKey = null
+            renderSettings(UNRELEASED_ROW)
+        },
+        // Where Download saves films and episodes (see Downloads): the app's own folder, Download, Movies or a drive.
+        page(getString(R.string.setting_download_folder), downloadFolder()?.name.orEmpty()) { pickDownloadFolder() },
+        // Torrent streams, played and downloaded by Zephyr Torrent, an app of its own installed from here (see Torrents).
+        page(getString(R.string.setting_torrent_engine), torrentValue()) { torrentPage() },
+    )
+    STREAMS_SECTION -> listOf(
+        // How a film or episode starts: its streams tried in turn, or picked by hand from one list of them all.
+        choice(getString(R.string.setting_stream_choice), listOf(false to getString(R.string.stream_choice_auto), true to getString(R.string.stream_choice_manual)),
+            manualStreams(), reopen = { renderSettings(STREAM_CHOICE_ROW) }) {
+            prefs.edit().putBoolean(K.STREAM_MANUAL, it).apply()
+        }.hinted(getString(R.string.hint_stream_choice)),
+        // The quality tried first: the highest, or one the TV shows (a 1080p one: 1080p down, then those above).
+        choice(getString(R.string.setting_stream_quality), QUALITIES.map { it to qualityName(it) }, preferredQuality(prefs),
+            reopen = { renderSettings(STREAM_QUALITY_ROW) }) {
+            prefs.edit().putInt(K.STREAM_QUALITY, it).apply()
+        },
+        // Quick start: the first working stream in the preferred quality plays; the other sources go on looking.
+        // Not with the highest quality: that one waits for every source (see quickStart).
+        page(getString(R.string.setting_fast_start),
+            if (preferredQuality(prefs) == 0) getString(R.string.fast_start_not_highest) else toggle(prefs.getBoolean(K.FAST_START, true))) {
+            if (preferredQuality(prefs) == 0) return@page toast(R.string.fast_start_pick_quality)
+            prefs.edit().putBoolean(K.FAST_START, !prefs.getBoolean(K.FAST_START, true)).apply()
+            renderSettings(FAST_START_ROW)
+        }.hinted(getString(R.string.hint_fast_start)),
+        // Films' and episodes' streams in the TV's language only (the TMDB language's), or all of them.
+        page(getString(R.string.setting_stream_language), toggle(streamLanguage(prefs) != null)) {
+            prefs.edit().putBoolean(K.STREAM_LANG_ONLY, streamLanguage(prefs) == null).apply()
+            renderSettings(STREAM_LANGUAGE_ROW)
+        },
+        // Streams that say no language (and whose plugin doesn't either): hidden, with the TV's language only on.
+        page(getString(R.string.setting_hide_unknown_language), toggle(prefs.getBoolean(K.HIDE_UNKNOWN_LANG, false))) {
+            prefs.edit().putBoolean(K.HIDE_UNKNOWN_LANG, !prefs.getBoolean(K.HIDE_UNKNOWN_LANG, false)).apply()
+            renderSettings(UNKNOWN_LANGUAGE_ROW)
+        },
+    )
+    PLAYBACK_SECTION -> listOf(
+        // Subtitles: off unless the stream forces them (a foreign line in a dubbed film), or on in every stream.
+        page(getString(R.string.setting_subtitles_on), toggle(prefs.getBoolean(K.SUBTITLES_ON, false))) {
+            prefs.edit().putBoolean(K.SUBTITLES_ON, !prefs.getBoolean(K.SUBTITLES_ON, false)).apply()
+            renderSettings(SUBTITLES_ROW)
+        },
+        // The screen's refresh rate switched to the film's frame rate (24 Hz for a film): no judder in the pans,
+        // a moment of black as the TV changes mode. Off by default.
+        page(getString(R.string.setting_match_frame_rate), toggle(prefs.getBoolean(K.MATCH_FRAME_RATE, false))) {
+            prefs.edit().putBoolean(K.MATCH_FRAME_RATE, !prefs.getBoolean(K.MATCH_FRAME_RATE, false)).apply()
+            renderSettings(FRAME_RATE_ROW)
+        }.hinted(getString(R.string.hint_frame_rate)),
+        // The picture's shape: whole with black bars, filling the screen (its edges cut), or stretched to it.
+        choice(getString(R.string.setting_aspect), listOf("fit" to getString(R.string.aspect_fit), "zoom" to getString(R.string.aspect_zoom),
+            "stretch" to getString(R.string.aspect_stretch)), aspectMode(prefs), reopen = { renderSettings(ASPECT_ROW) }) {
+            prefs.edit().putString(K.ASPECT, it).apply()
+        }.hinted(getString(R.string.hint_aspect)),
+    )
+    // The TV's channels, with their logos and guide.
+    TV_SECTION -> listOf(
+        page(getString(R.string.setting_tv_app), chosenTvApp()?.let { appLabel(it) }
+            ?: getString(R.string.tv_app_auto, autoTvApp()?.let { appLabel(it) } ?: getString(R.string.tv_app_none))) { pickTvApp() },
+        page(getString(R.string.setting_play_channels), toggle(playChannelsOnOpen())) {
+            prefs.edit().putBoolean(K.PLAY_CHANNELS, !playChannelsOnOpen()).apply()
+            renderSettings(PLAY_CHANNELS_ROW)
+        },
+        page(getString(R.string.setting_channel_numbers), toggle(channelNumbersOn())) {
+            prefs.edit().putBoolean(K.CHANNEL_NUMBERS, !channelNumbersOn()).apply()
+            watchKey = null
+            renderSettings(CHANNEL_NUMBERS_ROW)
+        },
+        page(getString(R.string.setting_epg), epgValue()) { configureEpg() },
         page(getString(R.string.setting_channel_logos), toggle(channelLogosOn())) {
             prefs.edit().putBoolean(K.CHANNEL_LOGOS, !channelLogosOn()).apply()
             watchKey = null
@@ -434,18 +494,6 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
                 Toast.makeText(this, if (n == null) getString(R.string.toast_channel_logos_failed)
                     else getString(R.string.toast_channel_logos_updated, n), Toast.LENGTH_LONG).show()
             }
-        },
-        page(getString(R.string.setting_epg), epgValue()) { configureEpg() },
-        page(getString(R.string.setting_play_channels), toggle(playChannelsOnOpen())) {
-            prefs.edit().putBoolean(K.PLAY_CHANNELS, !playChannelsOnOpen()).apply()
-            renderSettings(PLAY_CHANNELS_ROW)
-        },
-        page(getString(R.string.setting_tv_app), chosenTvApp()?.let { appLabel(it) }
-            ?: getString(R.string.tv_app_auto, autoTvApp()?.let { appLabel(it) } ?: getString(R.string.tv_app_none))) { pickTvApp() },
-        page(getString(R.string.setting_channel_numbers), toggle(channelNumbersOn())) {
-            prefs.edit().putBoolean(K.CHANNEL_NUMBERS, !channelNumbersOn()).apply()
-            watchKey = null
-            renderSettings(CHANNEL_NUMBERS_ROW)
         },
     ) + listOfNotNull(
         if (tvApp() == null) null else page(getString(R.string.setting_channel_order),
@@ -460,16 +508,28 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
         page(getString(R.string.setting_test_screensaver)) { testScreensaver() },
         page(getString(R.string.setting_screensaver_timing)) { openScreensaverSettings() },
     )
+    ACCOUNT_SECTION -> listOfNotNull(
+        page(getString(R.string.setting_ztv_account), ztvValue()) { ztvAccount() }, // see accountRow
+        // Their requests, and the videos, from Cloudflare's addresses instead of the device's (see Privacy).
+        page(getString(R.string.warp_title), getString(if (vpnOn()) R.string.warp_vpn_on else R.string.state_off)) { privacyPage { renderSettings(WARP_ROW) } },
+        page(getString(R.string.setting_lock_layout), toggle(lockOn())) {
+            if (!lockOn()) return@page setLock()
+            prefs.edit().remove(K.LOCK_ON).apply()
+            dropUnusedPin() // the 18+ lock or remote access may still use it
+            renderSettings(LOCK_ROW)
+        },
+        page(getString(R.string.setting_remote), toggle(remoteOn())) { toggleRemote() },
+        if (!remoteOn()) null else page(getString(R.string.remote_show)) { showRemoteAddress() },
+        // The one PIN (see Pins), while something uses it: the old one first, then the new one twice.
+        if (!pinSet()) null else page(getString(R.string.setting_change_pin)) { changePin { renderSettings(pinRow()) } },
+    )
     else -> listOfNotNull(
         page(getString(R.string.setting_home_remote), SUBMENU) { showHomeRemotePage() },
         page(getString(R.string.setting_updates), updatesValue()) { showUpdates() },
-        page(getString(R.string.setting_remote), toggle(remoteOn())) { toggleRemote() },
-        if (!remoteOn()) null else page(getString(R.string.remote_show)) { showRemoteAddress() },
         page(getString(R.string.setting_backup)) { showBackup() },
         page(getString(R.string.setting_problems), Problems.recent().size.let { if (it == 0) getString(R.string.problems_none) else "$it" }) { showProblems() },
         page(getString(R.string.setting_guide), SUBMENU) { showGuide() }, // the user guide, in the TV's language
         page(getString(R.string.setting_about), myVersion()) { showAbout() },
-        page(getString(R.string.setting_ztv_account), ztvValue()) { ztvAccount() }, // see accountRow
         if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE == 0) null
         else page(getString(R.string.preview_home_setup)) { closeLauncherSettings(); previewHomeSetup() },
     )
@@ -719,13 +779,18 @@ internal fun MainActivity.showPage(title: String, allRows: List<Triple<String, S
     top?.let { settingsList.addView(it) }
     val first = settingsList.childCount
     rows.forEach { (name, value, action) ->
-        settingsList.addView(settingsRow(name, value, panes, action), LinearLayout.LayoutParams(MATCH_PARENT, dp(44)).apply {
+        val tall = rowHints.containsKey(name) // a line under its name: as high as the two need
+        settingsList.addView(settingsRow(name, value, panes, action), LinearLayout.LayoutParams(MATCH_PARENT, if (tall) WRAP_CONTENT else dp(44)).apply {
             topMargin = if (panes) dp(6) else dp(4)
         })
     }
     // Keep focus inside the panel: Up from the first row and Down from the last go nowhere.
     scroller.scrollTo(0, 0)
     if (scrolled > 0) scroller.post { scroller.scrollTo(0, scrolled) } // once the rows are laid out again
+    // ◀ ▶ on a row of options: the one before or after (see choice).
+    if (rows.any { choiceName(it.second) != null }) pageSides = { step ->
+        focusedRow()?.let { rows.getOrNull(it) }?.takeIf { choiceName(it.second) != null }?.let { choiceSteps[it.first]?.invoke(step) }
+    }
     if (rows.isEmpty()) return phonePanel.show(title, rows, back) // a page that's all [top], like the PIN boxes, focuses itself
     if (top == null) settingsList.getChildAt(first).let { it.nextFocusUpId = it.id }
     settingsList.getChildAt(first + rows.size - 1).let { it.nextFocusDownId = it.id }
@@ -943,14 +1008,27 @@ internal fun MainActivity.settingsRow(title: String, value: String, pane: Boolea
         }
         val toggled = value == TOGGLE_ON || value == TOGGLE_OFF
         val submenu = value == SUBMENU
+        // One of a few options: its name, with ‹ › round it while the row has focus (◀ ▶ change it there).
+        val option = choiceName(value)
         // The value gives way to the name: capped, so a long one ("Not set: press to enter") is shortened, not the name.
-        val state = label(if (toggled || submenu) "" else value, 13f).apply {
+        val state = label(if (toggled || submenu) "" else option ?: value, 13f).apply {
             if (Ticks.watched) text = blueTicks(text) // a title page's watched ✓ in blue (a chosen option's stays as it is)
             alpha = 0.6f
             maxWidth = dp(170)
             setPadding(dp(12), 0, 0, 0)
         }
-        addView(name, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        // What it does, under its name, when it says (see rowHints): the row grows to hold it.
+        val hint = rowHints[title]?.let { h -> label(h, 11.5f).apply { alpha = 0.6f; maxLines = 3; setLineSpacing(0f, 1.1f) } }
+        if (hint == null) addView(name, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        else {
+            setPadding(dp(14), dp(8), dp(14), dp(8))
+            minimumHeight = dp(44)
+            addView(LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                addView(name)
+                addView(hint.apply { setPadding(0, dp(2), 0, 0) })
+            }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        }
         fun showSwitch(lit: Boolean) {
             if (childCount > 1) removeViewAt(1)
             addView(switch(value == TOGGLE_ON, lit), LinearLayout.LayoutParams(dp(36), dp(20)))
@@ -961,12 +1039,15 @@ internal fun MainActivity.settingsRow(title: String, value: String, pane: Boolea
             submenu -> addView(arrow, LinearLayout.LayoutParams(dp(20), dp(20)))
             else -> addView(state)
         }
+        if (option != null) addView(arrow, LinearLayout.LayoutParams(dp(18), dp(18)).apply { marginStart = dp(4) })
         setOnClickListener { action() }
         setOnFocusChangeListener { _, focused ->
             if (light != null) light(focused) else bg.colors = if (focused) intArrayOf(fg, fg) else intArrayOf(0, 0)
             name.setTextColor(if (focused) lit else fg)
             name.isSelected = focused
             state.setTextColor(if (focused) lit else fg)
+            if (option != null) state.text = if (focused) "‹  $option  ›" else option
+            hint?.setTextColor(if (focused) lit else fg)
             state.alpha = if (focused) 0.75f else 0.6f
             if (toggled) showSwitch(focused && light == null) // redrawn in the inverted colours on the lit row
             arrow.setColorFilter(if (focused) lit else fg)

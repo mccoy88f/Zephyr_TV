@@ -95,6 +95,7 @@ internal object K {
     const val TRAKT_OFFER = "trakt_offer" // JSON: user id to Trakt name, still to offer on this TV (see offerTrakt)
     const val TRAKT_PENDING = "trakt_pending" // JSON: user id to Trakt name, to sign in again after a restore (see reconnectTrakt); never in backups
     const val DOWNLOAD_FOLDER = "download_folder" // where Download saves: app, downloads, movies or vol:<path> (see Downloads)
+    const val ASPECT = "aspect" // the player's picture: fit, zoom (fill, cropped) or stretch (see aspectMode)
     const val MATCH_FRAME_RATE = "match_frame_rate" // the screen's refresh rate switched to the film's frame rate (see matchFrameRate)
     const val ADDONS_OFF = "addons_off" // add-ons switched off: kept, with their settings, but not shown nor asked
     const val ADDONS_MOVIES = "addons_movies" // where films show (VodPlace); none: as ADDONS_VOD, set before films and series were apart

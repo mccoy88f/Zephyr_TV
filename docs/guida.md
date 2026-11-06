@@ -44,7 +44,7 @@ Al primo avvio Zephyr TV fa due domande:
    - **Cinemeta**: la libreria gratuita di Stremio, in inglese (si può tradurre con TMDB, vedi [In evidenza](#16-in-evidenza)).
 2. **Tasto Home**: una procedura guidata fa sì che il tasto Home del telecomando apra Zephyr TV. Segui i passaggi sullo schermo.
 
-Entrambe le scelte si cambiano in seguito: il catalogo in **Impostazioni → Contenuti → Catalogo contenuti**, il tasto Home in **Impostazioni → Sistema → Configura il tasto Home**.
+Entrambe le scelte si cambiano in seguito: il catalogo in **Impostazioni → Film e serie → Catalogo contenuti**, il tasto Home in **Impostazioni → Sistema → Configura il tasto Home**.
 
 > [!TIP]
 > Su Android 13 e successivi, se l'interruttore del tasto Home è grigio, segui il passaggio ADB che Zephyr TV propone. Il [README](../README.it.md#tasto-home-su-android-13-e-successivi) spiega come fare.
@@ -88,7 +88,7 @@ Le **app virtuali** di Zephyr TV (TV, Film, Serie TV, Contenuti per adulti, o un
 
 Il primo riquadro dei Preferiti mostra:
 
-- **In riproduzione**: cosa sta suonando in un'altra app (musica, video), con copertina e avanzamento. Va attivato una volta: **Impostazioni → Contenuti → Mostra cosa sta suonando** spiega come.
+- **In riproduzione**: cosa sta suonando in un'altra app (musica, video), con copertina e avanzamento. Va attivato una volta: **Impostazioni → Schermata Home → Continua a riprodurre → Mostra cosa sta suonando** spiega come.
 - **Continua la riproduzione**: serie e film lasciati a metà, dalle app che li pubblicano e dal player di Zephyr TV, compreso l'episodio successivo di una serie.
 
 | Voce | A cosa serve |
@@ -135,7 +135,9 @@ Nel banner ci sono i pulsanti **Episodio precedente**, **Play/Pausa**, **Episodi
 
 ## 9. Scegliere gli stream: qualità, lingua, avvio rapido
 
-**Impostazioni → Contenuti**:
+**Impostazioni → Film e serie → Stream** (le prime cinque voci) e **→ Riproduzione** (sottotitoli, frequenza, proporzioni). **Nascondi film non ancora usciti** è in **Film e serie**.
+
+Le voci con più valori (per esempio **Qualità preferita**) mostrano il valore con una freccia: OK apre la lista con ✓ su quello in uso, ◀ ▶ lo cambiano direttamente.
 
 | Voce | Predefinito | Cosa fa |
 |---|---|---|
@@ -146,6 +148,7 @@ Nel banner ci sono i pulsanti **Episodio precedente**, **Play/Pausa**, **Episodi
 | **Nascondi stream senza lingua** | Spento | Nasconde gli stream che non dicono in che lingua sono |
 | **Nascondi film non ancora usciti** | Spento | Nasconde dallo Spotlight e dalle righe delle app i film non ancora usciti a casa nel tuo paese: ancora solo al cinema, o non ancora usciti. Usa TMDB (serve la chiave). Un film viene nascosto solo quando TMDB lo dice con certezza |
 | **Sottotitoli sempre attivi** | Spento | Spento: ogni stream parte senza sottotitoli, tranne quelli che lo stream impone (per esempio una frase in un'altra lingua). Acceso: i sottotitoli nella lingua scelta per ultima, altrimenti in quella del TV. Una scelta fatta nel player vale finché non lo chiudi |
+| **Proporzioni dello schermo** | Adatta | **Adatta**: tutta l'immagine, con le bande nere. **Riempi**: copre lo schermo e taglia i bordi. **Estendi**: copre lo schermo e cambia le proporzioni. Il pizzico sul telefono passa da Adatta a Riempi |
 | **Adatta la frequenza dello schermo** | Spento | Porta lo schermo alla frequenza del film (per esempio 24 Hz per un film a 23,976 fps), se il TV ce l'ha: niente scatti nelle panoramiche. Quando il TV cambia modalità lo schermo resta nero per un attimo, e il film aspetta |
 
 Come vengono riconosciute **qualità** e **lingua**:
@@ -158,25 +161,29 @@ Come vengono riconosciute **qualità** e **lingua**:
 
 ### Torrent
 
-Alcuni add-on danno stream torrent invece di link diretti. Per riprodurli e scaricarli serve **Zephyr Torrent**, il motore torrent: è un'app a sé, che si installa da **Impostazioni → Contenuti → Motore torrent** (circa 12 MB). Senza il motore gli stream torrent non compaiono, e la lista degli stream dice quanti ne mancano.
+Alcuni add-on danno stream torrent invece di link diretti. Per riprodurli e scaricarli serve **Zephyr Torrent**, il motore torrent: è un'app a sé, che si installa da **Impostazioni → Film e serie → Motore torrent** (circa 12 MB). Senza il motore gli stream torrent non compaiono, e la lista degli stream dice quanti ne mancano.
 
-- **Riproduzione**: il motore cerca i peer (fino a un minuto), poi il film parte mentre si scarica. Mentre carica, sotto il nome si vedono i peer, la velocità e quanto è già pronto; nel banner, accanto allo stream. Se il torrent non ha peer, il player passa allo stream successivo. A parità di qualità, il player prova prima i link diretti, che partono prima.
-- **Cache**: quello che si scarica per la riproduzione resta in una cache, cancellata quando chiudi il film. Un film più grande della cache si scarica solo intorno al punto che stai guardando.
+- **Avvio**: Zephyr TV avvia il motore quando si apre, e quando un titolo ha stream torrent. Così il motore è già in rete quando scegli lo stream.
+- **Riproduzione**: il motore cerca i peer (fino a un minuto), poi il film parte mentre si scarica. Mentre carica, sotto il nome si vedono i peer, la velocità e quanto è già pronto; nel banner, sulla riga di audio e sottotitoli. Finché il motore scarica, il player aspetta; passa allo stream successivo solo dopo 2 minuti senza dati. Se il torrent si ferma (per esempio lo spazio è finito), il player dice perché.
+- **Ordine**: a parità di qualità, il player prova prima i link diretti, poi i torrent con più seeder. La lista degli stream mostra i seeder sulla seconda riga.
+- **Cache**: quello che si scarica per la riproduzione resta in una cache, cancellata quando chiudi il film. Un film più grande della cache, o dello spazio libero, si scarica solo intorno al punto che stai guardando.
+- **Invio**: il TV non fa seeding. Invia al massimo 10 KB/s, e solo mentre scarica.
 - **Scarica**: il pulsante **Scarica** accetta anche gli stream torrent. Il motore scarica il file intero nella cartella dei download, con una sua notifica. Il file scaricato si riproduce e si condivide come gli altri.
 
 | Voce | Predefinito | Cosa fa |
 |---|---|---|
-| **Versione** | | La versione installata. **Aggiorna il motore** compare quando questa versione di Zephyr TV ne ha una più nuova |
-| **Dimensione della cache** | 2 GB | 1, 2, 4 o 8 GB |
-| **Tieni la cache dopo la riproduzione** | Spento | Acceso: la cache resta (fino alla sua dimensione), e un film rivisto riparte prima |
-| **Condividi i download finiti** | Spento | Acceso: i download finiti restano condivisi con gli altri (seeding), finché il motore è attivo |
+| **Stato** | | Rosso: il motore non risponde, e la riga dice perché. Giallo: si collega alla rete. Verde: collegato |
+| **Versione** | | La versione installata. **Aggiorna il motore** compare quando questa versione di Zephyr TV ne ha una più nuova: la prima pressione dice la versione, la seconda installa |
+| **Dimensione della cache** | 4 GB | 1, 2, 4, 8 o 16 GB |
+| **Cache occupata** | | Quanto occupa la cache, e lo spazio libero. **Svuota la cache** la cancella (tranne il film in riproduzione) |
+| **Tieni i torrent guardati** | Spento | Acceso: il torrent che guardi si scarica per intero nella cartella dei download, e compare nei **Download** |
 | **Disinstalla** | | Rimuove il motore |
 
 Con i torrent, gli altri peer vedono l'indirizzo del TV. **WARP** ([capitolo 12](#nascondere-il-tuo-ip)) lo nasconde: anche il motore passa da WARP (se installi il motore con WARP già attivo, spegni e riaccendi WARP). La responsabilità di cosa riproduci e scarichi è tua.
 
 ## 10. Cataloghi dei contenuti
 
-**Impostazioni → Contenuti → Catalogo contenuti** è una lista ordinata di cataloghi.
+**Impostazioni → Film e serie → Catalogo contenuti** è una lista ordinata di cataloghi.
 
 - **Il primo è il principale.** Dà dettagli, descrizioni, immagini e ricerca dei titoli. Se non conosce un titolo, Zephyr TV chiede ai cataloghi successivi.
 - **Gli altri** aggiungono le loro righe a Film e Serie TV, nell'ordine della lista. Le copertine dei titoli che il principale conosce sono le sue, anche nelle righe degli add-on e nei risultati della ricerca: un titolo appare uguale ovunque.

@@ -81,9 +81,18 @@ class EngineProvider : ContentProvider() {
                         out.putLong("done", p.done())
                         out.putLong("ahead", p.ahead())
                     }
+                    // What stops it, when something does: the drive full, or a file libtorrent can't write.
+                    Engine.problem(p)?.let { out.putString("problem", it) }
                 }
             }
             "stop" -> Engine.stopPlay(arg)
+            // The streams' cache: what it takes and what's free on its drive; "clear_cache" empties it first.
+            "cache", "clear_cache" -> {
+                if (method == "clear_cache") Engine.clearCache()
+                val (used, free) = Engine.cacheUse()
+                out.putLong("used", used)
+                out.putLong("free", free)
+            }
             // Whether the engine is on the network: the DHT nodes it knows (starting its session, the first time).
             "health" -> out.putLong("nodes", Engine.dhtNodes())
             "download" -> {

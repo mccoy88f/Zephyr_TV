@@ -421,8 +421,10 @@ class PlayerActivity : Activity() {
         }
         lines = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            addView(source)
-            addView(trackRow)
+            // As wide as the banner: a line measured again to its text's width (a sibling's text changed, each second)
+            // would start its scroll over.
+            addView(source, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+            addView(trackRow, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
             addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
                 if (bottom - top != oldBottom - oldTop) buttons.post { sizeButtons() }
             }
@@ -602,20 +604,20 @@ class PlayerActivity : Activity() {
         val progress: Int?
         when {
             meta?.description != null -> {
-                onNow.text = meta.now ?: c.now ?: ""
-                more.text = meta.description
+                setIfChanged(onNow, meta.now ?: c.now ?: "")
+                setIfChanged(more, meta.description.orEmpty())
                 progress = Stremio.progress(meta.description)
             }
             epg != null -> {
                 val (now, next) = epg
-                onNow.text = "${now.title}  ·  ${time.format(java.util.Date(now.start))} – ${time.format(java.util.Date(now.stop))}"
-                more.text = listOfNotNull(now.desc.takeIf { it.isNotBlank() },
-                    next?.let { getString(R.string.channel_next, time.format(java.util.Date(it.start)), it.title) }).joinToString("\n")
+                setIfChanged(onNow, "${now.title}  ·  ${time.format(java.util.Date(now.start))} – ${time.format(java.util.Date(now.stop))}")
+                setIfChanged(more, listOfNotNull(now.desc.takeIf { it.isNotBlank() },
+                    next?.let { getString(R.string.channel_next, time.format(java.util.Date(it.start)), it.title) }).joinToString("\n"))
                 progress = Epg.progress(now)
             }
             else -> {
-                onNow.text = meta?.now ?: c.now ?: ""
-                more.text = ""
+                setIfChanged(onNow, meta?.now ?: c.now ?: "")
+                setIfChanged(more, "")
                 progress = null
             }
         }
@@ -652,7 +654,7 @@ class PlayerActivity : Activity() {
         val duration = p?.duration?.takeIf { it > 0 && it != C.TIME_UNSET }
         val pos = p?.let { if (hardSeekTo >= 0) hardSeekTo else it.currentPosition } ?: 0
         onNow.text = listOfNotNull(c.now, duration?.let { "${clock(pos)} / ${clock(it)}" }).joinToString("  ·  ")
-        more.text = descs.getOrNull(channels.indexOf(c)).orEmpty()
+        setIfChanged(more, descs.getOrNull(channels.indexOf(c)).orEmpty())
         onNow.visibility = if (onNow.text.isNullOrEmpty()) View.GONE else View.VISIBLE
         more.visibility = if (expanded && !more.text.isNullOrEmpty()) View.VISIBLE else View.GONE
         bar.visibility = if (duration == null) View.GONE else View.VISIBLE
@@ -1267,7 +1269,12 @@ class PlayerActivity : Activity() {
     /** The torrent's peers and speed after the tracks (see torrentTick); the line without them when it isn't one. */
     private fun fillTorrentInfo(i: Int) {
         val line = torrentLine?.takeIf { torrent != null && i == at }
-        torrentInfo.text = line?.let { if (trackLine.visibility == View.VISIBLE) "  ·  $it" else it }.orEmpty()
+        val text = line?.let { if (trackLine.visibility == View.VISIBLE) "  ·  $it" else it }.orEmpty()
+        setIfChanged(torrentInfo, text)
+        // Only ever wider: the tracks beside it keep their width, and their scroll, as the speed changes.
+        val w = torrentInfo.paint.measureText(text).toInt() + torrentInfo.paddingLeft + torrentInfo.paddingRight
+        if (w > torrentInfo.minWidth) torrentInfo.minWidth = w
+        if (line == null) torrentInfo.minWidth = 0
         torrentInfo.visibility = if (line != null) View.VISIBLE else View.GONE
         trackRow.visibility = if (line != null || trackLine.visibility == View.VISIBLE) View.VISIBLE else View.GONE
     }
@@ -2249,6 +2256,7 @@ class PlayerActivity : Activity() {
         val tuning = tune
         val n = tried
         torrentIo.execute {
+            runCatching { keepAsDownload(s) }.onFailure { warn("torrent not kept: $it") }
             var said: String? = null
             val session = Torrents.start(this, s.url) { said = it }
             ui.post {
@@ -2267,6 +2275,27 @@ class PlayerActivity : Activity() {
                 start(Stremio.Stream(session.url, s.title, emptyMap(), s.group, s.source, s.langRank, subtitles = s.subtitles), null)
             }
         }
+    }
+
+    /**
+     * Torrent engine → Keep the torrents watched: the torrent played handed to the engine as a download of its own,
+     * whole, into the download folder, and listed in Downloads. The stream then plays from that download (see
+     * Engine.start), which goes on once the player closes. Off the main thread. Not for adult content (no history).
+     */
+    private fun keepAsDownload(s: Stremio.Stream) {
+        if (adult) return
+        val c = channels.getOrNull(at) ?: return
+        if (Torrents.settings(this)?.getBoolean("keep_cache") != true) return
+        val known = Downloads.all(filesDir)[c.id]
+        if (known != null && !known.torrent) return // downloaded already as a file of its own
+        // As Download does: Android 9 and older ask before an app saves into the shared folders, else the app's own.
+        var folder = prefs.getString(K.DOWNLOAD_FOLDER, "app") ?: "app"
+        if (android.os.Build.VERSION.SDK_INT < 29 && (folder == "downloads" || folder == "movies") &&
+            checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != android.content.pm.PackageManager.PERMISSION_GRANTED) folder = "app"
+        if (!Torrents.download(this, c.id, s.url, c.name, folder)) return
+        if (known == null) Downloads.put(filesDir, Downloads.Entry(c.id, 0, c.name, "${c.name}.mkv",
+            intent.getStringExtra(META_ID).orEmpty(), intent.getStringExtra(META_TYPE).orEmpty(), c.name,
+            intent.getStringExtra(POSTER), null, intent.getStringExtra(TITLE_LOGO), s.source, torrent = true))
     }
 
     /** The torrent playing (or starting) let go of in the engine: its pieces stop coming, its cache goes. */
@@ -2299,8 +2328,15 @@ class PlayerActivity : Activity() {
         val root = surface.parent as View
         val ratio = size.width * size.pixelWidthHeightRatio / size.height
         val wider = root.width.toFloat() / root.height > ratio
-        // Fitting: all of the picture, with bars; zoomed (pinch): all of the screen, the picture cut at its edges.
-        val (w, h) = if (wider != zoomed) (root.height * ratio).toInt() to root.height else root.width to (root.width / ratio).toInt()
+        // The shape chosen in Settings (see aspectMode). Fitting: all of the picture, with bars; filling, or zoomed
+        // (pinch): all of the screen, the picture cut at its edges; stretched: all of the screen, the picture reshaped.
+        val mode = aspectMode(prefs)
+        val fill = zoomed != (mode == "zoom")
+        val (w, h) = when {
+            mode == "stretch" && !zoomed -> root.width to root.height
+            wider != fill -> (root.height * ratio).toInt() to root.height
+            else -> root.width to (root.width / ratio).toInt()
+        }
         surface.layoutParams = (surface.layoutParams as FrameLayout.LayoutParams).apply { width = w; height = h }
         // Placed over the picture, but never past the screen's edges, where they'd be cut.
         subtitles.layoutParams = (subtitles.layoutParams as FrameLayout.LayoutParams).apply { width = minOf(w, root.width); height = minOf(h, root.height) }

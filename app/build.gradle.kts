@@ -15,8 +15,8 @@ android {
         minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         targetSdk = 36
-        versionCode = 134
-        versionName = "4.3.0-beta.6"
+        versionCode = 135
+        versionName = "4.3.0-beta.7"
         // What's new: only this version's section of CHANGELOG.md ships, one entry per line, without ** marks.
         val notes = rootProject.file("CHANGELOG.md").readText().replace("\r", "")
             .substringAfter("\n## $versionName\n", "").substringBefore("\n## ")
@@ -27,6 +27,7 @@ android {
         resValue("string", "whats_new", notes.joinToString("\\n") { it.replace("'", "\\'").replace("\"", "\\\"") })
         // The torrent engine (torrent/) this version carries in its release: an older one installed is offered the update.
         resValue("integer", "torrent_version_code", providers.gradleProperty("torrentVersionCode").get())
+        resValue("string", "torrent_version_name", providers.gradleProperty("torrentVersionName").get())
     }
 
     buildFeatures {

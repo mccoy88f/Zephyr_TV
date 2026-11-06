@@ -353,10 +353,10 @@ internal fun MainActivity.remoteHasPin(tell: Boolean = false): Boolean {
 internal fun rowsAfterRemote(remoteOn: Boolean) = if (remoteOn) 2 else 1
 
 internal fun MainActivity.remoteShowRow() = SettingsRows.REMOTE_ROW + 1
-internal fun MainActivity.backupRow() = SettingsRows.REMOTE_ROW + rowsAfterRemote(remoteOn())
-internal fun MainActivity.problemsRow() = backupRow() + 1
-internal fun MainActivity.guideRow() = backupRow() + 2
-internal fun MainActivity.aboutRow() = backupRow() + 3
+internal fun MainActivity.backupRow() = SettingsRows.BACKUP_ROW
+internal fun MainActivity.problemsRow() = SettingsRows.PROBLEMS_ROW
+internal fun MainActivity.guideRow() = SettingsRows.GUIDE_ROW
+internal fun MainActivity.aboutRow() = SettingsRows.ABOUT_ROW
 
 /** What the phone asks for: the one PIN (see Pins). */
 private fun MainActivity.remotePinPrompt() = getString(R.string.remote_pin_enter)
@@ -548,7 +548,8 @@ internal fun remoteRowJson(label: String, value: String, on: String, off: String
         MainActivity.TOGGLE_ON -> row.put("type", "switch").put("on", true).put("value", on)
         MainActivity.TOGGLE_OFF -> row.put("type", "switch").put("on", false).put("value", off)
         MainActivity.SUBMENU -> row.put("type", "page").put("value", "")
-        else -> row.put("type", if (value.isEmpty()) "page" else "value").put("value", value)
+        else -> choiceName(value)?.let { row.put("type", "page").put("value", it) }
+            ?: row.put("type", if (value.isEmpty()) "page" else "value").put("value", value)
     }
 }
 

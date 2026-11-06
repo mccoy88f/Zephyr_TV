@@ -255,6 +255,10 @@ internal object Torrents {
 
     /** "12 peers · 2.4 MB/s" (and, playing, how much is ready ahead), from the engine's status. */
     fun statusLine(c: Context, b: Bundle): String {
+        // Stopped by something the engine tells (the drive full, a file it can't write): that, rather than 0 KB/s.
+        b.getString("problem")?.let { p ->
+            return c.getString(R.string.torrent_stalled, if (p == "no_space") c.getString(R.string.torrent_problem_no_space) else p)
+        }
         val speed = speedName(b.getInt("down").toLong())
         val line = c.getString(R.string.torrent_status, b.getInt("peers"), speed)
         val ahead = b.getLong("ahead")

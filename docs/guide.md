@@ -44,7 +44,7 @@ On its first start, Zephyr TV asks two things:
    - **Cinemeta**: Stremio's free library, in English (TMDB can translate it, see [Spotlight](#16-spotlight)).
 2. **Home button**: a guided setup makes the remote's Home button open Zephyr TV. Follow the steps on the screen.
 
-You can change both later: the catalog in **Settings → Content → Content catalog**, the Home button in **Settings → System → Set up Home button**.
+You can change both later: the catalog in **Settings → Films and series → Content catalog**, the Home button in **Settings → System → Set up Home button**.
 
 > [!TIP]
 > On Android 13 and later, if the Home button switch is greyed out, follow the ADB step that Zephyr TV offers. The [README](../README.md#home-button-on-android-13-and-newer) explains how.
@@ -88,7 +88,7 @@ Zephyr TV's **virtual apps** (TV, Films, TV Series, Adult Content, or one app pe
 
 The first tile of Favourites shows:
 
-- **What's playing**: what plays in another app (music, video), with its cover and progress. It needs to be allowed once: **Settings → Content → Show what's playing** explains how.
+- **What's playing**: what plays in another app (music, video), with its cover and progress. It needs to be allowed once: **Settings → Home screen → Continue Playing → Show what's playing** explains how.
 - **Continue Playing**: films and series you left halfway, from the apps that publish them and from Zephyr TV's player, with the next episode of a series.
 
 | Row | What it's for |
@@ -135,7 +135,7 @@ The banner has the **Previous episode**, **Play/Pause**, **Next episode**, **Aud
 
 ## 9. Choosing streams: quality, language, quick start
 
-**Settings → Content**:
+**Settings → Films and series → Streams** (the first five rows) and **→ Playback** (subtitles, frame rate, picture shape). **Hide films not out yet** is in **Films and series**. A row with several values shows its value with an arrow: OK opens the list with ✓ on the one in use, ◀ ▶ change it there.
 
 | Row | Default | What it does |
 |---|---|---|
@@ -158,7 +158,7 @@ How **quality** and **language** are recognised:
 
 ### Torrents
 
-Some add-ons give torrent streams instead of direct links. To play and download them you need **Zephyr Torrent**, the torrent engine: an app of its own, installed from **Settings → Content → Torrent engine** (about 12 MB). Without the engine, torrent streams don't show, and the list of streams says how many are missing.
+Some add-ons give torrent streams instead of direct links. To play and download them you need **Zephyr Torrent**, the torrent engine: an app of its own, installed from **Settings → Films and series → Torrent engine** (about 12 MB). Without the engine, torrent streams don't show, and the list of streams says how many are missing.
 
 - **Playing**: the engine looks for peers (up to a minute), then the film starts while it downloads. While it loads, the peers, the speed and how much is ready show under the name; in the banner, next to the stream. When a torrent has no peers, the player goes on to the next stream. At the same quality, the player tries direct links first: they start sooner.
 - **Cache**: what downloads for playing stays in a cache, deleted when you close the film. A film larger than the cache downloads only around the part you watch.
@@ -167,16 +167,16 @@ Some add-ons give torrent streams instead of direct links. To play and download 
 | Setting | Default | What it does |
 |---|---|---|
 | **Version** | | The version installed. **Update the engine** shows when this version of Zephyr TV has a newer one |
-| **Cache size** | 2 GB | 1, 2, 4 or 8 GB |
-| **Keep the cache after playing** | Off | On: the cache stays (up to its size), and a film watched again starts sooner |
-| **Share finished downloads** | Off | On: finished downloads stay shared with others (seeding), while the engine runs |
+| **Cache size** | 4 GB | 1, 2, 4, 8 or 16 GB. **Cache in use** shows what it takes and the free space; **Empty the cache** deletes it (but the film playing) |
+| **Keep the torrents watched** | Off | On: the torrent you watch downloads whole into the download folder, and shows in **Downloads** |
+| **Sending** | | The TV doesn't seed. It sends at most 10 KB/s, and only while it downloads |
 | **Uninstall** | | Removes the engine |
 
 With torrents, the other peers see the TV's address. **WARP** ([chapter 12](#hiding-your-ip)) hides it: the engine goes through WARP too (if you install the engine with WARP already on, turn WARP off and on again). What you play and download is your responsibility.
 
 ## 10. Content catalogs
 
-**Settings → Content → Content catalog** is an ordered list of catalogs.
+**Settings → Films and series → Content catalog** is an ordered list of catalogs.
 
 - **The first is the main one.** It gives the titles' details, descriptions, pictures and search. When it doesn't know a title, Zephyr TV asks the next catalogs.
 - **The others** add their rows to Films and TV Series, in the list's order. The cards of titles the main one knows have its pictures, in the add-ons' rows and the search results too: a title looks the same everywhere.
