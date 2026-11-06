@@ -13,6 +13,27 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.5.0
+
+- Zephyr TV plays torrent streams from add-ons. It needs **Zephyr Torrent**, the torrent engine. Install it in **Settings → Films and series → Torrent engine**.
+- Zephyr Torrent is a separate app of about 12 MB. Zephyr TV installs it, updates it and uninstalls it.
+- Zephyr TV starts the engine when it opens, and when a title has torrent streams.
+- **Torrent engine** shows a **Status** row: red, yellow or green. When the engine does not answer, the row tells why.
+- The list of streams shows the seeders of a torrent stream. At the same quality, the torrent with the most seeders is at the top of the torrents.
+- While the engine downloads, the player waits for the torrent. The banner shows the peers and the speed on the audio and subtitles line.
+- If a torrent stops, for example because the device is full, the player tells you.
+- The torrent cache is 4 GB by default. **Torrent engine** shows the space it uses, and **Empty the cache** deletes it.
+- **Keep the torrents watched** downloads the torrent you watch into the download folder. It then shows in **Downloads**.
+- **Download** also takes torrent streams. The row shows the percent, the peers and the speed.
+- The engine does not seed. It sends only while it downloads, up to the **Upload limit** (10 KB/s by default).
+- The settings have new sections: **Home screen**, **Look**, **Films and series**, **TV & EPG**, **Extra features**, **Account and privacy** and **System**.
+- A row with more than two values shows its value with an arrow. Select it to see all the values. On the remote, ◀ ▶ change the value on the row.
+- Some rows show a short help text under their name. When you touch a switch, the page stays where it was.
+- **Films and series → Playback → Picture shape** sets how the player fills the screen: **Fit**, **Fill** or **Stretch**.
+- **Update** on an add-on, a plugin, an extension or the torrent engine first shows the version that is available. Select it again to update.
+- Long lines in the player and in **Downloads** scroll without starting again. The **Downloads** window does not get wider for a long name.
+- Zephyr TV does not stop any more when a title has many streams.
+
 ## 4.3.0-beta.10
 
 - In **Downloads**, a long name scrolls always, also on a touch screen and on a TV with its animations turned off.
