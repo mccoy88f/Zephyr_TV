@@ -13,6 +13,14 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.6.0
+
+- **Send to** in the player sends the film or episode to another device of your Zephyr TV account. The other device plays it from the same point.
+- The list shows the devices of the account that have Zephyr TV open. Select one: the film pauses here.
+- The other device shows what comes, from which device, for 5 seconds. Select **Watch now** to start at once, or **Cancel**. If you do nothing, it starts.
+- It plays the same stream. If that stream does not play there, the device looks for the other streams. A downloaded file is not sent: the other device uses the streams.
+- **Send to** shows only when the device is linked to a Zephyr TV account.
+
 ## 4.5.2
 
 - In **Pick a stream**, the group of your **Preferred quality** is open at first. If there is no stream in that quality, the best quality below it opens.

@@ -951,4 +951,13 @@
     <string name="torrent_upload">上传限制</string>
     <string name="torrent_upload_none">无限制</string>
     <string name="hint_torrent_upload">设备仅在下载时向其他用户发送的数据量。更高的上传可能让种子更快。</string>
+    <string name="player_send_to">发送到</string>
+    <string name="send_finding">正在查找你的设备…</string>
+    <string name="send_none">你的 Zephyr TV 账户中没有其他已开启的设备。请在另一台设备上打开 Zephyr TV。</string>
+    <string name="send_failed">发送失败，请检查网络连接。</string>
+    <string name="send_sent">已发送到 %1$s</string>
+    <string name="handoff_title">来自 %1$s</string>
+    <string name="handoff_device">另一台设备</string>
+    <string name="handoff_from">从 %1$s 开始</string>
+    <string name="handoff_watch">立即观看（%1$d）</string>
 </resources>

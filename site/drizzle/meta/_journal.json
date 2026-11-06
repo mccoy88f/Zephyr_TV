@@ -50,6 +50,13 @@
       "when": 1793867684910,
       "tag": "0006_catalog_official",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793995048851,
+      "tag": "0007_handoffs",
+      "breakpoints": true
     }
   ]
 }

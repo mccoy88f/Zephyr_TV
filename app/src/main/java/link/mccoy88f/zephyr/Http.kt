@@ -52,8 +52,9 @@ internal object Http {
      * Sends [body] (JSON) to [url] with [method] (POST, or DELETE without a body); the answer's status and body,
      * whatever the status (an API telling "not yet" or "not found" by it). Throws on a network error only.
      */
-    fun send(url: String, body: JSONObject?, headers: Map<String, String> = emptyMap(), method: String = "POST"): Pair<Int, String> {
-        val c = connect(url, headers + ("Accept" to "application/json") + ("Content-Type" to "application/json"))
+    fun send(url: String, body: JSONObject?, headers: Map<String, String> = emptyMap(), method: String = "POST",
+             timeout: Int = TIMEOUT_MS): Pair<Int, String> {
+        val c = connect(url, headers + ("Accept" to "application/json") + ("Content-Type" to "application/json"), timeout)
         c.requestMethod = method
         if (body != null) {
             c.doOutput = true

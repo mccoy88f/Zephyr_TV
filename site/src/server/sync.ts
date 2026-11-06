@@ -21,7 +21,7 @@ export async function validKey(accountId: string, key: string) {
 // Encrypted at rest when SYNC_KEY is set (AES-256-GCM): a copy of the database alone doesn't tell what's in them.
 const secret = () => (process.env.SYNC_KEY ? createHash("sha256").update(process.env.SYNC_KEY).digest() : null);
 
-function seal(text: string) {
+export function seal(text: string) {
   const key = secret();
   if (!key) return text;
   const iv = randomBytes(12);
@@ -30,7 +30,7 @@ function seal(text: string) {
   return `v1:${Buffer.concat([iv, c.getAuthTag(), body]).toString("base64")}`;
 }
 
-function open(stored: string): string | null {
+export function open(stored: string): string | null {
   if (!stored.startsWith("v1:")) return stored;
   const key = secret();
   if (!key) return null;

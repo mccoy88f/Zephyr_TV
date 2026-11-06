@@ -955,4 +955,13 @@
     <string name="torrent_upload">Upload limit</string>
     <string name="torrent_upload_none">No limit</string>
     <string name="hint_torrent_upload">What the device sends to other peers, only while it downloads. More upload can make a torrent faster.</string>
+    <string name="player_send_to">Send to</string>
+    <string name="send_finding">Looking for your devices…</string>
+    <string name="send_none">No other device of your Zephyr TV account is on. Open Zephyr TV on the other device.</string>
+    <string name="send_failed">Couldn\'t send it. Check the connection.</string>
+    <string name="send_sent">Sent to %1$s</string>
+    <string name="handoff_title">From %1$s</string>
+    <string name="handoff_device">another device</string>
+    <string name="handoff_from">From %1$s</string>
+    <string name="handoff_watch">Watch now (%1$d)</string>
 </resources>

@@ -108,6 +108,7 @@ class PlayerActivity : Activity() {
     private var frameRateFor: String? = null // the stream the screen's refresh rate was matched to (see matchFrameRate)
     private val badSubs = HashSet<String>() // subtitle files that couldn't be had: left out (see onPlayerError)
     private var descs: List<String> = emptyList() // what each film or episode is about (OK on the banner shows it)
+    private var startAt = -1L // START_AT: where the first one starts, once (see play)
     private var pendingSeek = -1L // where the stream starts once it's ready: resumed, or where a failed one stopped
     private var group: String? = null // the bingeGroup of the stream playing: the next episode's like it first
     private var seeking = false // the banner came up for a seek: Left/Right go on seeking, not to its buttons
@@ -284,6 +285,7 @@ class PlayerActivity : Activity() {
         Torrents.refresh(this) // torrent streams, with the engine installed
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         vod = intent.getStringExtra(MODE) == MODE_VOD
+        startAt = intent.getLongExtra(START_AT, -1L)
         base = intent.getStringExtra(BASE) ?: if (vod) "" else return finish()
         addon = intent.getStringExtra(ADDON).orEmpty()
         adult = intent.getBooleanExtra(ADULT, false)
@@ -1300,6 +1302,8 @@ class PlayerActivity : Activity() {
             if (tracks(C.TRACK_TYPE_AUDIO).size > 1) Triple(R.drawable.ic_audio, R.string.player_audio) { openTracks(C.TRACK_TYPE_AUDIO) } else null,
             if (tracks(C.TRACK_TYPE_TEXT).isNotEmpty()) Triple(R.drawable.ic_subtitles, R.string.player_subtitles) { openTracks(C.TRACK_TYPE_TEXT) } else null,
             if (streams.size > 1) Triple(R.drawable.ic_stream, R.string.player_streams) { openStreams() } else null,
+            // Send to: a film or episode to another device of the Zephyr TV account (see Handoff), when linked.
+            if (vod && !isAdult() && Handoff.token(this) != null) Triple(R.drawable.ic_send_to, R.string.player_send_to) { openSendTo() } else null,
             if (handheld) Triple(R.drawable.ic_lock, R.string.player_lock) { lockControls() } else null,
         )
         val now = (0 until buttons.childCount).map { buttons.getChildAt(it).tag }
@@ -1534,6 +1538,47 @@ class PlayerActivity : Activity() {
         (focus ?: (0 until tracksList.childCount).map { tracksList.getChildAt(it) }.firstOrNull { it.isFocusable })?.requestFocus()
     }
 
+    /**
+     * Send to: the account's other devices that are on, asked of the site; the one picked gets the film or episode,
+     * its stream and where it got to, and plays it (after five seconds to cancel, see offerHandoff); this one pauses.
+     */
+    private fun openSendTo() {
+        val token = Handoff.token(this) ?: return
+        val title = getString(R.string.player_send_to)
+        openPanel(title) { row -> row(getString(R.string.send_finding), false, 1) { } }
+        Thread {
+            val list = runCatching { Handoff.devices(token) }.getOrNull()
+            ui.post {
+                if (isFinishing || tracksPanel.visibility != View.VISIBLE || tracksTitle.text.toString() != title) return@post
+                val others = list?.filter { !it.me && it.online }.orEmpty()
+                openPanel(title) { row ->
+                    when {
+                        list == null -> row(getString(R.string.send_failed), false, 2) { }
+                        others.isEmpty() -> row(getString(R.string.send_none), false, 3) { }
+                    }
+                    others.forEach { d -> row(listOfNotNull(d.name, d.model).joinToString(" · "), false, 1) { sendTo(token, d) } }
+                }
+            }
+        }.start()
+    }
+
+    /** The film or episode playing, from where it is, to [d]: paused here once the site has it. */
+    private fun sendTo(token: String, d: Handoff.Device) {
+        val c = channels.getOrNull(at) ?: return
+        // Its stream, when another device can play it too (an address, a torrent): not a downloaded file of this one's.
+        val s = streams.getOrNull(tried)?.takeIf { it.url.startsWith("http") || Torrents.isTorrent(it.url) }
+        val what = Handoff.What(intent.getStringExtra(META_TYPE) ?: c.type, intent.getStringExtra(META_ID) ?: c.id, c.id, c.name,
+            intent.getStringExtra(POSTER), s?.let { streamJson(it).toString() }, player?.currentPosition ?: 0L)
+        Thread {
+            val ok = Handoff.send(token, d.id, what)
+            ui.post {
+                android.widget.Toast.makeText(this, if (ok) getString(R.string.send_sent, d.name) else getString(R.string.send_failed),
+                    android.widget.Toast.LENGTH_LONG).show()
+                if (ok) setPlaying(false)
+            }
+        }.start()
+    }
+
     private fun closeTracks() {
         counting = false // Back on the countdown, or a row picked: the episode isn't started by it
         ui.removeCallbacks(countTick)
@@ -1700,6 +1745,8 @@ class PlayerActivity : Activity() {
         release()
         stopTorrent()
         pendingSeek = if (vod && !isAdult()) VodProgress.position(userDir, c.id) ?: -1L else -1L
+        // Sent from another device: from where it got to there, the first time only.
+        if (vod && startAt > 0) pendingSeek = startAt.also { startAt = -1L }
         askSubtitles(c)
         // A film's or episode's: its streams looked for, then checked, then each tried ("stream 1 of 5").
         // Or found ahead by the launcher (see StreamCache.warm): every source's.
@@ -2433,6 +2480,7 @@ class PlayerActivity : Activity() {
         const val CHOSEN = "chosen" // a film's or episode's stream picked by hand, as streamJson writes it
         const val LOCAL_IDS = "local_ids" // downloaded films and episodes (see Downloads), with LOCAL_STREAMS: their files
         const val LOCAL_STREAMS = "local_streams" // as streamJson writes them, in LOCAL_IDS' order
+        const val START_AT = "start_at" // ms: where the first film or episode starts, sent from another device (see Handoff)
         const val CHOSEN_ELSE_SEARCH = "chosen_else_search" // the chosen one is the one kept to resume with: if it fails, search
 
         /** [s] for an Intent: its address, name, headers, source, ClearKey keys and the app that opens it. */

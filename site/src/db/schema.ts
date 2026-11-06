@@ -183,3 +183,20 @@ export const syncDocs = pgTable(
   (t) => [primaryKey({ columns: [t.accountId, t.key] })],
 );
 
+
+/**
+ * "Send to": what one of the account's devices hands another to play on (the title, the stream, where it got to), as
+ * the app writes it (sealed like the synced documents). Kept until the device it's for takes it, two minutes at most.
+ */
+export const handoffs = pgTable(
+  "handoffs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    accountId: uuid("account_id").notNull().references(() => accounts.id, { onDelete: "cascade" }),
+    fromDevice: uuid("from_device").references(() => devices.id, { onDelete: "set null" }),
+    toDevice: uuid("to_device").notNull().references(() => devices.id, { onDelete: "cascade" }),
+    data: text("data").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("handoffs_to").on(t.toDevice)],
+);

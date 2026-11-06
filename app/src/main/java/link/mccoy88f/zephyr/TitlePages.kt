@@ -1019,7 +1019,7 @@ internal fun MainActivity.showRowLogos(title: String, logos: Map<Int, String?>, 
  * address. The player shows the series' name, and the episode's season, number and name under it.
  */
 internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, episode: Stremio.Episode?, only: String? = null,
-                                    chosen: Stremio.Stream? = null, resumeWith: String? = null) {
+                                    chosen: Stremio.Stream? = null, resumeWith: String? = null, startAt: Long = -1L) {
     val t = meta?.title
     val name = t?.name ?: ref.name
     val poster = ref.poster ?: t?.poster
@@ -1049,6 +1049,7 @@ internal fun MainActivity.playTitle(ref: TitleRef, meta: Stremio.TitleMeta?, epi
         startActivity(Intent(this, PlayerActivity::class.java)
             .putExtra(PlayerActivity.MODE, PlayerActivity.MODE_VOD)
             .putExtra(PlayerActivity.INDEX, start)
+            .putExtra(PlayerActivity.START_AT, startAt) // sent from another device (see playSent): from where it got to
             .apply { chosen?.let { putExtra(PlayerActivity.CHOSEN, PlayerActivity.streamJson(it).toString()) } }
             // Resumed: the stream it played, kept with its progress; a search only if it no longer plays.
             .apply { if (chosen == null && resumeWith != null && items[start].first !in locals) putExtra(PlayerActivity.CHOSEN, resumeWith).putExtra(PlayerActivity.CHOSEN_ELSE_SEARCH, true) }
@@ -1229,6 +1230,23 @@ private const val EPISODES_BEFORE = 100
 private const val EPISODES_AFTER = 300
 
 /** OK on a Continue Playing card of a film or episode: it goes on (a series with its episodes around it). */
+/**
+ * A film or episode another device sent (see offerHandoff): its page's details asked of the add-ons, then played with
+ * the stream it played there (others when that one no longer plays here), from where it got to.
+ */
+internal fun MainActivity.playSent(w: Handoff.What) {
+    val ref = TitleRef(w.type, w.meta, w.name.ifBlank { w.meta }, w.poster, null)
+    toast(R.string.player_loading, long = false)
+    netIo.execute {
+        val meta = titleMeta(ref)
+        ui.post {
+            val episode = meta?.episodes?.firstOrNull { it.id == w.video }
+            if (w.type == "series" && episode == null) return@post toast(R.string.title_no_page)
+            playTitle(ref, meta, episode, resumeWith = w.stream, startAt = w.position)
+        }
+    }
+}
+
 private fun MainActivity.resumeTitle(ref: TitleRef) {
     netIo.execute {
         val meta = titleMeta(ref)

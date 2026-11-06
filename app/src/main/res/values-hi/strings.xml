@@ -955,4 +955,13 @@
     <string name="torrent_upload">अपलोड सीमा</string>
     <string name="torrent_upload_none">कोई सीमा नहीं</string>
     <string name="hint_torrent_upload">डिवाइस अन्य पीयर को क्या भेजता है, केवल डाउनलोड के समय। अधिक अपलोड टॉरेंट को तेज़ कर सकता है।</string>
+    <string name="player_send_to">इस पर भेजें</string>
+    <string name="send_finding">आपके डिवाइस खोजे जा रहे हैं…</string>
+    <string name="send_none">आपके Zephyr TV खाते का कोई और डिवाइस चालू नहीं है। दूसरे डिवाइस पर Zephyr TV खोलें।</string>
+    <string name="send_failed">भेजा नहीं जा सका। कनेक्शन जाँचें।</string>
+    <string name="send_sent">%1$s पर भेजा गया</string>
+    <string name="handoff_title">%1$s से</string>
+    <string name="handoff_device">दूसरा डिवाइस</string>
+    <string name="handoff_from">%1$s से</string>
+    <string name="handoff_watch">अभी देखें (%1$d)</string>
 </resources>

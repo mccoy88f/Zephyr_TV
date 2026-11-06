@@ -311,6 +311,7 @@ class MainActivity : Activity() {
         Screen.activity = this
         if (shownWidth == 0) shownWidth = resources.displayMetrics.widthPixels
         applyStatusBar()
+        listenForHandoffs() // what the account's other devices send here (see Handoff)
         Torrents.refresh(this) // the torrent engine installed or removed meanwhile
         ensureHomeService()
         homeSetupResumed()
@@ -425,6 +426,7 @@ class MainActivity : Activity() {
     override fun onStop() {
         unlockedUntil = 0L // leaving the home screen locks it again (onPause would also fire for permission dialogs)
         if (homeTest != 0) leftDuringTest = true
+        stopHandoffs() // off screen: nothing sent here can play (see Handoff)
         super.onStop()
     }
 

@@ -959,4 +959,13 @@
     <string name="torrent_upload">Límit de pujada</string>
     <string name="torrent_upload_none">Sense límit</string>
     <string name="hint_torrent_upload">El que el dispositiu envia a altres parells, només mentre baixa. Més pujada pot fer un torrent més ràpid.</string>
+    <string name="player_send_to">Envia a</string>
+    <string name="send_finding">Cercant els teus dispositius…</string>
+    <string name="send_none">Cap altre dispositiu del teu compte de Zephyr TV està encès. Obre Zephyr TV a l\'altre dispositiu.</string>
+    <string name="send_failed">No s\'ha pogut enviar. Comprova la connexió.</string>
+    <string name="send_sent">Enviat a %1$s</string>
+    <string name="handoff_title">Des de %1$s</string>
+    <string name="handoff_device">un altre dispositiu</string>
+    <string name="handoff_from">Des de %1$s</string>
+    <string name="handoff_watch">Mira-ho ara (%1$d)</string>
 </resources>
