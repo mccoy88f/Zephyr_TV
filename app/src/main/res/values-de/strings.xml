@@ -966,4 +966,7 @@
     <string name="handoff_watch">Jetzt ansehen (%1$d)</string>
     <string name="send_not_there">%1$s spielt nur Web-Streams ab: keine Torrents und keine heruntergeladenen Dateien.</string>
     <string name="send_needs_headers">Dieser Stream braucht eigene Header, die %1$s nicht senden kann. Wähle einen anderen Stream.</string>
+    <string name="catalog_tmdb_off">TMDB-Abruf ausschalten</string>
+    <string name="hint_catalog_tmdb_off">Poster, Namen und Beschreibungen dieses Katalogs so, wie das Add-on sie liefert, nicht durch die von TMDB ersetzt. Nur mit eingeschaltetem TMDB.</string>
+    <string name="catalog_tmdb_needs">TMDB ist aus: Gib zuerst den Schlüssel ein und schalte „Mit TMDB ergänzen“ ein.</string>
 </resources>

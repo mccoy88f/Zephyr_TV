@@ -34,7 +34,7 @@ internal fun MainActivity.openTitle(ref: TitleRef, episode: String? = null) {
         listOf(page(getString(R.string.player_loading)) { }), 0, emptyMap()) { closeLauncherSettings() }
     netIo.execute {
         val raw = addonMeta(ref)
-        val known = raw?.let { localizeKnown(it) }
+        val known = raw?.let { localizeKnown(it, ref.source) }
         ui.post {
             if (!pageShowing(ref.name)) return@post // closed meanwhile
             when {
@@ -44,7 +44,7 @@ internal fun MainActivity.openTitle(ref: TitleRef, episode: String? = null) {
             }
         }
         if (raw == null || known == null) return@execute
-        val whole = localizeMeta(raw)
+        val whole = localizeMeta(raw, ref.source)
         if (whole === raw) return@execute // nothing TMDB adds
         wholeMeta[wholeKey(whole.title.id)] = whole
         ui.post {
@@ -58,10 +58,10 @@ internal fun MainActivity.openTitle(ref: TitleRef, episode: String? = null) {
  * [ref]'s page from the add-on it came from, else the first with pages for it; in the TV's language when TMDB has
  * it (see localizeMeta). Network: off the UI thread.
  */
-private fun MainActivity.titleMeta(ref: TitleRef): Stremio.TitleMeta? = addonMeta(ref)?.let { localizeMeta(it) }
+private fun MainActivity.titleMeta(ref: TitleRef): Stremio.TitleMeta? = addonMeta(ref)?.let { localizeMeta(it, ref.source) }
 
 /** Titles' pages in the TV's language as last had whole (see openTitle), by id: a page drawn again keeps them. */
-private val wholeMeta = java.util.concurrent.ConcurrentHashMap<String, Stremio.TitleMeta>()
+internal val wholeMeta = java.util.concurrent.ConcurrentHashMap<String, Stremio.TitleMeta>()
 
 
 /** Its key: in this language, and whether TMDB completes titles (either changed, it's had again). */

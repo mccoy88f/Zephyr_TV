@@ -130,6 +130,7 @@ internal object K {
     const val TMDB_LANG = "tmdb_lang"
     const val TMDB_TYPE = "tmdb_type"
     const val TMDB_DEFAULT_APPS = "tmdb_default_apps"
+    const val TMDB_OFF = "tmdb_off" // catalog sources TMDB doesn't complete: their own posters and names (see tmdbOff)
     const val TMDB_ENRICH = "tmdb_enrich" // Complete with TMDB: catalog titles in the TV's language (see tmdbEnrich)
     const val TMDB_CYCLE = "tmdb_cycle"
     const val TMDB_PROVIDERS = "tmdb_providers"

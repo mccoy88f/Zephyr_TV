@@ -44,9 +44,10 @@ internal fun MainActivity.localizeAll(all: List<Pair<Stremio.Title, String>>): L
     }
     val main = cinemetaUrl()
     val artless = ArrayList<Stremio.Title>()
-    all.forEach { (t, source) -> if (source != main && localize(t) == null) withMainArt(t, artless) }
+    // A catalog with TMDB turned off: its titles as it gives them, not the main catalog's art either.
+    all.forEach { (t, source) -> if (source != main && !tmdbOff(source) && localize(t, source) == null) withMainArt(t, artless) }
     if (artless.isNotEmpty()) mainArtNow(artless, 8)
-    return all.map { (t, source) -> (localize(t) ?: if (source != main) withMainArt(t, ArrayList()) else t) to source }
+    return all.map { (t, source) -> (localize(t, source) ?: if (source != main && !tmdbOff(source)) withMainArt(t, ArrayList()) else t) to source }
 }
 
 /**

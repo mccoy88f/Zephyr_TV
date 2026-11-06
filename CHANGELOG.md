@@ -13,6 +13,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.7.3
+
+- **Films and series → Content catalog →** a catalog **→ Turn off TMDB** shows the posters, names and descriptions of that catalog as the add-on gives them. TMDB does not replace them.
+- The option works only with TMDB on: its key set and **Complete with TMDB** on. Otherwise it is off and tells you why.
+
 ## 4.7.2
 
 - On a phone or tablet, Spotlight stops on its title when you scroll down to the rows. Before, it went on changing the title and the picture behind the rows. Scroll back up and it goes on.

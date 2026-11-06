@@ -966,4 +966,7 @@
     <string name="handoff_watch">Watch now (%1$d)</string>
     <string name="send_not_there">%1$s plays only web streams: not torrents, nor downloaded files.</string>
     <string name="send_needs_headers">This stream needs its own headers, which %1$s can\'t send. Pick another stream.</string>
+    <string name="catalog_tmdb_off">Turn off TMDB</string>
+    <string name="hint_catalog_tmdb_off">This catalog\'s posters, names and descriptions as the add-on gives them, not replaced by TMDB\'s. Only with TMDB on.</string>
+    <string name="catalog_tmdb_needs">TMDB is off: set its key and turn on Complete with TMDB first.</string>
 </resources>

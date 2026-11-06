@@ -146,7 +146,9 @@ internal fun MainActivity.titleSections(pkg: String, hidden: Set<String>): List<
             // In the TV's language when TMDB has the title (those it hasn't been asked about yet: once it's answered);
             // else, in another add-on's row (another catalog source's too), with the main catalog's art (see withMainArt).
             val cards = shelf.titles.map { t ->
-                localize(t) ?: t.also { if (wantsLocal(it)) missing += it.id }.let { if (addon.url != main) withMainArt(it, artless) else it }
+                // TMDB turned off for this catalog: its own art, as it gives it.
+                if (tmdbOff(addon.url)) t
+                else localize(t) ?: t.also { if (wantsLocal(it)) missing += it.id }.let { if (addon.url != main) withMainArt(it, artless) else it }
             }
                 .filter { hideKey(null, it.name) !in hidden }
                 .onEach { if (it.type == "movie" && Releases.askable(it.id) && Releases.known(it.id) == null) unasked += it.id }

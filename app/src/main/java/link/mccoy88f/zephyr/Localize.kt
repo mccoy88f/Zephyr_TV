@@ -68,6 +68,12 @@ internal fun MainActivity.tmdbKey() = prefs.getString(K.TMDB_API_KEY, null)?.tak
  */
 internal fun MainActivity.tmdbEnrich() = prefs.getBoolean(K.TMDB_ENRICH, !cinemetaUrl().startsWith(Stremio.NUVIO_BASE))
 
+/**
+ * Whether TMDB is off for the catalog [source] (Content catalog → a catalog → Turn off TMDB): its titles' posters,
+ * names and what they're about as it gives them, neither TMDB's nor the main catalog's in their place.
+ */
+internal fun MainActivity.tmdbOff(source: String?) = source != null && source in prefs.getStringSet(K.TMDB_OFF, emptySet())!!
+
 /** Whether [t] could be had in the TV's language and TMDB wasn't asked yet. */
 internal fun MainActivity.wantsLocal(t: Stremio.Title): Boolean {
     if (tmdbKey() == null || !t.id.startsWith("tt")) return false
@@ -76,8 +82,8 @@ internal fun MainActivity.wantsLocal(t: Stremio.Title): Boolean {
 }
 
 /** [t] in the TV's language, as TMDB has it (its logo, written in English, left out); null when it isn't known (yet). */
-internal fun MainActivity.localize(t: Stremio.Title): Stremio.Title? {
-    if (tmdbKey() == null || !tmdbEnrich() || !t.id.startsWith("tt")) return null
+internal fun MainActivity.localize(t: Stremio.Title, source: String? = null): Stremio.Title? {
+    if (tmdbKey() == null || !tmdbEnrich() || tmdbOff(source) || !t.id.startsWith("tt")) return null
     Local.use(filesDir, tmdbLang())
     val l = Local.get(t.id) ?: return null
     val same = l.title.equals(t.name, ignoreCase = true)
@@ -113,8 +119,8 @@ internal fun MainActivity.localizeLater(ids: List<String>, pkg: String) {
  * [meta] in the TV's language as far as it's known already (asked of TMDB before): name, art, genres and what it's
  * about, not a series' episodes. No network: for a title's page at once, localizeMeta's whole after.
  */
-internal fun MainActivity.localizeKnown(meta: Stremio.TitleMeta): Stremio.TitleMeta {
-    if (tmdbKey() == null || !tmdbEnrich() || !meta.title.id.startsWith("tt")) return meta
+internal fun MainActivity.localizeKnown(meta: Stremio.TitleMeta, source: String? = null): Stremio.TitleMeta {
+    if (tmdbKey() == null || !tmdbEnrich() || tmdbOff(source) || !meta.title.id.startsWith("tt")) return meta
     Local.use(filesDir, tmdbLang())
     val l = Local.get(meta.title.id) ?: return meta
     return Stremio.TitleMeta(localize(meta.title) ?: meta.title, l.overview.ifBlank { meta.description.orEmpty() }.ifBlank { null },
@@ -126,7 +132,7 @@ internal fun MainActivity.localizeKnown(meta: Stremio.TitleMeta): Stremio.TitleM
  * [meta] in the TV's language when TMDB has it: name, art, genres and what it's about, and a series' episodes
  * (their names, overviews and stills, a season at a time). Network: off the UI thread.
  */
-internal fun MainActivity.localizeMeta(meta: Stremio.TitleMeta): Stremio.TitleMeta {
+internal fun MainActivity.localizeMeta(meta: Stremio.TitleMeta, source: String? = null): Stremio.TitleMeta {
     val key = tmdbKey() ?: return meta
     val t = meta.title
     if (!t.id.startsWith("tt")) return meta
@@ -134,7 +140,7 @@ internal fun MainActivity.localizeMeta(meta: Stremio.TitleMeta): Stremio.TitleMe
     Local.use(filesDir, lang)
     val l = Local.get(t.id) ?: if (Local.asked(t.id)) return meta else
         runCatching { TmdbClient.localized(key, t.id, lang) }.getOrNull().also { Local.put(t.id, it); runCatching { Local.save(filesDir) } } ?: return meta
-    if (!tmdbEnrich()) return meta // its TMDB id known, for its services; the rest as the catalog has it
+    if (!tmdbEnrich() || tmdbOff(source)) return meta // its TMDB id known, for its services; the rest as the catalog has it
     val title = localize(t) ?: t
     val episodes = if (!l.tv || meta.episodes.isEmpty()) meta.episodes else {
         val seasons = meta.episodes.map { it.season }.distinct().take(40)

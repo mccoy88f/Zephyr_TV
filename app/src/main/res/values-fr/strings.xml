@@ -970,4 +970,7 @@
     <string name="handoff_watch">Regarder maintenant (%1$d)</string>
     <string name="send_not_there">%1$s ne lit que les flux web : ni torrents ni fichiers téléchargés.</string>
     <string name="send_needs_headers">Ce flux a besoin d\'en-têtes que %1$s ne peut pas envoyer. Choisissez un autre flux.</string>
+    <string name="catalog_tmdb_off">Désactiver la récupération TMDB</string>
+    <string name="hint_catalog_tmdb_off">Affiches, noms et descriptions de ce catalogue tels que l\'add-on les donne, sans les remplacer par ceux de TMDB. Uniquement avec TMDB activé.</string>
+    <string name="catalog_tmdb_needs">TMDB n\'est pas actif : saisissez d\'abord la clé et activez Compléter avec TMDB.</string>
 </resources>

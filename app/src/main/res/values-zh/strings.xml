@@ -962,4 +962,7 @@
     <string name="handoff_watch">立即观看（%1$d）</string>
     <string name="send_not_there">%1$s 仅播放网络片源：不支持种子和已下载的文件。</string>
     <string name="send_needs_headers">此片源需要 %1$s 无法发送的请求头，请选择其他片源。</string>
+    <string name="catalog_tmdb_off">停用 TMDB 获取</string>
+    <string name="hint_catalog_tmdb_off">此目录的海报、名称和简介按插件提供的显示，不用 TMDB 的替换。仅在 TMDB 开启时可用。</string>
+    <string name="catalog_tmdb_needs">TMDB 未开启：请先填写密钥并开启“用 TMDB 补全”。</string>
 </resources>

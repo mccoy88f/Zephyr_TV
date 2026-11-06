@@ -970,4 +970,7 @@
     <string name="handoff_watch">Guarda ora (%1$d)</string>
     <string name="send_not_there">%1$s riproduce solo stream web: non torrent né file scaricati.</string>
     <string name="send_needs_headers">Questo stream richiede header che %1$s non può inviare. Scegli un altro stream.</string>
+    <string name="catalog_tmdb_off">Disattiva recupero TMDB</string>
+    <string name="hint_catalog_tmdb_off">Locandine, nomi e descrizioni di questo catalogo come li dà l\'addon, senza sostituirli con quelli di TMDB. Solo con TMDB attivo.</string>
+    <string name="catalog_tmdb_needs">TMDB non è attivo: prima inserisci la chiave e attiva Completa con TMDB.</string>
 </resources>
