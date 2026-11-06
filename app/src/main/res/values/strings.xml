@@ -892,4 +892,29 @@
     <string name="title_trailer">Watch trailer</string>
     <string name="trakt_todo_shows">Series to finish</string>
     <string name="trakt_todo_movies">Films to finish</string>
+    <!-- The torrent engine (see Torrents, TorrentSettings) -->
+    <string name="torrent">Torrent</string>
+    <string name="torrent_connecting">Torrent: looking for peers…</string>
+    <string name="torrent_status">%1$d peers · %2$s</string>
+    <string name="torrent_ahead">%1$s ready</string>
+    <string name="setting_torrent_engine">Torrent engine</string>
+    <string name="torrent_not_installed">Not installed</string>
+    <string name="torrent_installing">Installing…</string>
+    <string name="torrent_update_value">%1$s · update available</string>
+    <string name="torrent_intro">Zephyr Torrent plays and downloads the add-ons\' torrent streams. It\'s an app of its own, installed from here. While a torrent plays or downloads, your TV exchanges its pieces with other people\'s devices, and they see your address: WARP hides it (the engine goes through it too). What you play and download is your responsibility.</string>
+    <string name="torrent_install">Install Zephyr Torrent</string>
+    <string name="torrent_install_size">about 12 MB</string>
+    <string name="torrent_version">Version</string>
+    <string name="torrent_update">Update the engine</string>
+    <string name="torrent_cache">Cache size</string>
+    <string name="torrent_keep_cache">Keep the cache after playing</string>
+    <string name="torrent_seed">Share finished downloads</string>
+    <string name="torrent_uninstall">Uninstall</string>
+    <string name="torrent_install_failed">The torrent engine wasn\'t installed</string>
+    <string name="torrent_installed">Torrent engine installed: torrent streams are offered now</string>
+    <string name="torrent_where">Install the engine in Settings → Content → Torrent engine</string>
+    <plurals name="torrent_streams_hidden">
+        <item quantity="one">%d torrent stream needs the torrent engine</item>
+        <item quantity="other">%d torrent streams need the torrent engine</item>
+    </plurals>
 </resources>

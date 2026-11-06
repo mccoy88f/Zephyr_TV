@@ -80,7 +80,7 @@ internal object StreamCache {
         val left = AtomicInteger(sources.size)
         val counts = ConcurrentHashMap<String, Int>()
         for (b in sources) pool.execute {
-            counts[b] = runCatching { get(cache, b, type, id) { find(b) }.size }.getOrDefault(0)
+            counts[b] = runCatching { Torrents.offered(get(cache, b, type, id) { find(b) }).size }.getOrDefault(0) // torrents: with the engine
             if (left.decrementAndGet() == 0) done?.invoke(counts.toMap())
         }
     }

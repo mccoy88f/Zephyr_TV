@@ -13,6 +13,18 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.3.0-beta.1
+
+- Zephyr TV plays torrent streams from add-ons. It needs **Zephyr Torrent**, the torrent engine. Install it in **Settings → Content → Torrent engine**.
+- Zephyr Torrent is a separate app of about 12 MB. Zephyr TV installs it, updates it and uninstalls it.
+- Without the engine, torrent streams do not show. The list of streams tells how many need the engine.
+- A torrent stream starts after the engine finds peers. While it loads, the screen shows the peers, the speed and how much is ready.
+- The banner shows the peers and the speed next to the stream. If a torrent has no peers, the player tries the next stream.
+- At the same quality, the player tries direct links before torrents, because they start sooner.
+- **Download** also takes torrent streams. The engine downloads the full file into the download folder and shows a notification.
+- The engine keeps a cache of 2 GB. It deletes the cache when you close the film. Change the size in **Torrent engine**.
+- With torrents, other peers see the address of the TV. **WARP** also covers the engine.
+
 ## 4.2.1
 
 - Zephyr TV does not disconnect Trakt by itself any more. Before, a refresh of the access that failed for a moment, or the sync and the player saving the account at the same time, disconnected it. Now Zephyr TV disconnects Trakt only when Trakt says that the access is no longer valid.

@@ -892,4 +892,29 @@
     <string name="title_trailer">Trailer ansehen</string>
     <string name="trakt_todo_shows">Serien zum Weiterschauen</string>
     <string name="trakt_todo_movies">Filme zum Weiterschauen</string>
+    <!-- The torrent engine (see Torrents, TorrentSettings) -->
+    <string name="torrent">Torrent</string>
+    <string name="torrent_connecting">Torrent: Peers werden gesucht…</string>
+    <string name="torrent_status">%1$d Peers · %2$s</string>
+    <string name="torrent_ahead">%1$s bereit</string>
+    <string name="setting_torrent_engine">Torrent-Engine</string>
+    <string name="torrent_not_installed">Nicht installiert</string>
+    <string name="torrent_installing">Wird installiert…</string>
+    <string name="torrent_update_value">%1$s · Update verfügbar</string>
+    <string name="torrent_intro">Zephyr Torrent spielt die Torrent-Streams der Add-ons ab und lädt sie herunter. Es ist eine eigene App, die hier installiert wird. Während ein Torrent läuft oder lädt, tauscht der Fernseher seine Teile mit Geräten anderer Leute aus, die deine Adresse sehen: WARP verbirgt sie (auch die Engine läuft darüber). Was du abspielst und herunterlädst, liegt in deiner Verantwortung.</string>
+    <string name="torrent_install">Zephyr Torrent installieren</string>
+    <string name="torrent_install_size">etwa 12 MB</string>
+    <string name="torrent_version">Version</string>
+    <string name="torrent_update">Engine aktualisieren</string>
+    <string name="torrent_cache">Cache-Größe</string>
+    <string name="torrent_keep_cache">Cache nach dem Abspielen behalten</string>
+    <string name="torrent_seed">Fertige Downloads teilen</string>
+    <string name="torrent_uninstall">Deinstallieren</string>
+    <string name="torrent_install_failed">Die Torrent-Engine wurde nicht installiert</string>
+    <string name="torrent_installed">Torrent-Engine installiert: Torrent-Streams werden jetzt angeboten</string>
+    <string name="torrent_where">Installiere die Engine unter Einstellungen → Inhalte → Torrent-Engine</string>
+    <plurals name="torrent_streams_hidden">
+        <item quantity="one">%d Torrent-Stream braucht die Torrent-Engine</item>
+        <item quantity="other">%d Torrent-Streams brauchen die Torrent-Engine</item>
+    </plurals>
 </resources>

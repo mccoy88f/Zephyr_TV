@@ -130,6 +130,10 @@ class PlayerActivity : Activity() {
     private val pool by lazy { Executors.newFixedThreadPool(6) } // a film's streams, every add-on and plugin at once
     private val lateWaits by lazy { Executors.newCachedThreadPool() } // waiting for the sources that answer late
     private val checks by lazy { Executors.newFixedThreadPool(12) } // a film's streams checked all at once (see checked)
+    private val torrentIo by lazy { Executors.newCachedThreadPool() } // the torrent engine: its start waits for the peers
+    private var torrent: Torrents.Session? = null // the torrent stream playing, through the engine (see startTorrent)
+    private var torrentStarting = false // its metadata being waited for
+    private var torrentLine: String? = null // its peers and speed, as the status and the banner say them
     private val probes = ConcurrentHashMap<String, Stremio.Probe>() // what each stream turned out to be, by address
     private val fetched = ConcurrentHashMap<String, Pair<Long, List<Stremio.Stream>>>() // channel id to its streams, and when
     private val pages = ConcurrentHashMap<String, Stremio.Meta>()
@@ -225,6 +229,28 @@ class PlayerActivity : Activity() {
         next()
     }
 
+    /**
+     * Once a second while a torrent starts or plays: its peers, speed and what's ready ahead, from the engine, under
+     * the loading screen's name and in the banner's stream line. Asking also tells the engine its player is still here.
+     */
+    private val torrentTick = object : Runnable {
+        override fun run() {
+            ui.removeCallbacks(this)
+            if (torrent == null && !torrentStarting) return
+            val token = torrent?.token
+            torrentIo.execute {
+                val b = Torrents.call(this@PlayerActivity, "status", token)
+                ui.post {
+                    if (b == null || b.getString("state") == "none" || torrent == null && !torrentStarting) return@post
+                    torrentLine = Torrents.statusLine(this@PlayerActivity, b)
+                    if (loading.visibility == View.VISIBLE && !soundOnly && player?.playbackState != Player.STATE_READY) status.text = torrentLine
+                    if (banner.visibility == View.VISIBLE && shown == at) fillSource(at)
+                }
+            }
+            ui.postDelayed(this, 1000)
+        }
+    }
+
     /** How a stream is played: [noAudio] without its sound (the TV can't decode it), [agent] with VLC's User-Agent. */
     private class Attempt(val s: Stremio.Stream, val format: String?, val noAudio: Boolean = false, val agent: String? = null,
                           var played: Boolean = false, var restarts: Int = 0)
@@ -245,6 +271,7 @@ class PlayerActivity : Activity() {
         Images.use(this) // the images the home screen keeps, read and added to here too
         Nuvio.process = ScriptProcess.plugins(this) // plugins run in a process of their own
         ExtensionCalls.use(this) // extensions answer as add-ons, from their own process
+        Torrents.refresh(this) // torrent streams, with the engine installed
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         vod = intent.getStringExtra(MODE) == MODE_VOD
         base = intent.getStringExtra(BASE) ?: if (vod) "" else return finish()
@@ -528,7 +555,8 @@ class PlayerActivity : Activity() {
     private fun fillSource(i: Int) {
         val playing = streams.getOrNull(tried)?.takeIf { i == at }
         source.text = if (playing != null)
-            listOfNotNull(getString(R.string.player_stream, tried + 1, streams.size, playing.title), resolution()).joinToString(" · ")
+            listOfNotNull(getString(R.string.player_stream, tried + 1, streams.size, playing.title), resolution(),
+                torrentLine?.takeIf { torrent != null }).joinToString(" · ")
                 .let { if (player?.playWhenReady == false) getString(R.string.player_paused) + "  ·  " + it else it }
         else getString(R.string.player_loading)
     }
@@ -1627,6 +1655,7 @@ class PlayerActivity : Activity() {
         attempts = 0
         why = null
         release()
+        stopTorrent()
         pendingSeek = if (vod && !isAdult()) VodProgress.position(userDir, c.id) ?: -1L else -1L
         askSubtitles(c)
         // A film's or episode's: its streams looked for, then checked, then each tried ("stream 1 of 5").
@@ -1675,6 +1704,7 @@ class PlayerActivity : Activity() {
     private fun streamOrder(): Comparator<Stremio.Stream> =
         compareBy<Stremio.Stream> { s -> when (probes[s.url]?.ok) { true -> 0; null -> 1; false -> 2 } }
             .thenBy { it.langRank }.thenBy { dvLast(it) }.then(qualityOrder(preferredQuality(prefs)))
+            .thenBy { it.torrent } // at the same quality, a server's address before a torrent: it starts sooner
 
     /**
      * Quick start: a film's sources asked all at once, each one's streams looked at as they come; the first in the
@@ -1704,7 +1734,7 @@ class PlayerActivity : Activity() {
             got += more
             // Its best few at the preferred quality (or above, for the highest) checked: the first that answers plays.
             hit = more.filter { s -> s.langRank == Stremio.LANG_OURS && streamQuality(s.title) == preferred && dvLast(s) == 0 }
-                .sortedWith(qualityOrder(preferred)).take(3)
+                .sortedWith(qualityOrder(preferred).thenBy { it.torrent }).take(3)
                 .firstOrNull { s -> (probes[s.url] ?: Stremio.probe(s.url, s.headers).also { probes[s.url] = it }).ok }
         }
         // The sources still looking: their streams come in the background, checked, at the end of the list.
@@ -1725,7 +1755,7 @@ class PlayerActivity : Activity() {
         if (vod) locals[c.id]?.takeIf { c.id !in localFailed }?.let { return listOf(it) }
         if (vod) return titleStreams(c, late)
         // The channel's add-on, then the Nuvio plugins that can play it (those for TV channels, by its id).
-        val own = runCatching { StreamCache.get(cacheDir, base, c.type, c.id) { Stremio.streams(base, c.type, c.id) } }.onFailure { warn("streams failed: $it") }.getOrDefault(emptyList())
+        val own = runCatching { Torrents.offered(StreamCache.get(cacheDir, base, c.type, c.id) { Stremio.streams(base, c.type, c.id) }) }.onFailure { warn("streams failed: $it") }.getOrDefault(emptyList())
         val plugins = pluginSources(prefs, filesDir, c.type, c.id, adultShows(prefs)).flatMap { (b, name) ->
             runCatching { cachedStreams(prefs, filesDir, cacheDir, b, name, c.type, c.id) }.getOrDefault(emptyList())
         }
@@ -1830,6 +1860,7 @@ class PlayerActivity : Activity() {
      */
     private fun next() {
         ui.removeCallbacks(stuck)
+        stopTorrent() // the torrent that failed (or another stream picked) let go of
         // A film's stream that fails (or another picked) carries on where the last one got to.
         if (vod) player?.let { if (it.currentPosition > 5000) pendingSeek = it.currentPosition }
         if (streams.isEmpty() || ++attempts > streams.size) {
@@ -1862,7 +1893,7 @@ class PlayerActivity : Activity() {
         net.execute {
             // A check that fails is a stream that doesn't answer: the next is tried (never the player closing).
             // Another app's (a YouTube video's watch link): opened, not asked as a stream.
-            val probe = if (s.app != null) Stremio.Probe(true, null) else probes[s.url] ?: runCatching { Stremio.probe(s.url, s.headers) }.getOrElse { Stremio.Probe(false, null) }.also { probes[s.url] = it }
+            val probe = if (s.app != null || s.torrent) Stremio.Probe(true, null) else probes[s.url] ?: runCatching { Stremio.probe(s.url, s.headers) }.getOrElse { Stremio.Probe(false, null) }.also { probes[s.url] = it }
             channels.getOrNull(at)?.let { c -> subtitlesFor(c) } // the add-ons' subtitles, waited for a moment
             ui.post {
                 if (isFinishing || tuning != tune || n != tried) return@post
@@ -1883,12 +1914,15 @@ class PlayerActivity : Activity() {
             warn("stream ${tried + 1}: no app opens ${s.url.substringBefore(':')}")
             return next()
         }
+        if (s.torrent) return startTorrent(s)
         release()
         val http = DefaultHttpDataSource.Factory()
             .setAllowCrossProtocolRedirects(true) // some add-ons' addresses go from https to a proxy's http, and back
             // Not what the connection sets itself: a plugin's Accept-Encoding: gzip would hand the player packed bytes.
             .setDefaultRequestProperties(s.headers.filterKeys { k -> SKIPPED_HEADERS.none { it.equals(k, ignoreCase = true) } })
         (agent ?: s.headers.entries.firstOrNull { it.key.equals("User-Agent", ignoreCase = true) }?.value)?.let { http.setUserAgent(it) }
+        // A torrent's: the engine answers once the pieces asked for are here, which may take a while (see Engine).
+        if (torrent?.url == s.url) http.setConnectTimeoutMs(15_000).setReadTimeoutMs(TORRENT_READ_MS)
         // Sound as a film's, through the output the TV has chosen (its speakers, a soundbar or receiver on HDMI ARC or
         // optical, Bluetooth): taking the audio focus, so the TV routes it there and other sound stops; pausing when
         // headphones or a Bluetooth speaker go away. The sink follows the output's changes and what it can decode
@@ -1943,7 +1977,7 @@ class PlayerActivity : Activity() {
                     // Waiting too long, at the start or later, is a stream that's stuck: the next one.
                     Player.STATE_BUFFERING -> {
                         ui.removeCallbacks(stuck)
-                        ui.postDelayed(stuck, if (vod) VOD_STUCK_MS else STUCK_MS)
+                        ui.postDelayed(stuck, if (torrent != null) TORRENT_STUCK_MS else if (vod) VOD_STUCK_MS else STUCK_MS)
                         // Loading again once it played (after a stall): the loading screen again, until it plays.
                         // A seek keeps the frozen frame (see captureSeekFrame), not the channel's logo.
                         if (playing?.played == true && !seeking && seekBackdrop.visibility != View.VISIBLE)
@@ -2158,6 +2192,55 @@ class PlayerActivity : Activity() {
         ui.postDelayed({ if (player === p) p.playWhenReady = true }, FrameRate.SWITCH_MS)
     }
 
+    /**
+     * A torrent stream: started in the engine, which finds its peers and metadata (up to a minute, the status saying
+     * how it goes), then played from the address on 127.0.0.1 it hands back. Without the engine, or when no one has
+     * the torrent, the next stream.
+     */
+    private fun startTorrent(s: Stremio.Stream) {
+        release()
+        stopTorrent()
+        if (!Torrents.available) {
+            warn("stream ${tried + 1}: a torrent, and no torrent engine")
+            return next()
+        }
+        say(getString(R.string.torrent_connecting))
+        torrentStarting = true
+        torrentLine = null
+        ui.postDelayed(torrentTick, 1000)
+        val tuning = tune
+        val n = tried
+        torrentIo.execute {
+            var said: String? = null
+            val session = Torrents.start(this, s.url) { said = it }
+            ui.post {
+                if (isFinishing || tuning != tune || n != tried) {
+                    session?.let { t -> runCatching { torrentIo.execute { t.stop() } } }
+                    return@post
+                }
+                torrentStarting = false
+                if (session == null) {
+                    warn("stream ${tried + 1}: torrent didn't start (${said ?: "no engine"})")
+                    why = Stremio.Why.UNREACHABLE
+                    return@post next()
+                }
+                torrent = session
+                ui.post(torrentTick)
+                start(Stremio.Stream(session.url, s.title, emptyMap(), s.group, s.source, s.langRank, subtitles = s.subtitles), null)
+            }
+        }
+    }
+
+    /** The torrent playing (or starting) let go of in the engine: its pieces stop coming, its cache goes. */
+    private fun stopTorrent() {
+        ui.removeCallbacks(torrentTick)
+        torrentStarting = false
+        torrentLine = null
+        val t = torrent ?: return
+        torrent = null
+        runCatching { torrentIo.execute { t.stop() } }
+    }
+
     private fun release() {
         ui.removeCallbacks(stuck)
         ui.removeCallbacks(hardSeek)
@@ -2258,6 +2341,10 @@ class PlayerActivity : Activity() {
         ui.removeCallbacksAndMessages(null)
         breath?.cancel()
         release()
+        // One still finding its peers: stopped in the engine too, which then gives up waiting for it.
+        if (torrentStarting) runCatching { torrentIo.execute { Torrents.call(applicationContext, "stop") } }
+        stopTorrent()
+        torrentIo.shutdown() // after the engine is told to stop (see stopTorrent)
         net.shutdownNow()
         ahead.shutdown()
         if (vod) pool.shutdownNow()
@@ -2322,6 +2409,8 @@ class PlayerActivity : Activity() {
         private const val VOD_LATE_MS = 40_000L // ...and those that didn't, waited for this long while it plays
         private const val VOD_SOME_MS = 12_000L // ...or this long, once one has given streams
         private const val VOD_STUCK_MS = 30_000L // a film's stream buffering longer than this: the next
+        private const val TORRENT_STUCK_MS = 120_000L // ...a torrent's, which waits for its peers' pieces, this long
+        private const val TORRENT_READ_MS = 100_000 // a torrent's read waits this long (the engine gives up at 90 s)
         private const val CHOICES_FILE = "player" // not K.FILE: the home screen's process writes that one whole
         private const val TEXT_LANG = "text_lang" // "" for off; none for the stream's own choice
         private const val BANNER_MS = 5000L

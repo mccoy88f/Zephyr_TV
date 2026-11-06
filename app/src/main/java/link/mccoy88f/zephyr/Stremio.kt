@@ -126,7 +126,10 @@ internal object Stremio {
                           val clearkey: Map<String, String> = emptyMap(), // DASH keys, key id to key (hex): an extension's drm.clearkey
                           val app: String? = null, // [url] opened by another app (externalUrl, ytId), with this one first
                           val audio: String? = null, // a second address, video-only [url] plus this audio (YouTube adaptive / yt-dlp)
-                          val subtitles: List<Subtitle> = emptyList()) // subtitle files the add-on hands with it
+                          val subtitles: List<Subtitle> = emptyList()) { // subtitle files the add-on hands with it
+        /** A torrent's (its magnet link): played and downloaded by the torrent engine (see Torrents). */
+        val torrent get() = Torrents.isTorrent(url)
+    }
 
     /** A subtitle file: an add-on's (its "subtitles"), in [lang] (ISO 639-2, "ita", as Stremio's say, or 639-1). */
     internal class Subtitle(val url: String, val lang: String?, val source: String? = null)
@@ -546,8 +549,8 @@ internal object Stremio {
             external = base.startsWith(EXT) || type.equals("YouTube", ignoreCase = true) || id.startsWith("yt_id:"))
 
     /**
-     * The streams in an add-on's answer that have a web address (torrents, YouTube ids and outside links are left
-     * out), with the headers they need. A channel's is named by its title's first line; a film's or episode's
+     * The streams in an add-on's answer that have a web address or are torrents (YouTube ids and outside links are
+     * left out), with the headers they need. A channel's is named by its title's first line; a film's or episode's
      * ([vod]) by its name (the quality, "1080p") and its description's first line (the file).
      */
     /** A stream's language against the TV's (see Stream.langRank): ours, unknown, another; tried in that order. */
@@ -565,11 +568,12 @@ internal object Stremio {
             val yt = if (external && text(s, "externalUrl") == null) text(s, "ytId") else null
             val extUrl = text(s, "externalUrl")?.takeIf { !it.startsWith("stremio://") }
             val external = if (!external) null else extUrl ?: yt?.let { "https://www.youtube.com/watch?v=$it" }
-            // A web address, or the playlist itself written in it (data:, as some Nuvio plugins hand an HLS one).
+            // A web address, or the playlist itself written in it (data:, as some Nuvio plugins hand an HLS one); or a
+            // torrent's, as a magnet link (see Torrents: offered only with the engine installed).
             val url = text(s, "url")?.takeIf { it.startsWith("http://") || it.startsWith("https://") || it.startsWith("data:") ||
                 OTHER_SCHEMES.any { p -> it.startsWith(p, ignoreCase = true) } }
                 ?.let { if (it.startsWith("data://")) "data:" + it.removePrefix("data://") else it } // "data://": a plugin's slip
-                ?: external ?: return@mapNotNull null
+                ?: Torrents.magnet(s) ?: external ?: return@mapNotNull null
             if (unplayable(hints?.let { text(it, "filename") }, url)) return@mapNotNull null
             val keys = s.optJSONObject("drm")?.optJSONObject("clearkey")?.let { k -> k.keys().asSequence().associateWith { k.optString(it) } }
                 ?.filter { (kid, key) -> Regex("[0-9a-fA-F]{32}").matches(kid) && Regex("[0-9a-fA-F]{32}").matches(key) }.orEmpty()

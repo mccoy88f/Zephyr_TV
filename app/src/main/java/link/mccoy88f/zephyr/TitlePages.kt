@@ -1113,6 +1113,7 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
     val local = if (picked == null) localDownload(id) else null
     val found = java.util.Collections.synchronizedList(ArrayList<Stremio.Stream>())
     var left = sources.size
+    var hidden = 0 // torrents left out: no engine to play them (see Torrents)
     var shown = false
     val savedPageExit = pageExit
     val leftId = detailDescView?.id
@@ -1125,7 +1126,8 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
             left > 0 -> listOf(page(getString(R.string.title_finding_streams)) { })
             found.isEmpty() && local == null -> listOf(page(none) { })
             else -> emptyList()
-        }
+        } + listOfNotNull(if (hidden == 0) null else
+            page(resources.getQuantityString(R.plurals.torrent_streams_hidden, hidden, hidden)) { toast(R.string.torrent_where) })
         pageExit = null
         showPage(title, rest, panes = glass, back = {
             pageExit = savedPageExit
@@ -1152,7 +1154,8 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
                 group = q
                 settingsList.addView(label(qualityHeading(q), 13f).apply { alpha = 0.6f; setPadding(dp(14), dp(16), 0, dp(6)) }, at++)
             }
-            settingsList.addView(twoLineRow(s.title.ifBlank { s.url.substringAfterLast('/').take(60) }, s.source.orEmpty()) {
+            val from = listOfNotNull(s.source?.takeIf { it.isNotEmpty() }, if (s.torrent) getString(R.string.torrent) else null).joinToString(" · ")
+            settingsList.addView(twoLineRow(s.title.ifBlank { s.url.substringAfterLast('/').take(60) }, from) {
                 if (picked != null) return@twoLineRow picked(s)
                 pageReturn = back
                 playTitle(ref, meta, episode, chosen = s)
@@ -1174,10 +1177,12 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
     }
     show()
     for ((base, name) in sources) netIo.execute {
-        val got = runCatching { cachedStreams(prefs, filesDir, cacheDir, base, name, t.type, id) }.getOrDefault(emptyList())
+        val every = runCatching { cachedStreams(prefs, filesDir, cacheDir, base, name, t.type, id, all = true) }.getOrDefault(emptyList())
+        val got = Torrents.offered(every)
             .map { Stremio.Stream(it.url, it.title, it.headers, it.group, it.source ?: name, it.langRank, it.clearkey, it.app, it.audio, it.subtitles) }
         ui.post {
             left--
+            hidden += every.size - got.size
             // Each source's, in the TV's language first then the preferred quality's order, after those already there in
             // their quality's group.
             found += got.filter(accept).sortedWith(compareBy<Stremio.Stream> { it.langRank }.thenBy { dvLast(it) }.then(qualityOrder(preferredQuality(prefs))))

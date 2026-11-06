@@ -224,6 +224,7 @@ internal fun MainActivity.installUpdate(ver: String) {
 internal fun MainActivity.installStatus(intent: Intent) {
     val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
     if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) return
+    if (intent.getStringExtra(INSTALL_WHAT) == "torrent") return torrentInstalled(status, intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE))
     updating = false
     if (status != PackageInstaller.STATUS_SUCCESS) {
         val why = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)

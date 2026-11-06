@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_downloads">Download</string>
+    <!-- How many downloads are going, and how far they've got together. -->
+    <string name="downloading">Download in corso: %1$d · %2$d%%</string>
+</resources>

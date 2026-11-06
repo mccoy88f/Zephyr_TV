@@ -315,6 +315,7 @@ class MainActivity : Activity() {
         Screen.activity = this
         if (shownWidth == 0) shownWidth = resources.displayMetrics.widthPixels
         applyStatusBar()
+        Torrents.refresh(this) // the torrent engine installed or removed meanwhile
         ensureHomeService()
         homeSetupResumed()
         checkAdultLock()

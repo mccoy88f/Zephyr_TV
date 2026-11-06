@@ -18,7 +18,7 @@ import java.io.File
 
 // Download: a film or an episode saved on the TV, from the Download button among the apps on its page (see serviceBar).
 // Android's download manager does the work, in the background and through restarts, into the folder chosen in
-// Settings → Content → Download folder. Once saved, the file is the first of the title's sources: Watch plays it,
+// Settings → Content → Download folder; a torrent's, the torrent engine (see Torrents), into the same folder. Once saved, the file is the first of the title's sources: Watch plays it,
 // and the streams' list shows it on top. Not for live TV, channels, events or radio: a live stream has no end to
 // save. Functions of MainActivity, kept here by topic.
 
@@ -27,11 +27,14 @@ internal object Downloads {
     /**
      * [dm]: the download manager's id for it; [name]: what it's called ("Series S1E2"); [file]: its file's name, extension
      * and all. The rest opens its page again from the downloads' menu: the film's or series' [meta] id, [type] and
-     * [title], its art, the add-on it came from. (Empty in those downloaded by 4.1.0: no page to open.)
+     * [title], its art, the add-on it came from. (Empty in those downloaded by 4.1.0: no page to open.) [torrent]: the
+     * torrent engine downloads it, under the same id ([dm] is 0).
      */
     internal class Entry(val id: String, val dm: Long, val name: String, val file: String, val meta: String = "", val type: String = "",
                          val title: String = "", val poster: String? = null, val background: String? = null, val logo: String? = null,
-                         val source: String? = null)
+                         val source: String? = null, val torrent: Boolean = false) {
+        fun named(file: String) = Entry(id, dm, name, file, meta, type, title, poster, background, logo, source, torrent)
+    }
 
     private fun file(dir: File) = File(dir, "downloads.json")
 
@@ -42,7 +45,8 @@ internal object Downloads {
             .map { o ->
                 fun opt(k: String) = o.optString(k).takeIf { !o.isNull(k) && it.isNotEmpty() }
                 Entry(o.getString("id"), o.getLong("dm"), o.optString("name"), o.optString("file").ifEmpty { o.optString("name") + ".mkv" },
-                    o.optString("meta"), o.optString("type"), o.optString("title"), opt("poster"), opt("background"), opt("logo"), opt("source"))
+                    o.optString("meta"), o.optString("type"), o.optString("title"), opt("poster"), opt("background"), opt("logo"), opt("source"),
+                    o.optBoolean("torrent"))
             }
             .associateBy { it.id }
     }.getOrDefault(emptyMap())
@@ -58,7 +62,7 @@ internal object Downloads {
         entries.values.forEach {
             a.put(JSONObject().put("id", it.id).put("dm", it.dm).put("name", it.name).put("file", it.file).put("meta", it.meta)
                 .put("type", it.type).put("title", it.title).put("poster", it.poster).put("background", it.background)
-                .put("logo", it.logo).put("source", it.source))
+                .put("logo", it.logo).put("source", it.source).put("torrent", it.torrent))
         }
         runCatching { file(dir).writeText(a.toString()) }
     }
@@ -73,6 +77,7 @@ internal fun downloadableType(type: String) = type.lowercase() !in setOf("tv", "
  * or its sound apart. Those the download manager can't save as one file to play.
  */
 internal fun downloadableStream(s: Stremio.Stream): Boolean {
+    if (s.torrent) return Torrents.available // the engine downloads it whole
     if (s.app != null || s.audio != null || s.clearkey.isNotEmpty()) return false
     if (!s.url.startsWith("http://", true) && !s.url.startsWith("https://", true)) return false
     val path = s.url.substringBefore('?').substringBefore('#').lowercase()
@@ -152,6 +157,7 @@ internal fun MainActivity.pickDownloadFolder() {
 private class DownloadState(val status: Int, val done: Long, val total: Long)
 
 private fun MainActivity.downloadState(e: Downloads.Entry): DownloadState? {
+    if (e.torrent) return Torrents.downloads(this)?.get(e.id)?.let { DownloadState(torrentStatus(it.state), it.done, it.total) }
     val dm = getSystemService(DownloadManager::class.java) ?: return null
     return runCatching {
         dm.query(DownloadManager.Query().setFilterById(e.dm))?.use { c ->
@@ -163,6 +169,40 @@ private fun MainActivity.downloadState(e: Downloads.Entry): DownloadState? {
             )
         }
     }.getOrNull()
+}
+
+/** A torrent download's state in the engine as the download manager's (see Torrents.downloads). */
+private fun torrentStatus(state: String) = when (state) {
+    "done" -> DownloadManager.STATUS_SUCCESSFUL
+    "failed" -> DownloadManager.STATUS_FAILED
+    "going" -> DownloadManager.STATUS_RUNNING
+    else -> DownloadManager.STATUS_PENDING // its metadata still to come
+}
+
+/**
+ * The torrent downloads among [entries], as the engine has them; null when it can't be asked (not installed). A file
+ * named once its metadata came is noted, so it's shown and shared by its name.
+ */
+private fun MainActivity.torrentStatuses(entries: Collection<Downloads.Entry>): Map<String, DlStatus>? {
+    val mine = entries.filter { it.torrent }
+    if (mine.isEmpty()) return emptyMap()
+    val got = Torrents.downloads(this) ?: return null
+    // Going: the engine's download service kept in the foreground (after a restart it can't start it by itself).
+    if (got.values.any { it.state == "going" || it.state == "waiting" } && System.currentTimeMillis() - torrentPoked > 60_000) {
+        torrentPoked = System.currentTimeMillis()
+        Torrents.keepDownloading(this)
+    }
+    for (e in mine) got[e.id]?.file?.takeIf { it.isNotEmpty() && it != e.file }?.let { Downloads.put(filesDir, e.named(it)) }
+    return mine.mapNotNull { e -> got[e.id]?.let { e.id to DlStatus(torrentStatus(it.state), it.done, it.total) } }.toMap()
+}
+
+@Volatile private var torrentPoked = 0L
+
+/** [e] stopped and its file deleted: by the download manager, or by the torrent engine. Off the main thread for a torrent's. */
+internal fun MainActivity.removeDownload(e: Downloads.Entry) {
+    if (e.torrent) Torrents.cancel(this, e.id)
+    else getSystemService(DownloadManager::class.java)?.let { runCatching { it.remove(e.dm) } }
+    Downloads.remove(filesDir, e.id)
 }
 
 /** Where a download is at, as the downloads' menu, the cards and the pages show it (see DownloadsUi). */
@@ -179,8 +219,13 @@ internal class DlStatus(val status: Int, val done: Long, val total: Long) {
  */
 internal fun MainActivity.downloadStatuses(entries: Map<String, Downloads.Entry>): Map<String, DlStatus>? {
     if (entries.isEmpty()) return emptyMap()
+    // The torrents' from the engine; when it can't be asked, they're kept as they were (not forgotten).
+    val torrents = torrentStatuses(entries.values)
+    val kept = if (torrents == null) entries.values.filter { it.torrent }.associate { it.id to DlStatus(DownloadManager.STATUS_PAUSED, 0, 0) } else torrents
+    val others = entries.filterValues { !it.torrent }
+    if (others.isEmpty()) return kept
     val dm = getSystemService(DownloadManager::class.java) ?: return null
-    val byDm = entries.values.associateBy { it.dm }
+    val byDm = others.values.associateBy { it.dm }
     return runCatching<Map<String, DlStatus>> {
         val out = HashMap<String, DlStatus>()
         dm.query(DownloadManager.Query().setFilterById(*byDm.keys.toLongArray()))?.use { c ->
@@ -190,7 +235,7 @@ internal fun MainActivity.downloadStatuses(entries: Map<String, Downloads.Entry>
             val total = c.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
             while (c.moveToNext()) byDm[c.getLong(id)]?.let { e -> out[e.id] = DlStatus(c.getInt(status), c.getLong(done), c.getLong(total)) }
         }
-        out
+        out + kept
     }.getOrNull()
 }
 
@@ -198,7 +243,9 @@ internal fun MainActivity.downloadStatuses(entries: Map<String, Downloads.Entry>
 internal fun MainActivity.localDownloads(): Map<String, Downloads.Entry> {
     val all = Downloads.all(filesDir)
     if (all.isEmpty()) return emptyMap()
-    val dm = getSystemService(DownloadManager::class.java) ?: return emptyMap()
+    val torrents = torrentStatuses(all.values).orEmpty().filterValues { it.complete }.keys
+    val doneTorrents = all.filterValues { it.torrent && it.id in torrents }
+    val dm = getSystemService(DownloadManager::class.java) ?: return doneTorrents
     val done = HashSet<Long>()
     runCatching {
         dm.query(DownloadManager.Query().setFilterById(*all.values.map { it.dm }.toLongArray()).setFilterByStatus(DownloadManager.STATUS_SUCCESSFUL))?.use { c ->
@@ -206,19 +253,21 @@ internal fun MainActivity.localDownloads(): Map<String, Downloads.Entry> {
             while (c.moveToNext()) done += c.getLong(i)
         }
     }
-    return all.filterValues { it.dm in done }
+    return all.filterValues { !it.torrent && it.dm in done } + doneTorrents
 }
 
 /** The downloaded file of [id] (a film's or an episode's), when it's complete. */
 internal fun MainActivity.localDownload(id: String): Downloads.Entry? = localDownloads()[id]
 
 /** Whether the file is still there (not deleted from a file manager): the download manager opens it. */
-private fun MainActivity.localFileThere(e: Downloads.Entry) =
-    runCatching { getSystemService(DownloadManager::class.java)!!.openDownloadedFile(e.dm).close() }.isSuccess
+private fun MainActivity.localFileThere(e: Downloads.Entry) = runCatching {
+    if (e.torrent) contentResolver.openFileDescriptor(Torrents.fileUri(this, e.id, e.file), "r")!!.close()
+    else getSystemService(DownloadManager::class.java)!!.openDownloadedFile(e.dm).close()
+}.isSuccess
 
 /** The downloaded file as a stream, first of the title's sources: the player reads it through DownloadFiles. */
 internal fun MainActivity.localStream(e: Downloads.Entry) =
-    Stremio.Stream(DownloadFiles.uri(this, e.dm, e.file).toString(), e.file, emptyMap(), source = getString(R.string.download_local))
+    Stremio.Stream(DownloadFiles.uri(this, e).toString(), e.file, emptyMap(), source = getString(R.string.download_local))
 
 /** "Film (2024)", or "Series S1E2": the download's name in Android's list and its file's. */
 private fun MainActivity.downloadName(meta: Stremio.TitleMeta, episode: Stremio.Episode?) = when (episode) {
@@ -288,10 +337,8 @@ internal fun MainActivity.downloadPage(ref: TitleRef, meta: Stremio.TitleMeta, e
                 ref.logo ?: t.logo, ref.source), s, back)
         }, back = back)
     if (entry == null || state == null) return pick()
-    val dm = getSystemService(DownloadManager::class.java)
     fun delete() {
-        dm?.let { runCatching { it.remove(entry.dm) } } // its file too
-        Downloads.remove(filesDir, id)
+        removeDownload(entry) // its file too
         refreshDownloads()
         back()
     }
@@ -309,8 +356,7 @@ internal fun MainActivity.downloadPage(ref: TitleRef, meta: Stremio.TitleMeta, e
         DownloadManager.STATUS_FAILED -> listOf(
             page(getString(R.string.download_failed_status)) { },
             page(getString(R.string.download_retry)) {
-                dm?.let { runCatching { it.remove(entry.dm) } }
-                Downloads.remove(filesDir, id)
+                removeDownload(entry)
                 pick()
             },
             page(getString(R.string.download_delete)) { delete() },
@@ -352,7 +398,7 @@ internal fun MainActivity.shareTitleOrFile(id: String, back: () -> Unit, link: (
 
 /** The downloaded file handed to another app, which may read it (that one file) through DownloadFiles. */
 private fun MainActivity.shareDownload(e: Downloads.Entry) {
-    val uri = DownloadFiles.uri(this, e.dm, e.file)
+    val uri = DownloadFiles.uri(this, e)
     val send = Intent(Intent.ACTION_SEND).setType(DownloadFiles.mimeOf(e.file))
         .putExtra(Intent.EXTRA_STREAM, uri).putExtra(Intent.EXTRA_SUBJECT, e.name)
         .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -366,6 +412,7 @@ private fun MainActivity.shareDownload(e: Downloads.Entry) {
  */
 private fun MainActivity.startDownload(what: Downloads.Entry, s: Stremio.Stream, back: () -> Unit) {
     val name = what.name
+    if (s.torrent) return startTorrentDownload(what, s, back)
     toast(R.string.download_checking, long = false)
     netIo.execute {
         val format = runCatching { Stremio.probe(s.url, s.headers) }.getOrNull()?.format
@@ -402,6 +449,26 @@ private fun MainActivity.startDownload(what: Downloads.Entry, s: Stremio.Stream,
             Downloads.put(filesDir, Downloads.Entry(what.id, at, name, file, what.meta, what.type, what.title, what.poster,
                 what.background, what.logo, what.source))
             refreshDownloads() // the top bar's icon, its red dot, and the cards
+            Toast.makeText(this, getString(R.string.download_started, name), Toast.LENGTH_LONG).show()
+            back()
+        }
+    }
+}
+
+/**
+ * A torrent stream handed to the torrent engine, whole, into the folder chosen (see Torrents.download): it finds the
+ * peers, names the file as Zephyr TV calls it, and keeps going in the background with a notification of its own.
+ */
+private fun MainActivity.startTorrentDownload(what: Downloads.Entry, s: Stremio.Stream, back: () -> Unit) {
+    val name = what.name
+    val folder = downloadFolder()?.takeIf { !needsStorageAccess(it.key) }?.key ?: "app"
+    netIo.execute {
+        val ok = Torrents.download(this, what.id, s.url, name, folder)
+        ui.post {
+            if (!ok) return@post toast(R.string.download_failed)
+            Downloads.put(filesDir, Downloads.Entry(what.id, 0, name, "$name.mkv", what.meta, what.type, what.title, what.poster,
+                what.background, what.logo, what.source, torrent = true))
+            refreshDownloads()
             Toast.makeText(this, getString(R.string.download_started, name), Toast.LENGTH_LONG).show()
             back()
         }

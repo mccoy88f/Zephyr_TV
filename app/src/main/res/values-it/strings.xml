@@ -895,4 +895,30 @@
     <string name="title_trailer">Guarda trailer</string>
     <string name="trakt_todo_shows">Serie da completare</string>
     <string name="trakt_todo_movies">Film da completare</string>
+    <!-- The torrent engine (see Torrents, TorrentSettings) -->
+    <string name="torrent">Torrent</string>
+    <string name="torrent_connecting">Torrent: ricerca dei peer…</string>
+    <string name="torrent_status">%1$d peer · %2$s</string>
+    <string name="torrent_ahead">%1$s pronti</string>
+    <string name="setting_torrent_engine">Motore torrent</string>
+    <string name="torrent_not_installed">Non installato</string>
+    <string name="torrent_installing">Installazione…</string>
+    <string name="torrent_update_value">%1$s · aggiornamento disponibile</string>
+    <string name="torrent_intro">Zephyr Torrent riproduce e scarica gli stream torrent degli add-on. È un\'app a sé, che si installa da qui. Mentre un torrent si riproduce o si scarica, il TV scambia i suoi pezzi con i dispositivi di altre persone, che vedono il tuo indirizzo: WARP lo nasconde (anche il motore passa da lì). La responsabilità di cosa riproduci e scarichi è tua.</string>
+    <string name="torrent_install">Installa Zephyr Torrent</string>
+    <string name="torrent_install_size">circa 12 MB</string>
+    <string name="torrent_version">Versione</string>
+    <string name="torrent_update">Aggiorna il motore</string>
+    <string name="torrent_cache">Dimensione della cache</string>
+    <string name="torrent_keep_cache">Tieni la cache dopo la riproduzione</string>
+    <string name="torrent_seed">Condividi i download finiti</string>
+    <string name="torrent_uninstall">Disinstalla</string>
+    <string name="torrent_install_failed">Il motore torrent non è stato installato</string>
+    <string name="torrent_installed">Motore torrent installato: ora vengono proposti gli stream torrent</string>
+    <string name="torrent_where">Installa il motore in Impostazioni → Contenuti → Motore torrent</string>
+    <plurals name="torrent_streams_hidden">
+        <item quantity="one">%d stream torrent richiede il motore torrent</item>
+        <item quantity="many">%d stream torrent richiedono il motore torrent</item>
+        <item quantity="other">%d stream torrent richiedono il motore torrent</item>
+    </plurals>
 </resources>

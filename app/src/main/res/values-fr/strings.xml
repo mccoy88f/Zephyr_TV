@@ -895,4 +895,30 @@
     <string name="title_trailer">Voir la bande-annonce</string>
     <string name="trakt_todo_shows">Séries à terminer</string>
     <string name="trakt_todo_movies">Films à terminer</string>
+    <!-- The torrent engine (see Torrents, TorrentSettings) -->
+    <string name="torrent">Torrent</string>
+    <string name="torrent_connecting">Torrent : recherche de pairs…</string>
+    <string name="torrent_status">%1$d pairs · %2$s</string>
+    <string name="torrent_ahead">%1$s prêts</string>
+    <string name="setting_torrent_engine">Moteur torrent</string>
+    <string name="torrent_not_installed">Non installé</string>
+    <string name="torrent_installing">Installation…</string>
+    <string name="torrent_update_value">%1$s · mise à jour disponible</string>
+    <string name="torrent_intro">Zephyr Torrent lit et télécharge les flux torrent des modules. C\'est une appli à part, qui s\'installe d\'ici. Pendant qu\'un torrent est lu ou téléchargé, le téléviseur en échange les morceaux avec les appareils d\'autres personnes, qui voient votre adresse : WARP la masque (le moteur passe aussi par lui). Ce que vous lisez et téléchargez relève de votre responsabilité.</string>
+    <string name="torrent_install">Installer Zephyr Torrent</string>
+    <string name="torrent_install_size">environ 12 Mo</string>
+    <string name="torrent_version">Version</string>
+    <string name="torrent_update">Mettre à jour le moteur</string>
+    <string name="torrent_cache">Taille du cache</string>
+    <string name="torrent_keep_cache">Garder le cache après la lecture</string>
+    <string name="torrent_seed">Partager les téléchargements terminés</string>
+    <string name="torrent_uninstall">Désinstaller</string>
+    <string name="torrent_install_failed">Le moteur torrent n\'a pas été installé</string>
+    <string name="torrent_installed">Moteur torrent installé : les flux torrent sont maintenant proposés</string>
+    <string name="torrent_where">Installez le moteur dans Paramètres → Contenus → Moteur torrent</string>
+    <plurals name="torrent_streams_hidden">
+        <item quantity="one">%d flux torrent nécessite le moteur torrent</item>
+        <item quantity="many">%d flux torrent nécessitent le moteur torrent</item>
+        <item quantity="other">%d flux torrent nécessitent le moteur torrent</item>
+    </plurals>
 </resources>

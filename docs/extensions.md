@@ -266,7 +266,8 @@ the extension's own is the fallback.
 
 A stream with `externalUrl` or `ytId` is listed with the icon of the app that opens it. When no app on the TV
 handles it, it isn't listed. What plays in another app has no position in Continue Playing.
-`infoHash` (torrent) streams are not played (see 12).
+`infoHash` (torrent) streams, with `fileIdx` and `sources` as Stremio's, play and download only with the torrent
+engine installed (Settings → Content → Torrent engine); without it they aren't listed.
 
 **Catch-up.** A channel with `catchup` has its past programmes, up to `days` ago, playable from the guide, and
 **From the start** for the one on now. Zephyr TV has a programme's stream in one of two ways:
@@ -600,7 +601,7 @@ the standard, with its name for `requires`, once Zephyr TV has it.
 | `subtle` | fast ciphers and hashes | `crypto.subtle` (`digest`, AES, HMAC) and `crypto.getRandomValues` |
 | `widevine` | DASH protected by Widevine | `drm: { "widevine": { "license": "<url>", "headers"?: {…} } }` |
 
-Not planned: torrent (`infoHash`) streams, WebSocket, signed packages.
+Not planned: WebSocket, signed packages.
 
 ## 13. Example: YouYubeZ
 

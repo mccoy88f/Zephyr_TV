@@ -15,8 +15,8 @@ android {
         minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         targetSdk = 36
-        versionCode = 128
-        versionName = "4.2.1"
+        versionCode = 129
+        versionName = "4.3.0-beta.1"
         // What's new: only this version's section of CHANGELOG.md ships, one entry per line, without ** marks.
         val notes = rootProject.file("CHANGELOG.md").readText().replace("\r", "")
             .substringAfter("\n## $versionName\n", "").substringBefore("\n## ")
@@ -25,6 +25,8 @@ android {
         // TVs and TV boxes are ARM: QuickJS's library (see dependencies) for those alone, not the emulators' x86 ones.
         ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         resValue("string", "whats_new", notes.joinToString("\\n") { it.replace("'", "\\'").replace("\"", "\\\"") })
+        // The torrent engine (torrent/) this version carries in its release: an older one installed is offered the update.
+        resValue("integer", "torrent_version_code", providers.gradleProperty("torrentVersionCode").get())
     }
 
     buildFeatures {

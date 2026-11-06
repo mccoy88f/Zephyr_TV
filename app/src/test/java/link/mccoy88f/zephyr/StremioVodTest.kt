@@ -119,7 +119,7 @@ class StremioVodTest {
         assertEquals(listOf("Christopher Nolan"), meta.director)
     }
 
-    @Test fun readsAFilmsStreamsDirectLinksOnly() {
+    @Test fun readsAFilmsStreamsDirectLinksAndTorrents() {
         val streams = Stremio.streams(JSONObject("""{"streams":[
             {"name":"Example\n1080p","description":"Big.Buck.Bunny.2008.1080p.mkv\n💾 1.2 GB","url":"https://cdn.example/play.php?id=7",
              "behaviorHints":{"bingeGroup":"example-1080p","filename":"Big.Buck.Bunny.2008.1080p.mkv"}},
@@ -127,10 +127,14 @@ class StremioVodTest {
             {"name":"Trailer","ytId":"aqz-KE-bpKQ"},
             {"name":"Elsewhere","externalUrl":"https://example.com/watch"},
             {"title":"Plain","url":"http://files.example/bunny.mp4"}]}"""), vod = true)
-        assertEquals(listOf("https://cdn.example/play.php?id=7", "http://files.example/bunny.mp4"), streams.map { it.url })
+        // A torrent as its magnet link, its file (fileIdx) as so= (see Torrents); trailers and web pages left out.
+        assertEquals(listOf("https://cdn.example/play.php?id=7", "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&so=0",
+            "http://files.example/bunny.mp4"), streams.map { it.url })
         assertEquals("Example 1080p · Big.Buck.Bunny.2008.1080p.mkv", streams[0].title)
         assertEquals("example-1080p", streams[0].group)
-        assertEquals("Plain", streams[1].title)
+        assertEquals("Torrent 4K · Big.Buck.Bunny.2160p", streams[1].title)
+        assertEquals(listOf(false, true, false), streams.map { it.torrent })
+        assertEquals("Plain", streams[2].title)
     }
 
     @Test fun anExtensionsYouTubeVideoOpensOnItsWatchPageOnYouTubeForTv() {

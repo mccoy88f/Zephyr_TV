@@ -7,7 +7,15 @@ Questo documento serve a riprendere il lavoro da un'altra sessione, umana o di C
 - le fasi con le caselle da spuntare;
 - le regole del progetto da rispettare.
 
-**Stato:** solo il piano, nessun codice scritto. L'ultima release è la 4.1.0, con il download di film ed episodi, il file locale come prima sorgente e la scelta della cartella dei download.
+**Stato (6 novembre 2026):** fasi 1–5 scritte, compilate e coperte dai test unitari; build, lint e release passano. Manca la fase 0: le misure su un TV vero (nessuno stream è stato ancora riprodotto). Non ancora rilasciato: le voci sono sotto `## Unreleased` nel CHANGELOG.
+
+Scelte prese scrivendo il codice, diverse dal piano:
+- **Lo stream torrent è un link magnet in `Stream.url`** (`xt`, `dn`, `tr`, e `so=<fileIdx>` del BEP 53), non tre campi nuovi: così passa intatto da tutte le copie di `Stremio.Stream` (plugin, cache, `streamJson`). `Stream.torrent` lo riconosce.
+- **Comunicazione con un ContentProvider** (`EngineProvider`, `call()` + `openFile`), non Messenger o AIDL: risponde in modo sincrono, e il `ContentProviderClient` tenuto dal player tiene vivo il processo del motore.
+- **Sicurezza:** il provider controlla in codice che chi chiama abbia la stessa firma (`checkSignatures`), invece di un permesso `signature` dichiarato: così non dipende dall'ordine di installazione delle due app.
+- **Un solo APK** con arm64-v8a e armeabi-v7a: circa 12 MB.
+- **Download:** il motore scarica nella sua cartella sul disco scelto, poi a fine download sposta il file in Download o Film (Android 11+). La cartella Film accetta solo file multimediali, non i file `.parts` di libtorrent. Con il seeding acceso il file resta nella cartella del motore.
+- **Versione del motore** in `gradle.properties` (`torrentVersionCode`): Zephyr TV propone l'aggiornamento se quella installata è più vecchia, e la scarica dalla release della sua stessa versione.
 
 ---
 
@@ -70,37 +78,37 @@ Percorsi relativi a `app/src/main/java/link/mccoy88f/zephyr/`.
 - [ ] Verificare che il traffico passi da WARP quando è attivo (`Warp.kt`, `Privacy.kt`).
 
 ### Fase 1: APK Zephyr Torrent
-- [ ] Nuovo modulo Gradle `torrent/`, con applicationId `link.mccoy88f.zephyr.torrent`, stessa chiave di firma e stessi `keystore.properties`.
-- [ ] Servizio esportato **solo** con un permesso `signature` dichiarato da Zephyr Torrent e richiesto da Zephyr TV. Comunicazione tramite Messenger o AIDL: `start`, `status`, `stop`, `download`, `cancel`.
-- [ ] Server HTTP locale con `Range`, token casuale e una sola sessione attiva in streaming.
-- [ ] Priorità ai pezzi come descritto nella sezione 3, con gestione dei salti (le scadenze precedenti vengono annullate).
-- [ ] Cache nel cacheDir di Zephyr Torrent, con limite configurabile e svuotata all'arresto. Seeding spento di default.
-- [ ] Notifica o servizio in primo piano solo durante un download completo (fase 4). Per lo streaming vive finché il player è collegato.
+- [x] Nuovo modulo Gradle `torrent/`, con applicationId `link.mccoy88f.zephyr.torrent`, stessa chiave di firma e stessi `keystore.properties`.
+- [x] Servizio esportato **solo** con un permesso `signature` dichiarato da Zephyr Torrent e richiesto da Zephyr TV. Comunicazione tramite Messenger o AIDL: `start`, `status`, `stop`, `download`, `cancel`.
+- [x] Server HTTP locale con `Range`, token casuale e una sola sessione attiva in streaming.
+- [x] Priorità ai pezzi come descritto nella sezione 3, con gestione dei salti (le scadenze precedenti vengono annullate).
+- [x] Cache nel cacheDir di Zephyr Torrent, con limite configurabile e svuotata all'arresto. Seeding spento di default.
+- [x] Notifica o servizio in primo piano solo durante un download completo (fase 4). Per lo streaming vive finché il player è collegato.
 
 ### Fase 2: installazione dalle Impostazioni
-- [ ] `release.yml` pubblica anche `ZephyrTorrent.apk`.
-- [ ] Impostazioni → Contenuti → **Motore torrent**:
+- [x] `release.yml` pubblica anche `ZephyrTorrent.apk`.
+- [x] Impostazioni → Contenuti → **Motore torrent**:
   - installa / aggiorna / disinstalla, quest'ultimo con `REQUEST_DELETE_PACKAGES`, già presente;
   - versione installata;
   - spazio massimo della cache;
   - seeding sì/no.
-- [ ] Controllo degli aggiornamenti del motore insieme a quello di Zephyr TV (`Updates.kt`).
+- [x] Controllo degli aggiornamenti del motore insieme a quello di Zephyr TV (`Updates.kt`).
 
 ### Fase 3: torrent tra le sorgenti
-- [ ] Lettura di `infoHash`/`fileIdx`/`sources` in `Stremio.kt`.
-- [ ] Stream torrent nella scelta automatica e nell'elenco manuale, solo con il motore installato.
-- [ ] Player: collegamento al servizio, indirizzo locale, stato, arresto, passaggio al successivo se non parte entro X secondi o con 0 peer.
+- [x] Lettura di `infoHash`/`fileIdx`/`sources` in `Stremio.kt`.
+- [x] Stream torrent nella scelta automatica e nell'elenco manuale, solo con il motore installato.
+- [x] Player: collegamento al servizio, indirizzo locale, stato, arresto, passaggio al successivo se non parte entro X secondi o con 0 peer.
 
 ### Fase 4: Scarica per i torrent
-- [ ] Il pulsante Scarica accetta uno stream torrent e lo affida al motore (download completo, non sequenziale) nella cartella scelta (`downloadFolder()`).
-- [ ] `Downloads`: voci di tipo torrent. Il file locale è la prima sorgente e condividi file funziona come per gli altri download.
+- [x] Il pulsante Scarica accetta uno stream torrent e lo affida al motore (download completo, non sequenziale) nella cartella scelta (`downloadFolder()`).
+- [x] `Downloads`: voci di tipo torrent. Il file locale è la prima sorgente e condividi file funziona come per gli altri download.
 
 ### Fase 5: rifiniture
-- [ ] Statistiche nel player (peer, velocità, buffer).
-- [ ] Testi in tutte le 9 lingue.
-- [ ] `docs/guida.md` e `docs/guide.md`.
-- [ ] CHANGELOG.
-- [ ] Avviso alla prima attivazione: con i torrent l'IP è visibile agli altri. Consigliare WARP. La responsabilità di cosa si scarica è dell'utente.
+- [x] Statistiche nel player (peer, velocità, buffer).
+- [x] Testi in tutte le 9 lingue.
+- [x] `docs/guida.md` e `docs/guide.md`.
+- [x] CHANGELOG.
+- [x] Avviso alla prima attivazione: con i torrent l'IP è visibile agli altri. Consigliare WARP. La responsabilità di cosa si scarica è dell'utente.
 
 ## 6. Rischi da tenere d'occhio
 - **TV deboli:** libtorrent e il decoder 4K insieme possono non reggere. La fase 0 serve a misurarlo.

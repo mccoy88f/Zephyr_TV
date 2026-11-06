@@ -889,4 +889,28 @@
     <string name="title_trailer">观看预告片</string>
     <string name="trakt_todo_shows">待看完的剧集</string>
     <string name="trakt_todo_movies">待看完的电影</string>
+    <!-- The torrent engine (see Torrents, TorrentSettings) -->
+    <string name="torrent">种子</string>
+    <string name="torrent_connecting">种子：正在寻找节点…</string>
+    <string name="torrent_status">%1$d 个节点 · %2$s</string>
+    <string name="torrent_ahead">已就绪 %1$s</string>
+    <string name="setting_torrent_engine">种子引擎</string>
+    <string name="torrent_not_installed">未安装</string>
+    <string name="torrent_installing">正在安装…</string>
+    <string name="torrent_update_value">%1$s · 有可用更新</string>
+    <string name="torrent_intro">Zephyr Torrent 用于播放和下载插件提供的种子流。它是一个独立的应用，从这里安装。种子播放或下载时，电视会与其他人的设备交换数据块，对方能看到你的地址：WARP 可以隐藏它（引擎也经由 WARP）。你播放和下载的内容由你自行负责。</string>
+    <string name="torrent_install">安装 Zephyr Torrent</string>
+    <string name="torrent_install_size">约 12 MB</string>
+    <string name="torrent_version">版本</string>
+    <string name="torrent_update">更新引擎</string>
+    <string name="torrent_cache">缓存大小</string>
+    <string name="torrent_keep_cache">播放后保留缓存</string>
+    <string name="torrent_seed">分享已完成的下载</string>
+    <string name="torrent_uninstall">卸载</string>
+    <string name="torrent_install_failed">种子引擎未能安装</string>
+    <string name="torrent_installed">种子引擎已安装：现在会提供种子流</string>
+    <string name="torrent_where">请在 设置 → 内容 → 种子引擎 中安装引擎</string>
+    <plurals name="torrent_streams_hidden">
+        <item quantity="other">%d 个种子流需要种子引擎</item>
+    </plurals>
 </resources>

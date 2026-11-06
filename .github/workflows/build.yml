@@ -26,9 +26,9 @@ jobs:
       # Lint errors fail the build (warnings don't); the full report goes to the log.
       - name: Lint
         run: |
-          report=app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt
+          report="app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt torrent/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt"
           # The errors again at the end, so they're the last lines of the log
-          ./gradlew --no-daemon lintDebug || { cat "$report"; echo "::group::Errors only"; grep -A3 ": Error:" "$report"; echo "::endgroup::"; exit 1; }
+          ./gradlew --no-daemon lintDebug || { cat $report 2>/dev/null; echo "::group::Errors only"; grep -A3 ": Error:" $report 2>/dev/null; echo "::endgroup::"; exit 1; }
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -36,5 +36,6 @@ jobs:
           name: zephyr-debug
           path: |
             app/build/outputs/apk/debug/*.apk
+            torrent/build/outputs/apk/debug/*.apk
             app/build/reports/
           if-no-files-found: ignore

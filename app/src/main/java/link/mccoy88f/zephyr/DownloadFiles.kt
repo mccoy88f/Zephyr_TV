@@ -30,17 +30,34 @@ class DownloadFiles : ContentProvider() {
         return id
     }
 
+    /** content://<package>.downloads/t/<id>/<file name>: a torrent's, if it's one of ours; the engine has its file. */
+    private fun torrent(uri: Uri): Downloads.Entry? {
+        val seg = uri.pathSegments
+        if (seg.size < 2 || seg[0] != "t") return null
+        val ctx = context ?: throw FileNotFoundException("no context")
+        return Downloads.all(ctx.filesDir)[seg[1]]?.takeIf { it.torrent } ?: throw FileNotFoundException("no such download")
+    }
+
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
         if (mode != "r") throw SecurityException("read-only")
+        // The engine's file, opened there and handed on as it is (the app it's shared to can't ask the engine itself).
+        torrent(uri)?.let { e ->
+            val ctx = context!!
+            return ctx.contentResolver.openFileDescriptor(Torrents.fileUri(ctx, e.id, e.file), "r") ?: throw FileNotFoundException("not in the engine")
+        }
         return dm().openDownloadedFile(id(uri))
     }
 
-    override fun getType(uri: Uri): String =
+    override fun getType(uri: Uri): String = if (uri.pathSegments.firstOrNull() == "t") mimeOf(uri.lastPathSegment.orEmpty()) else
         runCatching { dm().getMimeTypeForDownloadedFile(id(uri)) }.getOrNull()?.takeIf { it.isNotBlank() && it != "application/octet-stream" }
             ?: mimeOf(uri.lastPathSegment.orEmpty())
 
     // Its name and size, which the apps it's shared to ask before they read it.
     override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor {
+        torrent(uri)?.let { e ->
+            val size = runCatching { context!!.contentResolver.openFileDescriptor(Torrents.fileUri(context!!, e.id, e.file), "r")?.use { it.statSize } }.getOrNull() ?: 0L
+            return MatrixCursor(arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE)).apply { addRow(arrayOf<Any>(e.file, size)) }
+        }
         val id = id(uri)
         val size = runCatching {
             dm().query(DownloadManager.Query().setFilterById(id))?.use { c ->
@@ -60,6 +77,10 @@ class DownloadFiles : ContentProvider() {
         /** The address the download [dm], saved as [file], is read at. */
         fun uri(context: Context, dm: Long, file: String): Uri = Uri.Builder().scheme("content")
             .authority("${context.packageName}.downloads").appendPath(dm.toString()).appendPath(file).build()
+
+        /** The address download [e] is read at: the download manager's, or a torrent's from the engine (t/<id>/<file>). */
+        internal fun uri(context: Context, e: Downloads.Entry): Uri = if (!e.torrent) uri(context, e.dm, e.file) else Uri.Builder().scheme("content")
+            .authority("${context.packageName}.downloads").appendPath("t").appendPath(e.id).appendPath(e.file).build()
 
         /** A video's type by its name, for the apps it's shared to. */
         fun mimeOf(file: String): String = when (file.substringAfterLast('.', "").lowercase()) {

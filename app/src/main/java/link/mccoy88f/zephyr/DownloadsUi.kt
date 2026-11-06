@@ -240,8 +240,7 @@ internal fun MainActivity.openDownloadsMenu(anchor: View) {
 
 /** [e] deleted: the download stopped (going) or its file removed (done), and forgotten. */
 private fun MainActivity.deleteDownload(e: Downloads.Entry) {
-    getSystemService(android.app.DownloadManager::class.java)?.let { runCatching { it.remove(e.dm) } }
-    Downloads.remove(filesDir, e.id)
+    removeDownload(e)
     lastEntries = lastEntries - e.id
     refreshDownloads()
 }

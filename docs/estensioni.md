@@ -271,7 +271,8 @@ Per film e serie, le immagini mostrate da Zephyr TV vengono dal **catalogo princ
 
 Uno stream con `externalUrl` o `ytId` compare nella lista con l'icona dell'app che lo apre. Se nessuna app del TV lo
 gestisce, non compare. Quello che si riproduce in un'altra app non ha un punto in Continua a guardare.
-Gli stream `infoHash` (torrent) non si riproducono (vedi 12).
+Gli stream `infoHash` (torrent), con `fileIdx` e `sources` come quelli di Stremio, si riproducono e si scaricano solo
+con il motore torrent installato (Impostazioni → Contenuti → Motore torrent); senza, non compaiono.
 
 **Catch-up.** Un canale con `catchup` ha i suoi programmi passati, fino a `days` giorni prima, riproducibili dalla
 guida, e **Dall'inizio** per quello in onda. Zephyr TV ottiene lo stream di un programma in uno di due modi:
@@ -615,7 +616,7 @@ standard, con il suo nome per `requires`, quando Zephyr TV la implementa.
 | `subtle` | cifrature e hash veloci | `crypto.subtle` (`digest`, AES, HMAC) e `crypto.getRandomValues` |
 | `widevine` | DASH protetti con Widevine | `drm: { "widevine": { "license": "<url>", "headers"?: {…} } }` |
 
-Non previsti: stream torrent (`infoHash`), WebSocket, pacchetti firmati.
+Non previsti: WebSocket, pacchetti firmati.
 
 ## 13. Esempio: YouYubeZ
 

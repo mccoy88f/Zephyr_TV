@@ -156,6 +156,24 @@ How **quality** and **language** are recognised:
 - **Dolby Vision**: on a TV without Dolby Vision, films in Dolby Vision profile 7 (many 4K remuxes) play in HDR10. Streams that say "DV" alone, without HDR10, are tried after the others: on that TV their colours are wrong.
 - **Subtitles from add-ons**: with a subtitles add-on installed (for example OpenSubtitles), its subtitles in the TV's language and in English show in **Subtitles**, with those an add-on hands with the stream.
 
+### Torrents
+
+Some add-ons give torrent streams instead of direct links. To play and download them you need **Zephyr Torrent**, the torrent engine: an app of its own, installed from **Settings → Content → Torrent engine** (about 12 MB). Without the engine, torrent streams don't show, and the list of streams says how many are missing.
+
+- **Playing**: the engine looks for peers (up to a minute), then the film starts while it downloads. While it loads, the peers, the speed and how much is ready show under the name; in the banner, next to the stream. When a torrent has no peers, the player goes on to the next stream. At the same quality, the player tries direct links first: they start sooner.
+- **Cache**: what downloads for playing stays in a cache, deleted when you close the film. A film larger than the cache downloads only around the part you watch.
+- **Download**: the **Download** button takes torrent streams too. The engine downloads the whole file into the download folder, with a notification of its own. The file plays and shares as the others do.
+
+| Setting | Default | What it does |
+|---|---|---|
+| **Version** | | The version installed. **Update the engine** shows when this version of Zephyr TV has a newer one |
+| **Cache size** | 2 GB | 1, 2, 4 or 8 GB |
+| **Keep the cache after playing** | Off | On: the cache stays (up to its size), and a film watched again starts sooner |
+| **Share finished downloads** | Off | On: finished downloads stay shared with others (seeding), while the engine runs |
+| **Uninstall** | | Removes the engine |
+
+With torrents, the other peers see the TV's address. **WARP** ([chapter 12](#hiding-your-ip)) hides it: the engine goes through WARP too (if you install the engine with WARP already on, turn WARP off and on again). What you play and download is your responsibility.
+
 ## 10. Content catalogs
 
 **Settings → Content → Content catalog** is an ordered list of catalogs.

@@ -895,4 +895,30 @@
     <string name="title_trailer">Mira el tràiler</string>
     <string name="trakt_todo_shows">Sèries per acabar</string>
     <string name="trakt_todo_movies">Pel·lícules per acabar</string>
+    <!-- The torrent engine (see Torrents, TorrentSettings) -->
+    <string name="torrent">Torrent</string>
+    <string name="torrent_connecting">Torrent: cercant parells…</string>
+    <string name="torrent_status">%1$d parells · %2$s</string>
+    <string name="torrent_ahead">%1$s a punt</string>
+    <string name="setting_torrent_engine">Motor de torrents</string>
+    <string name="torrent_not_installed">No instal·lat</string>
+    <string name="torrent_installing">S\'està instal·lant…</string>
+    <string name="torrent_update_value">%1$s · actualització disponible</string>
+    <string name="torrent_intro">Zephyr Torrent reprodueix i baixa els streams torrent dels complements. És una app a part que s\'instal·la des d\'aquí. Mentre un torrent es reprodueix o es baixa, la TV n\'intercanvia les parts amb dispositius d\'altres persones, que veuen la teva adreça: WARP l\'amaga (el motor també hi passa). El que reprodueixes i baixes és responsabilitat teva.</string>
+    <string name="torrent_install">Instal·la Zephyr Torrent</string>
+    <string name="torrent_install_size">uns 12 MB</string>
+    <string name="torrent_version">Versió</string>
+    <string name="torrent_update">Actualitza el motor</string>
+    <string name="torrent_cache">Mida de la memòria cau</string>
+    <string name="torrent_keep_cache">Conserva la memòria cau després de reproduir</string>
+    <string name="torrent_seed">Comparteix les baixades acabades</string>
+    <string name="torrent_uninstall">Desinstal·la</string>
+    <string name="torrent_install_failed">No s\'ha instal·lat el motor de torrents</string>
+    <string name="torrent_installed">Motor de torrents instal·lat: ara s\'ofereixen els streams torrent</string>
+    <string name="torrent_where">Instal·la el motor a Configuració → Contingut → Motor de torrents</string>
+    <plurals name="torrent_streams_hidden">
+        <item quantity="one">%d stream torrent necessita el motor de torrents</item>
+        <item quantity="many">%d streams torrent necessiten el motor de torrents</item>
+        <item quantity="other">%d streams torrent necessiten el motor de torrents</item>
+    </plurals>
 </resources>

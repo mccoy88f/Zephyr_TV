@@ -892,4 +892,29 @@
     <string name="title_trailer">ट्रेलर देखें</string>
     <string name="trakt_todo_shows">पूरी करने वाली सीरीज़</string>
     <string name="trakt_todo_movies">पूरी करने वाली फ़िल्में</string>
+    <!-- The torrent engine (see Torrents, TorrentSettings) -->
+    <string name="torrent">टोरेंट</string>
+    <string name="torrent_connecting">टोरेंट: पीयर खोजे जा रहे हैं…</string>
+    <string name="torrent_status">%1$d पीयर · %2$s</string>
+    <string name="torrent_ahead">%1$s तैयार</string>
+    <string name="setting_torrent_engine">टोरेंट इंजन</string>
+    <string name="torrent_not_installed">इंस्टॉल नहीं है</string>
+    <string name="torrent_installing">इंस्टॉल हो रहा है…</string>
+    <string name="torrent_update_value">%1$s · अपडेट उपलब्ध</string>
+    <string name="torrent_intro">Zephyr Torrent ऐड-ऑन की टोरेंट स्ट्रीम चलाता और डाउनलोड करता है। यह एक अलग ऐप है, जो यहीं से इंस्टॉल होता है। टोरेंट चलते या डाउनलोड होते समय टीवी उसके हिस्से दूसरे लोगों के डिवाइस से बदलता है, और वे आपका पता देखते हैं: WARP उसे छिपाता है (इंजन भी उसी से जाता है)। आप क्या चलाते और डाउनलोड करते हैं, यह आपकी ज़िम्मेदारी है।</string>
+    <string name="torrent_install">Zephyr Torrent इंस्टॉल करें</string>
+    <string name="torrent_install_size">लगभग 12 MB</string>
+    <string name="torrent_version">वर्शन</string>
+    <string name="torrent_update">इंजन अपडेट करें</string>
+    <string name="torrent_cache">कैश का आकार</string>
+    <string name="torrent_keep_cache">चलाने के बाद कैश रखें</string>
+    <string name="torrent_seed">पूरे हुए डाउनलोड शेयर करें</string>
+    <string name="torrent_uninstall">अनइंस्टॉल करें</string>
+    <string name="torrent_install_failed">टोरेंट इंजन इंस्टॉल नहीं हुआ</string>
+    <string name="torrent_installed">टोरेंट इंजन इंस्टॉल हो गया: अब टोरेंट स्ट्रीम दिखाई जाती हैं</string>
+    <string name="torrent_where">इंजन को सेटिंग्स → सामग्री → टोरेंट इंजन में इंस्टॉल करें</string>
+    <plurals name="torrent_streams_hidden">
+        <item quantity="one">%d टोरेंट स्ट्रीम के लिए टोरेंट इंजन चाहिए</item>
+        <item quantity="other">%d टोरेंट स्ट्रीम के लिए टोरेंट इंजन चाहिए</item>
+    </plurals>
 </resources>

@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "zephyr"
 include(":app")
+include(":torrent") // Zephyr Torrent: the torrent engine, an APK of its own (see torrent/build.gradle.kts)

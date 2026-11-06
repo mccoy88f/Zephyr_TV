@@ -54,6 +54,9 @@
         </intent>
         <!-- Piume, what Zephyr TV was: its settings and history are taken on the first start (see FromPiume). -->
         <package android:name="dev.piume" />
+        <!-- Zephyr Torrent, the torrent engine (see Torrents), and the debug build's own. -->
+        <package android:name="link.mccoy88f.zephyr.torrent" />
+        <package android:name="link.mccoy88f.zephyr.torrent.debug" />
         <!-- Sony TVs: which external inputs have a device connected (see connectedInputs). -->
         <provider android:authorities="com.sony.dtv.tvinput.external.provider" />
         <!-- The apps that open a TV channel, to find the TV app and offer it in its setting (see TvApp). -->

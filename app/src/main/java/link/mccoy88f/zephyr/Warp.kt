@@ -15,7 +15,7 @@ import java.net.URL
 
 /**
  * Cloudflare WARP for Zephyr TV alone: a WireGuard tunnel to Cloudflare's free WARP network, as Android's VPN for
- * this app only (its other processes too: the player, the plugins', the extensions'), so the sites add-ons, plugins
+ * this app only (its other processes too: the player, the plugins', the extensions'; and the torrent engine), so the sites add-ons, plugins
  * and extensions read, and the servers of the videos, see one of Cloudflare's addresses instead of the device's.
  *
  * The account is made as Cloudflare's own app makes it (and wgcf, on servers): a key pair here, its public key sent to
@@ -111,6 +111,9 @@ internal object Warp {
             .addDnsServer(InetAddress.getByName("1.0.0.1"))
             .setMtu(1280)
             .includeApplication(c.packageName) // Zephyr TV only: the other apps stay as they are
+            // ...and its torrent engine, when it's installed: the peers then see Cloudflare's address, not the TV's.
+            // (Installed after WARP went up, it's covered once WARP is turned off and on again.)
+            .apply { if (Torrents.installed(c) != null) includeApplication(Torrents.enginePackage(c)) }
             .build()
         val peer = Peer.Builder()
             .parsePublicKey(a.optString("peer").ifBlank { PEER_KEY })

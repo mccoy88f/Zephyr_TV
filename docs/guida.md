@@ -156,6 +156,24 @@ Come vengono riconosciute **qualità** e **lingua**:
 - **Dolby Vision**: su un TV senza Dolby Vision, i film in Dolby Vision profilo 7 (molti remux 4K) partono in HDR10. Gli stream che dicono solo "DV", senza HDR10, vengono provati dopo gli altri: su quel TV mostrano colori sbagliati.
 - **Sottotitoli dagli add-on**: con un add-on di sottotitoli installato (per esempio OpenSubtitles), i suoi sottotitoli nella lingua del TV e in inglese compaiono in **Sottotitoli**, insieme a quelli che un add-on dà con lo stream.
 
+### Torrent
+
+Alcuni add-on danno stream torrent invece di link diretti. Per riprodurli e scaricarli serve **Zephyr Torrent**, il motore torrent: è un'app a sé, che si installa da **Impostazioni → Contenuti → Motore torrent** (circa 12 MB). Senza il motore gli stream torrent non compaiono, e la lista degli stream dice quanti ne mancano.
+
+- **Riproduzione**: il motore cerca i peer (fino a un minuto), poi il film parte mentre si scarica. Mentre carica, sotto il nome si vedono i peer, la velocità e quanto è già pronto; nel banner, accanto allo stream. Se il torrent non ha peer, il player passa allo stream successivo. A parità di qualità, il player prova prima i link diretti, che partono prima.
+- **Cache**: quello che si scarica per la riproduzione resta in una cache, cancellata quando chiudi il film. Un film più grande della cache si scarica solo intorno al punto che stai guardando.
+- **Scarica**: il pulsante **Scarica** accetta anche gli stream torrent. Il motore scarica il file intero nella cartella dei download, con una sua notifica. Il file scaricato si riproduce e si condivide come gli altri.
+
+| Voce | Predefinito | Cosa fa |
+|---|---|---|
+| **Versione** | | La versione installata. **Aggiorna il motore** compare quando questa versione di Zephyr TV ne ha una più nuova |
+| **Dimensione della cache** | 2 GB | 1, 2, 4 o 8 GB |
+| **Tieni la cache dopo la riproduzione** | Spento | Acceso: la cache resta (fino alla sua dimensione), e un film rivisto riparte prima |
+| **Condividi i download finiti** | Spento | Acceso: i download finiti restano condivisi con gli altri (seeding), finché il motore è attivo |
+| **Disinstalla** | | Rimuove il motore |
+
+Con i torrent, gli altri peer vedono l'indirizzo del TV. **WARP** ([capitolo 12](#nascondere-il-tuo-ip)) lo nasconde: anche il motore passa da WARP (se installi il motore con WARP già attivo, spegni e riaccendi WARP). La responsabilità di cosa riproduci e scarichi è tua.
+
 ## 10. Cataloghi dei contenuti
 
 **Impostazioni → Contenuti → Catalogo contenuti** è una lista ordinata di cataloghi.

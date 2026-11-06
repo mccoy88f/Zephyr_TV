@@ -405,6 +405,8 @@ internal fun MainActivity.sectionRows(section: Int): List<Triple<String, String,
             },
             // Where Download saves films and episodes (see Downloads): the app's own folder, Download, Movies or a drive.
             page(getString(R.string.setting_download_folder), downloadFolder()?.name.orEmpty()) { pickDownloadFolder() },
+            // Torrent streams, played and downloaded by Zephyr Torrent, an app of its own installed from here (see Torrents).
+            page(getString(R.string.setting_torrent_engine), torrentValue()) { torrentPage() },
         )
     }
     // The TV's own side: its inputs (HDMI and the like) and its channels, with their logos and guide.
