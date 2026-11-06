@@ -125,13 +125,28 @@ internal object Torrents {
         }.distinct()
         val file = if (s.has("fileIdx") && !s.isNull("fileIdx")) s.optInt("fileIdx", -1).takeIf { it >= 0 } else null
         val name = s.optJSONObject("behaviorHints")?.let { h -> h.optString("filename").takeIf { !h.isNull("filename") && it.isNotBlank() } }
+        val seeders = seeders(listOf("name", "title", "description").joinToString("\n") { k -> s.optString(k).takeIf { !s.isNull(k) }.orEmpty() })
         return buildString {
             append("magnet:?xt=urn:btih:").append(hash)
             name?.let { append("&dn=").append(Stremio.enc(it)) }
             trackers.forEach { append("&tr=").append(Stremio.enc(it)) }
             file?.let { append("&so=").append(it) }
+            // How many seeders the add-on says it has: Zephyr TV's own (zs=), which the engine leaves aside.
+            seeders?.let { append("&zs=").append(it) }
         }
     }
+
+    /** The seeders a stream's text says it has: "👤 42", or "Seeders: 42". */
+    internal fun seeders(text: String): Int? =
+        (Regex("\uD83D\uDC64\\s*(\\d+)").find(text) ?: Regex("(?i)\\bseed(?:er)?s?\\s*[:=]?\\s*(\\d+)").find(text))
+            ?.groupValues?.get(1)?.toIntOrNull()
+
+    /** Torrents with more seeders first (they start sooner and don't stall); other streams, and torrents saying none, as they are. */
+    val bySeeders: Comparator<Stremio.Stream> = compareByDescending { seedersOf(it.url) ?: -1 }
+
+    /** The seeders kept in a torrent stream's magnet link (see magnet), or null. */
+    fun seedersOf(url: String): Int? = if (!isTorrent(url)) null else
+        url.substringAfter('?').split('&').firstOrNull { it.startsWith("zs=") }?.removePrefix("zs=")?.toIntOrNull()
 
     /**
      * A call to the engine, through the provider this process holds; null when it isn't installed or doesn't answer

@@ -15,8 +15,8 @@ android {
         minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         targetSdk = 36
-        versionCode = 133
-        versionName = "4.3.0-beta.5"
+        versionCode = 134
+        versionName = "4.3.0-beta.6"
         // What's new: only this version's section of CHANGELOG.md ships, one entry per line, without ** marks.
         val notes = rootProject.file("CHANGELOG.md").readText().replace("\r", "")
             .substringAfter("\n## $versionName\n", "").substringBefore("\n## ")

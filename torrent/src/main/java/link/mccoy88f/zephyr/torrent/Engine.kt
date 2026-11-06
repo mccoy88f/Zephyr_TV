@@ -12,6 +12,7 @@ import org.libtorrent4j.SessionManager
 import org.libtorrent4j.SessionParams
 import org.libtorrent4j.SettingsPack
 import org.libtorrent4j.Sha1Hash
+import org.libtorrent4j.TorrentFlags
 import org.libtorrent4j.TorrentHandle
 import org.libtorrent4j.TorrentInfo
 import org.libtorrent4j.swig.settings_pack
@@ -73,6 +74,10 @@ internal object Engine {
         sp.activeSeeds(if (seeding()) 4 else 0)
         sp.setBoolean(settings_pack.bool_types.enable_dht.swigValue(), true)
         sp.setBoolean(settings_pack.bool_types.enable_lsd.swigValue(), true)
+        // A stream downloads only around where it plays (a film larger than the cache): each time those pieces are all
+        // here, libtorrent takes the torrent as finished, and by default then drops every seed it was connected to.
+        // The next pieces asked for then waited for new peers, minutes: the speed went to nothing and the player gave up.
+        sp.setBoolean(settings_pack.bool_types.close_redundant_connections.swigValue(), false)
         val s = SessionManager(false)
         // On a 32-bit TV, files read and written as files: mapping a film of several gigabytes into memory, as
         // libtorrent does by default, can't fit in its address space.
@@ -135,6 +140,11 @@ internal object Engine {
         val download = synchronized(downloads) { downloads.values.firstOrNull { it.hash == m.hash && it.handle?.isValid == true } }
         val dir = File(streamsDir(), m.hash)
         val h = download?.handle ?: handle(m, link, dir) ?: return Result.failure(IllegalStateException("not added"))
+        // Out of the session's queue: a stream "finished" (see start) isn't paused as a seed when seeding is off.
+        if (download == null) runCatching {
+            h.unsetFlags(TorrentFlags.AUTO_MANAGED)
+            h.resume()
+        }.onFailure { log("stream left in the queue: $it") }
         val p = Play(UUID.randomUUID().toString().replace("-", ""), m.hash, h, owned = download == null, dir = dir)
         play = p
         val ti = metadata(h) { play !== p } ?: run {

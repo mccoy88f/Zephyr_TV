@@ -1418,8 +1418,9 @@ class PlayerActivity : Activity() {
                     })
                 }
                 // Two lines: what it is on top (scrolling when it's long), where it's from under it, in italics.
-                // A torrent's: so marked.
-                val from = listOfNotNull(s.source?.takeIf { it.isNotEmpty() }, if (s.torrent) getString(R.string.torrent) else null).joinToString(" · ")
+                // A torrent's: so marked, with its seeders when its add-on says them.
+                val from = listOfNotNull(s.source?.takeIf { it.isNotEmpty() }, if (s.torrent) getString(R.string.torrent) else null,
+                    Torrents.seedersOf(s.url)?.let { "\uD83D\uDC64 $it" }).joinToString(" · ")
                 streamRow(getString(R.string.player_stream_row, k + 1, s.title), from, k == tried) {
                     tried = k - 1
                     attempts = 0
@@ -1715,6 +1716,7 @@ class PlayerActivity : Activity() {
         compareBy<Stremio.Stream> { s -> when (probes[s.url]?.ok) { true -> 0; null -> 1; false -> 2 } }
             .thenBy { it.langRank }.thenBy { dvLast(it) }.then(qualityOrder(preferredQuality(prefs)))
             .thenBy { it.torrent } // at the same quality, a server's address before a torrent: it starts sooner
+            .then(Torrents.bySeeders) // and among the torrents, the one with most seeders first
 
     /**
      * Quick start: a film's sources asked all at once, each one's streams looked at as they come; the first in the
@@ -1744,7 +1746,7 @@ class PlayerActivity : Activity() {
             got += more
             // Its best few at the preferred quality (or above, for the highest) checked: the first that answers plays.
             hit = more.filter { s -> s.langRank == Stremio.LANG_OURS && streamQuality(s.title) == preferred && dvLast(s) == 0 }
-                .sortedWith(qualityOrder(preferred).thenBy { it.torrent }).take(3)
+                .sortedWith(qualityOrder(preferred).thenBy { it.torrent }.then(Torrents.bySeeders)).take(3)
                 .firstOrNull { s -> (probes[s.url] ?: Stremio.probe(s.url, s.headers).also { probes[s.url] = it }).ok }
         }
         // The sources still looking: their streams come in the background, checked, at the end of the list.

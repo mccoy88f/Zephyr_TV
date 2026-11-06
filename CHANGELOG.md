@@ -13,6 +13,13 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.3.0-beta.6
+
+- The list of streams shows the seeders of a torrent stream on the second line again, when the add-on gives them.
+- At the same quality, the torrent with the most seeders is at the top of the torrents.
+- A torrent stream does not lose its peers any more while it plays. Before, the speed went to zero after a few minutes, also with many seeders.
+- Update the engine in **Settings → Content → Torrent engine**.
+
 ## 4.3.0-beta.5
 
 - A torrent stream does not stop any more after 30 seconds while it loads. Before, the player said that no stream was available, but the engine still downloaded.

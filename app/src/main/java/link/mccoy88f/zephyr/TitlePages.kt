@@ -1121,7 +1121,9 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
     // heading; each stream on two lines: what it is on top (scrolling when it's long), where it's from under it, in italics.
     fun show() {
         val keep = if (shown) currentFocus?.tag as? String else null // the stream focused stays so as others come in
-        val list = found.toList().distinctBy { it.url }.sortedByDescending { qualityGroup(it.title) }
+        // In a group: servers' addresses first, then the torrents, in the TV's language first, the most seeders first.
+        val list = found.toList().distinctBy { it.url }.sortedWith(compareByDescending<Stremio.Stream> { qualityGroup(it.title) }
+            .thenBy { it.torrent }.thenBy { if (it.torrent) it.langRank else 0 }.then(Torrents.bySeeders))
         val rest = when {
             left > 0 -> listOf(page(getString(R.string.title_finding_streams)) { })
             found.isEmpty() && local == null -> listOf(page(none) { })
@@ -1154,7 +1156,8 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
                 group = q
                 settingsList.addView(label(qualityHeading(q), 13f).apply { alpha = 0.6f; setPadding(dp(14), dp(16), 0, dp(6)) }, at++)
             }
-            val from = listOfNotNull(s.source?.takeIf { it.isNotEmpty() }, if (s.torrent) getString(R.string.torrent) else null).joinToString(" · ")
+            val from = listOfNotNull(s.source?.takeIf { it.isNotEmpty() }, if (s.torrent) getString(R.string.torrent) else null,
+                Torrents.seedersOf(s.url)?.let { "\uD83D\uDC64 $it" }).joinToString(" · ")
             settingsList.addView(twoLineRow(s.title.ifBlank { s.url.substringAfterLast('/').take(60) }, from) {
                 if (picked != null) return@twoLineRow picked(s)
                 pageReturn = back
