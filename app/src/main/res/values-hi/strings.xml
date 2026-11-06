@@ -917,4 +917,9 @@
         <item quantity="one">%d टोरेंट स्ट्रीम के लिए टोरेंट इंजन चाहिए</item>
         <item quantity="other">%d टोरेंट स्ट्रीम के लिए टोरेंट इंजन चाहिए</item>
     </plurals>
+    <!-- The torrent engine's status row: no answer, joining the network (no DHT nodes yet), on it. -->
+    <string name="torrent_state">स्थिति</string>
+    <string name="torrent_disconnected">डिस्कनेक्ट</string>
+    <string name="torrent_joining">कनेक्ट हो रहा है…</string>
+    <string name="torrent_connected">कनेक्ट · %1$d नोड</string>
 </resources>

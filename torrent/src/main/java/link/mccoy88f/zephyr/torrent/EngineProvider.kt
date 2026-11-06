@@ -81,6 +81,8 @@ class EngineProvider : ContentProvider() {
                 }
             }
             "stop" -> Engine.stopPlay(arg)
+            // Whether the engine is on the network: the DHT nodes it knows (starting its session, the first time).
+            "health" -> out.putLong("nodes", Engine.dhtNodes())
             "download" -> {
                 val e = extras ?: return out
                 out.putBoolean("ok", Engine.download(e.getString("key") ?: return out, e.getString("link") ?: return out,

@@ -1410,9 +1410,8 @@ class PlayerActivity : Activity() {
                     })
                 }
                 // Two lines: what it is on top (scrolling when it's long), where it's from under it, in italics.
-                // A torrent's: so marked, with its seeders when its add-on says them.
-                val from = listOfNotNull(s.source?.takeIf { it.isNotEmpty() }, if (s.torrent) getString(R.string.torrent) else null,
-                    Torrents.seedersOf(s.url)?.let { "\uD83D\uDC64 $it" }).joinToString(" · ")
+                // A torrent's: so marked.
+                val from = listOfNotNull(s.source?.takeIf { it.isNotEmpty() }, if (s.torrent) getString(R.string.torrent) else null).joinToString(" · ")
                 streamRow(getString(R.string.player_stream_row, k + 1, s.title), from, k == tried) {
                     tried = k - 1
                     attempts = 0

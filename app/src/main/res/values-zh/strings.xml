@@ -913,4 +913,9 @@
     <plurals name="torrent_streams_hidden">
         <item quantity="other">%d 个种子流需要种子引擎</item>
     </plurals>
+    <!-- The torrent engine's status row: no answer, joining the network (no DHT nodes yet), on it. -->
+    <string name="torrent_state">状态</string>
+    <string name="torrent_disconnected">未连接</string>
+    <string name="torrent_joining">正在连接…</string>
+    <string name="torrent_connected">已连接 · %1$d 个节点</string>
 </resources>

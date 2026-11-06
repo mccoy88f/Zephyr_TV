@@ -921,4 +921,9 @@
         <item quantity="many">%d flux torrent nécessitent le moteur torrent</item>
         <item quantity="other">%d flux torrent nécessitent le moteur torrent</item>
     </plurals>
+    <!-- The torrent engine's status row: no answer, joining the network (no DHT nodes yet), on it. -->
+    <string name="torrent_state">État</string>
+    <string name="torrent_disconnected">Déconnecté</string>
+    <string name="torrent_joining">Connexion…</string>
+    <string name="torrent_connected">Connecté · %1$d nœuds</string>
 </resources>

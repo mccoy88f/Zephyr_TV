@@ -51,6 +51,7 @@ internal fun MainActivity.torrentPage(focus: Int = 0) {
     }
     netIo.execute {
         val s = Torrents.settings(this)
+        val nodes = Torrents.call(this, "health")?.getLong("nodes")
         ui.post {
             if (settingsScrim.visibility != android.view.View.VISIBLE) return@post // the settings closed meanwhile
             val cache = s?.getInt("cache_mb") ?: 2048
@@ -62,6 +63,7 @@ internal fun MainActivity.torrentPage(focus: Int = 0) {
             }
             val older = installed.first < Torrents.bundledVersion(this)
             val rows = listOfNotNull(
+                page(getString(R.string.torrent_state), engineState(nodes)) { },
                 page(getString(R.string.torrent_version), installed.second) { },
                 if (!older) null else if (installingEngine) page(getString(R.string.torrent_installing)) { }
                     else page(getString(R.string.torrent_update)) { installEngine() },
@@ -76,8 +78,48 @@ internal fun MainActivity.torrentPage(focus: Int = 0) {
                 },
             )
             showPage(title, rows, focus = focus.coerceAtLeast(0), top = intro, back = { renderSettings(TORRENT_ROW) })
+            val row = settingsList.getChildAt(1) as? LinearLayout ?: return@post
+            stateDot(row, nodes)
+            watchEngine(title, row)
         }
     }
+}
+
+/** The engine's state as the status row says it: off (no answer), joining the network (no DHT nodes yet), on. */
+private fun MainActivity.engineState(nodes: Long?): String = when {
+    nodes == null -> getString(R.string.torrent_disconnected)
+    nodes <= 0 -> getString(R.string.torrent_joining)
+    else -> getString(R.string.torrent_connected, nodes.toInt())
+}
+
+/** The status row's dot: red off, yellow joining, green on. */
+private fun MainActivity.stateDot(row: LinearLayout, nodes: Long?) {
+    val color = when {
+        nodes == null -> 0xFFE53935.toInt()
+        nodes <= 0 -> 0xFFFDD835.toInt()
+        else -> 0xFF43A047.toInt()
+    }
+    val dot = row.findViewWithTag<android.view.View>("engine_dot") ?: android.view.View(this).apply {
+        tag = "engine_dot"
+        row.addView(this, 1, LinearLayout.LayoutParams(dp(12), dp(12)).apply { marginStart = dp(10); marginEnd = dp(4) })
+    }
+    dot.background = android.graphics.drawable.GradientDrawable().apply { shape = android.graphics.drawable.GradientDrawable.OVAL; setColor(color) }
+}
+
+/** The status row asked again every two seconds while the engine's page is up: joining turns to on as it finds nodes. */
+private fun MainActivity.watchEngine(title: String, row: LinearLayout) {
+    ui.postDelayed({
+        if (!pageShowing(title) || !row.isAttachedToWindow) return@postDelayed
+        netIo.execute {
+            val nodes = Torrents.call(this, "health")?.getLong("nodes")
+            ui.post {
+                if (!row.isAttachedToWindow) return@post
+                (row.getChildAt(row.childCount - 1) as? android.widget.TextView)?.text = engineState(nodes)
+                stateDot(row, nodes)
+                watchEngine(title, row)
+            }
+        }
+    }, 2000)
 }
 
 /**

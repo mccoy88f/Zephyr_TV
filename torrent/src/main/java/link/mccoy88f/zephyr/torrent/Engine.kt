@@ -82,6 +82,9 @@ internal object Engine {
         return s
     }
 
+    /** The DHT nodes the session knows: none while it's still joining the network (or can't reach it). */
+    fun dhtNodes(): Long = runCatching { session.dhtNodes() }.getOrDefault(0L)
+
     private fun streamsDir() = File(app.cacheDir, "streams")
 
     /** The torrent of [m], added if it isn't yet, its files saved under [dir]. */

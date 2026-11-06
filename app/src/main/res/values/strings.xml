@@ -917,4 +917,9 @@
         <item quantity="one">%d torrent stream needs the torrent engine</item>
         <item quantity="other">%d torrent streams need the torrent engine</item>
     </plurals>
+    <!-- The torrent engine's status row: no answer, joining the network (no DHT nodes yet), on it. -->
+    <string name="torrent_state">Status</string>
+    <string name="torrent_disconnected">Disconnected</string>
+    <string name="torrent_joining">Connecting…</string>
+    <string name="torrent_connected">Connected · %1$d nodes</string>
 </resources>

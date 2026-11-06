@@ -13,6 +13,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.3.0-beta.3
+
+- **Torrent engine** shows a **Status** row with a coloured dot. Red: the engine does not answer. Yellow: it connects to the network. Green: it is connected.
+- The list of streams does not show the seeders any more.
+
 ## 4.3.0-beta.2
 
 - The torrent engine answers Zephyr TV on all TVs. Before, on some TVs it refused all requests. The engine options did not change and torrent streams did not play.
