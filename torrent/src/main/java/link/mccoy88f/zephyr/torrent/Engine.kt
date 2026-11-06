@@ -61,7 +61,7 @@ internal object Engine {
             cacheMb?.let { putInt("cache_mb", it.coerceIn(256, 64 * 1024)) }
             keep?.let { putBoolean("keep_cache", it) }
             seed?.let { putBoolean("seed", it) }
-        }.apply()
+        }.commit() // on disk at once: a process killed right after keeps them
         if (seed == false) synchronized(downloads) { downloads.values.filter { it.done }.forEach { d -> d.handle?.let { remove(it, false) }; d.handle = null } }
     }
 
@@ -83,7 +83,12 @@ internal object Engine {
     }
 
     /** The DHT nodes the session knows: none while it's still joining the network (or can't reach it). */
-    fun dhtNodes(): Long = runCatching { session.dhtNodes() }.getOrDefault(0L)
+    fun dhtNodes(): Long = runCatching { session.dhtNodes() }.onFailure { log("session not started: $it") }.getOrDefault(0L)
+
+    /** The session started in the background, if it isn't yet: it joins the network before a torrent is asked for. */
+    fun warm() {
+        Thread({ dhtNodes() }, "torrent-warm").apply { isDaemon = true }.start()
+    }
 
     private fun streamsDir() = File(app.cacheDir, "streams")
 
@@ -388,7 +393,8 @@ internal object Engine {
         if (d.going) return
         d.going = true
         Thread({
-            try { resumeNow(d) } finally { d.going = false }
+            // A failure here (the session that can't start) mustn't take the engine's process, and every call, with it.
+            try { resumeNow(d) } catch (e: Throwable) { log("download ${d.key} not resumed: $e") } finally { d.going = false }
         }, "torrent-download").apply { isDaemon = true }.start()
     }
 

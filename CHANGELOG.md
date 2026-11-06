@@ -13,6 +13,14 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.3.0-beta.4
+
+- Zephyr TV starts the torrent engine when it opens. It also starts it when a title has torrent streams. The engine then finds peers sooner.
+- If a TV does not let Zephyr TV start the engine, Zephyr TV opens the engine for a moment. Then it asks again.
+- When the engine does not answer, the **Status** row tells why.
+- In **Torrent engine**, **Cache size** and **Keep the cache after playing** change again with a touch. The page stays where it was. Before, it went back to the top.
+- Update the engine in **Settings → Content → Torrent engine**.
+
 ## 4.3.0-beta.3
 
 - **Torrent engine** shows a **Status** row with a coloured dot. Red: the engine does not answer. Yellow: it connects to the network. Green: it is connected.

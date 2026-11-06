@@ -700,6 +700,11 @@ internal fun MainActivity.focusedRow(): Int? {
 internal fun MainActivity.showPage(title: String, allRows: List<Triple<String, String, () -> Unit>>, focus: Int = 0, top: View? = null,
                                   panes: Boolean = false, back: (() -> Unit)?) {
     val rows = handheldRows(allRows) // a phone or tablet: no rows for doing it on a phone
+    // The same page built again (a switch changed, an answer came in): it stays scrolled where it was, as a touch
+    // leaves no focus to bring the row back into view.
+    val scroller = settingsList.parent as View
+    val again = settingsScrim.visibility == View.VISIBLE && findViewById<TextView>(R.id.settingsTitle).text?.toString() == title
+    val scrolled = if (again && !goingBack) scroller.scrollY else 0
     // The page left keeps the row it had focus on; Back to a page puts focus there again, wherever it was.
     findViewById<TextView>(R.id.settingsTitle).text?.toString()?.let { left -> focusedRow()?.let { pageFocus[left] = it } }
     val focus = if (goingBack) pageFocus[title]?.takeIf { it in rows.indices } ?: focus else focus
@@ -719,7 +724,8 @@ internal fun MainActivity.showPage(title: String, allRows: List<Triple<String, S
         })
     }
     // Keep focus inside the panel: Up from the first row and Down from the last go nowhere.
-    (settingsList.parent as View).scrollTo(0, 0)
+    scroller.scrollTo(0, 0)
+    if (scrolled > 0) scroller.post { scroller.scrollTo(0, scrolled) } // once the rows are laid out again
     if (rows.isEmpty()) return phonePanel.show(title, rows, back) // a page that's all [top], like the PIN boxes, focuses itself
     if (top == null) settingsList.getChildAt(first).let { it.nextFocusUpId = it.id }
     settingsList.getChildAt(first + rows.size - 1).let { it.nextFocusDownId = it.id }

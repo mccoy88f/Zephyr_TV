@@ -27,8 +27,72 @@ internal object Torrents {
         private set
 
     fun refresh(c: Context): Boolean {
+        app = c.applicationContext
         available = installed(c) != null
+        if (available) warm(c) else drop(held)
         return available
+    }
+
+    /** This process's context, for [warm] from [offered]. */
+    @Volatile private var app: Context? = null
+
+    /** Why the engine didn't answer the last call ("not signed as Zephyr TV", "it stopped"), or null when it did. */
+    @Volatile var lastError: String? = null
+        private set
+
+    /**
+     * The engine's provider, held by this process while it runs: the engine's process then lives as long as Zephyr
+     * TV's (Android ranks it as Zephyr TV), with its session on the network and ready to play. Unstable: an engine
+     * that crashes doesn't take Zephyr TV with it.
+     */
+    @Volatile private var held: ContentProviderClient? = null
+    private val warming = java.util.concurrent.atomic.AtomicBoolean()
+
+    /** When the engine was last started by its activity (see [wake]): once every half a minute at most. */
+    @Volatile private var woken = 0L
+
+    /**
+     * The engine started, off the main thread: its process, and its session joining the network (the DHT), so a
+     * torrent finds its peers sooner. On opening Zephyr TV (see [refresh]) and when the streams found have torrents.
+     */
+    fun warm(c: Context? = app) {
+        val ctx = c ?: return
+        if (!available || !warming.compareAndSet(false, true)) return
+        Thread({ try { call(ctx, "health") } finally { warming.set(false) } }, "torrent-warm").apply { isDaemon = true }.start()
+    }
+
+    /** The engine's provider, held (see [held]); null when Android doesn't let it start (or it isn't installed). */
+    private fun client(c: Context): ContentProviderClient? = synchronized(this) {
+        held ?: try {
+            c.contentResolver.acquireUnstableContentProviderClient(authority(c))?.also { held = it }
+                ?: run { lastError = "not reachable"; null }
+        } catch (e: Exception) {
+            lastError = e.javaClass.simpleName
+            null
+        }
+    }
+
+    private fun drop(client: ContentProviderClient?) = synchronized(this) {
+        if (client == null) return@synchronized
+        if (held === client) held = null
+        runCatching { client.close() }
+    }
+
+    /**
+     * The engine's process started by its own activity, which shows nothing and closes at once: for the TVs that don't
+     * let an app start another's process for its provider (some makers' "autostart" rules, an engine never opened).
+     * Waits for it a few seconds, off the main thread. Whether it was asked to start.
+     */
+    private fun wake(c: Context): Boolean {
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (woken != 0L && now - woken < 30_000) return false
+        val i = android.content.Intent().setClassName(enginePackage(c), "link.mccoy88f.zephyr.torrent.StartActivity")
+        if (c.packageManager.resolveActivity(i, 0) == null) return false // an engine older than its activity
+        woken = now
+        if (c !is android.app.Activity) i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        val ok = runCatching { c.startActivity(i) }.onFailure { warn("torrent engine: not started ($it)") }.isSuccess
+        if (ok && android.os.Looper.myLooper() != android.os.Looper.getMainLooper()) Thread.sleep(2500)
+        return ok
     }
 
     /** The installed engine's version (code and name), or null when it isn't installed. */
@@ -44,7 +108,8 @@ internal object Torrents {
     fun isTorrent(url: String) = url.startsWith("magnet:", ignoreCase = true)
 
     /** [list] as it may be offered: the torrents left out while there is no engine. */
-    fun offered(list: List<Stremio.Stream>) = if (available) list else list.filterNot { isTorrent(it.url) }
+    fun offered(list: List<Stremio.Stream>) = if (available) list.also { l -> if (l.any { isTorrent(it.url) }) warm() }
+        else list.filterNot { isTorrent(it.url) }
 
     /**
      * A stream's magnet link from an add-on's stream object: its "url" when that is one already, else its infoHash with
@@ -68,10 +133,34 @@ internal object Torrents {
         }
     }
 
-    /** A call to the engine; null when it isn't installed or doesn't answer (or answers someone else: a SecurityException). */
-    fun call(c: Context, method: String, arg: String? = null, extras: Bundle? = null): Bundle? = runCatching {
-        c.contentResolver.call(Uri.parse("content://${authority(c)}"), method, arg, extras)
-    }.onFailure { warn("torrent engine: $method failed ($it)") }.getOrNull()
+    /**
+     * A call to the engine, through the provider this process holds; null when it isn't installed or doesn't answer
+     * (or answers someone else: a SecurityException), with why in [lastError]. An engine that stopped since (killed,
+     * crashed) is started again and asked again, once.
+     */
+    fun call(c: Context, method: String, arg: String? = null, extras: Bundle? = null): Bundle? {
+        for (attempt in 0..1) {
+            val client = client(c)
+            if (client == null) {
+                if (attempt == 0 && wake(c)) continue
+                warn("torrent engine: $method failed (${lastError})")
+                return null
+            }
+            try {
+                return client.call(method, arg, extras).also { lastError = null }
+            } catch (e: android.os.DeadObjectException) {
+                drop(client) // the engine stopped: started again by the next try
+                lastError = "stopped"
+            } catch (e: Exception) {
+                lastError = e.message?.takeIf { it.isNotBlank() } ?: e.javaClass.simpleName
+                warn("torrent engine: $method failed ($e)")
+                if (e is SecurityException || attempt == 1) return null
+                drop(client)
+            }
+        }
+        warn("torrent engine: $method failed (${lastError})")
+        return null
+    }
 
     /** The engine's settings as it keeps them, changed by [extras] first when there are any. */
     fun settings(c: Context, extras: Bundle? = null) = call(c, "settings", extras = extras)
@@ -132,7 +221,11 @@ internal object Torrents {
      * torrent can't be had (no one has it), with what the engine said in [why]. Off the main thread.
      */
     fun start(c: Context, link: String, why: (String) -> Unit = {}): Session? {
-        val client = runCatching { c.contentResolver.acquireUnstableContentProviderClient(authority(c)) }.getOrNull() ?: return null
+        fun acquire() = runCatching { c.contentResolver.acquireUnstableContentProviderClient(authority(c)) }.getOrNull()
+        val client = acquire() ?: (if (wake(c)) acquire() else null) ?: run {
+            why("not reachable")
+            return null
+        }
         val b = runCatching { client.call("start", null, Bundle().apply { putString("link", link) }) }
             .onFailure { warn("torrent engine: start failed ($it)") }.getOrNull()
         val url = b?.getString("url")

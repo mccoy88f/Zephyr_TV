@@ -57,9 +57,14 @@ internal fun MainActivity.torrentPage(focus: Int = 0) {
             val cache = s?.getInt("cache_mb") ?: 2048
             val keep = s?.getBoolean("keep_cache") ?: false
             val seed = s?.getBoolean("seed") ?: false
+            // The page again with the engine's answer, where it was (see showPage); no answer, said so.
             fun set(b: Bundle.() -> Unit, at: Int) = netIo.execute {
-                Torrents.settings(this, Bundle().apply(b))
-                ui.post { if (pageShowing(title)) torrentPage(at) }
+                val ok = Torrents.settings(this, Bundle().apply(b)) != null
+                ui.post {
+                    if (!ok) android.widget.Toast.makeText(this, getString(R.string.torrent_disconnected) +
+                        (Torrents.lastError?.let { " · $it" } ?: ""), android.widget.Toast.LENGTH_LONG).show()
+                    if (pageShowing(title)) torrentPage(at)
+                }
             }
             val older = installed.first < Torrents.bundledVersion(this)
             val rows = listOfNotNull(
@@ -87,7 +92,7 @@ internal fun MainActivity.torrentPage(focus: Int = 0) {
 
 /** The engine's state as the status row says it: off (no answer), joining the network (no DHT nodes yet), on. */
 private fun MainActivity.engineState(nodes: Long?): String = when {
-    nodes == null -> getString(R.string.torrent_disconnected)
+    nodes == null -> getString(R.string.torrent_disconnected) + (Torrents.lastError?.let { " · " + it.take(40) } ?: "")
     nodes <= 0 -> getString(R.string.torrent_joining)
     else -> getString(R.string.torrent_connected, nodes.toInt())
 }

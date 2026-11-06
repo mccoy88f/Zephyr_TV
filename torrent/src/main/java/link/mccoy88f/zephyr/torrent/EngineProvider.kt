@@ -22,7 +22,10 @@ import java.io.FileNotFoundException
 class EngineProvider : ContentProvider() {
     override fun onCreate(): Boolean {
         Engine.use(context ?: return false)
-        Thread({ Engine.resumeAll() }, "torrent-resume").apply { isDaemon = true }.start()
+        // The session on the network at once (the DHT takes a while to join), then the downloads left going.
+        Engine.warm()
+        Thread({ runCatching { Engine.resumeAll() }.onFailure { Engine.log("downloads not resumed: $it") } }, "torrent-resume")
+            .apply { isDaemon = true }.start()
         return true
     }
 
