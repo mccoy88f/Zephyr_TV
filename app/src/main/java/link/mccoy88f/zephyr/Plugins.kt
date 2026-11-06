@@ -177,6 +177,20 @@ internal fun qualityGroup(title: String) = streamQuality(title).let { if (it == 
 internal fun android.content.Context.qualityHeading(group: Int) =
     if (group == 0) getString(R.string.player_quality_unknown) else if (group >= 2160) "${group}p · 4K" else "${group}p"
 
+/**
+ * A stream's first line without the name of its source at its start, which its second line says already: an
+ * add-on's streams are often named after it ("Torrentio 4k" from Torrentio). Its first word alone too ("Torrentio"
+ * from "Torrentio RD"), and a tag before it ("[RD+] Torrentio 4k"). The title as it is when that would leave nothing.
+ */
+internal fun streamInfo(title: String, source: String?): String {
+    val src = source?.trim().orEmpty()
+    if (src.isEmpty()) return title
+    val names = listOfNotNull(src, src.split(' ').first().takeIf { it.length >= 4 && it != src }).map { Regex.escape(it) }
+    val left = Regex("^\\s*(\\[[^\\]]*]\\s*)?(?:${names.joinToString("|")})\\b[\\s·:|\\-–]*", RegexOption.IGNORE_CASE)
+        .replace(title) { m -> m.groupValues[1] }.trim()
+    return left.ifEmpty { title }
+}
+
 /** The qualities Content → Preferred quality offers, by height; 0 is the highest there is. */
 internal val QUALITIES = listOf(0, 2160, 1440, 1080, 720, 480)
 

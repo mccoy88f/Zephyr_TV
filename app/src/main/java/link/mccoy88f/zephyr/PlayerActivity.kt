@@ -1453,7 +1453,7 @@ class PlayerActivity : Activity() {
                 // A torrent's: so marked, with its seeders when its add-on says them.
                 val from = listOfNotNull(s.source?.takeIf { it.isNotEmpty() }, if (s.torrent) getString(R.string.torrent) else null,
                     Torrents.seedersOf(s.url)?.let { "\uD83D\uDC64 $it" }).joinToString(" · ")
-                streamRow(getString(R.string.player_stream_row, k + 1, s.title), from, k == tried) {
+                streamRow(getString(R.string.player_stream_row, k + 1, streamInfo(s.title, s.source)), from, k == tried) {
                     tried = k - 1
                     attempts = 0
                     next()

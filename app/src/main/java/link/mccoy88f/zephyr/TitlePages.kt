@@ -1115,6 +1115,9 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
     var left = sources.size
     var hidden = 0 // torrents left out: no engine to play them (see Torrents)
     var shown = false
+    // The quality groups open (see accordionRow): the highest only, until one is opened or closed by hand.
+    val open = HashSet<Int>()
+    var openedByHand = false
     val savedPageExit = pageExit
     val leftId = detailDescView?.id
     // Grouped by quality as in the player's panel (the highest first, those that say none last), each group under its
@@ -1139,6 +1142,11 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
         findViewById<TextView>(R.id.settingsTitle).visibility = View.VISIBLE
         var group = -1
         var at = 0
+        if (!openedByHand) {
+            open.clear()
+            list.firstOrNull()?.let { open += qualityGroup(it.title) }
+        }
+        val counts = list.groupingBy { qualityGroup(it.title) }.eachCount()
         local?.let { e ->
             settingsList.addView(label(getString(R.string.download_local), 13f).apply { alpha = 0.6f; setPadding(dp(14), dp(16), 0, dp(6)) }, at++)
             val s = localStream(e)
@@ -1154,11 +1162,22 @@ internal fun MainActivity.pickStream(ref: TitleRef, meta: Stremio.TitleMeta, epi
             val q = qualityGroup(s.title)
             if (q != group) {
                 group = q
-                settingsList.addView(label(qualityHeading(q), 13f).apply { alpha = 0.6f; setPadding(dp(14), dp(16), 0, dp(6)) }, at++)
+                // Each quality an accordion: its heading opens or closes it, the focus staying on it.
+                settingsList.addView(accordionRow(qualityHeading(q), counts[q] ?: 0, q in open) {
+                    openedByHand = true
+                    if (!open.remove(q)) open += q
+                    show()
+                    (0 until settingsList.childCount).map { settingsList.getChildAt(it) }.firstOrNull { it.tag == "group:$q" }?.requestFocus()
+                }.apply {
+                    tag = "group:$q"
+                    if (leftId != null) nextFocusLeftId = leftId
+                }, at++, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
             }
+            if (q !in open) continue
             val from = listOfNotNull(s.source?.takeIf { it.isNotEmpty() }, if (s.torrent) getString(R.string.torrent) else null,
                 Torrents.seedersOf(s.url)?.let { "\uD83D\uDC64 $it" }).joinToString(" · ")
-            settingsList.addView(twoLineRow(s.title.ifBlank { s.url.substringAfterLast('/').take(60) }, from) {
+            // Its source's name only under it, not at the start of its first line too (see streamInfo).
+            settingsList.addView(twoLineRow(streamInfo(s.title, s.source).ifBlank { s.url.substringAfterLast('/').take(60) }, from) {
                 if (picked != null) return@twoLineRow picked(s)
                 pageReturn = back
                 playTitle(ref, meta, episode, chosen = s)

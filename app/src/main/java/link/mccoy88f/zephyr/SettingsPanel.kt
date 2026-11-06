@@ -1155,6 +1155,43 @@ internal fun MainActivity.pickSpotlightSource() {
  * A row of two lines, for a stream: [info] (its name, quality, size) on top, scrolling when it's too long, and
  * [source] (the add-on, plugin or extension it's from) under it, in italics. Lit with focus as a settings row is.
  */
+/**
+ * An accordion's heading: a group of rows under [title] ([count] of them), open or closed, with an arrow that says
+ * which (down: open, right: closed). OK, or a tap, runs [toggle]: the page is drawn again with the group open or
+ * closed. The panel's standard for a long list in groups (the streams by quality): only the first group open at
+ * first, so the list starts short and the best ones are on top.
+ */
+internal fun MainActivity.accordionRow(title: String, count: Int, open: Boolean, toggle: () -> Unit): View {
+    val bg = GradientDrawable().apply { cornerRadius = dp(8).toFloat() }
+    val name = label(title, 13f).apply { alpha = 0.8f; setTypeface(typeface, android.graphics.Typeface.BOLD) }
+    val number = label("$count", 13f).apply { alpha = 0.6f; setPadding(dp(8), 0, dp(8), 0) }
+    val arrow = ImageView(this).apply {
+        setImageResource(R.drawable.ic_chevron_right)
+        setColorFilter(fg)
+        rotation = if (open) 90f else 0f
+    }
+    return LinearLayout(this).apply {
+        id = View.generateViewId()
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        setPadding(dp(14), dp(10), dp(14), dp(10))
+        background = bg
+        isFocusable = true
+        isClickable = true
+        contentDescription = "$title, $count"
+        addView(name, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        addView(number)
+        addView(arrow, LinearLayout.LayoutParams(dp(18), dp(18)))
+        setOnClickListener { toggle() }
+        setOnFocusChangeListener { _, focused ->
+            bg.setColor(if (focused) fg else 0)
+            name.setTextColor(if (focused) onFg else fg)
+            number.setTextColor(if (focused) onFg else fg)
+            arrow.setColorFilter(if (focused) onFg else fg)
+        }
+    }
+}
+
 internal fun MainActivity.twoLineRow(info: String, source: String, action: () -> Unit): View {
     val bg = GradientDrawable().apply { cornerRadius = dp(8).toFloat() }
     val top = label(info, 14f).apply {

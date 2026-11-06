@@ -13,6 +13,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.5.1
+
+- In **Pick a stream** and in the list of streams to download, each quality is a group that opens and closes. Only the highest quality is open at first. Select a group's name to open or close it.
+- The first line of a stream does not start with the name of its source any more. The second line shows the source.
+
 ## 4.5.0
 
 - Zephyr TV plays torrent streams from add-ons. It needs **Zephyr Torrent**, the torrent engine. Install it in **Settings → Films and series → Torrent engine**.
