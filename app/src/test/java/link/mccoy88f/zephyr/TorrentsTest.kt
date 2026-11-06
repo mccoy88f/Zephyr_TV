@@ -34,7 +34,15 @@ class TorrentsTest {
         assertEquals(listOf("a"), Torrents.offered(list).map { it.title })
     }
 
-    @Test fun speedsAsPeopleReadThem() {
+    @Test fun theSeedersItsTextSaysGoWithIt() {
+        val s = JSONObject("{\"name\":\"Example\\n1080p\",\"title\":\"Film.2008.1080p.mkv\\n\uD83D\uDC64 42 \uD83D\uDCBE 1.2 GB\",\"infoHash\":\"0123456789abcdef0123456789abcdef01234567\"}")
+        assertEquals(42, Torrents.seedersOf(Torrents.magnet(s)!!))
+        assertEquals(7, Torrents.seeders("Seeders: 7"))
+        assertNull(Torrents.seeders("Film.2008.1080p.mkv"))
+        assertNull(Torrents.seedersOf("https://cdn.example/a.mkv?zs=3"))
+    }
+
+        @Test fun speedsAsPeopleReadThem() {
         assertEquals("300 KB/s", Torrents.speedName(300L * 1024))
         assertEquals(String.format(java.util.Locale.getDefault(), "%.1f MB/s", 2.5), Torrents.speedName(5L * 512 * 1024))
     }

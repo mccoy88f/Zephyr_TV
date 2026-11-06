@@ -6,8 +6,10 @@ import android.content.pm.PackageManager
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
+import android.os.Binder
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
+import android.os.Process
 import android.provider.OpenableColumns
 import java.io.FileNotFoundException
 
@@ -24,11 +26,14 @@ class EngineProvider : ContentProvider() {
         return true
     }
 
-    /** Only Zephyr TV, which is signed with the same key, may ask anything. */
+    /**
+     * Only Zephyr TV, which is signed with the same key, may ask anything: told by the caller's user id, as some
+     * Androids don't pass on the calling package's name.
+     */
     private fun check() {
         val c = context ?: throw SecurityException("no context")
-        val caller = callingPackage ?: throw SecurityException("unknown caller")
-        if (caller != c.packageName && c.packageManager.checkSignatures(caller, c.packageName) != PackageManager.SIGNATURE_MATCH)
+        val uid = Binder.getCallingUid()
+        if (uid != Process.myUid() && c.packageManager.checkSignatures(uid, Process.myUid()) != PackageManager.SIGNATURE_MATCH)
             throw SecurityException("not signed as Zephyr TV")
     }
 

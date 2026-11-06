@@ -9,6 +9,12 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Zephyr TV (and its debug build), whose signature the engine checks before answering (see EngineProvider). -->
+    <queries>
+        <package android:name="link.mccoy88f.zephyr" />
+        <package android:name="link.mccoy88f.zephyr.debug" />
+    </queries>
+
     <!-- No icon among the apps: Zephyr TV installs it, uses it, and removes it from its settings. -->
     <application
         android:label="@string/app_name"
