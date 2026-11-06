@@ -1156,19 +1156,20 @@ internal fun MainActivity.pickSpotlightSource() {
  * [source] (the add-on, plugin or extension it's from) under it, in italics. Lit with focus as a settings row is.
  */
 /**
- * An accordion's heading: a group of rows under [title] ([count] of them), open or closed, with an arrow that says
- * which (down: open, right: closed). OK, or a tap, runs [toggle]: the page is drawn again with the group open or
- * closed. The panel's standard for a long list in groups (the streams by quality): only the first group open at
+ * An accordion's heading: a box like a button, the group's [title] and its [count] of rows, and an arrow on the
+ * right that says whether it's open (up) or closed (down). OK, or a tap, runs [toggle]: the page is drawn again
+ * with the group open or closed. The panel's standard for a long list in groups (the streams by quality): only the first group open at
  * first, so the list starts short and the best ones are on top.
  */
 internal fun MainActivity.accordionRow(title: String, count: Int, open: Boolean, toggle: () -> Unit): View {
-    val bg = GradientDrawable().apply { cornerRadius = dp(8).toFloat() }
-    val name = label(title, 13f).apply { alpha = 0.8f; setTypeface(typeface, android.graphics.Typeface.BOLD) }
+    // Always there, as a button's box (a field's colour, edged), lit as the other rows with the focus.
+    val bg = GradientDrawable().apply { cornerRadius = dp(8).toFloat(); setColor(field); setStroke(dp(1), fieldEdge()) }
+    val name = label(title, 13f).apply { alpha = 0.9f; setTypeface(typeface, android.graphics.Typeface.BOLD) }
     val number = label("$count", 13f).apply { alpha = 0.6f; setPadding(dp(8), 0, dp(8), 0) }
     val arrow = ImageView(this).apply {
         setImageResource(R.drawable.ic_chevron_right)
         setColorFilter(fg)
-        rotation = if (open) 90f else 0f
+        rotation = if (open) -90f else 90f // the right-pointing chevron turned up (open) or down (closed)
     }
     return LinearLayout(this).apply {
         id = View.generateViewId()
@@ -1184,7 +1185,7 @@ internal fun MainActivity.accordionRow(title: String, count: Int, open: Boolean,
         addView(arrow, LinearLayout.LayoutParams(dp(18), dp(18)))
         setOnClickListener { toggle() }
         setOnFocusChangeListener { _, focused ->
-            bg.setColor(if (focused) fg else 0)
+            bg.setColor(if (focused) fg else field)
             name.setTextColor(if (focused) onFg else fg)
             number.setTextColor(if (focused) onFg else fg)
             arrow.setColorFilter(if (focused) onFg else fg)

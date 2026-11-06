@@ -15,7 +15,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 ## 4.5.1
 
-- In **Pick a stream** and in the list of streams to download, each quality is a group that opens and closes. Only the highest quality is open at first. Select a group's name to open or close it.
+- In **Pick a stream** and in the list of streams to download, each quality is a group that opens and closes. Only the highest quality is open at first. Select the box of a group to open or close it. Its arrow points up when it is open and down when it is closed.
 - The first line of a stream does not start with the name of its source any more. The second line shows the source.
 
 ## 4.5.0
