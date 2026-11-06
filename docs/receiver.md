@@ -21,7 +21,9 @@ on a phone, a tablet or another TV, and pick this TV.
 
 `ZephyrTVReceiver.ipk` is attached to each [release](https://github.com/mccoy88f/Zephyr_TV/releases/latest).
 
-- **Homebrew Channel** (rooted TVs): install the .ipk from Homebrew Channel, or with
+- **Homebrew Channel** (rooted TVs): in Homebrew Channel's settings select **Add repository** and enter
+  `https://ztv.mccoy88f.link/webos.json`; Zephyr TV Receiver is then in its list, and its updates come from there. Or
+  install the .ipk by hand, with
   `luna-send-pub -i 'luna://com.webos.appInstallService/dev/install' '{"id":"com.ares.defaultName","ipkUrl":"/tmp/ZephyrTVReceiver.ipk","subscribe":true}'`.
 - **Developer Mode** (LG's Developer Mode app): install it with
   [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop), or with LG's CLI:

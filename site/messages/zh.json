@@ -42,7 +42,10 @@
     "cta_account": "创建账号",
     "account_title": "一个账号管理你所有的电视",
     "account_text": "将你的电视关联到免费的 Zephyr TV 账号：用户、头像、设置、插件以及每个人看过的内容在所有电视上保持一致。",
-    "account_open": "你的账号"
+    "account_open": "你的账号",
+    "f_receiver_title": "也支持 LG、三星和海信电视",
+    "f_receiver_text": "Zephyr TV Receiver 会在这些电视上从同一位置、用同样的播放器播放你从 Zephyr TV 发送的内容。",
+    "f_receiver_link": "获取 Zephyr TV Receiver"
   },
   "download": {
     "title": "下载",
@@ -54,7 +57,22 @@
     "notes": "版本说明",
     "none": "目前无法读取版本信息。请前往",
     "install_title": "如何安装",
-    "install_text": "在电视上用浏览器或文件管理器下载 APK（或从手机发送），在提示时允许安装未知来源的应用，然后打开它。在设置中将 Zephyr TV 设为主屏幕。"
+    "install_text": "在电视上用浏览器或文件管理器下载 APK（或从手机发送），在提示时允许安装未知来源的应用，然后打开它。在设置中将 Zephyr TV 设为主屏幕。",
+    "receiver_title": "Zephyr TV Receiver",
+    "receiver_intro": "无法安装 Zephyr TV 的电视（LG、三星、海信）也能播放它发送的内容。安装 Zephyr TV Receiver，用它显示的代码关联到你的 Zephyr TV 账户，然后在 Zephyr TV 播放器中选择“发送到”并选择这台电视。",
+    "receiver_guide": "安装指南",
+    "webos_title": "LG · webOS",
+    "webos_text": "使用 Homebrew Channel：添加下方的软件源（设置 → 添加软件源），然后从中安装 Zephyr TV Receiver，之后也会收到更新。也可以在开发者模式下安装 .ipk。",
+    "webos_ipk": "下载 .ipk",
+    "webos_repo": "Homebrew Channel 软件源",
+    "tizen_title": "三星 · Tizen",
+    "tizen_text": "在电视上安装 TizenBrew（2017 年及以后的机型）。在其模块管理器中选择 Add GitHub Module 并输入下方名称：TizenBrew 会保持最新版本。",
+    "tizen_module": "GitHub 模块",
+    "tizen_get": "获取 TizenBrew",
+    "vidaa_title": "海信 · VIDAA",
+    "vidaa_text": "在 VIDAA 上，应用就是一个网页。请使用下方的地址和图标，按照指南中的社区方法添加。需要自定义请求头的片源在这里无法播放。",
+    "vidaa_url": "应用地址",
+    "vidaa_icon": "图标"
   },
   "credits": {
     "title": "Credits",

@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { currentAccount } from "@/server/session";
 
-const FEATURES = ["home", "watch", "addons", "player", "users", "phone"] as const;
+const FEATURES = ["home", "watch", "addons", "player", "users", "phone", "receiver"] as const;
 
 /** The screenshots kept in English and Italian (docs/screens): the page's language, else English. */
 function screen(locale: string, name: string) {
@@ -42,6 +42,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <article key={f} className="card">
               <h3>{t(`f_${f}_title`)}</h3>
               <p>{t(`f_${f}_text`)}</p>
+              {/* Zephyr TV Receiver: its apps for LG, Samsung and Hisense, on the download page. */}
+              {f === "receiver" && <p><Link href="/download#receiver">{t("f_receiver_link")}</Link></p>}
             </article>
           ))}
         </div>

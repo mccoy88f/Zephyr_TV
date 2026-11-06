@@ -42,7 +42,10 @@
     "cta_account": "Konto erstellen",
     "account_title": "Ein Konto für alle deine Fernseher",
     "account_text": "Verbinde deine Fernseher mit einem kostenlosen Zephyr-TV-Konto: Nutzer, Avatare, Einstellungen, Add-ons und was jeder gesehen hat, bleiben überall gleich.",
-    "account_open": "Dein Konto"
+    "account_open": "Dein Konto",
+    "f_receiver_title": "Auch auf LG-, Samsung- und Hisense-Fernsehern",
+    "f_receiver_text": "Zephyr TV Receiver spielt auf diesen Fernsehern ab, was du aus Zephyr TV sendest, an derselben Stelle und mit demselben Player.",
+    "f_receiver_link": "Zephyr TV Receiver holen"
   },
   "download": {
     "title": "Herunterladen",
@@ -54,7 +57,22 @@
     "notes": "Versionshinweise",
     "none": "Die Versionen können gerade nicht gelesen werden. Du findest sie auf",
     "install_title": "So installierst du es",
-    "install_text": "Lade die APK auf dem Fernseher mit einem Browser oder Dateimanager herunter (oder schicke sie vom Handy), erlaube die Installation aus unbekannten Quellen, wenn danach gefragt wird, und öffne sie. Lege Zephyr TV in den Einstellungen als Startbildschirm fest."
+    "install_text": "Lade die APK auf dem Fernseher mit einem Browser oder Dateimanager herunter (oder schicke sie vom Handy), erlaube die Installation aus unbekannten Quellen, wenn danach gefragt wird, und öffne sie. Lege Zephyr TV in den Einstellungen als Startbildschirm fest.",
+    "receiver_title": "Zephyr TV Receiver",
+    "receiver_intro": "Ein Fernseher, auf dem Zephyr TV nicht läuft (LG, Samsung, Hisense), kann trotzdem abspielen, was es sendet. Installiere Zephyr TV Receiver, verbinde ihn mit dem angezeigten Code mit deinem Zephyr-TV-Konto und wähle dann im Player von Zephyr TV „Senden an“ und diesen Fernseher.",
+    "receiver_guide": "Installationsanleitung",
+    "webos_title": "LG · webOS",
+    "webos_text": "Füge in Homebrew Channel das Repository unten hinzu (Einstellungen → Repository hinzufügen) und installiere Zephyr TV Receiver daraus: so bekommt es auch Updates. Oder installiere die .ipk im Entwicklermodus.",
+    "webos_ipk": ".ipk herunterladen",
+    "webos_repo": "Homebrew-Channel-Repository",
+    "tizen_title": "Samsung · Tizen",
+    "tizen_text": "Installiere TizenBrew auf dem Fernseher (ab 2017). Wähle in seiner Modulverwaltung „Add GitHub Module“ und gib den Namen unten ein: TizenBrew hält ihn auf der neuesten Version.",
+    "tizen_module": "GitHub-Modul",
+    "tizen_get": "TizenBrew holen",
+    "vidaa_title": "Hisense · VIDAA",
+    "vidaa_text": "Auf VIDAA ist eine App eine Webseite. Füge sie mit der Adresse und dem Symbol unten hinzu, mit einer der Community-Methoden aus der Anleitung. Streams, die eigene Header brauchen, laufen hier nicht.",
+    "vidaa_url": "App-Adresse",
+    "vidaa_icon": "Symbol"
   },
   "credits": {
     "title": "Credits",

@@ -42,7 +42,10 @@
     "cta_account": "Crea un account",
     "account_title": "Un account per tutti i tuoi TV",
     "account_text": "Collega i tuoi TV a un account Zephyr TV gratuito: utenti, avatar, impostazioni, add-on e quello che ognuno ha visto restano uguali su tutti.",
-    "account_open": "Il tuo account"
+    "account_open": "Il tuo account",
+    "f_receiver_title": "Anche su TV LG, Samsung e Hisense",
+    "f_receiver_text": "Zephyr TV Receiver riproduce su quelle TV quello che invii da Zephyr TV, dallo stesso punto e con lo stesso player.",
+    "f_receiver_link": "Scarica Zephyr TV Receiver"
   },
   "download": {
     "title": "Download",
@@ -54,7 +57,22 @@
     "notes": "Note di rilascio",
     "none": "Le versioni non si possono leggere in questo momento. Le trovi su",
     "install_title": "Come installarlo",
-    "install_text": "Scarica l'APK sul TV con un browser o un file manager (o mandalo dal telefono), consenti l'installazione da origini sconosciute quando richiesto, poi aprilo. Nelle impostazioni, imposta Zephyr TV come schermata Home."
+    "install_text": "Scarica l'APK sul TV con un browser o un file manager (o mandalo dal telefono), consenti l'installazione da origini sconosciute quando richiesto, poi aprilo. Nelle impostazioni, imposta Zephyr TV come schermata Home.",
+    "receiver_title": "Zephyr TV Receiver",
+    "receiver_intro": "Una TV che non può avere Zephyr TV (LG, Samsung, Hisense) può comunque riprodurre quello che invia. Installa Zephyr TV Receiver, collegalo al tuo account Zephyr TV con il codice che mostra, poi nel player di Zephyr TV scegli Invia a e seleziona quella TV.",
+    "receiver_guide": "Guida all'installazione",
+    "webos_title": "LG · webOS",
+    "webos_text": "Con Homebrew Channel, aggiungi il repository qui sotto (Impostazioni → Aggiungi repository) e installa Zephyr TV Receiver da lì: riceverà anche gli aggiornamenti. Oppure installa l'.ipk con la Modalità sviluppatore.",
+    "webos_ipk": "Scarica l'.ipk",
+    "webos_repo": "Repository per Homebrew Channel",
+    "tizen_title": "Samsung · Tizen",
+    "tizen_text": "Installa TizenBrew sulla TV (dal 2017 in poi). Nel suo gestore dei moduli scegli Add GitHub Module e inserisci il nome qui sotto: TizenBrew lo tiene all'ultima release.",
+    "tizen_module": "Modulo GitHub",
+    "tizen_get": "Scarica TizenBrew",
+    "vidaa_title": "Hisense · VIDAA",
+    "vidaa_text": "Su VIDAA un'app è una pagina web. Aggiungila con l'indirizzo e l'icona qui sotto, con uno dei metodi della community nella guida. Gli stream che richiedono header propri qui non partono.",
+    "vidaa_url": "Indirizzo dell'app",
+    "vidaa_icon": "Icona"
   },
   "credits": {
     "title": "Credits",

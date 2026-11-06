@@ -42,7 +42,10 @@
     "cta_account": "Create an account",
     "account_title": "One account for all your TVs",
     "account_text": "Link your TVs to a free Zephyr TV account: users, avatars, settings, add-ons and what each one watched stay the same on all of them.",
-    "account_open": "Your account"
+    "account_open": "Your account",
+    "f_receiver_title": "On LG, Samsung and Hisense TVs too",
+    "f_receiver_text": "Zephyr TV Receiver plays on those TVs what you send from Zephyr TV, from the same point, with the same player.",
+    "f_receiver_link": "Get Zephyr TV Receiver"
   },
   "download": {
     "title": "Download",
@@ -54,7 +57,22 @@
     "notes": "Release notes",
     "none": "The releases can't be read right now. Find them on",
     "install_title": "How to install",
-    "install_text": "Download the APK on the TV with a browser or a file manager (or send it from a phone), allow installs from unknown sources when asked, then open it. In Settings, set Zephyr TV as the home screen."
+    "install_text": "Download the APK on the TV with a browser or a file manager (or send it from a phone), allow installs from unknown sources when asked, then open it. In Settings, set Zephyr TV as the home screen.",
+    "receiver_title": "Zephyr TV Receiver",
+    "receiver_intro": "A TV that can't run Zephyr TV (LG, Samsung, Hisense) can still play what it sends. Install Zephyr TV Receiver, link it to your Zephyr TV account with the code it shows, then in Zephyr TV's player select Send to and pick that TV.",
+    "receiver_guide": "Installation guide",
+    "webos_title": "LG · webOS",
+    "webos_text": "With Homebrew Channel, add the repository below (Settings → Add repository) and install Zephyr TV Receiver from it: it also gets updates. Or install the .ipk with Developer Mode.",
+    "webos_ipk": "Download the .ipk",
+    "webos_repo": "Homebrew Channel repository",
+    "tizen_title": "Samsung · Tizen",
+    "tizen_text": "Install TizenBrew on the TV (2017 or later). In its module manager select Add GitHub Module and enter the name below: TizenBrew keeps it at the latest release.",
+    "tizen_module": "GitHub module",
+    "tizen_get": "Get TizenBrew",
+    "vidaa_title": "Hisense · VIDAA",
+    "vidaa_text": "On VIDAA an app is a web page. Add it with the address and icon below, with one of the community's methods in the guide. Streams that need their own headers don't play here.",
+    "vidaa_url": "App address",
+    "vidaa_icon": "Icon"
   },
   "credits": {
     "title": "Credits",

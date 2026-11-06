@@ -42,7 +42,10 @@
     "cta_account": "अकाउंट बनाएँ",
     "account_title": "आपके सभी टीवी के लिए एक अकाउंट",
     "account_text": "अपने टीवी को मुफ़्त Zephyr TV अकाउंट से जोड़ें: यूज़र, अवतार, सेटिंग्स, ऐड-ऑन और हर किसी ने क्या देखा, सब पर एक जैसे रहते हैं।",
-    "account_open": "आपका अकाउंट"
+    "account_open": "आपका अकाउंट",
+    "f_receiver_title": "LG, Samsung और Hisense टीवी पर भी",
+    "f_receiver_text": "Zephyr TV Receiver उन टीवी पर वही चलाता है जो आप Zephyr TV से भेजते हैं, उसी जगह से और उसी प्लेयर में।",
+    "f_receiver_link": "Zephyr TV Receiver पाएँ"
   },
   "download": {
     "title": "डाउनलोड",
@@ -54,7 +57,22 @@
     "notes": "रिलीज़ नोट्स",
     "none": "अभी रिलीज़ नहीं पढ़ी जा सकतीं। इन्हें यहाँ देखें:",
     "install_title": "कैसे इंस्टॉल करें",
-    "install_text": "टीवी पर ब्राउज़र या फ़ाइल मैनेजर से APK डाउनलोड करें (या फ़ोन से भेजें), पूछे जाने पर अज्ञात स्रोतों से इंस्टॉल करने की अनुमति दें, फिर इसे खोलें। सेटिंग्स में Zephyr TV को होम स्क्रीन बनाएँ।"
+    "install_text": "टीवी पर ब्राउज़र या फ़ाइल मैनेजर से APK डाउनलोड करें (या फ़ोन से भेजें), पूछे जाने पर अज्ञात स्रोतों से इंस्टॉल करने की अनुमति दें, फिर इसे खोलें। सेटिंग्स में Zephyr TV को होम स्क्रीन बनाएँ।",
+    "receiver_title": "Zephyr TV Receiver",
+    "receiver_intro": "जिस टीवी पर Zephyr TV नहीं चलता (LG, Samsung, Hisense) वह भी उसका भेजा हुआ चला सकता है। Zephyr TV Receiver इंस्टॉल करें, दिखाए गए कोड से उसे अपने Zephyr TV खाते से जोड़ें, फिर Zephyr TV के प्लेयर में इस पर भेजें चुनें और वह टीवी चुनें।",
+    "receiver_guide": "इंस्टॉलेशन गाइड",
+    "webos_title": "LG · webOS",
+    "webos_text": "Homebrew Channel में नीचे दी गई रिपॉज़िटरी जोड़ें (सेटिंग्स → रिपॉज़िटरी जोड़ें) और वहाँ से Zephyr TV Receiver इंस्टॉल करें: उसे अपडेट भी मिलेंगे। या डेवलपर मोड से .ipk इंस्टॉल करें।",
+    "webos_ipk": ".ipk डाउनलोड करें",
+    "webos_repo": "Homebrew Channel रिपॉज़िटरी",
+    "tizen_title": "Samsung · Tizen",
+    "tizen_text": "टीवी पर TizenBrew इंस्टॉल करें (2017 या नया)। उसके मॉड्यूल मैनेजर में Add GitHub Module चुनें और नीचे दिया नाम डालें: TizenBrew इसे नवीनतम रिलीज़ पर रखता है।",
+    "tizen_module": "GitHub मॉड्यूल",
+    "tizen_get": "TizenBrew पाएँ",
+    "vidaa_title": "Hisense · VIDAA",
+    "vidaa_text": "VIDAA पर ऐप एक वेब पेज होता है। नीचे दिए पते और आइकन से, गाइड में बताए समुदाय के किसी तरीके से इसे जोड़ें। जिन स्ट्रीम को अपने हेडर चाहिए, वे यहाँ नहीं चलतीं।",
+    "vidaa_url": "ऐप का पता",
+    "vidaa_icon": "आइकन"
   },
   "credits": {
     "title": "Credits",
