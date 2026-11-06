@@ -1,5 +1,7 @@
-# Builds the signed ZephyrTV.apk and ZephyrTorrent.apk (the torrent engine, torrent/) and publishes them as a GitHub
-# release, which the in-app updater reads; Zephyr TV installs the engine from its own version's release.
+# Builds the signed ZephyrTV.apk and publishes it as a GitHub release, which the in-app updater reads, with the torrent
+# engine (ZephyrTorrent.apk, torrent/: Zephyr TV installs it from its own version's release) and Zephyr TV Receiver
+# for webOS (ZephyrTVReceiver.ipk and its Homebrew Channel manifest). Those two change seldom: each is built again
+# only when its files changed since the last release (or when asked, "Build everything"), else copied from it.
 # Runs when a v* tag is pushed, or by hand from the Actions tab (it then tags the commit itself).
 # The release version is versionName in app/build.gradle.kts; its notes are that version's CHANGELOG.md section.
 #
@@ -13,6 +15,11 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      everything:
+        description: Build everything (the torrent engine and the Receiver too, even unchanged)
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -22,6 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the last release's tag, to see what changed since
 
       - uses: actions/setup-java@v4
         with:
@@ -59,15 +68,46 @@ jobs:
             echo "keyPassword=$KEY_PASSWORD"
           } > keystore.properties
 
+      # The last release (not this one, when run again): its engine and Receiver are taken as they are when their
+      # files haven't changed since its tag.
+      - name: What to build
+        id: build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VER: ${{ steps.version.outputs.ver }}
+          EVERYTHING: ${{ inputs.everything }}
+        run: |
+          prev=$(gh release list --limit 30 --json tagName,isDraft -q '[.[] | select(.isDraft | not) | .tagName | select(. != "v'"$VER"'")][0] // ""')
+          echo "Last release: ${prev:-none}"
+          mkdir -p prev
+          [ -n "$prev" ] && gh release download "$prev" -D prev -p ZephyrTorrent.apk -p ZephyrTVReceiver.ipk -p 'link.mccoy88f.zephyr.receiver.manifest.json' || true
+          changed() { [ "$EVERYTHING" = true ] || [ -z "$prev" ] || ! git rev-parse -q --verify "refs/tags/$prev" >/dev/null || ! git diff --quiet "$prev" HEAD -- "$@"; }
+          if changed torrent/ gradle.properties || [ ! -f prev/ZephyrTorrent.apk ]; then echo "torrent=true" >> "$GITHUB_OUTPUT"; echo "Torrent engine: built"
+          else echo "torrent=false" >> "$GITHUB_OUTPUT"; echo "Torrent engine: as in $prev"; fi
+          if changed webos/ site/public/receiver/ || [ ! -f prev/ZephyrTVReceiver.ipk ] || [ ! -f prev/link.mccoy88f.zephyr.receiver.manifest.json ]; then
+            echo "receiver=true" >> "$GITHUB_OUTPUT"; echo "Receiver: built"
+          else echo "receiver=false" >> "$GITHUB_OUTPUT"; echo "Receiver: as in $prev"; fi
+
       - name: Build and test
-        run: ./gradlew --no-daemon testDebugUnitTest assembleRelease
+        run: ./gradlew --no-daemon testDebugUnitTest :app:assembleRelease ${{ steps.build.outputs.torrent == 'true' && ':torrent:assembleRelease' || '' }}
+
+      - name: Torrent engine
+        run: |
+          if [ "${{ steps.build.outputs.torrent }}" = true ]; then cp torrent/build/outputs/apk/release/torrent-release.apk ZephyrTorrent.apk
+          else cp prev/ZephyrTorrent.apk ZephyrTorrent.apk; fi
 
       # Zephyr TV Receiver (webos/): the webOS app that plays what Zephyr TV sends it, packaged by LG's own tools.
       - uses: actions/setup-node@v4
+        if: steps.build.outputs.receiver == 'true'
         with:
           node-version: '20'
 
+      - name: Zephyr TV Receiver (webOS), as in the last release
+        if: steps.build.outputs.receiver != 'true'
+        run: cp prev/ZephyrTVReceiver.ipk prev/link.mccoy88f.zephyr.receiver.manifest.json .
+
       - name: Zephyr TV Receiver (webOS)
+        if: steps.build.outputs.receiver == 'true'
         run: |
           npm install -g @webos-tools/cli@3.2.6
           command -v convert >/dev/null || sudo apt-get install -y imagemagick # the icons, from the shared one
@@ -95,7 +135,6 @@ jobs:
           VER: ${{ steps.version.outputs.ver }}
         run: |
           cp app/build/outputs/apk/release/app-release.apk ZephyrTV.apk
-          cp torrent/build/outputs/apk/release/torrent-release.apk ZephyrTorrent.apk
           # This version's CHANGELOG section, up to the next heading of any level.
           awk -v v="## $VER" '$0 == v {on = 1; next} on && /^#/ {exit} on' CHANGELOG.md > notes.md
           # A beta ("4.0.0-beta.1") is a pre-release: the in-app updater reads releases/latest, which leaves those out.
