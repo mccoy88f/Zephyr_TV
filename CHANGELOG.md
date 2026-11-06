@@ -13,6 +13,11 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.7.1
+
+- **Zephyr TV Receiver** also works on Hisense TVs with VIDAA. The TV opens it from the site as an app of its own. To add it, read docs/receiver.md on GitHub.
+- On VIDAA, streams that need their own headers cannot play. **Send to** tells you, so you can pick another stream.
+
 ## 4.7.0
 
 - **Zephyr TV Receiver** is a new app for LG TVs with webOS. It plays what Zephyr TV sends it with **Send to**. Download `ZephyrTVReceiver.ipk` from the release.

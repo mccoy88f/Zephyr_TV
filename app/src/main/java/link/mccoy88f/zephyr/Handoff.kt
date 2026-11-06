@@ -15,6 +15,9 @@ internal object Handoff {
     class Device(val id: String, val name: String, val model: String?, val online: Boolean, val me: Boolean) {
         /** Zephyr TV Receiver (webos/): a TV that only plays what's sent, with its own player: no torrents, no search. */
         val receiver get() = model?.contains("Receiver") == true
+
+        /** The Receiver on VIDAA: a page of the site, no service on the TV to add a stream's headers. */
+        val noHeaders get() = receiver && model?.startsWith("VIDAA") == true
     }
 
     /** What a device was sent: from which device (its name), and what to play. */

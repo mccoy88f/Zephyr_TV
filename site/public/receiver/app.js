@@ -1,5 +1,7 @@
 /*
- * Zephyr TV Receiver: a TV that only plays what Zephyr TV sends it (Send to, in its player). Linked once to the
+ * Zephyr TV Receiver: a TV that only plays what Zephyr TV sends it (Send to, in its player). One web app for two
+ * TVs: LG's webOS, packaged as an .ipk with its service (webos/), and Hisense's VIDAA, which opens it from the site
+ * (ztv.mccoy88f.link/receiver/index.html) as an app of its own. Linked once to the
  * Zephyr TV account through the site (a code, or its QR code, entered on a phone), it waits for what the account's
  * other devices send it, says it for five seconds (Watch now, Cancel), then plays it in a player that looks like
  * Zephyr TV's, from where it got to there. A stream that needs its own headers plays through the app's service, a
@@ -8,7 +10,12 @@
 (function () {
   "use strict";
 
-  var SITE = "https://ztv.mccoy88f.link";
+  // Served by the site (VIDAA): its own address; packaged (webOS: a file on the TV): the site's.
+  var SITE = /^https?:$/.test(location.protocol) ? location.protocol + "//" + location.host : "https://ztv.mccoy88f.link";
+  var UA = navigator.userAgent || "";
+  // webOS (its service bridge, or Web0S in its user agent), VIDAA, or a browser (for a try on a computer).
+  var PLATFORM = typeof PalmServiceBridge !== "undefined" || /Web0S|webOS/.test(UA) ? "webOS" : /VIDAA|Hisense/i.test(UA) ? "VIDAA" : "Web";
+  var TV_NAME = { webOS: "LG TV", VIDAA: "Hisense TV", Web: "TV" }[PLATFORM];
   var SERVICE = "luna://link.mccoy88f.zephyr.receiver.service/";
   var VERSION = "1.0.0";
   var OFFER_SECONDS = 5;
@@ -93,7 +100,7 @@
     show("link");
     clearTimeout(linkTimer);
     $("linkState").textContent = "";
-    call("POST", "/api/v1/link/start", { name: "LG TV", model: "webOS · Zephyr TV Receiver", version: VERSION }, function (status, o) {
+    call("POST", "/api/v1/link/start", { name: TV_NAME, model: PLATFORM + " · Zephyr TV Receiver", version: VERSION }, function (status, o) {
       if (status !== 200 || !o) {
         $("linkState").textContent = t("linkFail");
         linkTimer = setTimeout(startLink, 10000);
@@ -202,12 +209,15 @@
     });
   }
 
-  /** Where [w]'s stream plays from: straight, or through the service when it needs its headers (not DASH: straight). */
+  /**
+   * Where [w]'s stream plays from: straight, or through the service when it needs its headers (webOS only: VIDAA has
+   * no service, and Zephyr TV doesn't send it those; DASH plays straight).
+   */
   function address(s, done) {
     var headers = s.headers || {};
     var needs = Object.keys(headers).length > 0;
     var dash = /\.mpd(\?|$)/i.test(s.url);
-    if (!needs || dash) return done(s.url);
+    if (!needs || dash || PLATFORM !== "webOS") return done(s.url);
     luna("play", { url: s.url, headers: headers }, function (a) {
       done(a.returnValue && a.url ? a.url : s.url);
     });
@@ -299,7 +309,7 @@
 
   // ---------- the remote ----------
 
-  var KEY = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, OK: 13, BACK: 461, PLAY: 415, PAUSE: 19, STOP: 413, FF: 417, RW: 412, ESC: 27, BKSP: 8 };
+  var KEY = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, OK: 13, BACK: 461, PLAY: 415, PAUSE: 19, STOP: 413, FF: 417, RW: 412, ESC: 27, BKSP: 8, PLAYPAUSE: 179 };
   document.addEventListener("keydown", function (e) {
     var k = e.keyCode;
     if (offering) {
@@ -311,10 +321,11 @@
     }
     if (!playing) {
       // Waiting: Back leaves the app, as a TV app does.
-      if (k === KEY.BACK) { if (typeof webOS !== "undefined" && webOS.platformBack) webOS.platformBack(); else window.close(); }
+      // VIDAA's Back is Backspace (8); its apps leave with window.close().
+      if (k === KEY.BACK || k === KEY.BKSP || k === KEY.ESC) { if (typeof webOS !== "undefined" && webOS.platformBack) webOS.platformBack(); else window.close(); }
       return;
     }
-    if (k === KEY.OK) setPaused(!video.paused);
+    if (k === KEY.OK || k === KEY.PLAYPAUSE) setPaused(!video.paused);
     else if (k === KEY.PLAY) setPaused(false);
     else if (k === KEY.PAUSE) setPaused(true);
     else if (k === KEY.LEFT || k === KEY.RW) seek(-10);
@@ -324,6 +335,17 @@
     else return;
     e.preventDefault();
   });
+
+  // ---------- the screen ----------
+
+  // Drawn at 1920x1080 and scaled to the page's size: VIDAA's browser often lays pages out at 1280x720.
+  function fit() {
+    var k = window.innerWidth / 1920;
+    document.body.style.transformOrigin = "0 0";
+    document.body.style.transform = Math.abs(k - 1) > 0.01 ? "scale(" + k + ")" : "";
+  }
+  fit();
+  window.addEventListener("resize", fit);
 
   // ---------- start ----------
 

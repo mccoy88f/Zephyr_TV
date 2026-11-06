@@ -969,4 +969,5 @@
     <string name="handoff_from">À partir de %1$s</string>
     <string name="handoff_watch">Regarder maintenant (%1$d)</string>
     <string name="send_not_there">%1$s ne lit que les flux web : ni torrents ni fichiers téléchargés.</string>
+    <string name="send_needs_headers">Ce flux a besoin d\'en-têtes que %1$s ne peut pas envoyer. Choisissez un autre flux.</string>
 </resources>

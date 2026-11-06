@@ -1573,6 +1573,11 @@ class PlayerActivity : Activity() {
             android.widget.Toast.makeText(this, getString(R.string.send_not_there, d.name), android.widget.Toast.LENGTH_LONG).show()
             return
         }
+        // On VIDAA, a stream that needs its own headers (a User-Agent, a Referer) can't have them: it wouldn't play.
+        if (d.noHeaders && s != null && s.headers.isNotEmpty()) {
+            android.widget.Toast.makeText(this, getString(R.string.send_needs_headers, d.name), android.widget.Toast.LENGTH_LONG).show()
+            return
+        }
         val what = Handoff.What(intent.getStringExtra(META_TYPE) ?: c.type, intent.getStringExtra(META_ID) ?: c.id, c.id, c.name,
             intent.getStringExtra(POSTER), s?.let { streamJson(it).toString() }, player?.currentPosition ?: 0L)
         Thread {

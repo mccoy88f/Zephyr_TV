@@ -4,9 +4,9 @@ name: webOS
 
 on:
   push:
-    paths: ['webos/**', '.github/workflows/webos.yml']
+    paths: ['webos/**', 'site/public/receiver/**', '.github/workflows/webos.yml']
   pull_request:
-    paths: ['webos/**', '.github/workflows/webos.yml']
+    paths: ['webos/**', 'site/public/receiver/**', '.github/workflows/webos.yml']
 
 jobs:
   package:
@@ -21,9 +21,9 @@ jobs:
       - name: Check and package
         run: |
           node --check webos/service/service.js
-          node --check webos/app/app.js
+          node --check site/public/receiver/app.js
           npm install -g @webos-tools/cli@3.2.6
-          ares-package webos/app webos/service -o webos-out
+          webos/package.sh webos-out
 
       - uses: actions/upload-artifact@v4
         with:

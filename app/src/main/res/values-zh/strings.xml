@@ -961,4 +961,5 @@
     <string name="handoff_from">从 %1$s 开始</string>
     <string name="handoff_watch">立即观看（%1$d）</string>
     <string name="send_not_there">%1$s 仅播放网络片源：不支持种子和已下载的文件。</string>
+    <string name="send_needs_headers">此片源需要 %1$s 无法发送的请求头，请选择其他片源。</string>
 </resources>

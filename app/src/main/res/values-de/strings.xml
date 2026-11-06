@@ -965,4 +965,5 @@
     <string name="handoff_from">Ab %1$s</string>
     <string name="handoff_watch">Jetzt ansehen (%1$d)</string>
     <string name="send_not_there">%1$s spielt nur Web-Streams ab: keine Torrents und keine heruntergeladenen Dateien.</string>
+    <string name="send_needs_headers">Dieser Stream braucht eigene Header, die %1$s nicht senden kann. Wähle einen anderen Stream.</string>
 </resources>

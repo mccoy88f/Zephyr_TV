@@ -969,4 +969,5 @@
     <string name="handoff_from">Desde %1$s</string>
     <string name="handoff_watch">Ver ahora (%1$d)</string>
     <string name="send_not_there">%1$s solo reproduce streams web: ni torrents ni archivos descargados.</string>
+    <string name="send_needs_headers">Este stream necesita cabeceras que %1$s no puede enviar. Elige otro stream.</string>
 </resources>
