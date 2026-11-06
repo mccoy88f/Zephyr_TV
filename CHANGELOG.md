@@ -17,6 +17,7 @@ Put changes that are not released under `## Unreleased`. Rename that heading to 
 
 - **Torrent engine** shows a **Status** row with a coloured dot. Red: the engine does not answer. Yellow: it connects to the network. Green: it is connected.
 - The list of streams does not show the seeders any more.
+- Zephyr TV does not stop any more when a title has many streams. Before, on slower TVs, it stopped while it put more than 100 streams in order.
 
 ## 4.3.0-beta.2
 

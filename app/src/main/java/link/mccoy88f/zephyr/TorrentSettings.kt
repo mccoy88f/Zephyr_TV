@@ -69,10 +69,10 @@ internal fun MainActivity.torrentPage(focus: Int = 0) {
                     else page(getString(R.string.torrent_update)) { installEngine() },
                 // How much the streams' cache may hold: a film bigger than this is only downloaded around where it plays.
                 page(getString(R.string.torrent_cache), sizeName(cache.toLong() shl 20)) {
-                    set({ putInt("cache_mb", CACHE_SIZES[(CACHE_SIZES.indexOf(cache) + 1).mod(CACHE_SIZES.size)]) }, if (older) 2 else 1)
+                    set({ putInt("cache_mb", CACHE_SIZES[(CACHE_SIZES.indexOf(cache) + 1).mod(CACHE_SIZES.size)]) }, if (older) 3 else 2)
                 },
-                page(getString(R.string.torrent_keep_cache), toggle(keep)) { set({ putBoolean("keep_cache", !keep) }, if (older) 3 else 2) },
-                page(getString(R.string.torrent_seed), toggle(seed)) { set({ putBoolean("seed", !seed) }, if (older) 4 else 3) },
+                page(getString(R.string.torrent_keep_cache), toggle(keep)) { set({ putBoolean("keep_cache", !keep) }, if (older) 4 else 3) },
+                page(getString(R.string.torrent_seed), toggle(seed)) { set({ putBoolean("seed", !seed) }, if (older) 5 else 4) },
                 page(getString(R.string.torrent_uninstall)) {
                     runCatching { startActivity(Intent(Intent.ACTION_DELETE, Uri.fromParts("package", Torrents.enginePackage(this), null))) }
                 },

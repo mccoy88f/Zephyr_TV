@@ -142,19 +142,26 @@ private val LANGUAGE_MARKS = mapOf(
  * The picture's height a stream's name says ("2160p", "4K", "FHD", "720"), for putting the best first; [UNKNOWN_QUALITY]
  * when it says none (an "Auto" HLS one, which picks as it plays, among them).
  */
-internal fun streamQuality(title: String): Int {
+// Compiled once, and each title's answer kept: the stream lists sort by it on the main thread, comparing each stream
+// many times, and compiling these for every comparison took seconds on a slow TV (an ANR with 170 streams).
+private val HEIGHT = Regex("""(?<![0-9])(4320|2160|1440|1080|720|576|540|480|360|240)\s*[pi]?(?![0-9])""")
+private val NAMED_QUALITIES = listOf(
+    Regex("""(?<![\p{L}0-9])(8k)(?![\p{L}])""") to 4320,
+    Regex("""(?<![\p{L}0-9])(4k|uhd)(?![\p{L}])""") to 2160,
+    Regex("""(?<![\p{L}0-9])(qhd|2k)(?![\p{L}])""") to 1440,
+    Regex("""(?<![\p{L}])(fhd|full[\s_.-]*hd)(?![\p{L}])""") to 1080,
+    Regex("""(?<![\p{L}])hd(?![\p{L}])""") to 720,
+    Regex("""(?<![\p{L}])sd(?![\p{L}])""") to 480,
+)
+private val qualities = java.util.concurrent.ConcurrentHashMap<String, Int>()
+
+internal fun streamQuality(title: String): Int = qualities[title] ?: run {
     val t = title.lowercase()
-    Regex("""(?<![0-9])(4320|2160|1440|1080|720|576|540|480|360|240)\s*[pi]?(?![0-9])""").findAll(t)
-        .map { it.groupValues[1].toInt() }.maxOrNull()?.let { return it }
-    return when {
-        Regex("""(?<![\p{L}0-9])(8k)(?![\p{L}])""").containsMatchIn(t) -> 4320
-        Regex("""(?<![\p{L}0-9])(4k|uhd)(?![\p{L}])""").containsMatchIn(t) -> 2160
-        Regex("""(?<![\p{L}0-9])(qhd|2k)(?![\p{L}])""").containsMatchIn(t) -> 1440
-        Regex("""(?<![\p{L}])(fhd|full[\s_.-]*hd)(?![\p{L}])""").containsMatchIn(t) -> 1080
-        Regex("""(?<![\p{L}])hd(?![\p{L}])""").containsMatchIn(t) -> 720
-        Regex("""(?<![\p{L}])sd(?![\p{L}])""").containsMatchIn(t) -> 480
-        else -> UNKNOWN_QUALITY
-    }
+    val q = HEIGHT.findAll(t).map { it.groupValues[1].toInt() }.maxOrNull()
+        ?: NAMED_QUALITIES.firstOrNull { it.first.containsMatchIn(t) }?.second ?: UNKNOWN_QUALITY
+    if (qualities.size > 5000) qualities.clear()
+    qualities[title] = q
+    q
 }
 
 /** A stream that says no quality ranks as this: after the full HD ones, before the plain HD ones. */

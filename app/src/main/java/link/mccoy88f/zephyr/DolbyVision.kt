@@ -57,11 +57,11 @@ internal object DolbyVision {
      * A stream whose name says Dolby Vision ("DV", "DoVi", "Dolby Vision") and no HDR10 or HDR: profile 5, most
      * likely, which a TV without Dolby Vision can't show. "DV HDR10" (profile 7 or 8) has a base layer it can.
      */
-    fun only(title: String): Boolean {
-        val dv = Regex("""(?i)(?<![\p{L}0-9])(dv|dovi|dolby[\s._-]*vision)(?![\p{L}0-9])""").containsMatchIn(title)
-        val hdr = Regex("""(?i)(?<![\p{L}0-9])hdr(10\+?|10plus)?(?![\p{L}])""").containsMatchIn(title)
-        return dv && !hdr
-    }
+    fun only(title: String): Boolean = DV.containsMatchIn(title) && !HDR.containsMatchIn(title)
+
+    // Compiled once: the stream lists ask this of every stream as they sort (see streamQuality).
+    private val DV = Regex("""(?i)(?<![\p{L}0-9])(dv|dovi|dolby[\s._-]*vision)(?![\p{L}0-9])""")
+    private val HDR = Regex("""(?i)(?<![\p{L}0-9])hdr(10\+?|10plus)?(?![\p{L}])""")
 }
 
 /**
