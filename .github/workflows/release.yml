@@ -62,16 +62,16 @@ jobs:
       - name: Build and test
         run: ./gradlew --no-daemon testDebugUnitTest assembleRelease
 
-      # Zephyr TV Reviver (webos/): the webOS app that plays what Zephyr TV sends it, packaged by LG's own tools.
+      # Zephyr TV Receiver (webos/): the webOS app that plays what Zephyr TV sends it, packaged by LG's own tools.
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Zephyr TV Reviver (webOS)
+      - name: Zephyr TV Receiver (webOS)
         run: |
           npm install -g @webos-tools/cli@3.2.6
           ares-package webos/app webos/service -o webos-out
-          cp webos-out/*.ipk ZephyrTVReviver.ipk
+          cp webos-out/*.ipk ZephyrTVReceiver.ipk
 
       - name: Publish
         env:
@@ -84,4 +84,4 @@ jobs:
           awk -v v="## $VER" '$0 == v {on = 1; next} on && /^#/ {exit} on' CHANGELOG.md > notes.md
           # A beta ("4.0.0-beta.1") is a pre-release: the in-app updater reads releases/latest, which leaves those out.
           pre=""; case "$VER" in *-*) pre="--prerelease";; esac
-          gh release create "v$VER" ZephyrTV.apk ZephyrTorrent.apk ZephyrTVReviver.ipk --title "Zephyr TV $VER" --notes-file notes.md --target "$GITHUB_SHA" $pre
+          gh release create "v$VER" ZephyrTV.apk ZephyrTorrent.apk ZephyrTVReceiver.ipk --title "Zephyr TV $VER" --notes-file notes.md --target "$GITHUB_SHA" $pre

@@ -11,7 +11,7 @@ const config: NextConfig = {
   // Native or Node-only: left to Node, not bundled.
   serverExternalPackages: ["@node-rs/argon2", "pg", "nodemailer"],
   images: { unoptimized: true },
-  // The devices' API from Zephyr TV Reviver too (webos/), a web app on the TV: from any origin, as it sends its token in
+  // The devices' API from Zephyr TV Receiver too (webos/), a web app on the TV: from any origin, as it sends its token in
   // Authorization (never a cookie), so another site can do nothing with it a TV couldn't.
   async headers() {
     return [{

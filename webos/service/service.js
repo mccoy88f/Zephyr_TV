@@ -1,5 +1,5 @@
 /*
- * Zephyr TV Reviver's service: a small proxy on the TV (127.0.0.1) for the streams that need their own headers (a
+ * Zephyr TV Receiver's service: a small proxy on the TV (127.0.0.1) for the streams that need their own headers (a
  * User-Agent, a Referer). A web app's player can't send those, Node can: the app asks for a stream's local address
  * (play), and the TV's player reads it from here as from any server. Byte ranges go through (seeking); an HLS
  * playlist is rewritten so its segments, keys and other playlists come through here too, with the same headers.
@@ -13,7 +13,7 @@ var https = require("https");
 var url = require("url");
 var crypto = require("crypto");
 
-var service = new Service("link.mccoy88f.zephyr.reviver.service");
+var service = new Service("link.mccoy88f.zephyr.receiver.service");
 var streams = {}; // id -> {url, headers}, the last few only
 var order = [];
 var server = null;
@@ -23,7 +23,7 @@ var keep = null; // the activity that keeps the service up while the app subscri
 function up(done) {
   if (server) return done(port);
   server = http.createServer(handle);
-  server.on("error", function (e) { console.error("reviver proxy: " + e); });
+  server.on("error", function (e) { console.error("receiver proxy: " + e); });
   server.listen(0, "127.0.0.1", function () {
     port = server.address().port;
     done(port);
@@ -103,7 +103,7 @@ function fetch(target, headers, range, method, hops, done) {
   var h = {};
   Object.keys(headers).forEach(function (k) { h[k] = headers[k]; });
   if (range) h.Range = range;
-  if (!Object.keys(h).some(function (k) { return k.toLowerCase() === "user-agent"; })) h["User-Agent"] = "Zephyr TV Reviver";
+  if (!Object.keys(h).some(function (k) { return k.toLowerCase() === "user-agent"; })) h["User-Agent"] = "Zephyr TV Receiver";
   var r = mod.request({ protocol: u.protocol, hostname: u.hostname, port: u.port, path: u.path, method: method, headers: h }, function (up) {
     if (up.statusCode >= 300 && up.statusCode < 400 && up.headers.location && hops < 6) {
       up.resume();

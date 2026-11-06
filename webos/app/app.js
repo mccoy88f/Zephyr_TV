@@ -1,5 +1,5 @@
 /*
- * Zephyr TV Reviver: a TV that only plays what Zephyr TV sends it (Send to, in its player). Linked once to the
+ * Zephyr TV Receiver: a TV that only plays what Zephyr TV sends it (Send to, in its player). Linked once to the
  * Zephyr TV account through the site (a code, or its QR code, entered on a phone), it waits for what the account's
  * other devices send it, says it for five seconds (Watch now, Cancel), then plays it in a player that looks like
  * Zephyr TV's, from where it got to there. A stream that needs its own headers plays through the app's service, a
@@ -9,7 +9,7 @@
   "use strict";
 
   var SITE = "https://ztv.mccoy88f.link";
-  var SERVICE = "luna://link.mccoy88f.zephyr.reviver.service/";
+  var SERVICE = "luna://link.mccoy88f.zephyr.receiver.service/";
   var VERSION = "1.0.0";
   var OFFER_SECONDS = 5;
   var BANNER_MS = 5000;
@@ -93,7 +93,7 @@
     show("link");
     clearTimeout(linkTimer);
     $("linkState").textContent = "";
-    call("POST", "/api/v1/link/start", { name: "LG TV", model: "webOS · Zephyr TV Reviver", version: VERSION }, function (status, o) {
+    call("POST", "/api/v1/link/start", { name: "LG TV", model: "webOS · Zephyr TV Receiver", version: VERSION }, function (status, o) {
       if (status !== 200 || !o) {
         $("linkState").textContent = t("linkFail");
         linkTimer = setTimeout(startLink, 10000);

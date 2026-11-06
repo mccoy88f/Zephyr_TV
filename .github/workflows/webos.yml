@@ -1,4 +1,4 @@
-# Checks that Zephyr TV Reviver (webos/) packages: its service reads as JavaScript, and LG's tools make its .ipk, kept
+# Checks that Zephyr TV Receiver (webos/) packages: its service reads as JavaScript, and LG's tools make its .ipk, kept
 # as an artifact to install by hand. The release workflow packages it the same way and attaches it to the release.
 name: webOS
 
@@ -27,5 +27,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: zephyr-tv-reviver
+          name: zephyr-tv-receiver
           path: webos-out/*.ipk

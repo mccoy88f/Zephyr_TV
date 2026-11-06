@@ -1,9 +1,9 @@
 {
-  "id": "link.mccoy88f.zephyr.reviver.service",
-  "description": "Zephyr TV Reviver: a proxy on the TV that fetches a stream with the headers it needs",
+  "id": "link.mccoy88f.zephyr.receiver.service",
+  "description": "Zephyr TV Receiver: a proxy on the TV that fetches a stream with the headers it needs",
   "services": [
     {
-      "name": "link.mccoy88f.zephyr.reviver.service",
+      "name": "link.mccoy88f.zephyr.receiver.service",
       "description": "start: the proxy up (subscribe to keep it); play: a stream's local address"
     }
   ]

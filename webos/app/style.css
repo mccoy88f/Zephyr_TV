@@ -1,4 +1,4 @@
-/* Zephyr TV Reviver: Zephyr TV's dark look, at 1920x1080 (the TV scales it). */
+/* Zephyr TV Receiver: Zephyr TV's dark look, at 1920x1080 (the TV scales it). */
 html, body { margin: 0; width: 1920px; height: 1080px; background: #000; color: #fff; overflow: hidden;
   font-family: "LG Smart UI", "Roboto", "Helvetica Neue", Arial, sans-serif; }
 .hidden { display: none !important; }

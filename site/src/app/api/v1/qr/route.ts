@@ -4,7 +4,7 @@ import { allow } from "@/server/limit";
 export const dynamic = "force-dynamic";
 
 /**
- * A QR code of [d] (up to 300 characters), as SVG: for Zephyr TV Reviver (webos/), which shows the link page with its
+ * A QR code of [d] (up to 300 characters), as SVG: for Zephyr TV Receiver (webos/), which shows the link page with its
  * code to scan, and has no QR code maker of its own. Black on white, with its quiet zone.
  */
 export async function GET(req: Request) {

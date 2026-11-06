@@ -13,8 +13,8 @@ import org.json.JSONObject
 internal object Handoff {
     /** One of the account's devices: its name, whether it's on now, whether it's this one. */
     class Device(val id: String, val name: String, val model: String?, val online: Boolean, val me: Boolean) {
-        /** Zephyr TV Reviver (webos/): a TV that only plays what's sent, with its own player: no torrents, no search. */
-        val reviver get() = model?.contains("Reviver") == true
+        /** Zephyr TV Receiver (webos/): a TV that only plays what's sent, with its own player: no torrents, no search. */
+        val receiver get() = model?.contains("Receiver") == true
     }
 
     /** What a device was sent: from which device (its name), and what to play. */

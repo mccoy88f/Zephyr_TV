@@ -1,10 +1,10 @@
 {
-  "id": "link.mccoy88f.zephyr.reviver",
+  "id": "link.mccoy88f.zephyr.receiver",
   "version": "1.0.0",
   "vendor": "mccoy88f",
   "type": "web",
   "main": "index.html",
-  "title": "Zephyr TV Reviver",
+  "title": "Zephyr TV Receiver",
   "icon": "icon.png",
   "largeIcon": "largeIcon.png",
   "iconColor": "#0b0b10",

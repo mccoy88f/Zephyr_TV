@@ -1,4 +1,4 @@
-# Zephyr TV Reviver (webOS)
+# Zephyr TV Receiver (webOS)
 
 A webOS app for LG TVs that plays what Zephyr TV sends it. It has no add-ons and no search: link it once to your
 Zephyr TV account, then select **Send to** in Zephyr TV's player on a phone, a tablet or another TV, and pick this TV.
@@ -14,13 +14,13 @@ Zephyr TV account, then select **Send to** in Zephyr TV's player on a phone, a t
 
 ## Install
 
-`ZephyrTVReviver.ipk` is attached to each [release](https://github.com/mccoy88f/Zephyr_TV/releases/latest).
+`ZephyrTVReceiver.ipk` is attached to each [release](https://github.com/mccoy88f/Zephyr_TV/releases/latest).
 
 - **Homebrew Channel** (rooted TVs): copy the .ipk to the TV and install it from Homebrew Channel, or with
-  `luna-send-pub -i 'luna://com.webos.appInstallService/dev/install' '{"id":"com.ares.defaultName","ipkUrl":"/tmp/ZephyrTVReviver.ipk","subscribe":true}'`.
+  `luna-send-pub -i 'luna://com.webos.appInstallService/dev/install' '{"id":"com.ares.defaultName","ipkUrl":"/tmp/ZephyrTVReceiver.ipk","subscribe":true}'`.
 - **Developer Mode** (any TV with LG's Developer Mode app): install it with
   [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop), or with LG's CLI:
-  `ares-install --device <tv> ZephyrTVReviver.ipk`.
+  `ares-install --device <tv> ZephyrTVReceiver.ipk`.
 
 ## Build
 
