@@ -70,9 +70,11 @@ private fun MainActivity.wholeKey(id: String) = "${tmdbLang()}|${tmdbEnrich()}|$
 /** [ref]'s page as the add-on has it, before TMDB is asked (see titleMeta). Network: off the UI thread. */
 private fun MainActivity.addonMeta(ref: TitleRef): Stremio.TitleMeta? {
     // The catalog sources first, the main one first (see catalogSources); then the add-on it came from; then the rest.
+    // A title from a catalog that keeps its own posters: that catalog first, so its page has its art too.
     val sources = catalogSources()
+    val own = ref.source?.takeIf { tmdbOff(it) }
     val addons = vodAddons().filter { it.provides("meta", ref.type, ref.id) }
-        .sortedBy { a -> sources.indexOf(a.url).takeIf { it >= 0 } ?: if (a.url == ref.source) sources.size else sources.size + 1 }
+        .sortedBy { a -> if (a.url == own) -1 else sources.indexOf(a.url).takeIf { it >= 0 } ?: if (a.url == ref.source) sources.size else sources.size + 1 }
     for (a in addons) runCatching { Stremio.titleMeta(a.base, ref.type, ref.id) }.getOrNull()?.let { return it }
     return null
 }

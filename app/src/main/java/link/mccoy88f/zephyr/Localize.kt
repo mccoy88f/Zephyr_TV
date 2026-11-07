@@ -69,8 +69,9 @@ internal fun MainActivity.tmdbKey() = prefs.getString(K.TMDB_API_KEY, null)?.tak
 internal fun MainActivity.tmdbEnrich() = prefs.getBoolean(K.TMDB_ENRICH, !cinemetaUrl().startsWith(Stremio.NUVIO_BASE))
 
 /**
- * Whether TMDB is off for the catalog [source] (Content catalog → a catalog → Turn off TMDB): its titles' posters,
- * names and what they're about as it gives them, neither TMDB's nor the main catalog's in their place.
+ * Whether the catalog [source] keeps its own posters (Content catalog → a catalog → Use its own posters): its titles'
+ * posters, names and what they're about as it gives them, on its rows and their pages; neither TMDB's nor the main
+ * catalog's in their place.
  */
 internal fun MainActivity.tmdbOff(source: String?) = source != null && source in prefs.getStringSet(K.TMDB_OFF, emptySet())!!
 

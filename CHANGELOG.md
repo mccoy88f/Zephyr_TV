@@ -13,6 +13,12 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.7.5
+
+- **Turn off TMDB** on a catalog is now **Use its own posters**. It works also when TMDB is off.
+- A catalog with **Use its own posters** keeps its posters, backdrops and descriptions on its rows and on the title's page. TMDB and the main catalog do not replace them. Before, a second catalog showed the posters of the main catalog, for example Nuvio's.
+- If you turned off TMDB for a catalog before, **Use its own posters** is on for it.
+
 ## 4.7.4
 
 - After you clear the cache of Zephyr TV in the Android settings, the posters and pictures download again. Before, the cards showed only a colour and the title until Zephyr TV started again.

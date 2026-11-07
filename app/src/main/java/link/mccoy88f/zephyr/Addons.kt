@@ -569,18 +569,17 @@ private fun MainActivity.sourcePage(url: String) {
                 sourcePage(url)
             }
         },
-        // Turn off TMDB for this catalog: its own posters, names and what they're about, nothing put in their place.
-        // With TMDB on (its key, Complete with TMDB); else there's nothing to turn off, and the row says so.
-        if (tmdbKey() != null && tmdbEnrich()) page(getString(R.string.catalog_tmdb_off), toggle(tmdbOff(url))) {
+        // Its own posters: its titles' posters, backdrops, names and what they're about as it gives them, on its rows
+        // and on their pages; neither TMDB's nor the main catalog's in their place. Whether TMDB is on or not: the
+        // main catalog's art goes over a second catalog's either way (see withMainArt).
+        page(getString(R.string.catalog_own_art), toggle(tmdbOff(url))) {
             val off = prefs.getStringSet(K.TMDB_OFF, emptySet())!!.toMutableSet()
             if (!off.remove(url)) off += url
             prefs.edit().putStringSet(K.TMDB_OFF, off).apply()
-            wholeMeta.clear() // titles' pages, made with TMDB or not, made again
+            wholeMeta.clear() // titles' pages, made with another catalog's or TMDB's, made again
             addonsChanged()
             sourcePage(url)
-        }.hinted(getString(R.string.hint_catalog_tmdb_off))
-        else page(getString(R.string.catalog_tmdb_off), getString(R.string.state_off)) { toast(R.string.catalog_tmdb_needs) }
-            .hinted(getString(R.string.hint_catalog_tmdb_off)),
+        }.hinted(getString(R.string.hint_catalog_own_art)),
         if (at > 0) page(getString(R.string.addon_move_up)) { move(-1) } else null,
         if (at < sources.size - 1) page(getString(R.string.addon_move_down)) { move(+1) } else null,
         if (sources.size > 1) page(getString(R.string.addon_remove)) { saveSources(sources - url); configureCinemeta() } else null,

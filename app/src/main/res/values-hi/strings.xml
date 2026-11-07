@@ -966,7 +966,6 @@
     <string name="handoff_watch">अभी देखें (%1$d)</string>
     <string name="send_not_there">%1$s केवल वेब स्ट्रीम चलाता है: टॉरेंट या डाउनलोड की गई फ़ाइलें नहीं।</string>
     <string name="send_needs_headers">इस स्ट्रीम को ऐसे हेडर चाहिए जो %1$s नहीं भेज सकता। दूसरी स्ट्रीम चुनें।</string>
-    <string name="catalog_tmdb_off">TMDB से जानकारी लेना बंद करें</string>
-    <string name="hint_catalog_tmdb_off">इस कैटलॉग के पोस्टर, नाम और विवरण वैसे ही जैसे ऐड-ऑन देता है, TMDB वालों से बदले बिना। केवल TMDB चालू होने पर।</string>
-    <string name="catalog_tmdb_needs">TMDB चालू नहीं है: पहले उसकी कुंजी डालें और TMDB से पूरा करें चालू करें।</string>
+    <string name="catalog_own_art">इसके अपने पोस्टर इस्तेमाल करें</string>
+    <string name="hint_catalog_own_art">इस कैटलॉग के पोस्टर, बैकग्राउंड और विवरण वैसे ही जैसे ऐड-ऑन देता है, पंक्तियों में और शीर्षक के पेज पर। TMDB और मुख्य कैटलॉग इन्हें नहीं बदलते।</string>
 </resources>

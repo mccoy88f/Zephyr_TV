@@ -970,7 +970,6 @@
     <string name="handoff_watch">Mira-ho ara (%1$d)</string>
     <string name="send_not_there">%1$s només reprodueix fluxos web: ni torrents ni fitxers baixats.</string>
     <string name="send_needs_headers">Aquest flux necessita capçaleres que %1$s no pot enviar. Tria un altre flux.</string>
-    <string name="catalog_tmdb_off">Desactiva la recuperació de TMDB</string>
-    <string name="hint_catalog_tmdb_off">Pòsters, noms i descripcions d\'aquest catàleg tal com els dona el complement, sense substituir-los pels de TMDB. Només amb TMDB activat.</string>
-    <string name="catalog_tmdb_needs">TMDB no està actiu: primer posa la clau i activa Completa amb TMDB.</string>
+    <string name="catalog_own_art">Fes servir els seus pòsters</string>
+    <string name="hint_catalog_own_art">Pòsters, fons i descripcions d\'aquest catàleg tal com els dona el complement, a les files i a la pàgina del títol. TMDB i el catàleg principal no els substitueixen.</string>
 </resources>
