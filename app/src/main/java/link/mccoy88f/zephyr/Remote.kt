@@ -55,6 +55,17 @@ internal fun remoteKeyCode(name: String): Int? = when (name) {
 }
 
 /**
+ * The next box in the player's side panel (a stream, a track, a device). [index] null means none of them has
+ * focus yet, so the first box takes it. At either end the move stays there. The phone's key never reaches the
+ * window, so this stands in for the window's own focus search (see PlayerActivity.remotePress).
+ */
+internal fun remotePanelIndex(index: Int?, count: Int, down: Boolean): Int {
+    if (count <= 0) return 0
+    if (index == null || index < 0) return 0
+    return remoteRowIndex(index, count, down)
+}
+
+/**
  * Where a sideways move lands in a row of [count] items. [index] null means nothing is focused yet: start at the
  * first item, then take the step. At either end the move stays there.
  */

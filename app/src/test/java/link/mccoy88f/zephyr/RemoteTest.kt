@@ -41,6 +41,16 @@ class RemoteTest {
         assertEquals(null, remotePanelName("home"))
     }
 
+    @Test fun thePlayersBoxesStepAndStopAtTheirEnds() {
+        assertEquals(0, remotePanelIndex(null, 4, true))
+        assertEquals(0, remotePanelIndex(-1, 4, false))
+        assertEquals(1, remotePanelIndex(0, 4, true))
+        assertEquals(0, remotePanelIndex(0, 4, false))
+        assertEquals(3, remotePanelIndex(3, 4, true))
+        assertEquals(2, remotePanelIndex(3, 4, false))
+        assertEquals(0, remotePanelIndex(null, 0, true))
+    }
+
     @Test fun aRowStepsAndStopsAtItsEnds() {
         assertEquals(1, remoteRowIndex(0, 4, true))
         assertEquals(2, remoteRowIndex(1, 4, true))

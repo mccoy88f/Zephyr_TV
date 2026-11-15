@@ -17,6 +17,7 @@ import android.view.KeyEvent
 import android.view.PixelCopy
 import android.view.SurfaceView
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -1115,11 +1116,20 @@ class PlayerActivity : Activity() {
         super.onPause()
     }
 
-    /** A key from the phone's remote. OK confirms. The other keys are the player's own. */
+    /**
+     * A key from the phone's remote. OK confirms. The other keys are the player's own.
+     * Up and Down in the side panel move its boxes here. The phone's key is not a real key of this window, so the
+     * window never runs the focus search that the TV's remote uses, and those boxes would stay where they are.
+     */
     internal fun remotePress(code: Int) {
         when (code) {
             KeyEvent.KEYCODE_CHANNEL_UP -> { remoteChannel(1); return }
             KeyEvent.KEYCODE_CHANNEL_DOWN -> { remoteChannel(-1); return }
+        }
+        if (tracksPanel.visibility == View.VISIBLE &&
+            (code == KeyEvent.KEYCODE_DPAD_UP || code == KeyEvent.KEYCODE_DPAD_DOWN)) {
+            remotePanelStep(code == KeyEvent.KEYCODE_DPAD_DOWN)
+            return
         }
         val confirm = code == KeyEvent.KEYCODE_DPAD_CENTER || code == KeyEvent.KEYCODE_ENTER
         if (confirm) {
@@ -1131,6 +1141,25 @@ class PlayerActivity : Activity() {
         }
         val t = android.os.SystemClock.uptimeMillis()
         onKeyDown(code, KeyEvent(t, t, KeyEvent.ACTION_DOWN, code, 0))
+    }
+
+    /** Up or down one box of the side panel: a stream, an audio track, subtitles, or a device in Send to. */
+    private fun remotePanelStep(down: Boolean) {
+        val rows = ArrayList<View>()
+        fun walk(v: View) {
+            if (v.visibility != View.VISIBLE) return
+            if (v.isFocusable) {
+                rows.add(v)
+                return
+            }
+            if (v is ViewGroup) for (i in 0 until v.childCount) walk(v.getChildAt(i))
+        }
+        walk(tracksList)
+        if (rows.isEmpty()) return
+        val at = rows.indexOfFirst { it === currentFocus }
+        val next = rows[remotePanelIndex(at.takeIf { it >= 0 }, rows.size, down)]
+        if (!next.steer()) return
+        next.requestRectangleOnScreen(android.graphics.Rect(0, 0, next.width.coerceAtLeast(1), next.height.coerceAtLeast(1)), false)
     }
 
     /** Program plus or minus. The channel changes here, not through a key the picture can swallow. */

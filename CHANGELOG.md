@@ -13,6 +13,10 @@ Write every entry in ASD-STE100 Simplified Technical English:
 
 Put changes that are not released under `## Unreleased`. Rename that heading to the version number when you release.
 
+## 4.7.5
+
+- The phone remote moves between the rows in the player's lists. Up and Down reach each stream, audio track, subtitle and device in **Send to**. Before, those keys did nothing there.
+
 ## 4.7.4
 
 - After you clear the cache of Zephyr TV in the Android settings, the posters and pictures download again. Before, the cards showed only a colour and the title until Zephyr TV started again.
